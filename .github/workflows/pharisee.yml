@@ -1,0 +1,39 @@
+name: Satisfy bureaucracy
+
+on:
+  push:
+    branches:
+    - '**'
+  pull_request:
+    branches:
+    - '**'
+
+env:
+  PROJECT_ID: "sandbox-ba851a37"
+
+jobs:
+  sntich:
+    name: snitch
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    # Setup gcloud CLI
+    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        version: '290.0.1'
+        service_account_key: ${{ secrets.PHARISEE_SA }}
+        project_id: "sandbox-ba851a37"
+
+    # Read logs
+    - name: getGitLog
+      run: |-
+        git log --pretty=format:'{"commit": "%H", "abbreviated_commit": "%h", "tree": "%T", "abbreviated_tree": "%t", "parent": "%P", "abbreviated_parent": "%p", "refs": "%D", "encoding": "%e", "subject": "%s", "sanitized_subject_line": "%f", "body": "%b", "commit_notes": "%N", "verification_flag": "%G?", "signer": "%GS", "signer_key": "%GK", "author": {"name": "%aN", "email": "%aE", "date": "%aD" }, "commiter": {"name": "%cN", "email": "%cE", "date": "%cD"  }}'  | tr -d '\n' | sed $'s/}{/}\\\n{/g' > $(basename $(git rev-parse --show-toplevel))-$(date +'%s').json && perl -X -i -pe 's/(?<!":\s|",\s|\{|\},\s)"(?!:|\s*\}|,\s*")//g' *.json
+    # Deploy image to Cloud Run
+    - name: push2GCS
+      run: |-
+        gsutil cp *.json gs://pharisee/

@@ -1,0 +1,14 @@
+{
+	"lower_bound": {
+        "cpu": 100,
+        "memory": 500
+    },
+    "target": {
+        "cpu": 600,
+        "memory": 2000
+    },
+    "upper_bound": {
+        "cpu": 1000,
+        "memory": 3000
+    }    
+}

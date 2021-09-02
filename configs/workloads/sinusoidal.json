@@ -1,0 +1,24 @@
+{
+    "notes": "resoure usage",
+    "timesteps": 100,
+    "time_interval": 60,
+    "seed":42,
+    "config":{
+        "num_peaks": 5,
+        "max_usage": {
+            "cpu": 1000,
+            "memory": 5000
+        }
+    },
+    "container":{
+        "container_name": "experimental",
+        "requests": {
+            "memory": 1000,
+            "cpu": 500
+        },
+        "limits": {
+            "memory": 5000,
+            "cpu": 2000
+        }
+    }
+}
