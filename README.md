@@ -156,6 +156,12 @@ Currently available workload generation methods:
 
 The generated workload will be saved in <code>data/workloads/[workload-id]</code>.
 
+## Links to the Video Demos
+
+1. [**video demo of the kubernetes client**](https://drive.google.com/file/d/1JbbFb5BPxA6iKbxrKZ_KRSgHelasMkKx/view?usp=sharing)
+2. [**video demo of the gym and the recommender simulation**](https://drive.google.com/file/d/1LbuJ0B6vbBHOc5OVmhdtEFljmtohu1vT/view?usp=sharing)
+3. [**video demo of the load generation module**](https://drive.google.com/file/d/1iRhhxnc_9aQ63fuBMitNVuPUOQdclKWU/view?usp=sharing)
+
 ## Check scripts
 TODO
 
