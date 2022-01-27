@@ -1,0 +1,51 @@
+# apiVersion -- Version of the SeldonDeployment CRD
+apiVersion: machinelearning.seldon.io/v1
+
+protocol: seldon
+
+model:
+  # model.implementation -- Implementation of Prepackaged Model Server
+  implementation: ""
+  # model.uri -- Model's URI for prepackaged model server
+  uri: ""
+  # model.envSecretRefName -- The model secret name for enviroment variables
+  envSecretRefName: ""
+  # model.image -- Docker image used by the model
+  image: ""
+  # model.env -- Environment variables injected into the model's container
+  env:
+    LOG_LEVEL: INFO
+  # model.resources -- Resource requests and limits for the model's container
+  resources:
+    requests:
+      memory: "1Mi"
+  logger:
+    # logger.enabled -- Whether to enable an external logger
+    enabled: false
+    # logger.url -- Remote URL for logger
+    url: ""
+  mlflow:
+    xtype: ""
+
+# replicas -- Number of replicas for the predictor
+replicas: 1
+
+# labels -- Labels applied to the deployment
+labels: {}
+
+# annotations -- Annotations applied to the deployment
+annotations: {}
+
+hpa:
+  # hpa.enabled -- Whether to add an HPA spec to the deployment
+  enabled: false
+  # hpa.minReplicas -- Minimum number of replicas for HPA
+  minReplicas: 1
+  # hpa.maxReplicas -- Maximum number of replicas for HPA
+  maxReplicas: 5
+  # hpa.metrics -- Metrics that autoscaler should check
+  metrics:
+    - resource:
+        name: cpu
+        targetAverageUtilization: 10
+      type: Resource
