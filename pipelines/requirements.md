@@ -1,4 +1,1 @@
-DLRM argo implemantion requirements
-1. recognizing the stages
-2. pass the variables
-3. store and retrieve data
+TODO Have a detailed explanation for each of the pipelines and the installation
