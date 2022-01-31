@@ -1,0 +1,42 @@
+grafana:
+  enabled: true
+  adminUser: admin
+  adminPassword: password
+  sidecar:
+    dashboards:
+      enabled: true
+      label: seldon_dashboard
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: prometheus
+        type: prometheus
+        url: http://seldon-core-analytics-prometheus-seldon
+        access: proxy
+alertmanager:
+  config:
+    enabled: false
+rbac:
+  enabled: true
+prometheus:
+  enabled: true
+  service_type: ClusterIP
+  server:
+    name: seldon
+    persistentVolume:
+      enabled: false
+      existingClaim: "seldon-claim"
+      mountPath: /seldon-data
+    configPath: /etc/prometheus/conf/prometheus-config.yaml
+    extraConfigmapMounts:
+    - name: prometheus-config-volume
+      mountPath: /etc/prometheus/conf/
+      subPath: ""
+      configMap: prometheus-server-conf
+      readOnly: true
+    - name: prometheus-rules-volume
+      mountPath: /etc/prometheus-rules
+      subPath: ""
+      configMap: prometheus-rules
+      readOnly: true
