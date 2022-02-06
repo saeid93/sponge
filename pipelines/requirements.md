@@ -4,8 +4,8 @@ TODO Have a detailed explanation for each of the pipelines and the installation
 TODO brnching @saeid
 
 TODO @saeid whatever you find useful
-
-TODO @mehran whatever you find useful
+TODO @mehran
+https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/pytorch-env
 
 ## 2. Request tracing
 TODO pixie - write the capabilities @saeid
