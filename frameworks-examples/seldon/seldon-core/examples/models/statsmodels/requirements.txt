@@ -1,4 +1,0 @@
-joblib
-statsmodels
-pandas
-numpy

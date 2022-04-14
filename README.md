@@ -10,18 +10,18 @@ Dataflow and computational pipelines have a longstanding history in the filed of
 [Paper Draft](https://www.overleaf.com/project/625456ee961f16abadd71f36)
 
 # Physical Resource
-* [Chameleon Cloud](https://chameleoncloud.org/) [Server Setup Guide-TODO](ddd)
+* [Chameleon Cloud](https://chameleoncloud.org/)
 
 # Technology Stack
 * **Infrastracture** [Kubernetes](https://kubernetes.io/)
-   *  [Guide to lease suitable cluster on Chameleon-TODO](ddd)
-   *  [Guide to setup K8S cluster on Chameleon-TODO](ddd)
-* **ML Inference DAG Technology** [Seldon Core-TODO](https://docs.seldon.io/projects/seldon-core/en/latest/)
-   * [Guide to setup on Chameleon K8S cluster-TODO](ddd)
-* **Resources Observibility Tool** [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/)
-   * [Guide to setup on Chameleon K8S cluster-TODO](ddd)
+   *  [Guide to lease suitable cluster on Chameleon-TODO](docs/chameleon-lease.md)
+   *  [Guide to setup K8S cluster on Chameleon-TODO](docs/chameleon-k8s.md)
 * **Network Observibility Tool** [Istio](https://istio.io/)
    * [Guide to setup on Chameleon K8S cluster-TODO](ddd)
+* **ML Inference DAG Technology** [Seldon Core-TODO](https://docs.seldon.io/projects/seldon-core/en/latest/)
+   * [Guide to setup Seldon on Chameleon K8S cluster-TODO](ddd)
+* **Resources Observibility Tool** [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/)
+   * [Guide to setup resource monitoring on Chameleon K8S cluster-TODO](docs/prometeus-monitoring.md)
 * **Load Generation Tool** [vegeta](https://github.com/tsenart/vegeta)
    * [Guide to setup on Chameleon K8S cluster-TODO](ddd)
 * 🔴 Add other as you go - TODO

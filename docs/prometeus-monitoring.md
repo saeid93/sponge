@@ -1,4 +1,4 @@
-## Installing Monitoring Stack
+# Installing Resource Monitoring Stack
 
 We'll be installing this [this](docs/installing-prometheus.md) prometheus+grafana monitoring using Helm charts ([source](https://github.com/geerlingguy/kubernetes-101/tree/master/episode-10)). You can find guide to installing helm itself [here](https://helm.sh/docs/intro/install/). Alternate Prometeus installation solution [here](https://github.com/prometheus-operator/prometheus-operator).
 
