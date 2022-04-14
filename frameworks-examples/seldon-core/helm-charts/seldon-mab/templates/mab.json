@@ -1,0 +1,106 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+		"labels": {{ .Values.sdepLabels | toJson }},
+		"name": "{{ .Release.Name }}"
+    },
+    "spec": {
+	"name": "{{ .Release.Name }}",
+	"predictors": [
+	    {
+		"name": "{{ .Values.predictor.name }}",
+		"replicas": {{ .Values.replicas }},
+		"componentSpecs": [{
+		    "spec": {
+			"containers": [
+			    {
+                                "image": "{{ .Values.modela.image.name }}:{{ .Values.modela.image.version }}",				
+				"imagePullPolicy": "IfNotPresent",
+				"name": "{{ .Values.modela.name }}",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    }],
+			"terminationGracePeriodSeconds": 20
+		    }},
+	        {
+			"spec":{
+			    "containers":[
+				{
+                                "image": "{{ .Values.modelb.image.name }}:{{ .Values.modelb.image.version }}",								    
+				"imagePullPolicy": "IfNotPresent",
+				"name": "{{ .Values.modelb.name }}",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    }
+			],
+			"terminationGracePeriodSeconds": 20
+			}
+		},
+	        {
+		    "spec":{
+			"containers": [{
+                            "image": "{{ .Values.mab.image.name }}:{{ .Values.mab.image.version }}",								    			    
+			    "name": "{{ .Values.mab.name }}"
+			}],
+			"terminationGracePeriodSeconds": 20
+		    }}
+	        ],
+		"graph": {
+		    "name": "{{ .Values.mab.name }}",
+		    "type":"ROUTER",
+		    "parameters": [
+			{
+			    "name": "n_branches",
+			    "value": "{{ .Values.mab.branches }}",
+			    "type": "INT"
+			},
+			{
+			    "name": "epsilon",
+			    "value": "{{ .Values.mab.epsilon }}",
+			    "type": "FLOAT"
+			},
+			{
+			    "name": "verbose",
+			    "value": "{{ .Values.mab.verbose }}",
+			    "type": "BOOL"
+			}
+		    ],
+		    "children": [
+			{
+			    "name": "{{ .Values.modela.name }}",
+			    "type":"MODEL",
+			    "children":[]
+			},
+			{
+			    "name": "{{ .Values.modelb.name }}",
+			    "type":"MODEL",
+			    "children":[]
+			}   
+		    ]
+		},
+		"svcOrchSpec": {
+		"resources": {{ .Values.engine.resources | toJson }},
+"env": [
+{{- range $key, $value := .Values.engine.env }}
+{
+"name": "{{ $key }}",
+"value": "{{ $value }}"
+},
+{{- end}}
+]
+},
+		"labels": {{ .Values.predictorLabels | toJson }}
+	    }
+	]
+    }
+}
+		
+
+ 

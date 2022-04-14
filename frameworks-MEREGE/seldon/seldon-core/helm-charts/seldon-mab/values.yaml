@@ -1,0 +1,40 @@
+modela:
+  image:
+    name: seldonio/mock_classifier
+    version: 1.12.0-dev
+  name: classifier-1
+modelb:
+  image:
+    name: seldonio/mock_classifier
+    version: 1.12.0-dev
+  name: classifier-2
+mab:
+  image:
+    name: seldonio/mab_epsilon_greedy
+    version: 1.12.0-dev
+  name: eg-router
+  branches: 2
+  epsilon: 0.2
+  verbose: 1
+replicas: 1
+      
+sdepLabels:
+  app: "seldon"
+
+predictorLabels:
+  version: 1.12.0-dev
+  fluentd: "true"
+
+engine:
+  resources:
+    requests:
+      cpu: "0.1"
+#basic log request and responses env vars below just logs raw messages to engine stdout
+#to make searchable log externally - see request logging example
+  env:
+    SELDON_LOG_REQUESTS: false
+    SELDON_LOG_RESPONSES: false
+    SELDON_LOG_MESSAGES_EXTERNALLY: false
+    SELDON_LOG_MESSAGE_TYPE: "seldon.message.pair"
+predictor:
+  name: default

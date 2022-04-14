@@ -1,0 +1,8 @@
+apiVersion: magalix.com/v1
+kind: ConfigMonitor
+metadata:
+  name: flakapp-config-monitor
+spec:
+  configmap: flaskapp-config
+  podSelector:
+    app: frontend
