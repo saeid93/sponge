@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flaskapp-config
+data:
+  config.cfg: 
+    MSG="LONDON"

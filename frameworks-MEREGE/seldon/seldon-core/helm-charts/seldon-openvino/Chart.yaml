@@ -1,0 +1,11 @@
+apiVersion: v1
+name: seldon-openvino
+description: Proxy integration to deploy models optimized for Intel OpenVINO in Seldon Core
+version: 0.1
+deprecated: true
+sources:
+  - https://github.com/SeldonIO/seldon-core
+  - https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-openvino
+keywords:
+  - kubernetes
+  - machine-learning
