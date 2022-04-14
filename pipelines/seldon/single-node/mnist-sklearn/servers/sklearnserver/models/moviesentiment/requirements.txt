@@ -1,1 +1,0 @@
-../../sklearnserver/requirements.txt

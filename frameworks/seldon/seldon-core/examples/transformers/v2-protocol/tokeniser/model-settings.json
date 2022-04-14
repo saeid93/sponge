@@ -1,4 +1,0 @@
-{
-  "name": "tokeniser",
-  "implementation": "runtime.Tokeniser"
-}
