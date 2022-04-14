@@ -1,2 +1,0 @@
-seldon-core
-numpy
