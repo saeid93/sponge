@@ -1,4 +1,4 @@
-**Source** From AISys group Internals
+**Source** AISys group Internals
 
 # Login
 [Chameleon Cloud](https://www.chameleoncloud.org/)
