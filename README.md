@@ -13,16 +13,19 @@ Dataflow and computational pipelines have a longstanding history in the field of
 * [Chameleon Cloud](https://chameleoncloud.org/)
 
 # Technology Stack
+## Setup
 * **Infrastracture** [Kubernetes](https://kubernetes.io/)
    *  [Guide to lease suitable cluster on Chameleon](docs/chameleon-lease.md)
    *  [Guide to setup K8S cluster on Chameleon-TODO](docs/chameleon-k8s.md)
 * **Network Observibility Tool** [Istio](https://istio.io/)
-   * [Guide to setup on Chameleon K8S cluster-TODO](ddd)
+   * [Guide to setup on Chameleon K8S cluster](docs/setup-istio.md)
 * **ML Inference DAG Technology** [Seldon Core-TODO](https://docs.seldon.io/projects/seldon-core/en/latest/)
    * [Guide to setup Seldon on Chameleon K8S cluster-TODO](ddd)
 * **Resources Observibility Tool** [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/)
    * [Guide to setup resource monitoring on Chameleon K8S cluster-TODO](docs/prometeus-monitoring.md)
 * **Load Generation Tool** [vegeta](https://github.com/tsenart/vegeta)
    * [Guide to setup on Chameleon K8S cluster-TODO](ddd)
+* **Enable Dashboards**
+   * [Enabling dashboards-TODO](ddd)
 * 🔴 Add other as you go - TODO
 
