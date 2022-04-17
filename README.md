@@ -15,7 +15,7 @@ Dataflow and computational pipelines have a longstanding history in the field of
 # Technology Stack
 * **Infrastracture** [Kubernetes](https://kubernetes.io/)
    *  [Guide to lease suitable cluster on Chameleon](docs/chameleon-lease.md)
-   *  [Guide to setup K8S cluster on Chameleon-TODO](docs/chameleon-k8s.md)
+   *  [Guide to setup K8S cluster on Chameleon](docs/chameleon-k8s.md)
 * **Network Observibility Tool** [Istio](https://istio.io/)
    * [Guide to setup on Chameleon K8S cluster-TODO](ddd)
 * **ML Inference DAG Technology** [Seldon Core-TODO](https://docs.seldon.io/projects/seldon-core/en/latest/)
