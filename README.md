@@ -21,12 +21,16 @@ Do the steps in the following orders to setup the environment:
    *  Install [Helm](https://helm.sh/docs/intro/install/)
    *  Lease a server from Chameleon cloud [Guide](docs/chameleon-lease.md)
    *  Setup a K8S cluster [Guide](docs/chameleon-k8s.md)
-* **Network Observibility Tool** [Istio](https://istio.io/)
+* **Network service mesh Tool** [Istio](https://istio.io/)
    * Setup Istio on Chameleon [Guide](docs/setup-istio.md)
 * **ML Inference DAG Technology** [Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/)
    * Setup the Seldon core operator on your cluster [Guide](docs/setup-seldon-core-installation.md)
+   * See [Overview of Component](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/overview.html#metrics-with-prometheus) for an overview of the Seldon core framework
+   * Also see the link to the [shortlisted](docs/seldon.md) parts of the documentation
 * **Resources Observibility Tool** [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/)
    * Setup the observibitliy tools for services resource usage monitoring [Guide-TODO](docs/prometeus-monitoring.md)
+* **Network observibility Tool** [Istio](https://istio.io/)
+   * Setup Jeager on Chameleon [Guide](docs/guide-seldon.md)
 * **Load Generation Tool** [vegeta](https://github.com/tsenart/vegeta)
    * [Guide to setup on Chameleon K8S cluster-TODO](ddd)
 * **Enable Dashboards**
@@ -36,6 +40,10 @@ Do the steps in the following orders to setup the environment:
 * 🔴 Add other as you go
 
 TODO 🔴 automate all the above steps
+
+
+# Pipelines
+
 
 ## Guide
 * **Istio**
