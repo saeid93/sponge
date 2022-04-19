@@ -19,12 +19,12 @@ Do the steps in the following orders to setup the environment:
 
 * **Infrastracture** [Kubernetes](https://kubernetes.io/)
    *  Install [Helm](https://helm.sh/docs/intro/install/)
-   *  Lease a server from Chameleon cloud [Guide](docs/chameleon-lease.md)
-   *  Setup a K8S cluster [Guide](docs/chameleon-k8s.md)
+   *  Lease a server from Chameleon cloud [chameleon-lease](docs/chameleon-lease.md)
+   *  Setup a K8S cluster [k8s-setup](docs/chameleon-k8s.md)
 * **Network service mesh Tool** [Istio](https://istio.io/)
-   * Setup Istio on Chameleon [Guide](docs/setup-istio.md)
+   * Setup Istio on Chameleon [](docs/setup-istio.md)
 * **ML Inference DAG Technology** [Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/)
-   * Setup the Seldon core operator on your cluster [Guide](docs/setup-seldon-core-installation.md)
+   * Setup the Seldon core operator on your cluster [seldon-core-installation](docs/setup-seldon-core-installation.md)
    * See [Overview of Component](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/overview.html#metrics-with-prometheus) for an overview of the Seldon core framework
    * Also see the link to the [shortlisted](docs/seldon.md) parts of the documentation
 * **Resources Observibility Tool** [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/)
