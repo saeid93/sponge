@@ -1,2 +1,2 @@
-# TODO example pipeline with monitoring, tracing and load testing available
+# TODO example pipelines with monitoring, tracing and load testing available
 

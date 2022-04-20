@@ -22,21 +22,24 @@ Do the steps in the following orders to setup the environment:
    *  Lease a server from Chameleon cloud [chameleon-lease](docs/chameleon-lease.md)
    *  Setup a K8S cluster [k8s-setup](docs/chameleon-k8s.md)
 * **Network service mesh Tool** [Istio](https://istio.io/)
-   * Setup Istio on Chameleon [](docs/setup-istio.md)
+   * Setup Istio on Chameleon [istio-setup](docs/setup-istio.md)
 * **ML Inference DAG Technology** [Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/)
    * Setup the Seldon core operator on your cluster [seldon-core-installation](docs/setup-seldon-core-installation.md)
    * See [Overview of Component](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/overview.html#metrics-with-prometheus) for an overview of the Seldon core framework
    * Also see the link to the [shortlisted](docs/seldon.md) parts of the documentation
 * **Resources Observibility Tool** [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/)
-   * Setup the observibitliy tools for services resource usage monitoring [Guide-TODO](docs/prometeus-monitoring.md)
+   * Setup the observibitliy tools for services resource usage monitoring [setup-observibility](docs/prometeus-monitoring.md)
 * **Network observibility Tool** [Istio](https://istio.io/)
-   * Setup Jeager on Chameleon [Guide](docs/guide-seldon.md)
+   * Setup Jeager on Chameleon [jeager-setup](docs/)
 * **Load Generation Tool** [vegeta](https://github.com/tsenart/vegeta)
-   * [Guide to setup on Chameleon K8S cluster-TODO](ddd)
+   * [Guide to setup on Chameleon K8S cluster](ddd)
 * **Enable Dashboards**
    * [Enabling dashboards-TODO](ddd)
 * **Enable PVC on K8S for Model Storage**
    * [Enabling dashboards-TODO](ddd)
+* **Docker and s2i**
+   * For some of the pipeline you'll need [Dcoker](https://www.docker.com/) and [s2i](https://github.com/openshift/source-to-image)
+   * Install them using the offical documentation for [docker-doc](https://docs.docker.com/engine/install/ubuntu/) and [s2i-doc](https://github.com/openshift/source-to-image#installation)
 * 🔴 Add other as you go
 
 TODO 🔴 automate all the above steps
