@@ -1,5 +1,0 @@
-# kubernetes
-
-# prometheus
-
-# istio
