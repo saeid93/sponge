@@ -20,7 +20,7 @@ Do the steps in the following orders to setup the environment:
 * **Infrastracture** [Kubernetes](https://kubernetes.io/)
    *  Install [Helm](https://helm.sh/docs/intro/install/)
    *  Lease a server from Chameleon cloud [chameleon-lease](docs/chameleon-lease.md)
-   *  Setup a K8S cluster [k8s-setup](docs/chameleon-k8s.md)
+   *  Setup a K8S cluster [k8s-setup](docs/setup-chameleon-k8s.md)
 * **Network service mesh Tool** [Istio](https://istio.io/)
    * Setup Istio on Chameleon [istio-setup](docs/setup-istio.md)
 * **ML Inference DAG Technology** [Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/)
