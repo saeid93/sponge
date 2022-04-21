@@ -33,8 +33,6 @@ Do the steps in the following orders to setup the environment:
    * Setup Jeager on Chameleon [jeager-setup](docs/)
 * **Load Generation Tool** [vegeta](https://github.com/tsenart/vegeta)
    * [Guide to setup on Chameleon K8S cluster](ddd)
-* **Enable Dashboards**
-   * [Enabling dashboards-TODO](ddd)
 * **Enable PVC on K8S for Model Storage**
    * [Enabling dashboards-TODO](ddd)
 * **Docker and s2i**
