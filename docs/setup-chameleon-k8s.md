@@ -24,5 +24,5 @@ Here are the options for installing K8S on Chameleon cloud with GPU Support
   5. External Resources
       * [resource 1](https://anencore94.github.io/2020/08/19/minikube-gpu.html)
 
-* **Bare metal* TODO
+* **Bare metal** TODO
   1. TODO
