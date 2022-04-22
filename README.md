@@ -40,7 +40,7 @@ Do the steps in the following orders to setup the environment:
 * **Docker and s2i**
    * For some of the pipeline you'll need [Dcoker](https://www.docker.com/) and [s2i](https://github.com/openshift/source-to-image)
    * Install them using the offical documentation for [docker-doc](https://docs.docker.com/engine/install/ubuntu/) and [s2i-doc](https://github.com/openshift/source-to-image#installation)
-* **Example Pipelines**
+* **Pipelines**
    * [Medium Article Example](https://becominghuman.ai/seldon-inference-graph-pipelined-model-serving-211c6b095f62), in [1-example-pipeline](pipelines/1-example-pipeline): Good example of TODO complete
 * **Guide to Deploy a model**
    * [guide-model-deployment](docs/guide-model-deployment.md)
