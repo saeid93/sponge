@@ -7,7 +7,7 @@ microk8s enable istio
 
 3. To enable Prometheus and Grafana for Istio (for latency monitoring)
 Follow [Visualizing Metrics with Grafana
-](https://istio.io/latest/docs/tasks/observability/metrics/using-istio-dashboard/) and try the book-info app to make sure it is up and running.
+](https://istio.io/latest/docs/tasks/observability/metrics/using-istio-dashboard/) and try the book-info app to make sure it is up and running. TODO not tested
 
 
 4. To enable Kiali (for monitoring traces)
