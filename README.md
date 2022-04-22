@@ -26,7 +26,7 @@ Do the steps in the following orders to setup the environment:
 * **ML Inference DAG Technology** [Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/)
    * Setup the Seldon core operator on your cluster [seldon-core-installation](docs/setup-seldon-core-installation.md)
    * See [Overview of Component](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/overview.html#metrics-with-prometheus) for an overview of the Seldon core framework
-   * Also see the link to the [shortlisted](docs/seldon.md) parts of the documentation
+   * Also see the link to the [shortlisted](docs/guide-seldon.md) parts of the documentation
 * **Testing installation**
    * Up to this point you should have a complete working installation, to test use the following [istio-canary-example-notebook](seldon-core-examples/istio/canary/istio_canary.ipynb) notebook and make sure all the componentes of Seldon core are working. ❗ Make sure to port forward as instructed in the notebook.
 * **Resources Observibility Tool** [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/)
