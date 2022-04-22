@@ -26,16 +26,35 @@ microk8s enable prometheus
 kubectl edit svc prometheus-k8s -n monitoring
 kubectl edit svc grafana -n monitoring
 ```
-3. Both of the grafana and prometheus are now accessible via the following links
+3. Find the Prometheus and grafana node ports using
+
+For prometheus
 ```
-<your node ip>:<prometheus port, defualt 31799>
-<your node ip>:<grafana port, defualt 30460>
+(base) ➜  infernece-pipeline-joint-optimization git:(main) ✗ kubectl get service prometheus-k8s -n monitoring -o jsonpath="{.spec.ports[0].nodePort}"
+31461% 
+```
+For Grafana
+```
+(base) ➜  infernece-pipeline-joint-optimization git:(main) ✗ kubectl get service grafana -n monitoring -o jsonpath="{.spec.ports[0].nodePort}"
+31740% 
 ```
 
-4. To integrate the Seldon core metrics into prometheus and grafana
+default credentials for accesing Grafana are:
+```
+username: admin
+password: admin
+```
+
+4. Both of the grafana and prometheus are now accessible via the following links
+```
+<your node ip>:<prometheus port>
+<your node ip>:<grafana port>
+```
+
+5. To integrate the Seldon core metrics into prometheus and grafana
 
 
-5. To integrate Istio into prometheus and Grafana
+6. To integrate Istio into prometheus and Grafana
 
 
 # Minikube
@@ -137,3 +156,6 @@ TODO
 ### pods metrics
 
 ## Guide to Grafana dashboard
+
+# Useful links
+* clarification of difference between Prometheus operator and [Prometheus Helm [StackOverflow](https://stackoverflow.com/questions/54422566/what-is-the-difference-between-the-core-os-projects-kube-prometheus-and-promethe)
