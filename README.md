@@ -53,6 +53,10 @@ Do the steps in the following orders to setup the environment:
    * [guide-pipeline-deployment](docs/guide-pipeline-deployment.md)
 * 🔴 Add other as you go
 
+* **Common Problems**
+   * List of the [common problems](docs/problems.md) and bugs
+
+
 TODO 🔴 automate all the above steps
 
 
