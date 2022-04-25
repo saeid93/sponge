@@ -31,4 +31,8 @@ spec:
     - "*"
 EOF
 ```
+port forward to the ingress pod and detach tmux (therfore the connection will stay open)
+```
+kubectl port-forward $(kubectl get pods -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].metadata.name}') -n istio-system 8004:8080
+```
 4. The Seldon core is ready to go!
