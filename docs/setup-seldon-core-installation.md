@@ -12,4 +12,3 @@ helm install seldon-core seldon-core-operator \
 ```
 2. setup the ingress with istio [Guide](https://docs.seldon.io/projects/seldon-core/en/latest/ingress/istio.html)
 3. The Seldon core is ready to go!
-4. For and an example app running see [istio-canary-example-notebook](../seldon-core-examples/istio/canary/istio_canary.ipynb) (remember to do the port forwarding in a terminal as instructed)
