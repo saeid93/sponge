@@ -4,11 +4,31 @@ Seldon is a framework for making complex grpc and rest apis for the trained ML m
 
 1. According to [doc](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html) install the istio version
 ```
+kubectl create namespace seldon-system \
 helm install seldon-core seldon-core-operator \
     --repo https://storage.googleapis.com/seldon-charts \
     --set usageMetrics.enabled=true \
     --set istio.enabled=true \
     --namespace seldon-system
 ```
-2. setup the ingress with istio [Guide](https://docs.seldon.io/projects/seldon-core/en/latest/ingress/istio.html)
-3. The Seldon core is ready to go!
+2. setup the ingress with istio (prefarably with tmux and detach the window so you don't have set this up everytime) [Guide](https://docs.seldon.io/projects/seldon-core/en/latest/ingress/istio.html)
+```
+cat <<EOF | kubectl apply -f -          
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: seldon-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+EOF
+```
+4. The Seldon core is ready to go!
