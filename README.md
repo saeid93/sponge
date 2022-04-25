@@ -54,7 +54,7 @@ Do the steps in the following orders to setup the environment:
 * 🔴 Add other as you go
 
 * **Common Problems**
-   * List of the [common problems](docs/problems.md) and bugs
+   * List of the [common problems](docs/common-problems.md) and bugs
 
 
 TODO 🔴 automate all the above steps
