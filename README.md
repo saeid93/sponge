@@ -40,6 +40,8 @@ Do the steps in the following orders to setup the environment:
    * [Guide to setup on Chameleon K8S cluster](ddd)
 * **Enable PVC on K8S for Model Storage**
    * [Enabling dashboards-TODO](ddd)
+* **Installing kubeflow for pipelining**
+   * [Kubeflow Installation-TODO](ddd)
 * **Docker and s2i**
    * For some of the pipeline you'll need [Dcoker](https://www.docker.com/) and [s2i](https://github.com/openshift/source-to-image)
    * Install them using the offical documentation for [docker-doc](https://docs.docker.com/engine/install/ubuntu/) and [s2i-doc](https://github.com/openshift/source-to-image#installation)
