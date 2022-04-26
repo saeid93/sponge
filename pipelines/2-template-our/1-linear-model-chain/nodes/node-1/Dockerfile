@@ -1,18 +1,17 @@
-FROM python:3.8-slim
+FROM python:3.7-slim
 WORKDIR /app
 
-# Install python packages
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-# Copy source code
-COPY ClassificationModel.py .
+COPY . .
 
-# Port for REST
+EXPOSE 5000
 EXPOSE 9000
 
-# Define environment variables
-ENV MODEL_NAME ClassificationModel
+ENV MODEL_NAME NodeOne
 ENV SERVICE_TYPE MODEL
+
+RUN chown -R 8888 /app
 
 CMD exec seldon-core-microservice $MODEL_NAME --service-type $SERVICE_TYPE
