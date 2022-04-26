@@ -72,7 +72,7 @@ Do the steps in the following orders to setup the environment:
 * **Pipelines**
    1. [Medium Article Example](https://becominghuman.ai/seldon-inference-graph-pipelined-model-serving-211c6b095f62), in [1-example-pipeline](pipelines/1-example-pipeline): Good example of TODO complete
 * **Guide to Deploy a model and pipeline**
-   1. [guide-model-deployment](docs/guide-model-deployment.md)
+   1. [Guide-model-deployment](docs/guide-model-deployment.md)
 * 🔴 Add other as you go
 
 * **Common Problems**
