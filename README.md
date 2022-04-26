@@ -53,7 +53,7 @@ Do the steps in the following orders to setup the environment:
    3. Also see the link to the [shortlisted](docs/guide-seldon.md) parts of the documentation
 * **Testing installation**
    1. Up to this point you should have a complete working installation
-   2. To test the endpoints use [test-endpoints](seldon-core-examples/capabilities/test-endpoints/server_examples.ipynb) see [seldon-endpoint-references](https://docs.seldon.io/projects/seldon-core/en/latest/ingress/istio.html#istio-configuration-annotation-reference) for the addresses of the endpoints exposed via the Istio gateway. The endpoints are also available through [Swagger API](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/serving.html#generated-documentation-swagger-ui) 
+   2. To test the endpoints use [test-endpoints](seldon-core-examples/capabilities/test-endpoints/server_examples.ipynb) see [seldon-endpoint-references](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/index.html) for the addresses of the endpoints exposed via the Istio gateway. The endpoints are also available through [Swagger API](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/serving.html#generated-documentation-swagger-ui) 
    3. To test use the following [istio-canary-example-notebook](seldon-core-examples/capabilities/istio/canary/istio_canary.ipynb)
    4. Make sure all the componentes of Seldon core are working. ❗ Make sure to port forward as instructed in the notebook.
 * **Resources Observibility Tool** [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/)
