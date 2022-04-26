@@ -35,4 +35,4 @@ port forward to the ingress port 80 (since the isio ingress you deployd in the f
 ```
 kubectl port-forward $(kubectl get pods -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].metadata.name}') -n istio-system 8004:80
 ```
-4. The Seldon core is ready to go!
+4. The Seldon core is ready to go on port 8004! For information about the Seldon core endpoint addresses see [endpoint-references](https://docs.seldon.io/projects/seldon-core/en/latest/ingress/istio.html#istio-configuration-annotation-reference)
