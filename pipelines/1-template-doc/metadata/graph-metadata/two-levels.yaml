@@ -9,7 +9,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node:0.4
+        - image: sdghafouri/linearmodel:nodeone
           name: node-one
           env:
           - name: MODEL_METADATA
@@ -28,7 +28,7 @@ spec:
                 schema:
                   names: [ a3 ]
                   shape: [ 1 ]  
-        - image: seldonio/metadata-generic-node:0.4
+        - image: sdghafouri/linearmodel:nodetwo
           name: node-two
           env:
           - name: MODEL_METADATA
@@ -53,6 +53,6 @@ spec:
       children:
       - name: node-two
         type: MODEL
-        children: []   
+        children: []
     name: example
     replicas: 1
