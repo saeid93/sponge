@@ -2,6 +2,6 @@ import logging
 import os
 import numpy as np
 
-class NodeOne(object):
+class NodeThree(object):
     def predict(self, X, features_names=None):
-        return X*2
+        return X+2
