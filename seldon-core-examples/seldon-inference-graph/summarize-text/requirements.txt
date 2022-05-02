@@ -1,4 +1,0 @@
-networkx
-nltk
-scipy
-numpy

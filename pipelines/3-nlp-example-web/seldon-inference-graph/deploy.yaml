@@ -4,7 +4,7 @@ kind: SeldonDeployment
 metadata:
   labels:
     app: seldon
-  name: seldon-pipeline-medium
+  name: seldon-pipeline
   namespace: seldon
 spec:
   annotations:
@@ -21,14 +21,23 @@ spec:
     - spec:
         containers:
         - name: sentiment-analysis
-          image: shirishph/sentiment-analysis:0.1.0
+          image: sdghafouri/nlp:node-1-sentiment-analysis
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 0
         - name: text-tagging
-          image: shirishph/text-tagging:0.1.0
+          image: sdghafouri/nlp:node-2-summarize-text
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 0
         - name: summarize-text
-          image: shirishph/summarize-text:0.1.0
+          image: sdghafouri/nlp:node-3-text-tagging
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 0
         terminationGracePeriodSeconds: 20
     graph:
       children:

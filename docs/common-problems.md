@@ -11,6 +11,7 @@ sudo snap install microk8s --classic --channel=1.19/stable
 ```
 
 2. Versioning of the packages should follow this in nodes:
+[related issue](https://github.com/pallets/flask/issues/4494)
 ```
 seldon-core
 Flask==1.1.1
