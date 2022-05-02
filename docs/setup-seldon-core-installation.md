@@ -31,8 +31,10 @@ spec:
     - "*"
 EOF
 ```
-port forward to the ingress port 80 (since the isio ingress you deployd in the former step is operating on port 80) to port 8004 and detach tmux (therfore the connection will stay open)
+port forward to the ingress port 80 (since the isio ingress you deployd in the former step is operating on port 80) to port 8004 and detach tmux (therfore the connection will stay open) - ! BUG sometimes you have to port forward to 8080 instead of 80 for the reason that is yet unknown to me.
 ```
 kubectl port-forward $(kubectl get pods -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].metadata.name}') -n istio-system 8004:8080
 ```
 4. The Seldon core is ready to go on port 8004! For information about the Seldon core endpoint addresses see [endpoint-references](https://docs.seldon.io/projects/seldon-core/en/latest/ingress/istio.html#istio-configuration-annotation-reference)
+
+
