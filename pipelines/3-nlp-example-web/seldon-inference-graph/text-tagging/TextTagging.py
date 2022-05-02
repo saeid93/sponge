@@ -6,7 +6,7 @@ import nltk
 import re
 import os
 import pandas
-
+nltk.download('omw-1.4')
 
 class TextTagging(object):
     result = {}
