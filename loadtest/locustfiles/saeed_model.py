@@ -10,13 +10,20 @@ import setup
 
 class Task1(TaskSet):
     """Converting from Dollar to RS & vice versa."""
-
+    def read_in_chunks(file_object, chunk_size=1024):
+        while True:
+            data = file_object.read(chunk_size)
+            if not data:
+                break
+            yield data
     # Time period between firing consecutive tasks is 1-3 seconds
     wait_time = between(1, 3)
 
     def on_start(self) -> None:
-        """Logins and stuff before starting a user session."""
         print("Start work")
+        with open('really_big_file.dat') as f:
+            for piece in read_in_chunks(f):
+                process_data(piece)
 
     @task
     def task_one(self) -> None:
