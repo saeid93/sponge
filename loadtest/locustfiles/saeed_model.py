@@ -21,7 +21,7 @@ class Task1(TaskSet):
 
     def on_start(self) -> None:
         print("Start work")
-        with open('really_big_file.dat') as f:
+        with open('workload.text') as f:
             for piece in read_in_chunks(f):
                 process_data(piece)
 
