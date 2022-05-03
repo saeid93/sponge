@@ -1,0 +1,5 @@
+seldon-core<=1.5.0
+Flask==1.1.1
+jinja2==3.0.3
+itsdangerous==2.0.1
+Werkzeug==2.0.2
