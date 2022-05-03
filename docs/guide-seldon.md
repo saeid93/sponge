@@ -28,3 +28,8 @@ Selected parts of Seldon documentation:
     * [Distributed Tracing Template](https://docs.seldon.io/projects/seldon-core/en/latest/examples/tracing.html)
     * [Canary Rollout with Seldon and Istio](https://docs.seldon.io/projects/seldon-core/en/latest/examples/istio_canary.html)
     * [Progressive Rollouts using Two Seldon Deployments](https://docs.seldon.io/projects/seldon-core/en/latest/examples/iter8-separate.html)
+    * [End-to-end Reusable ML Pipeline with Seldon and Kubeflow](https://docs.seldon.io/projects/seldon-core/en/latest/examples/kubeflow_seldon_e2e_pipeline.html)
+    * [Pretrained GPT2 Model Deployment Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/triton_gpt2_example.html)
+    * [Custom pre-processors with the V2 protocol](https://docs.seldon.io/projects/seldon-core/en/latest/examples/transformers-v2-protocol.html)
+    * [Pipeline example with OpenVINO inference execution engine](https://docs.seldon.io/projects/seldon-core/en/latest/examples/openvino_ensemble.html)
+    * []

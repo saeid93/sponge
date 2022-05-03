@@ -16,40 +16,68 @@ Dataflow and computational pipelines have a longstanding history in the field of
 ## Setup
 
 Do the steps in the following orders to setup the environment:
+* **Python Environment**
+  1. Download source code from GitHub
+     ```
+      git clone https://github.com/saeid93/infernece-pipeline-joint-optimization.git
+     ```
+  2. Download and install [miniconda](https://docs.conda.io/en/latest/miniconda.html)
+  3. Create [conda](https://docs.conda.io/en/latest/miniconda.html) virtual-environment
+     ```
+      conda create --name myenv python=3
+     ```
+  4. Activate conda environment
+     ```
+      conda activate myenv
+     ```
+  5. if you want to use GPUs make sure that you have the correct version of CUDA and cuDNN installed from [here](https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html)
+  6. Use [PyTorch](https://pytorch.org/) or [Tensorflow](https://www.tensorflow.org/install/pip#virtual-environment-install) isntallation manual to install one of them based-on your preference
 
+  7. Install the followings
+     ```
+      sudo apt install cmake libz-dev
+     ```
+  8. Install requirements
+     ```
+      pip install -r requirements.txt
+     ```
 * **Infrastracture** [Kubernetes](https://kubernetes.io/)
-   *  Install [Helm](https://helm.sh/docs/intro/install/)
-   *  Lease a server from Chameleon cloud [chameleon-lease](docs/chameleon-lease.md)
-   *  Setup a K8S cluster [k8s-setup](docs/setup-chameleon-k8s.md)
+   1. Install [Helm](https://helm.sh/docs/intro/install/)
+   2. Lease a server from Chameleon cloud [chameleon-lease](docs/chameleon-lease.md)
+   3. Setup a K8S cluster [k8s-setup](docs/setup-chameleon-k8s.md)
 * **Network service mesh Tool** [Istio](https://istio.io/)
-   * Setup Istio on Chameleon [istio-setup](docs/setup-istio.md)
+   1. Setup Istio on Chameleon [istio-setup](docs/setup-istio.md)
 * **ML Inference DAG Technology** [Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/)
-   * Setup the Seldon core operator on your cluster [seldon-core-installation](docs/setup-seldon-core-installation.md)
-   * See [Overview of Component](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/overview.html#metrics-with-prometheus) for an overview of the Seldon core framework
-   * Also see the link to the [shortlisted](docs/guide-seldon.md) parts of the documentation
+   1. Setup the Seldon core operator on your cluster [seldon-core-installation](docs/setup-seldon-core-installation.md)
+   2. See [Overview of Component](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/overview.html#metrics-with-prometheus) for an overview of the Seldon core framework
+   3. Also see the link to the [shortlisted](docs/guide-seldon.md) parts of the documentation
 * **Testing installation**
-   * Up to this point you should have a complete working installation
-   * To test the endpoints use [test-endpoints](seldon-core-examples/capabilities/test-endpoints/server_examples.ipynb)
-   * To test use the following [istio-canary-example-notebook](seldon-core-examples/capabilities/istio/canary/istio_canary.ipynb)
-   * Make sure all the componentes of Seldon core are working. ❗ Make sure to port forward as instructed in the notebook.
+   1. Up to this point you should have a complete working installation
+   2. To test the endpoints use [test-endpoints](seldon-core-examples/capabilities/test-endpoints/server_examples.ipynb) see [seldon-endpoint-references](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/index.html) for the addresses of the endpoints exposed via the Istio gateway. The endpoints are also available through [Swagger API](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/serving.html#generated-documentation-swagger-ui) 
+   3. To test use the following [istio-canary-example-notebook](seldon-core-examples/capabilities/istio/canary/istio_canary.ipynb)
+   4. Make sure all the componentes of Seldon core are working. ❗ Make sure to port forward as instructed in the notebook.
 * **Resources Observibility Tool** [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/)
-   * Setup the observibitliy tools for services resource usage monitoring [setup-observibility](docs/setup-prometeus-monitoring.md)
+   1. Setup the observibitliy tools for services resource usage monitoring [setup-observibility](docs/setup-prometeus-monitoring.md)
 * **Network observibility Tool** [Istio](https://istio.io/)
-   * Setup Jeager on Chameleon [jeager-setup](docs/)
+   1. Setup Jeager on Chameleon [jeager-setup](docs/)
 * **Load Generation Tool** [vegeta](https://github.com/tsenart/vegeta)
-   * [Guide to setup on Chameleon K8S cluster](ddd)
+   1. [Guide to setup on Chameleon K8S cluster](ddd)
 * **Enable PVC on K8S for Model Storage**
-   * [Enabling dashboards-TODO](ddd)
+   1. [Enabling dashboards-TODO](ddd)
+* **Installing kubeflow for pipelining**
+   1. [Kubeflow Installation-TODO](ddd)
 * **Docker and s2i**
-   * For some of the pipeline you'll need [Dcoker](https://www.docker.com/) and [s2i](https://github.com/openshift/source-to-image)
-   * Install them using the offical documentation for [docker-doc](https://docs.docker.com/engine/install/ubuntu/) and [s2i-doc](https://github.com/openshift/source-to-image#installation)
+   1. For some of the pipeline you'll need [Dcoker](https://www.docker.com/) and [s2i](https://github.com/openshift/source-to-image)
+   2. Install them using the offical documentation for [docker-doc](https://docs.docker.com/engine/install/ubuntu/) and [s2i-doc](https://github.com/openshift/source-to-image#installation)
 * **Pipelines**
-   * [Medium Article Example](https://becominghuman.ai/seldon-inference-graph-pipelined-model-serving-211c6b095f62), in [1-example-pipeline](pipelines/1-example-pipeline): Good example of TODO complete
-* **Guide to Deploy a model**
-   * [guide-model-deployment](docs/guide-model-deployment.md)
-* **Guide to Deploy a pipeline**
-   * [guide-pipeline-deployment](docs/guide-pipeline-deployment.md)
+   1. [Medium Article Example](https://becominghuman.ai/seldon-inference-graph-pipelined-model-serving-211c6b095f62), in [1-example-pipeline](pipelines/1-example-pipeline): Good example of TODO complete
+* **Guide to Deploy a model and pipeline**
+   1. [Guide-model-deployment](docs/guide-model-deployment.md)
 * 🔴 Add other as you go
+
+* **Common Problems**
+   1. List of the [common problems](docs/common-problems.md) and bugs
+
 
 TODO 🔴 automate all the above steps
 
