@@ -57,11 +57,26 @@ Install the Minio with helm and set the value to our existing pvc
 ```
 helm repo add minio https://helm.min.io/
 helm install --namespace minio \
---set rootUser=admin,rootPassword=admin \
+--set rootUser=minioadmin,rootPassword=minioadmin \
 --set persistence.existingClaim=pvc-nfs \
 --generate-name minio/minio 
 ```
 
+4. continue the rest of steps from the printed instructions\
+To access Minio from localhost, run the below commands:
+```
+export POD_NAME=$(kubectl get pods --namespace minio -l "release=minio-1651658304" -o jsonpath="{.items[0].metadata.name}")
+kubectl port-forward $POD_NAME 9000 --namespace minio
+```
+Read more about port forwarding here: http://kubernetes.io/docs/user-guide/kubectl/kubectl_port-forward/
+You can now access Minio server on http://localhost:9000. Follow the below steps to connect to Minio server with mc client:
+Download the Minio mc client - https://docs.minio.io/docs/minio-client-quickstart-guide Get the
+```
+ACCESS_KEY=$(kubectl get secret minio-1651658304 -o jsonpath="{.data.accesskey}" | base64 --decode) and the SECRET_KEY=$(kubectl get secret minio-1651658304 -o jsonpath="{.data.secretkey}" | base64 --decode)
+mc alias set minio-1651658304-local http://localhost:9000 "$ACCESS_KEY" "$SECRET_KEY" --api s3v4
+mc ls minio-1651658304-local
+```
+Alternately, you can use your browser or the Minio SDK to access the server - https://docs.minio.io/categories/17
 
 ## Resources
 [Persistent Volume, Persistent Volume Claim & Storage Clas- Nana](https://youtu.be/0swOh5C3OVM) \
