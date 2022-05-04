@@ -62,13 +62,12 @@ Do the steps in the following orders to setup the environment:
    1. Setup Jeager on Chameleon [jeager-setup](docs/)
 * **Load Generation Tool** [vegeta](https://github.com/tsenart/vegeta)
    1. [Guide to setup on Chameleon K8S cluster](ddd)
-* **Enable PVC on K8S for Model Storage**
-   1. [Enabling dashboards-TODO](ddd)
-* **Installing kubeflow for pipelining**
-   1. [Kubeflow Installation-TODO](ddd)
 * **Docker and s2i**
    1. For some of the pipeline you'll need [Dcoker](https://www.docker.com/) and [s2i](https://github.com/openshift/source-to-image)
    2. Install them using the offical documentation for [docker-doc](https://docs.docker.com/engine/install/ubuntu/) and [s2i-doc](https://github.com/openshift/source-to-image#installation)
+* **Minio and nfs**
+   1. [Minio](https://min.io/) and [nfs](https://en.wikipedia.org/wiki/Network_File_System) are needed for the storage
+   2. Setup them using [guide-storage](docs/guide-storage.md)
 * **Pipelines**
    1. [Medium Article Example](https://becominghuman.ai/seldon-inference-graph-pipelined-model-serving-211c6b095f62), in [1-example-pipeline](pipelines/1-example-pipeline): Good example of TODO complete
 * **Guide to Deploy a model and pipeline**
