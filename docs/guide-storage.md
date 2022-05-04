@@ -12,36 +12,9 @@ sudo ifconfig | grep -i mask
 
 Bare in mind if you delete a PV or PVC you first delete the associated resource with that PVC first, otherwise it will stuck at the terminating state.
 
-## Minio Operator installation (recommended)
+## Minio Operator installation (recommended) TODO not working follow (link)[https://github.com/minio/operator)
 This installation gives access to a beautiful GUI
 1. Set up the PV and point it to the NFS directory and IP (in our case 10.140.81.236 and /mnt/myshareddir)
-```
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: pv-nfs
-  namespace: default
-  labels:
-    type: local
-spec:
-  storageClassName: manual
-  capacity:
-    storage: 200Gi
-  accessModes:
-    - ReadWriteMany
-  nfs:
-    server: 10.140.81.236
-    path: "/mnt/myshareddir"
-   nodeAffinity:
-      required:
-         nodeSelectorTerms:
-         - matchExpressions:
-            - key: kubernetes.io/hostname
-              operator: In
-              values:
-              - k8s-cluster
-EOF
 
 
 ## Helm Minio installation
