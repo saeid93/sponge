@@ -1,3 +1,4 @@
+# Common Steps
 ## Installing NFS
 NFS is our storage file system backend for more information on K8S storage system see [Volummes-k8s-doc](https://kubernetes.io/docs/concepts/storage/volumes/)
 
@@ -8,6 +9,42 @@ sudo ifconfig | grep -i mask
 `
 3. Install both client and server folders on your machines and make sure that a file created on one of them is accessible on the client folder too.
 
+
+Bare in mind if you delete a PV or PVC you first delete the associated resource with that PVC first, otherwise it will stuck at the terminating state.
+
+## Minio Operator installation (recommended)
+This installation gives access to a beautiful GUI
+1. Set up the PV and point it to the NFS directory and IP (in our case 10.140.81.236 and /mnt/myshareddir)
+```
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-nfs
+  namespace: default
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 200Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.140.81.236
+    path: "/mnt/myshareddir"
+   nodeAffinity:
+      required:
+         nodeSelectorTerms:
+         - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+              - k8s-cluster
+EOF
+
+
+## Helm Minio installation
 
 ## Setup up Persistent Volume and Persistent Volume Claim
 In k8s you have to set a PV and a claim for that PVC attached to your volume type which in our case is NFS
@@ -50,9 +87,7 @@ spec:
       storage: 100Gi
 EOF
 ```
-Bare in mind if you delete a PV or PVC you first delete the associated resource with that PVC first, otherwise it will stuck at the terminating state.
 
-## Minio installation
 Install the Minio with helm and set the value to our existing pvc
 ```
 helm repo add minio https://helm.min.io/
