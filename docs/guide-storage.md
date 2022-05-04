@@ -24,7 +24,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 500Gi
+    storage: 200Gi
   accessModes:
     - ReadWriteMany
   nfs:
@@ -34,24 +34,33 @@ EOF
 ```
 2. Associate a PVC to the generated PV
 ```
+kubectl create ns minio
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: pvc-nfs
-  namespace: default
+  namespace: minio
 spec:
   storageClassName: manual
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 500Gi
+      storage: 100Gi
 EOF
 ```
 Bare in mind if you delete a PV or PVC you first delete the associated resource with that PVC first, otherwise it will stuck at the terminating state.
 
-
+## Minio installation
+Install the Minio with helm and set the value to our existing pvc
+```
+helm repo add minio https://helm.min.io/
+helm install --namespace minio \
+--set rootUser=admin,rootPassword=admin \
+--set persistence.existingClaim=pvc-nfs \
+--generate-name minio/minio 
+```
 
 
 ## Resources
