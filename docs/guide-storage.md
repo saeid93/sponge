@@ -12,7 +12,7 @@ sudo ifconfig | grep -i mask
 
 Bare in mind if you delete a PV or PVC you first delete the associated resource with that PVC first, otherwise it will stuck at the terminating state.
 
-## Minio Operator installation (recommended) TODO not working follow (link)[https://github.com/minio/operator)
+## Minio Operator installation (recommended) TODO not working follow [link](https://github.com/minio/operator)
 This installation gives access to a beautiful GUI
 1. Set up the PV and point it to the NFS directory and IP (in our case 10.140.81.236 and /mnt/myshareddir)
 
