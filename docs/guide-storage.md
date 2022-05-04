@@ -75,6 +75,13 @@ Download the Minio mc client - https://docs.minio.io/docs/minio-client-quickstar
 ```
 ACCESS_KEY=$(kubectl get secret <release-name> -n minio -o jsonpath="{.data.accesskey}" | base64 --decode)
 SECRET_KEY=$(kubectl get secret <release-name> -n minio -o jsonpath="{.data.secretkey}" | base64 --decode)
+```
+echo secret and access key for accessing minio dashboard:
+```
+echo $ACCESS_KEY
+echo $SECRET_KEY
+```
+
 mc alias set minio-1651658304-local http://localhost:9000 "$ACCESS_KEY" "$SECRET_KEY" --api s3v4
 mc ls minio-1651658304-local
 ```
