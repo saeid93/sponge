@@ -27,3 +27,35 @@ kubectl proxy &
 kubectl get namespace $NAMESPACE -o json |jq '.spec = {"finalizers":[]}' >temp.json
 curl -k -H "Content-Type: application/json" -X PUT --data-binary @temp.json 127.0.0.1:8001/api/v1/namespaces/$NAMESPACE/finalize
 ```
+4. metrics-server might suddenly stops working with the following output in the logs
+```
+panic: failed to create listener: failed to listen on 0.0.0.0:443: listen tcp 0.0.0.0:443: bind: permission
+```
+edit the metrics-server deployment:
+```
+kubectl edit deployment metrics-server -n kube-system
+```
+and change the port from 443 to 4443:
+```
+serviceAccountName: metrics-server
+volumes:
+# mount in tmp so we can safely use from-scratch images and/or read-only containers
+- name: tmp-dir
+  emptyDir: {}
+containers:
+- name: metrics-server
+  image: k8s.gcr.io/metrics-server-amd64:v0.3.6
+  args:
+    - --cert-dir=/tmp
+    - --secure-port=4443
+  ports:
+  - name: main-port
+    containerPort: 4443
+    protocol: TCP
+  securityContext:
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+  imagePullPolicy: Always
+  volumeMounts:
+```
