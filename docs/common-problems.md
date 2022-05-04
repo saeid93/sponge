@@ -19,3 +19,11 @@ Jinja2==3.0.3
 itsdangerous==2.0.1
 Werkzeug==2.0.2
 ```
+
+3. Sometimes namespaces stuck in the terminating state use the following command in that case [source](https://stackoverflow.com/questions/52369247/namespace-stuck-as-terminating-how-i-removed-it/63066925):
+```
+NAMESPACE=your-rogue-namespace
+kubectl proxy &
+kubectl get namespace $NAMESPACE -o json |jq '.spec = {"finalizers":[]}' >temp.json
+curl -k -H "Content-Type: application/json" -X PUT --data-binary @temp.json 127.0.0.1:8001/api/v1/namespaces/$NAMESPACE/finalize
+```
