@@ -73,7 +73,8 @@ Read more about port forwarding here: http://kubernetes.io/docs/user-guide/kubec
 You can now access Minio server on http://localhost:9000. Follow the below steps to connect to Minio server with mc client:
 Download the Minio mc client - https://docs.minio.io/docs/minio-client-quickstart-guide Get the
 ```
-ACCESS_KEY=$(kubectl get secret minio-1651658304 -o jsonpath="{.data.accesskey}" | base64 --decode) and the SECRET_KEY=$(kubectl get secret minio-1651658304 -o jsonpath="{.data.secretkey}" | base64 --decode)
+ACCESS_KEY=$(kubectl get secret <release-name> -n minio -o jsonpath="{.data.accesskey}" | base64 --decode)
+SECRET_KEY=$(kubectl get secret <release-name> -n minio -o jsonpath="{.data.secretkey}" | base64 --decode)
 mc alias set minio-1651658304-local http://localhost:9000 "$ACCESS_KEY" "$SECRET_KEY" --api s3v4
 mc ls minio-1651658304-local
 ```
