@@ -55,5 +55,5 @@ Bare in mind if you delete a PV or PVC you first delete the associated resource 
 
 
 ## Resources
-[Persistent Volume, Persistent Volume Claim & Storage Clas- Nana](https://youtu.be/0swOh5C3OVM)
+[Persistent Volume, Persistent Volume Claim & Storage Clas- Nana](https://youtu.be/0swOh5C3OVM) \
 [NFS Persistent Volume in Kubernetes Cluster - justmeandopensource](https://youtu.be/to14wmNmRCI)
