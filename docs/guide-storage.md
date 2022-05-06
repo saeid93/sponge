@@ -72,9 +72,9 @@ helm upgrade --install minio minio/minio \
 --set persistence.existingClaim=pvc-nfs
 ```
 
-4. continue the rest of steps from the printed instructions\
-5. find release name from `helm list` and then:
-To access Minio from localhost, run the below commands:
+4. continue the rest of steps from the printed instructions
+5. check the helm is installed from `helm list -n minio-system
+6. To access Minio from localhost, run the below commands:
 ```
 export POD_NAME=$(kubectl get pods --namespace minio-system -l "release=minio" -o jsonpath="{.items[0].metadata.name}")
 kubectl port-forward $POD_NAME 9000 --namespace minio-system
@@ -102,6 +102,11 @@ To make a bucket and copy files to it:
 ```
 mc mb minio/<bucket>
 mc cp ./<filename> minio/<bucket>/
+```
+
+Applications can access the Minio on the following `<address>/<port>`
+```
+minio.minio-system.svc.cluster.local:9000
 ```
 
 ## Resources
