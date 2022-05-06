@@ -68,6 +68,8 @@ Do the steps in the following orders to setup the environment:
 * **Minio and nfs**
    1. [Minio](https://min.io/) and [nfs](https://en.wikipedia.org/wiki/Network_File_System) are needed for the storage
    2. Setup them using [guide-storage](docs/guide-storage.md)
+* **OpenStack**
+   1. TODO
 * **Pipelines**
    1. [Medium Article Example](https://becominghuman.ai/seldon-inference-graph-pipelined-model-serving-211c6b095f62), in [1-example-pipeline](pipelines/1-example-pipeline): Good example of TODO complete
 * **Guide to Deploy a model and pipeline**
