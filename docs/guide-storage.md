@@ -63,11 +63,19 @@ EOF
 
 Install the Minio with helm and set the value to our existing pvc
 ```
+MINIOUSER=minioadmin
+MINIOPASSWORD=minioadmin
+
+kubectl create ns minio-system
+
 helm repo add minio https://helm.min.io/
-helm install --namespace minio \
---set rootUser=minioadmin,rootPassword=minioadmin \
+
+helm upgrade --install minio minio/minio \
+--namespace minio-system \
+--set accessKey=${MINIOUSER} \
+--set secretKey=${MINIOPASSWORD} \
 --set persistence.existingClaim=pvc-nfs \
---generate-name minio/minio 
+--set service.type=LoadBalancer
 ```
 
 4. continue the rest of steps from the printed instructions\
@@ -104,5 +112,8 @@ mc cp ./<filename> $RELEASE_NAME/<bucket>/
 ```
 
 ## Resources
+[Minio doc-MinIO Helm Chart](https://github.com/minio/minio/tree/master/helm/minio) \
+[Seldon Minio installation doc](https://deploy.seldon.io/en/v1.2/contents/getting-started/production-installation/minio.html) \
+[Minio Helm Chart Values](https://github.com/minio/minio/blob/master/helm/minio/values.yaml) \
 [Persistent Volume, Persistent Volume Claim & Storage Clas- Nana](https://youtu.be/0swOh5C3OVM) \
 [NFS Persistent Volume in Kubernetes Cluster - justmeandopensource](https://youtu.be/to14wmNmRCI)
