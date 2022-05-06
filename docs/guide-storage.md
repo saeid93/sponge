@@ -100,7 +100,7 @@ To make a bucket and copy files to it:
 
 ```
 mc mb $RELEASE_NAME/<bucket>
-mc cp <filename> $RELEASE_NAME <bucket>/
+mc cp ./<filename> $RELEASE_NAME/<bucket>/
 ```
 
 ## Resources
