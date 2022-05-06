@@ -61,14 +61,19 @@ spec:
 EOF
 ```
 
-Install the Minio with helm and set the value to our existing pvc
+Install the Minio with helm and set the value to our existing pvc, the user and admint sat here will be later used in the real
 ```
+MINIOUSER=minioadmin
+MINIOPASSWORD=minioadmin
+
 kubectl create ns minio-system
 
 helm repo add minio https://helm.min.io/
 
 helm upgrade --install minio minio/minio \
 --namespace minio-system \
+--set accessKey=${MINIOUSER} \
+--set secretKey=${MINIOPASSWORD} \
 --set persistence.existingClaim=pvc-nfs
 ```
 
