@@ -74,15 +74,16 @@ helm install --namespace minio \
 5. find release name from `helm list` and then:
 To access Minio from localhost, run the below commands:
 ```
-export POD_NAME=$(kubectl get pods --namespace minio -l "release=<release-name>" -o jsonpath="{.items[0].metadata.name}")
+export $RELEASE_NAME=minio-1651673607
+export POD_NAME=$(kubectl get pods --namespace minio -l "release=$RELEASE_NAME" -o jsonpath="{.items[0].metadata.name}")
 kubectl port-forward $POD_NAME 9000 --namespace minio
 ```
 Read more about port forwarding here: http://kubernetes.io/docs/user-guide/kubectl/kubectl_port-forward/
 You can now access Minio server on http://localhost:9000. Follow the below steps to connect to Minio server with mc client:
 Download the Minio mc client - https://docs.minio.io/docs/minio-client-quickstart-guide Downlaod and do `sudo cp mc /usr/local/bin` for terminal access
 ```
-ACCESS_KEY=$(kubectl get secret <release-name> -n minio -o jsonpath="{.data.accesskey}" | base64 --decode)
-SECRET_KEY=$(kubectl get secret <release-name> -n minio -o jsonpath="{.data.secretkey}" | base64 --decode)
+ACCESS_KEY=$(kubectl get secret $RELEASE_NAME -n minio -o jsonpath="{.data.accesskey}" | base64 --decode)
+SECRET_KEY=$(kubectl get secret $RELEASE_NAME-n minio -o jsonpath="{.data.secretkey}" | base64 --decode)
 ```
 echo secret and access key for accessing minio dashboard:
 ```
@@ -91,8 +92,8 @@ echo $SECRET_KEY
 ```
 also use the same values for the command line:
 ```
-mc alias set <release-name> http://localhost:9000 "$ACCESS_KEY" "$SECRET_KEY" --api s3v4
-mc ls <release-name>
+mc alias set $RELEASE_NAME http://localhost:9000 "$ACCESS_KEY" "$SECRET_KEY" --api s3v4
+mc ls $RELEASE_NAME
 ```
 Alternately, you can use your browser or the Minio SDK to access the server - https://docs.minio.io/categories/17
 
