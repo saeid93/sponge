@@ -83,7 +83,7 @@ You can now access Minio server on http://localhost:9000. Follow the below steps
 Download the Minio mc client - https://docs.minio.io/docs/minio-client-quickstart-guide Downlaod and do `sudo cp mc /usr/local/bin` for terminal access
 ```
 ACCESS_KEY=$(kubectl get secret $RELEASE_NAME -n minio -o jsonpath="{.data.accesskey}" | base64 --decode)
-SECRET_KEY=$(kubectl get secret $RELEASE_NAME-n minio -o jsonpath="{.data.secretkey}" | base64 --decode)
+SECRET_KEY=$(kubectl get secret $RELEASE_NAME -n minio -o jsonpath="{.data.secretkey}" | base64 --decode)
 ```
 echo secret and access key for accessing minio dashboard:
 ```
