@@ -79,7 +79,7 @@ kubectl port-forward $POD_NAME 9000 --namespace minio
 ```
 Read more about port forwarding here: http://kubernetes.io/docs/user-guide/kubectl/kubectl_port-forward/
 You can now access Minio server on http://localhost:9000. Follow the below steps to connect to Minio server with mc client:
-Download the Minio mc client - https://docs.minio.io/docs/minio-client-quickstart-guide Get the and do `sudo cp mc /usr/local/bin` for terminal access
+Download the Minio mc client - https://docs.minio.io/docs/minio-client-quickstart-guide Downlaod and do `sudo cp mc /usr/local/bin` for terminal access
 ```
 ACCESS_KEY=$(kubectl get secret <release-name> -n minio -o jsonpath="{.data.accesskey}" | base64 --decode)
 SECRET_KEY=$(kubectl get secret <release-name> -n minio -o jsonpath="{.data.secretkey}" | base64 --decode)
