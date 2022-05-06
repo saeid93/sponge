@@ -1,0 +1,17 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: gpt2
+spec:
+  predictors:
+  - graph:
+      implementation: TRITON_SERVER
+      logger:
+        mode: all
+      modelUri: s3://onnx-gpt2
+      envSecretRefName: seldon-init-container-secret
+      name: gpt2
+      type: MODEL
+    name: default
+    replicas: 1
+  protocol: kfserving
