@@ -74,7 +74,7 @@ helm install --namespace minio \
 5. find release name from `helm list` and then:
 To access Minio from localhost, run the below commands:
 ```
-export $RELEASE_NAME=minio-1651673607
+export RELEASE_NAME=minio-1651673607
 export POD_NAME=$(kubectl get pods --namespace minio -l "release=$RELEASE_NAME" -o jsonpath="{.items[0].metadata.name}")
 kubectl port-forward $POD_NAME 9000 --namespace minio
 ```
