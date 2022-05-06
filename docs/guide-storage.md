@@ -96,6 +96,12 @@ mc alias set $RELEASE_NAME http://localhost:9000 "$ACCESS_KEY" "$SECRET_KEY" --a
 mc ls $RELEASE_NAME
 ```
 Alternately, you can use your browser or the Minio SDK to access the server - https://docs.minio.io/categories/17
+To make a bucket and copy files to it:
+
+```
+mc mb $RELEASE_NAME/<bucket>
+mc cp <filename> $RELEASE_NAME <bucket>/
+```
 
 ## Resources
 [Persistent Volume, Persistent Volume Claim & Storage Clas- Nana](https://youtu.be/0swOh5C3OVM) \
