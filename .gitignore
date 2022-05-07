@@ -210,3 +210,10 @@ Temporary Items
 # data folder
 results/
 data/workloads/
+
+
+*.h5
+*.onnx
+*.pb
+*-00001
+tfgpt2model
