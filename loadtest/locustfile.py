@@ -3,10 +3,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from locust import HttpUser, events
-
+from locust import HttpUser, event
 from locustfiles.saeed_model import Task1
-from locustfiles.rs_convert import RSConvert
 
 
 class PrimaryUser(HttpUser):
