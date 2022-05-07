@@ -53,22 +53,24 @@ Do the steps in the following orders to setup the environment:
    3. Also see the link to the [shortlisted](docs/guide-seldon.md) parts of the documentation
 * **Testing installation**
    1. Up to this point you should have a complete working installation
-   2. To test the endpoints use [test-endpoints](seldon-core-examples/capabilities/test-endpoints/server_examples.ipynb) see [seldon-endpoint-references](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/index.html) for the addresses of the endpoints exposed via the Istio gateway. The endpoints are also available through [Swagger API](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/serving.html#generated-documentation-swagger-ui) 
-   3. To test use the following [istio-canary-example-notebook](seldon-core-examples/capabilities/istio/canary/istio_canary.ipynb)
-   4. Make sure all the componentes of Seldon core are working. ❗ Make sure to port forward as instructed in the notebook.
+   2. To test the endpoints use [test-endpoints](seldon-core-examples/capabilities/test-endpoints/server_examples.ipynb)
+   3. There are two options in Seldon for accessing a model endpint 1. [seldon-core-protocal](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/index.html) and 2.https://kserve.github.io/website/modelserving/inference_api/ protocal. See them for the addresses of the endpoints exposed via the Istio gateway. The endpoints are also available through [Swagger API](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/serving.html#generated-documentation-swagger-ui) 
+   4. To test use the following [istio-canary-example-notebook](seldon-core-examples/capabilities/istio/canary/istio_canary.ipynb)
+   5. Make sure all the componentes of Seldon core are working. ❗ Make sure to port forward as instructed in the notebook.
 * **Resources Observibility Tool** [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/)
    1. Setup the observibitliy tools for services resource usage monitoring [setup-observibility](docs/setup-prometeus-monitoring.md)
 * **Network observibility Tool** [Istio](https://istio.io/)
    1. Setup Jeager on Chameleon [jeager-setup](docs/)
 * **Load Generation Tool** [vegeta](https://github.com/tsenart/vegeta)
    1. [Guide to setup on Chameleon K8S cluster](ddd)
-* **Enable PVC on K8S for Model Storage**
-   1. [Enabling dashboards-TODO](ddd)
-* **Installing kubeflow for pipelining**
-   1. [Kubeflow Installation-TODO](ddd)
 * **Docker and s2i**
    1. For some of the pipeline you'll need [Dcoker](https://www.docker.com/) and [s2i](https://github.com/openshift/source-to-image)
    2. Install them using the offical documentation for [docker-doc](https://docs.docker.com/engine/install/ubuntu/) and [s2i-doc](https://github.com/openshift/source-to-image#installation)
+* **Minio and nfs**
+   1. [Minio](https://min.io/) and [nfs](https://en.wikipedia.org/wiki/Network_File_System) are needed for the storage
+   2. Setup them using [guide-storage](docs/guide-storage.md)
+* **OpenStack**
+   1. TODO
 * **Pipelines**
    1. [Medium Article Example](https://becominghuman.ai/seldon-inference-graph-pipelined-model-serving-211c6b095f62), in [1-example-pipeline](pipelines/1-example-pipeline): Good example of TODO complete
 * **Guide to Deploy a model and pipeline**
