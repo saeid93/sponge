@@ -128,5 +128,5 @@ minio.minio-system.svc.cluster.local:9000
 [Minio doc-MinIO Helm Chart](https://github.com/minio/minio/tree/master/helm/minio) \
 [Seldon Minio installation doc](https://deploy.seldon.io/en/v1.2/contents/getting-started/production-installation/minio.html) \
 [Minio Helm Chart Values](https://github.com/minio/minio/blob/master/helm/minio/values.yaml) \
-[Persistent Volume, Persistent Volume Claim & Storage Clas- Nana](https://youtu.be/0swOh5C3OVM) \
+[Persistent Volume, Persistent Volume Claim & Storage Class- Nana](https://youtu.be/0swOh5C3OVM) \
 [NFS Persistent Volume in Kubernetes Cluster - justmeandopensource](https://youtu.be/to14wmNmRCI)
