@@ -79,15 +79,19 @@ helm upgrade --install minio minio/minio \
 
 4. continue the rest of steps from the printed instructions
 5. check the helm is installed from `helm list -n minio-system
-6. To access Minio from localhost, run the below commands:
+6.To access Minio from localhost
+
+6.1. **Option 1: Port forward**run the below commands:
 ```
 export POD_NAME=$(kubectl get pods --namespace minio-system -l "release=minio" -o jsonpath="{.items[0].metadata.name}")
 kubectl port-forward $POD_NAME 9000 --namespace minio-system
 ```
-Read more about port forwarding here: http://kubernetes.io/docs/user-guide/kubectl/kubectl_port-forward/
-You can now access Minio server on http://localhost:9000. Follow the below steps to connect to Minio server with mc client:
-Download the Minio mc client - https://docs.minio.io/docs/minio-client-quickstart-guide Downlaod and do `sudo cp mc /usr/local/bin` for terminal access
-```
+You can now access Minio server on http://localhost:9000.
+
+
+6.2. **Option 2: LoadBalancer** edit `kubectl edit service/minio -n minio-system` and change `spec.ports.nodePort=31900` and `spec.type=`LoadBalancer`. You can now access Minio server on http://<cluster-ip>:31900.
+
+7. find out access keys
 ACCESS_KEY=$(kubectl get secret minio -n minio-system -o jsonpath="{.data.accesskey}" | base64 --decode)
 SECRET_KEY=$(kubectl get secret minio -n minio-system -o jsonpath="{.data.secretkey}" | base64 --decode)
 ```
@@ -96,12 +100,15 @@ echo secret and access key for accessing minio dashboard:
 echo $ACCESS_KEY
 echo $SECRET_KEY
 ```
+
+8. Download the Minio mc client - https://docs.minio.io/docs/minio-client-quickstart-guide Downlaod and do `sudo cp mc /usr/local/bin` for terminal access login to the CLI
 also use the same values for the command line:
 ```
 mc alias set minio http://localhost:9000 "$ACCESS_KEY" "$SECRET_KEY" --api s3v4
 mc ls minio
 ```
-Alternately, you can use your browser or the Minio SDK to access the server - https://docs.minio.io/categories/17
+! if you have used load balancer access change http://localhost:9000 to the server
+
 To make a bucket and copy files to it:
 
 ```
