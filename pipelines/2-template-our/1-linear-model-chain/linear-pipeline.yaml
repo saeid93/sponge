@@ -1,7 +1,8 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: linear-pipeline-one
+  name: linear-pipeline
+  namespace: seldon
 spec:
   name: linear-pipeline
   predictors:
