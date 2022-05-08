@@ -118,7 +118,7 @@ mc ls minio
 if it is for your local computer use the cluster ip
 ```
 CLUSTER_IP=192.5.86.160:31900
-mc alias set minio http://localhost:31900 "$ACCESS_KEY" "$SECRET_KEY" --api s3v4
+mc alias set minio http://$CLUSTER_IP:31900 "$ACCESS_KEY" "$SECRET_KEY" --api s3v4
 mc ls minio
 ```
 To make a bucket and copy files to it:
