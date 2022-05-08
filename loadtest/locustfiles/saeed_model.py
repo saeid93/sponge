@@ -1,11 +1,19 @@
 from __future__ import annotations
 
+import math
 from http import HTTPStatus
 
 from locust import TaskSet, between, task
 
 import settings
+import random
 import setup
+def nextParam():
+    return random.randint(5, 200)
+
+
+def nextTimeReqeust(rateParameter):
+    return -math.log(1.0 - random.random()) / rateParameter
 
 
 class Task1(TaskSet):
