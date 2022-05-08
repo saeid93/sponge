@@ -21,7 +21,7 @@ metadata:
   namespace: istio-system
 spec:
   selector:
-    istio: ingressgateway # use istio default controller
+    istio: ingressgateway
   servers:
   - port:
       number: 80
@@ -31,6 +31,9 @@ spec:
     - "*"
 EOF
 ```
+
+The `metadata.name` field is how the Seldon core is able to detect this Gateway. Bear in mind that the Gateway should also be in the istio-system namespace.
+
 port forward to the ingress port 80 (since the isio ingress you deployd in the former step is operating on port 80) to port 8004 and detach tmux (therfore the connection will stay open) - ! BUG sometimes you have to port forward to 8080 instead of 80 for the reason that is yet unknown to me.
 ```
 kubectl port-forward $(kubectl get pods -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].metadata.name}') -n istio-system 8004:8080
