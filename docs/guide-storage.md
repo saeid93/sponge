@@ -62,6 +62,7 @@ EOF
 ```
 
 Install the Minio with helm and set the value to our existing pvc, the user and admint sat here will be later used in the real
+
 ```
 MINIOUSER=minioadmin
 MINIOPASSWORD=minioadmin
@@ -81,7 +82,8 @@ helm upgrade --install minio minio/minio \
 5. check the helm is installed from `helm list -n minio-system
 6.To access Minio from localhost
 
-6.1. **Option 1: Port forward**run the below commands:
+6.1. **Option 1 Port forward** run the below commands:
+
 ```
 export POD_NAME=$(kubectl get pods --namespace minio-system -l "release=minio" -o jsonpath="{.items[0].metadata.name}")
 kubectl port-forward $POD_NAME 9000 --namespace minio-system
@@ -89,9 +91,10 @@ kubectl port-forward $POD_NAME 9000 --namespace minio-system
 You can now access Minio server on http://localhost:9000.
 
 
-6.2. **Option 2: LoadBalancer** edit `kubectl edit service/minio -n minio-system` and change `spec.ports.nodePort=31900` and `spec.type=`LoadBalancer`. You can now access Minio server on http://<cluster-ip>:31900.
+6.2. **Option 2 LoadBalancer**: edit `kubectl edit service/minio -n minio-system` and change `spec.ports.nodePort=31900` and `spec.type=LoadBalancer`. You can now access Minio server on `http://<cluster-ip>:31900`.
 
 7. find out access keys
+```
 ACCESS_KEY=$(kubectl get secret minio -n minio-system -o jsonpath="{.data.accesskey}" | base64 --decode)
 SECRET_KEY=$(kubectl get secret minio -n minio-system -o jsonpath="{.data.secretkey}" | base64 --decode)
 ```
