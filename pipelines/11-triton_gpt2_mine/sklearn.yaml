@@ -1,0 +1,14 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: sklearn-default-minio
+spec:
+  name: iris
+  predictors:
+  - graph:
+      implementation: SKLEARN_SERVER
+      modelUri: s3://minio/minio-seldon/iris
+      envSecretRefName: seldon-rclone-secret
+      name: classifier
+    name: default
+    replicas: 1

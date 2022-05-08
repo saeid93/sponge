@@ -216,4 +216,5 @@ data/workloads/
 *.onnx
 *.pb
 *-00001
+*.joblib
 tfgpt2model
