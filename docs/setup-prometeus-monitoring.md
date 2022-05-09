@@ -30,12 +30,12 @@ kubectl edit svc grafana -n monitoring
 
 For prometheus
 ```
-(base) ➜  infernece-pipeline-joint-optimization git:(main) ✗ kubectl get service prometheus-k8s -n monitoring -o jsonpath="{.spec.ports[0].nodePort}"
+kubectl get service prometheus-k8s -n monitoring -o jsonpath="{.spec.ports[0].nodePort}"
 31461% 
 ```
 For Grafana
 ```
-(base) ➜  infernece-pipeline-joint-optimization git:(main) ✗ kubectl get service grafana -n monitoring -o jsonpath="{.spec.ports[0].nodePort}"
+kubectl get service grafana -n monitoring -o jsonpath="{.spec.ports[0].nodePort}"
 31740% 
 ```
 
