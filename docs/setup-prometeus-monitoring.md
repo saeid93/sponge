@@ -74,13 +74,12 @@ spec:
 
 
 # Minikube
-
+TODO
 
 
 # Bare Metal
-TODO polish
 
-We'll be installing this [this](docs/installing-prometheus.md) prometheus+grafana monitoring using Helm charts ([source](https://github.com/geerlingguy/kubernetes-101/tree/master/episode-10)). You can find guide to installing helm itself [here](https://helm.sh/docs/intro/install/). Alternate Prometeus installation solution [here](https://github.com/prometheus-operator/prometheus-operator).
+1. We'll be installing this [this](docs/installing-prometheus.md) prometheus+grafana monitoring using Helm charts ([source](https://github.com/geerlingguy/kubernetes-101/tree/master/episode-10)). You can find guide to installing helm itself [here](https://helm.sh/docs/intro/install/). Alternate Prometeus installation solution [here](https://github.com/prometheus-operator/prometheus-operator).
 
 This Helm chart installs the following in your cluster:
 
@@ -109,24 +108,55 @@ Watch the progress in Lens, or via `kubectl`:
 $ kubectl get deployments -n monitoring -w
 ```
 
-Once deployed, you can access Grafana using the default `admin` account and the default password `prom-operator`.
-
-
-To access Grafana in your browser, run:
-
+2. For enabling outside access make the `service/prometheus-k8s` and `service/grafana` of type NodePort isntead of ClusterIP using the following command and editing the `type` field. Also set the port for prometheus to 30090 and for grafana to 30300. Name of the containers might be different based on the version.
 ```
-$ kubectl port-forward -n monitoring service/prometheus-grafana 3000:80
+kubectl edit svc prometheus-k8s -n monitoring
+kubectl edit svc grafana -n monitoring
+```
+3. Find the Prometheus and grafana node ports using
+
+For prometheus
+```
+kubectl get service prometheus-k8s -n monitoring -o jsonpath="{.spec.ports[0].nodePort}"
+30090% 
+```
+For Grafana
+```
+kubectl get service grafana -n monitoring -o jsonpath="{.spec.ports[0].nodePort}"
+30300% 
 ```
 
-Then open your browser and visit `http://localhost/` and log in with the password you found from the earlier command.
-
-To access prometheus in your browser, run:
-
+default credentials for accesing Grafana are:
 ```
-$ kubectl port-forward -n monitoring service/prometheus-kube-prometheus-prometheus 9090:9090
+username: admin
+password: admin
 ```
 
-Then open your browser and visit `http://localhost:9090/` and log in with the password you found from the earlier command.
+4. Both of the grafana and prometheus are now accessible via the following links
+```
+<your node ip>:<prometheus port>
+<your node ip>:<grafana port>
+```
+
+5. Following [Seldon-metrics](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html) to integrate the Seldon core metrics into prometheus and grafana just deploy the following PodMonitor resource
+```
+cat <<EOF | kubectl apply -f -
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: seldon-podmonitor
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/managed-by: seldon-core
+  podMetricsEndpoints:
+    - port: metrics
+      path: /prometheus
+  namespaceSelector:
+    any: true
+```
+
+
 
 
 ## Unistalling Monitoring Stack
