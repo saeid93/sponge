@@ -21,7 +21,7 @@ http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-da
 ```
 microk8s enable prometheus
 ```
-2. For enabling outside access make the `service/prometheus-k8s` and `service/grafana` of type NodePort isntead of ClusterIP using the following command and editing the `type` field
+2. For enabling outside access make the `service/prometheus-k8s` and `service/grafana` of type NodePort isntead of ClusterIP using the following command and editing the `type` field. Also set the port for prometheus to 30090 and for grafana to 30300
 ```
 kubectl edit svc prometheus-k8s -n monitoring
 kubectl edit svc grafana -n monitoring
@@ -31,12 +31,12 @@ kubectl edit svc grafana -n monitoring
 For prometheus
 ```
 kubectl get service prometheus-k8s -n monitoring -o jsonpath="{.spec.ports[0].nodePort}"
-31461% 
+30090% 
 ```
 For Grafana
 ```
 kubectl get service grafana -n monitoring -o jsonpath="{.spec.ports[0].nodePort}"
-31740% 
+30300% 
 ```
 
 default credentials for accesing Grafana are:
@@ -51,10 +51,26 @@ password: admin
 <your node ip>:<grafana port>
 ```
 
-5. To integrate the Seldon core metrics into prometheus and grafana
+5. Following [Seldon-metrics](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html) to integrate the Seldon core metrics into prometheus and grafana just deploy the following PodMonitor resource
+```
+cat <<EOF | kubectl apply -f -
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: seldon-podmonitor
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/managed-by: seldon-core
+  podMetricsEndpoints:
+    - port: metrics
+      path: /prometheus
+  namespaceSelector:
+    any: true
+```
 
 
-6. To integrate Istio into prometheus and Grafana
+6. To integrate Istio into prometheus and Grafana TODO
 
 
 # Minikube
