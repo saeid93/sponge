@@ -154,6 +154,7 @@ spec:
       path: /prometheus
   namespaceSelector:
     any: true
+EOF
 ```
 
 
