@@ -150,28 +150,5 @@ kubectl delete crd servicemonitors.monitoring.coreos.com
 kubectl delete crd thanosrulers.monitoring.coreos.com
 ```
 
-## Related promql commands
-### contaienrs metrics
-
-All containers memory usages:
-```
-container_memory_usage_bytes{container='sample-vpa'}
-```
-All containers cpu usages:
-```
-TODO
-```
-A specific container memory usage
-```
-TODO
-```
-A specific container cpu usage
-```
-TODO
-```
-### pods metrics
-
-## Guide to Grafana dashboard
-
 # Useful links
-* clarification of difference between Prometheus operator and [Prometheus Helm [StackOverflow](https://stackoverflow.com/questions/54422566/what-is-the-difference-between-the-core-os-projects-kube-prometheus-and-promethe)
+* clarification of difference between Prometheus operator and [Prometheus Helm - StackOverflow](https://stackoverflow.com/questions/54422566/what-is-the-difference-between-the-core-os-projects-kube-prometheus-and-promethe)
