@@ -172,7 +172,12 @@ spec:
   - port: http-monitoring
     interval: 15s
 ```
-7. To integrate Istio into prometheus and Grafana TODO
+7. Following [kaili installation](https://istio.io/latest/docs/ops/integrations/kiali/#installation) and [jeager installation](https://istio.io/latest/docs/tasks/observability/distributed-tracing/jaeger/) install this two dashboard for extra infromation:
+```
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/kiali.yaml
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/jaeger.yaml
+```
+make them loadbalancer and change the nodeport of kiali to `32001` and jeager to `31166` for persistent access.
 
 
 # Minikube
