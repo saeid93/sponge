@@ -64,6 +64,7 @@ spec:
       app.kubernetes.io/managed-by: seldon-core
   podMetricsEndpoints:
     - port: metrics
+      interval: 1s
       path: /prometheus
   namespaceSelector:
     any: true
