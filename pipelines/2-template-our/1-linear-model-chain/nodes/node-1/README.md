@@ -3,11 +3,11 @@ A simple microservice that doubles the input
 
 For attaching to bash of the model:
 ```
-docker run -it linearmodel:nodethree bash
+docker run -it linearmodel:nodeone bash
 ```
 For testing the model endpoints on docker
 ```
-docker run --rm -p 5001:5000 linearmodel:nodethree
+docker run --rm -p 5001:9000 linearmodel:nodeone
 ```
 In the terminal:
 ```

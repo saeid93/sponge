@@ -1,8 +1,7 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: linear-pipeline
-  namespace: seldon
+  name: linear-pipeline-single-pod
 spec:
   name: linear-pipeline
   predictors:
@@ -25,5 +24,6 @@ spec:
         - name: node-three
           type: MODEL
           children: []
+    labels:
+      sidecar.istio.io/inject: "true"
     name: example
-    replicas: 1
