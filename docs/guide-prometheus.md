@@ -15,7 +15,13 @@ Prometheus scrape the metrics from the endpoints within a fixed time interval th
 For changing this do the following steps:
 TODO
 
-# Metrics metadata
+# Metrics
+Check the following links for a better understanding of the Prometheus and PromQL language:
+1. [Metrics Types](https://prometheus.io/docs/concepts/metric_types/) vs [Query Basics](https://prometheus.io/docs/prometheus/latest/querying/basics/#expression-language-data-types)
+2. [Understanding Prometheus Range Vectors](https://satyanash.net/software/2021/01/04/understanding-prometheus-range-vectors.html#:~:text=Instant%20vectors%20have%20a%20single,on%20them%3B%20Range%20vectors%20cannot.)
+3. [The Anatomy of a PromQL Query](https://promlabs.com/blog/2020/06/18/the-anatomy-of-a-promql-query)
+
+
 The metrics metadata are accessible from the HTTP API of the prometheus accessible at `/api/v1`. The api can also gives us the same information as the dashboard. However, the metadata of the metrics is only avaialable from the http API. E.g.
 ```
 $PROM_SERVER=http://192.5.86.160:30090
