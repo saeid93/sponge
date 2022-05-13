@@ -59,10 +59,7 @@ Do the steps in the following orders to setup the environment:
    5. Make sure all the componentes of Seldon core are working. ❗ Make sure to port forward as instructed in the notebook.
 * **Resources Observibility Tool** [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/)
    1. Setup the observibitliy tools for services resource usage monitoring [setup-observibility](docs/setup-prometeus-monitoring.md)
-* **Network observibility Tool** [Istio](https://istio.io/)
-   1. Setup Jeager on Chameleon [jeager-setup](docs/)
-* **Load Generation Tool** [vegeta](https://github.com/tsenart/vegeta)
-   1. [Guide to setup on Chameleon K8S cluster](ddd)
+   2. check out the [guide-obervibility](docs/guide-prometheus.md) for usefule information about using the observability tools
 * **Docker and s2i**
    1. For some of the pipeline you'll need [Dcoker](https://www.docker.com/) and [s2i](https://github.com/openshift/source-to-image)
    2. Install them using the offical documentation for [docker-doc](https://docs.docker.com/engine/install/ubuntu/) and [s2i-doc](https://github.com/openshift/source-to-image#installation)
@@ -83,14 +80,5 @@ Do the steps in the following orders to setup the environment:
 
 TODO 🔴 automate all the above steps
 
-
-# Pipelines
-
-
-## Guide
-* **Istio**
-TODO
-* **Prometheus**
-TODO
 
 
