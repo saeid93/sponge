@@ -7,7 +7,7 @@ docker run -it linearmodel:nodethree bash
 ```
 For testing the model endpoints on docker
 ```
-docker run --rm -p 5001:5000 linearmodel:nodethree
+docker run --rm -p 5001:9000 linearmodel:nodethree
 ```
 In the terminal:
 ```
