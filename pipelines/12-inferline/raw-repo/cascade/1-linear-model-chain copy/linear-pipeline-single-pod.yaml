@@ -1,0 +1,29 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: linear-pipeline-single-pod
+spec:
+  name: linear-pipeline
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: sdghafouri/linearmodel:nodeone
+          name: node-one
+        - image: sdghafouri/linearmodel:nodetwo
+          name: node-two
+        - image: sdghafouri/linearmodel:nodethree
+          name: node-three
+    graph:
+      name: node-one
+      type: MODEL
+      children:
+      - name: node-two
+        type: MODEL
+        children:
+        - name: node-three
+          type: MODEL
+          children: []
+    labels:
+      sidecar.istio.io/inject: "true"
+    name: example
