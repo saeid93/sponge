@@ -1,0 +1,6 @@
+imagenet/
+ILSVRC2012_img_val.tar
+ILSVRC2012_img_val.tar-5d6d0df7ed81efd49ca99ea4737e0ae5e3a5f2e5.torrent
+obj_detection/weights/yolov3.weights
+obj_detection/video_outputs/*
+obj_detection/image_slices/*

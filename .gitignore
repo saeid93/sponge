@@ -218,3 +218,5 @@ data/workloads/
 *-00001
 *.joblib
 tfgpt2model
+imagewang*
+ILSVRC*
