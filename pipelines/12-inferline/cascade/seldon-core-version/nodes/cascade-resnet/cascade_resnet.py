@@ -19,26 +19,25 @@ class CascadeResnet(object):
                 mean=[0.485, 0.456, 0.406],
                 std=[0.229, 0.224, 0.225]                  
             )])
-        self.load()
+        self.loaded = False
+        # self.load()
         logger.info('Init function complete!')
 
     def load(self):
+        # import torchvision
+        # import torch
         logger.info('loading the ML models')
         # try:
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
-        # TEMP
-        self.model = torch.load('./.torch/hub/checkpoints/resnet101-63fe2227.pth')
-        with open('./build.sh', 'rb') as file:
-            lines = file.readlines()
-        logger.info(lines)
-        # self.model.eval()
-        # except Exception as ex:
-        #     logger.info('error here')
-        #     logger.info(ex.message)
-        # logger.info('model loading complete!')
+        resnet = torchvision.models.resnet101(pretrained=True)
+        resnet.eval()
+        self.loaded = True
+        logger.info('model loading complete!')
 
     def predict(self, X, features_names=None):
+        if self.loaded == False:
+            self.load()
         logger.info(f"Incoming input:\n{X}\nwas recieved!")
         # X = self.transform(X)
         # batch = torch.unsqueeze(X, 0)
@@ -50,3 +49,4 @@ class CascadeResnet(object):
         # max_prob_percentage = max(percentages)
         # return indices, percentages, max_prob_percentage
         return X
+
