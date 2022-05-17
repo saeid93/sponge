@@ -1,13 +1,16 @@
 A simple microservice that doubles the input
 
-
+set container name:
+```
+CONTAINER=inferline:cascade-resnet
+```
 For attaching to bash of the model:
 ```
-docker run -it linearmodel:nodethree bash
+docker run -it $CONTAINER bash
 ```
 For testing the model endpoints on docker
 ```
-docker run --rm -p 5001:9000 linearmodel:nodethree
+docker run --rm -p 5001:9000 $CONTAINER
 ```
 In the terminal:
 ```
