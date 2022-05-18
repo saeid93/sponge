@@ -10,10 +10,14 @@ import pandas as pd
 from aiohttp import ClientSession, ClientConnectorError
 import random
 import math
+from prom-client import *
 # import plot_builder as pb
 
+stress = StressGenerator('',True )
+stress.run()
+
 class StressGenerator:
-    def __init__(self, url, is_dataset, data_path = None):
+    def __init__(self, url, is_dataset = False, data_path = None):
         self.final_data = []
         self.url = url
         self.is_dataset = is_dataset
@@ -25,6 +29,14 @@ class StressGenerator:
     def nextParam():
         return random.randint(100, 500)
         return generator()
+
+    def nextParamFile(self, file_object, chunk_size):
+
+        while True:
+            data = file_object.read(chunk_size)
+            if not data:
+                break
+            yield data
 
 
 
@@ -73,6 +85,8 @@ class StressGenerator:
             if str(time.ctime()).split(":")[2][:2] != seconds:
                 seconds = str(time.ctime()).split(":")[2][:2]
                 counter += 1
+                if self.is_dataset:
+                    param = self.nextParamFile(f)
                 param = nextParam()
 
                 print("time is " + seconds + " param is "+str(param))
@@ -128,4 +142,6 @@ def main():
     print(df)
     print("finish works")
     df.to_csv("users.csv")
+    pr = PromClient(self.pod_name)
+    pr.cpu_data()
 

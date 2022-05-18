@@ -8,7 +8,7 @@ from PIL import Image
 
 logger = logging.getLogger(__name__)
 
-class CascadeResnet(object):
+class CascadeInception(object):
     def __init__(self) -> None:
         super().__init__()
         # standard resnet image transformation
@@ -28,7 +28,7 @@ class CascadeResnet(object):
         # try:
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
-        self.resnet = torchvision.models.resnet101(pretrained=True)
+        self.resnet = torchvision.models.inception_v3(pretrained=True)
         self.resnet.eval()
         self.loaded = True
         logger.info('model loading complete!')
@@ -51,4 +51,3 @@ class CascadeResnet(object):
             'percentages': list(map(float, list(percentages))),
             'max_prob_percentage': float(max_prob_percentage)}
         return output
-        # return X
