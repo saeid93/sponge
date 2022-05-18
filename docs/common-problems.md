@@ -59,3 +59,5 @@ containers:
   imagePullPolicy: Always
   volumeMounts:
 ```
+
+5. Following https://github.com/SeldonIO/seldon-core/issues/4102 avoid calling load on the server's init function.
