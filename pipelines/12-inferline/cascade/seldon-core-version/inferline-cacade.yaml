@@ -1,9 +1,9 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: inferline
+  name: inferline-cascade
 spec:
-  name: inferline
+  name: inferline-cascade
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
@@ -11,11 +11,19 @@ spec:
     - spec:
         containers:
         - image: sdghafouri/inferline:cascade-resnet
-          name: node-one
+          name: cascade-resnet
+          imagePullPolicy: Always
+    - spec:
+        containers:
+        - image: sdghafouri/inferline:router
+          name: cascade-router
           imagePullPolicy: Always
     graph:
-      name: node-one
+      name: cascade-resnet
       type: MODEL
+      children:
+        - name: cascade-router
+          type: ROUTER
     labels:
       sidecar.istio.io/inject: "true"
     name: example

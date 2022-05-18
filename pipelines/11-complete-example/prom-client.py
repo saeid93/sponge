@@ -38,6 +38,7 @@ response_cpu_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' 
 # pb.user_rate('s')
 # data = pb.user_rate_second_interval(15)
 
+
 plot_values = []
 for value in response_request_count.json()['data']['result'][0]['values']:
     print(value[1])
@@ -63,3 +64,55 @@ plt.savefig('usertool.png')
 # print(plot_values)
 # axb.plot([i for i in range(1,len(plot_values)+ 1)], plot_values, color='blue', label='pressure')
 # plt.savefig('cpu.png')
+
+
+
+class PromClient:
+    def __init__(self, pod):
+        self.pod = pod
+
+    def cpu_data(self):
+        response_cpu_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : f'rate(container_cpu_usage_seconds_total{pod=~f"{self.pod}.*"}[1m])[40m:15s]'})
+        plot_values = []
+        for value in response_cpu_usage.json()['data']['result'][0]['values']:
+            plot_values.append((float(value[1]))*100)
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        axb = ax.twinx()
+        axb.set_ylabel('cpu')
+        print(plot_values)
+        axb.plot([i for i in range(1,len(plot_values)+ 1)], plot_values, color='blue', label='pressure')
+        plt.savefig('cpu.png')
+
+    
+    def request_number(self):
+        response_request_count = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : f'rate(seldon_api_executor_client_requests_seconds_count{pod=~f"{self.pod}.*"}[2s])[40m:15s]'})
+        plot_values = []
+        for value in response_cpu_usage.json()['data']['result'][0]['values']:
+            plot_values.append((float(value[1]))*100)
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        axb = ax.twinx()
+        axb.set_ylabel('request')
+        print(plot_values)
+        axb.plot([i for i in range(1,len(plot_values)+ 1)], plot_values, color='blue', label='pressure')
+        plt.savefig('req.png')
+
+
+    def request_byte_istio(self):
+        response_request_istion = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : f'rate(istio_response_bytes_bucket{pod=~f"{self.pod}.*"}[1m])[10m:10s]'})
+        plot_values = []
+        for value in response_cpu_usage.json()['data']['result'][0]['values']:
+            plot_values.append((float(value[1]))*100)
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        axb = ax.twinx()
+        axb.set_ylabel('request')
+        print(plot_values)
+        axb.plot([i for i in range(1,len(plot_values)+ 1)], plot_values, color='blue', label='pressure')
+        plt.savefig('req.png')
+
+

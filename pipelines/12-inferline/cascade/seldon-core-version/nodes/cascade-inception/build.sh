@@ -1,3 +1,3 @@
-docker build --tag=linearmodel:nodetwo . && \
-docker tag linearmodel:nodetwo sdghafouri/linearmodel:nodetwo && \
-docker push sdghafouri/linearmodel:nodetwo
+docker build --tag=inferline:cascade-inception . && \
+docker tag inferline:cascade-inception sdghafouri/inferline:cascade-inception && \
+docker push sdghafouri/inferline:cascade-inception
