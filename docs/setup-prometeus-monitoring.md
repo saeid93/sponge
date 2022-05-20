@@ -68,6 +68,7 @@ spec:
       path: /prometheus
   namespaceSelector:
     any: true
+EOF
 ```
 6. Add these podmonitors and servicemonitors for istio
 ```
