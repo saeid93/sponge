@@ -3,7 +3,7 @@ Here are the options for installing K8S on Chameleon cloud with GPU Support
 * **Microk8s**
   1. Use the image or install Microk8s from its [documentation](https://ubuntu.com/tutorials/install-a-local-kubernetes-with-microk8s?&_ga=2.247530752.628037779.1650564942-2133565126.1649957392#1-overview)
   2. Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) for api access both on your local and your server
-  3. To enable outside access to your cluster with kubectl in one of the cluster machines [get the kubecinfg](https://microk8s.io/docs/working-with-kubectl) and copy it to your server `~/.kube/config` file
+  3. To enable outside access to your cluster with kubectl in one of the cluster machines [get the kubeconfig](https://microk8s.io/docs/working-with-kubectl) and copy it to the outside cluster machine (e.g. your laptop) `~/.kube/config` file
   4. To enable outside externally (from an external machine e.g. your local) do the following:
       1. According to this [issue](https://github.com/canonical/microk8s/issues/421) on your cluster master node disable the firewall on the port 16443 which is the default apiserver port
       ```
@@ -24,5 +24,5 @@ Here are the options for installing K8S on Chameleon cloud with GPU Support
   5. External Resources
       * [resource 1](https://anencore94.github.io/2020/08/19/minikube-gpu.html)
 
-* **Bare metal** TODO
-  1. TODO
+* **Bare metal with Kubesrpay**
+TODO
