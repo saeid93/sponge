@@ -38,19 +38,19 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    server: 10.140.81.236
+    server: 10.140.83.56
     path: "/mnt/myshareddir"
 EOF
 ```
 2. Associate a PVC to the generated PV
 ```
-kubectl create ns minio
+kubectl create ns minio-system
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: pvc-nfs
-  namespace: minio
+  namespace: minio-system
 spec:
   storageClassName: manual
   accessModes:
@@ -79,8 +79,8 @@ helm upgrade --install minio minio/minio \
 ```
 
 4. continue the rest of steps from the printed instructions
-5. check the helm is installed from `helm list -n minio-system
-6.To access Minio from localhost
+5. check the helm is installed from `helm list -n minio-system`
+6. There is two options to access Minio from localhost:
 
 6.1. **Option 1 LoadBalancer (Recommended)**: edit `kubectl edit service/minio -n minio-system` and change `spec.ports.nodePort=31900` and `spec.type=LoadBalancer`. You can now access Minio server on `http://<cluster-ip>:31900`.
 
