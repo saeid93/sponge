@@ -84,7 +84,7 @@ helm upgrade --install minio minio/minio \
 
 6.1. **Option 1 LoadBalancer (Recommended)**: edit `kubectl edit service/minio -n minio-system` and change `spec.ports.nodePort=31900` and `spec.type=LoadBalancer`. You can now access Minio server on `http://<cluster-ip>:31900`.
 
-6.1. **Option 2 Port forward** run the below commands:
+6.2. **Option 2 Port forward** run the below commands:
 
 ```
 export POD_NAME=$(kubectl get pods --namespace minio-system -l "release=minio" -o jsonpath="{.items[0].metadata.name}")
