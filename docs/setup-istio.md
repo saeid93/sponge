@@ -3,18 +3,16 @@
 ```
 microk8s enable istio
 ```
-2. Run the simple app in [istio-documentation-sample-app](https://istio.io/latest/docs/setup/getting-started/#bookinfo) and make sure it is running on the server and make sure that it is running the sample application
+2. Run the simple app in [istio-documentation-sample-app](https://istio.io/latest/docs/setup/getting-started/#bookinfo) and make sure it is running on the server and make sure that it is running the sample applicatio
 
-3. To enable Prometheus and Grafana for Istio (for latency monitoring)
-Follow [Visualizing Metrics with Grafana
-](https://istio.io/latest/docs/tasks/observability/metrics/using-istio-dashboard/) and try the book-info app to make sure it is up and running. TODO not tested
-
-
-4. To enable Kiali (for monitoring traces)
-TODO
-
-5. To enable Jeager
-TODO
+3. To install Kiali (for monitoring traces)
+```
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/kiali.yaml
+```
+3. to enable outside access to it change it service to nodeport on port 32001
+```
+kubectl edit svc kiali -n istio-system
+```
 
 
 # Minikube
