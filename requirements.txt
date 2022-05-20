@@ -9,3 +9,8 @@ kubernetes==11.0.0
 matplotlib==3.2.0
 ipykernel==6.6.0
 transformers[torch]
+seldon-core
+Flask==1.1.1
+Jinja2==3.0.3
+itsdangerous==2.0.1
+Werkzeug==2.0.2
