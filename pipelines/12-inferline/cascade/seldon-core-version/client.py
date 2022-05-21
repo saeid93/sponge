@@ -1,43 +1,58 @@
-import json
-import sys
+import os
+import PIL
+from PIL import Image
+from typing import Dict
 
-import matplotlib.pyplot as plt
 import numpy as np
-from keras.applications.imagenet_utils import decode_predictions, preprocess_input
-from keras.preprocessing import image
 
 from seldon_core.seldon_client import SeldonClient
 
-
-def getImage(path):
-    img = image.load_img(path, target_size=(227, 227))
-    x = image.img_to_array(img)
-    plt.imshow(x / 255.0)
-    x = np.expand_dims(x, axis=0)
-    x = preprocess_input(x)
-    return x
-
-
-X = getImage("car.png")
-X = X.transpose((0, 3, 1, 2))
-print(X.shape)
-
-sc = SeldonClient(deployment_name="openvino-model", namespace="seldon")
-
-response = sc.predict(
-    gateway_endpoint="localhost:32000",gateway="istio", transport="grpc", data=X, client_return_type="proto"
+data_folder_path = '/home/cc/object-store/datasets'
+dataset_folder_path = os.path.join(
+    data_folder_path, 'ILSVRC/Data/DET/test'
 )
+image_names = os.listdir(dataset_folder_path)
 
-result = response.response.data.tensor.values
+num_loaded_images = 5
 
-result = np.array(result)
-result = result.reshape(1, 1000)
+def image_loader(folder_path, image_name):
+    image = Image.open(
+        os.path.join(folder_path, image_name))
+    # if there was a need to filter out only color images
+    # if image.mode == 'RGB':
+    #     pass
+    return image
 
-with open("imagenet_classes.json") as f:
-    cnames = eval(f.read())
+images = {
+    image_name: image_loader(
+        dataset_folder_path, image_name) for image_name in image_names[
+            :num_loaded_images]}
 
-    for i in range(result.shape[0]):
-        single_result = result[[i], ...]
-        ma = np.argmax(single_result)
-        print("\t", i, cnames[ma])
-        assert cnames[ma] == "sports car, sport car"
+# single node inferline
+gateway_endpoint="localhost:32000"
+deployment_name = 'inferline-cascade'
+namespace = "seldon"
+sc = SeldonClient(
+    gateway_endpoint=gateway_endpoint,
+    gateway="istio",
+    transport="rest",
+    deployment_name=deployment_name,
+    namespace=namespace)
+
+results = {}
+for image_name, image in images.items():
+    image = np.array(image)
+    response = sc.predict(
+        data=image
+    )
+    results[image_name] = response
+
+for image_name, response in results.items():
+    print(f"image name: {image_name}")
+    max_prob = response.response['jsonData']['max_prob_percentage']
+    print(f"resnet max_prob_percentage: {max_prob}")
+    # print() TODO print the path taken 
+# print(f"resnet indicies: {response.response['jsonData']['indices']}")
+# print(f"resnet max_prob_percentage: {response.response['jsonData']['max_prob_percentage']}")
+# print(f"resnet percentages: {response.response['jsonData']['percentages']}")
+# print() TODO print the path taken 

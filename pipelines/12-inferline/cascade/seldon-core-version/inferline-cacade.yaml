@@ -10,20 +10,12 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/inferline:cascade-resnet
-          name: cascade-resnet
-          imagePullPolicy: Always
-    - spec:
-        containers:
-        - image: sdghafouri/inferline:router
-          name: cascade-router
+        - image: sdghafouri/inferline:cascade-inception
+          name: cascade-inception
           imagePullPolicy: Always
     graph:
-      name: cascade-resnet
+      name: cascade-inception
       type: MODEL
-      children:
-        - name: cascade-router
-          type: ROUTER
     labels:
       sidecar.istio.io/inject: "true"
     name: example
