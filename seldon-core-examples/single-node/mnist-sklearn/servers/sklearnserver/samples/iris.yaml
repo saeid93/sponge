@@ -1,7 +1,7 @@
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
-  name: sklearn
+  name: sklearn-2
 spec:
   predictors:
   - graph:
@@ -10,6 +10,8 @@ spec:
       modelUri: gs://seldon-models/v1.13.0-dev/sklearn/iris
     name: default
     replicas: 1
+    labels:
+      sidecar.istio.io/inject: "true"
     svcOrchSpec: 
       env: 
       - name: SELDON_LOG_LEVEL
