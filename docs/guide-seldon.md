@@ -9,6 +9,7 @@ Selected parts of Seldon documentation:
 * [Testing and Iter8](https://docs.seldon.io/projects/seldon-core/en/latest/rollouts/abtests.html)
 * Servers
     * [Prepackaged servers](https://docs.seldon.io/projects/seldon-core/en/latest/production/optimization.html)
+    * [Packaging a Python model for Seldon Core using Docker](https://docs.seldon.io/projects/seldon-core/en/latest/python/python_wrapping_docker.html)
     * [Triton](https://docs.seldon.io/projects/seldon-core/en/latest/servers/triton.html)
     * [TensorFlow serving](https://docs.seldon.io/projects/seldon-core/en/latest/servers/tensorflow.html)
 * Networking
@@ -18,6 +19,7 @@ Selected parts of Seldon documentation:
 * Buidling inference graphs
     * [Python language wrapper](https://docs.seldon.io/projects/seldon-core/en/latest/python/index.html#)
 * Capabilities
+    * [Seldon Python Server Configuration](https://docs.seldon.io/projects/seldon-core/en/latest/python/python_server.html)
     * [Batch processing with Seldon](https://docs.seldon.io/projects/seldon-core/en/latest/servers/batch.html)
     * [Metrics](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html)
     * [Tracing](https://docs.seldon.io/projects/seldon-core/en/latest/graph/distributed-tracing.html)
