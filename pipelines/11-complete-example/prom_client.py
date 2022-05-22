@@ -72,7 +72,7 @@ class PromClient:
         self.pod = pod
 
     def cpu_data(self):
-        response_cpu_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : f'rate(container_cpu_usage_seconds_total{pod=~f"{self.pod}.*"}[1m])[40m:15s]'})
+        response_cpu_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : 'rate(container_cpu_usage_seconds_total{pod=~"{}.*"}[1m])[40m:15s]'.format(self.pod)})
         plot_values = []
         for value in response_cpu_usage.json()['data']['result'][0]['values']:
             plot_values.append((float(value[1]))*100)
@@ -87,7 +87,7 @@ class PromClient:
 
     
     def request_number(self):
-        response_request_count = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : f'rate(seldon_api_executor_client_requests_seconds_count{pod=~f"{self.pod}.*"}[2s])[40m:15s]'})
+        response_request_count = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : 'rate(seldon_api_executor_client_requests_seconds_count{pod=~"{}.*"}[2s])[40m:15s]'.format(self.pod)})
         plot_values = []
         for value in response_cpu_usage.json()['data']['result'][0]['values']:
             plot_values.append((float(value[1]))*100)
@@ -102,7 +102,7 @@ class PromClient:
 
 
     def request_byte_istio(self):
-        response_request_istion = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : f'rate(istio_response_bytes_bucket{pod=~f"{self.pod}.*"}[1m])[10m:10s]'})
+        response_request_istion = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : 'rate(istio_response_bytes_bucket{pod=~"{}.*"}[1m])[10m:10s]'.format(self.pod)})
         plot_values = []
         for value in response_cpu_usage.json()['data']['result'][0]['values']:
             plot_values.append((float(value[1]))*100)
@@ -115,4 +115,8 @@ class PromClient:
         axb.plot([i for i in range(1,len(plot_values)+ 1)], plot_values, color='blue', label='pressure')
         plt.savefig('req.png')
 
+    def all_in(self):
+        self.cpu_data()
+        self.request_byte_istio()
+        self.request_number()
 

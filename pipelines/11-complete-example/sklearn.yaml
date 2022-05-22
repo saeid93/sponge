@@ -1,7 +1,7 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: sklearn-1
+  name: sklearn-prof-daqiq
 spec:
   name: iris
   predictors:
