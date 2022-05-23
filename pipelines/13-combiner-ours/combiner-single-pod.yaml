@@ -9,13 +9,13 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/templates:combiner
+        - image: sdghafouri/combiner:combiner
           name: node-combiner
           imagePullPolicy: Always
-        - image: sdghafouri/templates:model1
+        - image: sdghafouri/combiner:model1
           name: node-one
           imagePullPolicy: Always
-        - image: sdghafouri/templates:model2
+        - image: sdghafouri/combiner:model2
           name: node-two
           imagePullPolicy: Always
     graph:

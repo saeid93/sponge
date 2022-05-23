@@ -13,7 +13,7 @@ dataset_folder_path = os.path.join(
 )
 image_names = os.listdir(dataset_folder_path)
 
-num_loaded_images = 5
+num_loaded_images = 2
 
 def image_loader(folder_path, image_name):
     image = Image.open(
@@ -31,7 +31,7 @@ images = {
 # single node inferline
 gateway_endpoint="localhost:32000"
 deployment_name = 'inferline-cascade'
-namespace = "seldon"
+namespace = "saeid"
 sc = SeldonClient(
     gateway_endpoint=gateway_endpoint,
     gateway="istio",

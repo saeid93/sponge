@@ -9,7 +9,8 @@ class Node:
         logging.info(f"model features: {features}")
         logging.info(f"model names: {names}")
         logging.info(f"model meta: {meta}")
-        return [x.tolist() for x in features]
+        # TODO add some operation
+        return [x for x in features]
 
     def init_metadata(self):
         logging.info("metadata method  called")

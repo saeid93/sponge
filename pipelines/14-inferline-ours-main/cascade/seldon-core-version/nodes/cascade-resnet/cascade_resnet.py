@@ -49,6 +49,6 @@ class CascadeResnet(object):
         output = {
             'indices': list(map(int, list(indices))),
             'percentages': list(map(float, list(percentages))),
-            'max_prob_percentage': float(max_prob_percentage)}
+            'max_prob_percentage': float(max_prob_percentage),
+            'model_name': 'resnet'}
         return output
-        # return X
