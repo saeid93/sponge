@@ -76,6 +76,7 @@ class PromClient:
         plot_values = []
         for value in response_cpu_usage.json()['data']['result'][0]['values']:
             plot_values.append((float(value[1]))*100)
+        # TODO handle unrelateds
 
         fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -120,3 +121,5 @@ class PromClient:
         self.request_byte_istio()
         self.request_number()
 
+
+pr = PromClient('akbar')

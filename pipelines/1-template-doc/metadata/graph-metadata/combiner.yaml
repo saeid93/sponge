@@ -31,9 +31,7 @@ spec:
               - messagetype: tensor
                 schema:
                   names: [combiner-output]
-                  shape: [ 1 ]
-    - spec:
-        containers:
+                  shape: [ 1 ]  
         - image: seldonio/metadata-generic-node:0.4
           name: node-one
           env:
@@ -52,9 +50,7 @@ spec:
               - messagetype: tensor
                 schema:
                   names: [ c1 ]
-                  shape: [ 1 ]
-    - spec:
-        containers: 
+                  shape: [ 1 ]  
         - image: seldonio/metadata-generic-node:0.4
           name: node-two
           env:

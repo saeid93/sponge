@@ -2,9 +2,9 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: graph-with-combiner
+  name: combiner-single-pod
 spec:
-  name: graph-with-combiner
+  name: combiner-single-pod
   predictors:
   - componentSpecs:
     - spec:
@@ -12,13 +12,9 @@ spec:
         - image: sdghafouri/templates:combiner
           name: node-combiner
           imagePullPolicy: Always
-    - spec:
-        containers:
         - image: sdghafouri/templates:model1
           name: node-one
           imagePullPolicy: Always
-    - spec:
-        containers: 
         - image: sdghafouri/templates:model2
           name: node-two
           imagePullPolicy: Always
