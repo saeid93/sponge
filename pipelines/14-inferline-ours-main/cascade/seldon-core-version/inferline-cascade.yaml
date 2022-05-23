@@ -2,34 +2,34 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: combiner-separate-pods
+  name: inferline-cascade
 spec:
-  name: combiner-separate-pods
+  name: inferline-cascade
   predictors:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/combiner:combiner
-          name: node-combiner
+        - image: sdghafouri/inferline:cascade-inception
+          name: cascade-inception
           imagePullPolicy: Always
     - spec:
         containers:
-        - image: sdghafouri/combiner:model1
-          name: node-one
+        - image: sdghafouri/inferline:cascade-resnet
+          name: cascade-resnet
           imagePullPolicy: Always
     - spec:
         containers: 
-        - image: sdghafouri/combiner:model2
-          name: node-two
+        - image: sdghafouri/inferline:cascade-combiner
+          name: cascade-combiner
           imagePullPolicy: Always
     graph:
-      name: node-combiner
+      name: cascade-combiner
       type: COMBINER
       children:
-      - name: node-one
+      - name: cascade-resnet
         type: MODEL
         children: []
-      - name: node-two
+      - name: cascade-inception 
         type: MODEL
         children: [] 
     name: example
