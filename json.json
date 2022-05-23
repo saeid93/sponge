@@ -1,0 +1,139 @@
+{
+    "name": "example",
+    "models": {
+      "node-combiner": {
+        "name": "my-model-name",
+        "platform": "seldon",
+        "versions": [
+          "my-model-version-01"
+        ],
+        "inputs": [
+          {
+            "messagetype": "tensor",
+            "schema": {
+              "names": [
+                "a",
+                "b",
+                "c",
+                "d"
+              ],
+              "shape": [
+                4
+              ]
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "messagetype": "tensor",
+            "schema": {
+              "shape": [
+                1
+              ]
+            }
+          }
+        ],
+        "custom": {
+          "author": "seldon-dev"
+        }
+      },
+      "node-one": {
+        "name": "my-model-name",
+        "platform": "seldon",
+        "versions": [
+          "my-model-version-01"
+        ],
+        "inputs": [
+          {
+            "messagetype": "tensor",
+            "schema": {
+              "names": [
+                "a",
+                "b",
+                "c",
+                "d"
+              ],
+              "shape": [
+                4
+              ]
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "messagetype": "tensor",
+            "schema": {
+              "shape": [
+                1
+              ]
+            }
+          }
+        ],
+        "custom": {
+          "author": "seldon-dev"
+        }
+      },
+      "node-two": {
+        "name": "my-model-name",
+        "platform": "seldon",
+        "versions": [
+          "my-model-version-01"
+        ],
+        "inputs": [
+          {
+            "messagetype": "tensor",
+            "schema": {
+              "names": [
+                "a",
+                "b",
+                "c",
+                "d"
+              ],
+              "shape": [
+                4
+              ]
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "messagetype": "tensor",
+            "schema": {
+              "shape": [
+                1
+              ]
+            }
+          }
+        ],
+        "custom": {
+          "author": "seldon-dev"
+        }
+      }
+    },
+    "graphinputs": [
+      {
+        "messagetype": "tensor",
+        "schema": {
+          "names": [
+            "a",
+            "b",
+            "c",
+            "d"
+          ],
+          "shape": [
+            4
+          ]
+        }
+      }
+    ],
+    "graphoutputs": [
+      {
+        "messagetype": "tensor",
+        "schema": {
+          "shape": [
+            1
+          ]
+        }
+      }
+    ]
+  }

@@ -129,7 +129,9 @@ class StressGenerator:
 
 
 sc = StressGenerator(url='http://localhost:32000/seldon/default/sklearn-prof-daqiq/api/v1.0/predictions')
+sc.set_input()
 sc.run()
+
 
 
 
