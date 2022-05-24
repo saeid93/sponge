@@ -16,9 +16,18 @@ from prom_client import *
 
 def nextParam():
     return random.randint(100, 500)
+
+def image_loader(folder_path, image_name):
+    image = Image.open(
+        os.path.join(folder_path, image_name))
+    # if there was a need to filter out only color images
+    # if image.mode == 'RGB':
+    #     pass
+    return image
+
         
 class StressGenerator:
-    def __init__(self, url, is_dataset = False, data_path = None):
+    def __init__(self, url, is_dataset = False, data_path = None, mode,dataset_folder_path):
         self.final_data = []
         self.url = url
         self.is_dataset = is_dataset
@@ -30,6 +39,8 @@ class StressGenerator:
                 
             }
         self.data_input = {"data":{"ndarray":[[1.0, 2.0, 5.0, 6.0]]}}
+        self.mode = mode
+        self.data_folder_path = dataset_folder_path
 
     def set_request_type(self, type):
         self.type = type
@@ -38,9 +49,16 @@ class StressGenerator:
         self.headers = headers
 
     def set_input(self, input):
-        self.data_input = {
-            "data": input
-        }
+        if self.mode == 0:
+            self.data_input = {
+                "data": input
+            }
+        else:
+            self.data_input = {
+                image_name: image_loader(
+                    self.dataset_folder_path, image_name) for image_name in image_names[
+                        :num_loaded_images]}
+
 
 
 
@@ -62,11 +80,28 @@ class StressGenerator:
         start_time = int(round(time.time() * 1000))
         try:
             if self.type == "POST":
-                resp = await session.post(url=self.url,
-                                            json=self.data_input,
-                                            ssl=False, **kwargs)
-                end_time = int(round(time.time() * 1000))
-                self.final_data.append((index, resp.status, 1, start_time, end_time, end_time - start_time))
+                if self.mode == 0:
+                    resp = await session.post(url=self.url,
+                                                json=self.data_input,
+                                                ssl=False, **kwargs)
+                    end_time = int(round(time.time() * 1000))
+                    self.final_data.append((index, resp.status, 1, start_time, end_time, end_time - start_time))
+                
+                else:
+                    gateway_endpoint="localhost:32000"
+                    deployment_name = 'inferline-cascade'
+                    namespace = "saeid"
+                    sc = SeldonClient(
+                        gateway_endpoint=gateway_endpoint,
+                        gateway="istio",
+                        transport="rest",
+                        deployment_name=deployment_name,
+                        namespace=namespace)
+                    image_name, image = self.data_input.items()[random.randint(0,len(self.data_input)-1)]
+                    response = sc.predict(data = image)
+                    end_time = int(round(time.time() * 1000))
+                    self.final_data.append((index, response.status, 1, start_time, end_time, end_time - start_time))
+                
             else:
                 resp = await session.get(url=self.url, ssl=False, **kwargs)
                 end_time = int(round(time.time() * 1000))
