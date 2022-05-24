@@ -10,14 +10,17 @@ spec:
         containers:
         - image: sdghafouri/combiner:router
           name: node-router
+          imagePullPolicy: Always
     - spec:
         containers:
         - image: sdghafouri/combiner:model1
           name: node-model1
+          imagePullPolicy: Always
     - spec:
         containers:
         - image: sdghafouri/combiner:model2
           name: node-model2
+          imagePullPolicy: Always
     graph:
       name: node-router
       type: ROUTER
@@ -29,4 +32,6 @@ spec:
         type: MODEL
         children: []   
     name: seldon-graph-with-router
+    labels:
+      sidecar.istio.io/inject: "true"
     replicas: 1
