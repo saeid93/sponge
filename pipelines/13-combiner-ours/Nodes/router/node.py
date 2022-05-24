@@ -13,8 +13,14 @@ class Node:
         logging.info(f"model features: {features}")
         logging.info(f"model names: {names}")
         logging.info(f"model meta: {meta}")
-        route = random.randint(0, NUMBER_OF_ROUTES)
-        logging.info(f"routing to: {route}")
+        # route = random.randint(0, NUMBER_OF_ROUTES)
+        route = 0
+        if features[0][0] == 1:
+            route = 1
+            logging.info(f"model route: {route}")
+        else:
+            logging.info(f"routing to: {route}")
+
         return route
 
     def init_metadata(self):
