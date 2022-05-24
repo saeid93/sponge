@@ -6,12 +6,13 @@ logger = logging.getLogger(__name__)
 
 class Node:
     def predict(self, features, names=[], meta=[]):
-        logging.info(f"model features: {type(features)}")
-        logging.info(f"model names: {type(names)}")
-        logging.info(f"model meta: {type(meta)}")
-        features += 2
+        features = features["features"][0]
+        logging.info(f"model features: {features}")
+        logging.info(f"model names: {names}")
+        logging.info(f"model meta: {meta}")
+        # features += 2
         return {
-            "features": features.tolist(),
+            "features": features,
             "names": names,
             "model": 'model2'}
 
