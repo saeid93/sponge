@@ -36,26 +36,28 @@ class CascadeInception(object):
     def predict(self, last_step_output, features_names=None):
         if self.loaded == False:
             self.load()
-        logger.info(f"type X : {type(last_step_output['X'])}")
-        logger.info(f"shape of np X: {np.array(last_step_output['X']).shape}")
-        logger.info(f"input keys: {last_step_output.keys()}")
-        for k, v in last_step_output.items():
-            logging.info(f"type {k}: {type(v)}")
-        # logger.info(f"input values: {X.values()}")
-        # logger.info(f"Incoming input:\n{X}\nwas recieved!")
-        # X = Image.fromarray(X.astype(np.uint8))
-        # X = self.transform(X)
-        # batch = torch.unsqueeze(X, 0)
-        # out = self.resnet(batch)
-        # _, indices = torch.sort(out, descending=True)
-        # indices = indices.detach().numpy()[0]
-        # percentages = torch.nn.functional.softmax(out, dim=1)[0] * 100
-        # percentages = percentages.detach().numpy()
-        # max_prob_percentage = max(percentages)
-        # output = {
-        #     'indices': list(map(int, list(indices))),
-        #     'percentages': list(map(float, list(percentages))),
-        #     'max_prob_percentage': float(max_prob_percentage),
-        #     'model_name': 'inception'}
-        # return output
-        return []
+        resnet_max_prob_percentage = last_step_output[
+            'max_prob_percentage']
+        resnet_max_prob_class = last_step_output[
+            'max_prob_class']
+        X = np.array(last_step_output['X'])
+        X = Image.fromarray(X.astype(np.uint8))
+        X = self.transform(X)
+        batch = torch.unsqueeze(X, 0)
+        out = self.resnet(batch)
+        percentages = torch.nn.functional.softmax(out, dim=1)[0] * 100
+        percentages = percentages.detach().numpy()
+        max_prob_percentage = max(percentages)
+        max_prob_class = np.argmax(percentages)
+        ref_model = 'resnet'
+        final_max_prob_percentage = resnet_max_prob_percentage
+        final_max_prob_class = resnet_max_prob_class
+        if max_prob_percentage > resnet_max_prob_percentage:
+            final_max_prob_percentage = max_prob_percentage
+            final_max_prob_class = max_prob_class
+            ref_model = 'inception'
+        output = {
+            'final_max_prob_percentage': float(final_max_prob_percentage),
+            'final_max_prob_class': int(final_max_prob_class),
+            'ref_model': ref_model}
+        return output
