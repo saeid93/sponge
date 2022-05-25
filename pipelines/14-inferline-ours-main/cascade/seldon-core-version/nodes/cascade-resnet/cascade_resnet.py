@@ -49,23 +49,22 @@ class CascadeResnet(object):
         X_trans = self.transform(X_trans)
         batch = torch.unsqueeze(X_trans, 0)
         out = self.resnet(batch)
-        _, indices = torch.sort(out, descending=True)
-        indices = indices.detach().numpy()[0]
         percentages = torch.nn.functional.softmax(out, dim=1)[0] * 100
         percentages = percentages.detach().numpy()
         max_prob_percentage = max(percentages)
+        max_prob_class = np.argmax(percentages)
         if max_prob_percentage > self.THRESHOLD:
             output = {
-                'indices': list(map(int, list(indices))),
-                'percentages': list(map(float, list(percentages))),
-                'max_prob_percentage': float(max_prob_percentage),
+                'final_max_prob_class': int(max_prob_class),
+                'final_max_prob_percentage': float(max_prob_percentage),
+                'model_name': 'resnet',
                 'route': -2}
         else:
             output = {
                 'X': X.tolist(),
-                'indices': list(map(int, list(indices))),
-                'percentages': list(map(float, list(percentages))),
+                'max_prob_class': int(max_prob_class),
                 'max_prob_percentage': float(max_prob_percentage),
+                'model_name': 'resnet',
                 'route': 0}
         logger.info(f"Output:\n{output}\nwas sent!")
         return output

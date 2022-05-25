@@ -11,8 +11,14 @@ data_folder_path = '/home/cc/object-store/datasets'
 dataset_folder_path = os.path.join(
     data_folder_path, 'ILSVRC/Data/DET/test'
 )
-image_names = os.listdir(dataset_folder_path)
+classes_file_path = os.path.join(
+    data_folder_path, 'imagenet_classes.txt'
+)
 
+image_names = os.listdir(dataset_folder_path)
+image_names.sort()
+with open(classes_file_path) as f:
+    classes = [line.strip() for line in f.readlines()]
 num_loaded_images = 10
 
 def image_loader(folder_path, image_name):
@@ -48,11 +54,13 @@ for image_name, image in images.items():
     results[image_name] = response
 
 for image_name, response in results.items():
-    print(f"image name: {image_name}")
-    max_prob = response.response['jsonData']['max_prob_percentage']
-    print(f"resnet max_prob_percentage: {max_prob}")
-    # print() TODO print the path taken 
-# print(f"resnet indicies: {response.response['jsonData']['indices']}")
-# print(f"resnet max_prob_percentage: {response.response['jsonData']['max_prob_percentage']}")
-# print(f"resnet percentages: {response.response['jsonData']['percentages']}")
-# print() TODO print the path taken 
+    print(f"\nimage name: {image_name}")
+    if response.success:
+        request_path = response.response['meta']['requestPath'].keys()
+        pipeline_response = response.response['jsonData']
+        print(f"request path: {request_path}")
+        print(f"response: \n{pipeline_response}")
+        print(f"image class: {classes[pipeline_response['final_max_prob_class']]}")
+    else:
+        print(f"{image_name} -> {response.msg}")
+    # print(f"resnet max_prob_percentage: {max_prob}")
