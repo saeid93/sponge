@@ -13,7 +13,7 @@ dataset_folder_path = os.path.join(
 )
 image_names = os.listdir(dataset_folder_path)
 
-num_loaded_images = 2
+num_loaded_images = 10
 
 def image_loader(folder_path, image_name):
     image = Image.open(

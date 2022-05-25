@@ -11,17 +11,17 @@ logger = logging.getLogger(__name__)
 class Node:
     def route(self, features, names=[], meta=[]):
         logging.info(f"model features: {features}")
-        logging.info(f"model names: {names}")
-        logging.info(f"model meta: {meta}")
-        route = int(np.random.choice([-2, 0]))
-        # route = random.randint(-2, 0)
-        # logging.info(f"model route: {route}")
-        # route = 0
-        # if features[0][0] == 1:
-        #     route = 1
-        #     logging.info(f"model route: {route}")
-        # else:
-        #     logging.info(f"routing to: {route}")
+        logging.info("inpu feature type: {}".format(type(features)))
+        logging.info(f"features types: {type(features['features'])}")
+        logging.info(f"features elements types: {type(features['features'][0])}")
+        route = features['route']
+        # logging.info(f"model names: {names}")
+        # logging.info(f"model meta: {meta}")
+        # try:
+        # if route == 0:
+        #     features['route'] += 1
+        # if route != 0:
+        #     features['route'] -= 1
 
         return route
 
