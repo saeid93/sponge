@@ -9,11 +9,20 @@ class Node:
         logging.info(f"model features: {features}")
         logging.info(f"model names: {names}")
         logging.info(f"model meta: {meta}")
+        route = int(np.random.choice([-2, 0]))
         features *= 2
-        return {
-            "features": features.tolist(),
-            "names": names,
-            "model": 'model1'}
+        if route == 0:
+            return {
+                "features": features.tolist(),
+                "names": names,
+                "route": route,
+                "model": 'model1'}
+        if route != 0:
+            return {
+                "features": features.tolist(),
+                "names": names,
+                "route": route,
+                "model": 'model8'}
 
     def init_metadata(self):
         logging.info("metadata method  called")
