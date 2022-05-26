@@ -9,7 +9,7 @@ COPY . .
 EXPOSE 5000
 EXPOSE 9000
 
-ENV MODEL_NAME cascade_resnet.CascadeResnet
+ENV MODEL_NAME image_model.ImageModel
 ENV SERVICE_TYPE MODEL
 # ENV FLASK_DEBUG True
 ENV TORCH_HOME /app/.torch
