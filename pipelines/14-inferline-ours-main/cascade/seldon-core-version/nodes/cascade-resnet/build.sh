@@ -1,3 +1,4 @@
-docker build --tag=inferline:cascade-resnet . && \
-docker tag inferline:cascade-resnet sdghafouri/inferline:cascade-resnet && \
-docker push sdghafouri/inferline:cascade-resnet
+IMAGE_NAME=inferline:cascade-resnet && \
+docker build --tag=$IMAGE_NAME . && \
+docker tag $IMAGE_NAME sdghafouri/$IMAGE_NAME && \
+docker push sdghafouri/$IMAGE_NAME
