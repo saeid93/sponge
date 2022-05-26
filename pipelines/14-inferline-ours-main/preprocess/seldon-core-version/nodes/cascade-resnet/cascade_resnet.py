@@ -33,6 +33,7 @@ class CascadeResnet(object):
 
     def load(self):
         logger.info('Loading the ML models')
+        # try:
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
         self.resnet = models.resnet101(pretrained=True)

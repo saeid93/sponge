@@ -1,3 +1,4 @@
-docker build --tag=inferline:cascade-router . && \
-docker tag inferline:cascade-router sdghafouri/inferline:cascade-router && \
-docker push sdghafouri/inferline:cascade-router
+IMAGE_NAME=inferline:cascade-router && \
+docker build --tag=$IMAGE_NAME . && \
+docker tag $IMAGE_NAME sdghafouri/$IMAGE_NAME && \
+docker push sdghafouri/$IMAGE_NAME
