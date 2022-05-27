@@ -12,15 +12,6 @@ logger = logging.getLogger(__name__)
 class ImageModel(object):
     def __init__(self) -> None:
         super().__init__()
-        # standard resnet image transformation
-        # self.transform = transforms.Compose([
-        #     transforms.Resize(256),
-        #     transforms.CenterCrop(224),
-        #     transforms.ToTensor(),
-        #     transforms.Normalize(
-        #         mean=[0.485, 0.456, 0.406],
-        #         std=[0.229, 0.224, 0.225]
-        #     )])
         self.loaded = False
         try:
             self.MODEL_NAME = os.environ['MODEL_NAME']
@@ -40,7 +31,6 @@ class ImageModel(object):
         self.loaded = True
         logger.info('model loading complete!')
 
-    # def predict(self, X, features_names=None):
     def predict(self, X_trans, features_names=None):
         if self.loaded == False:
             self.load()

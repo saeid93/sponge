@@ -1,8 +1,6 @@
 python-dateutil==2.8.1
 elasticsearch==7.10.1
 pydantic
-numpy==1.19.5
-pandas==1.2.1
 google.cloud.monitoring==2.2.1
 google.cloud.logging==2.2.0
 kubernetes==11.0.0
@@ -14,3 +12,6 @@ Flask==1.1.1
 Jinja2==3.0.3
 itsdangerous==2.0.1
 Werkzeug==2.0.2
+numpy==1.19.5
+pandas==1.2.1
+pillow

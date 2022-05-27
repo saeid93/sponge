@@ -7,7 +7,7 @@ import numpy as np
 
 from seldon_core.seldon_client import SeldonClient
 
-data_folder_path = '/home/cc/object-store/datasets'
+data_folder_path = '/home/cc/my_mounting_point/datasets'
 dataset_folder_path = os.path.join(
     data_folder_path, 'ILSVRC/Data/DET/test'
 )
@@ -63,4 +63,3 @@ for image_name, response in results.items():
         print(f"image class: {classes[pipeline_response['final_max_prob_class']]}")
     else:
         print(f"{image_name} -> {response.msg}")
-    # print(f"resnet max_prob_percentage: {max_prob}")
