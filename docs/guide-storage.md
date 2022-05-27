@@ -23,6 +23,7 @@ This installation gives access to a beautiful GUI
 In k8s you have to set a PV and a claim for that PVC attached to your volume type which in our case is NFS
 1. Set up the PV and point it to the NFS directory and IP (in our case 10.140.81.236 and /mnt/myshareddir)
 ```
+IP=10.140.83.56
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: PersistentVolume
@@ -38,7 +39,7 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    server: 10.140.83.56
+    server: $IP
     path: "/mnt/myshareddir"
 EOF
 ```
