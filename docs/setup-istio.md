@@ -13,7 +13,7 @@ kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samp
 ```
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/kiali.yaml
 ```
-5. to enable outside access to it change it service to nodeport on port 32001
+5. to enable outside access to it change it service to LoadBalancer on nodeport 32001
 ```
 kubectl edit svc kiali -n istio-system
 ```
