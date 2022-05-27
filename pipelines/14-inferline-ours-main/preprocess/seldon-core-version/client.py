@@ -7,7 +7,7 @@ import numpy as np
 
 from seldon_core.seldon_client import SeldonClient
 
-data_folder_path = '/home/cc/object-store/datasets'
+data_folder_path = '/home/cc/my_mounting_point/datasets'
 dataset_folder_path = os.path.join(
     data_folder_path, 'ILSVRC/Data/DET/test'
 )
