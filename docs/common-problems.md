@@ -61,3 +61,8 @@ containers:
 ```
 
 5. Following https://github.com/SeldonIO/seldon-core/issues/4102 avoid calling load on the server's init function.
+6. There is a known bug in Chameleon cloud, the mounted object storge keeps get disconnected, while fixing it these two command are simple workaround
+```
+sudo umount -l ~/my_mounting_point 
+cc-cloudfuse mount ~/my_mounting_point
+```
