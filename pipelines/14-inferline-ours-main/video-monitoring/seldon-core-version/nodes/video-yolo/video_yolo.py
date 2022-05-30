@@ -1,14 +1,5 @@
-# TODO check all these
-
-
-
-import os
 import logging
-import numpy as np
 import torch
-from torchvision import models
-from torchvision import transforms
-from PIL import Image
 from copy import deepcopy
 
 logger = logging.getLogger(__name__)
@@ -24,7 +15,7 @@ class VideoYolo(object):
             "cuda:0" if torch.cuda.is_available() else "cpu")
         # self.resnet = models.resnet101(pretrained=True)
         self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
-        self.resnet.eval()
+        # self.resnet.eval()
         self.loaded = True
         logger.info('model loading complete!')
 
@@ -38,29 +29,27 @@ class VideoYolo(object):
         logger.info(f"Output:\n{output}\nwas sent!")
         return output
 
-    def get_cropped(self, objs):
-        # TODO 1. get cropped
-        # TODO selected calsses subject to change based on the extra
-        # information on the pipeline
+    def get_cropped(result):
+        """
+        crops selected objects for
+        the subsequent nodes
+        """
+        result = result.crop()
         liscense_labels = ['car', 'truck']
         car_labels = ['car']
         person_labels = ['person']
-        output_list = {'people': [], 'car': [], 'liscense': []}
-        objs = objs.crop()
-        for obj in objs:
+        output_list = {'person': [], 'car': [], 'liscense': []}
+        for obj in result:
             for label in liscense_labels:
                 if label in obj['label']:
-                    output_list['liscense'].append(deepcopy(obj))
+                    output_list['liscense'].append(deepcopy(obj['im']))
                     break
             for label in car_labels:
                 if label in obj['label']:
-                    output_list['car'].append(deepcopy(obj))
+                    output_list['car'].append(deepcopy(obj['im']))
                     break
             for label in person_labels:
                 if label in obj['label']:
-                    output_list['person'].append(deepcopy(obj))
+                    output_list['person'].append(deepcopy(obj['im']))
                     break
-        # 2. check if there are person or car in the cropped
-        # 3. return the results as people and person keys to the next step (list for each key)
-        # 4. make it like the format
         return output_list

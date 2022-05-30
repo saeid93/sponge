@@ -1,0 +1,22 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: inferline-video-test
+spec:
+  name: inferline-video-test
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: sdghafouri/inferline:video-yolo
+          name: video-yolo
+          imagePullPolicy: Always
+    graph:
+      name: video-yolo
+      type: MODEL
+      children: []
+    name: example
+    labels:
+      sidecar.istio.io/inject: "true"
+    replicas: 1
