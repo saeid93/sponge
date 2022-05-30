@@ -8,18 +8,11 @@ from PIL import Image
 
 logger = logging.getLogger(__name__)
 
-class VideoResnet(object):
+class VideoResnetHuman(object):
     def __init__(self) -> None:
         super().__init__()
         self.loaded = False
         # standard resnet image transformation
-        try:
-            self.THRESHOLD = int(os.environ['CASCADE_RESNET_THRESHOLD'])
-            logging.info(f'THRESHOLD set to: {self.THRESHOLD}')
-        except KeyError as e:
-            self.THRESHOLD = 85
-            logging.warning(
-                f"THRESHOLD env variable not set, using default value: {self.THRESHOLD}")
         try:
             self.WITH_PREPROCESSOR = bool(os.environ['WITH_PREPROCESSOR'])
             logging.info(f'WITH_PREPROCESSOR set to: {self.WITH_PREPROCESSOR}')

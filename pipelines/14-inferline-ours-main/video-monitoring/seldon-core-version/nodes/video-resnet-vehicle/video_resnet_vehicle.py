@@ -14,13 +14,6 @@ class VideoResnet(object):
         self.loaded = False
         # standard resnet image transformation
         try:
-            self.THRESHOLD = int(os.environ['CASCADE_RESNET_THRESHOLD'])
-            logging.info(f'THRESHOLD set to: {self.THRESHOLD}')
-        except KeyError as e:
-            self.THRESHOLD = 85
-            logging.warning(
-                f"THRESHOLD env variable not set, using default value: {self.THRESHOLD}")
-        try:
             self.WITH_PREPROCESSOR = bool(os.environ['WITH_PREPROCESSOR'])
             logging.info(f'WITH_PREPROCESSOR set to: {self.WITH_PREPROCESSOR}')
         except KeyError as e:
