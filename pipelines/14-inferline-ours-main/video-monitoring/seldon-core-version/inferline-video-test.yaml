@@ -12,6 +12,9 @@ spec:
         - image: sdghafouri/inferline:video-yolo
           name: video-yolo
           imagePullPolicy: Always
+          # env:
+          #   - name: FLASK_DEBUG
+          #     value: 'True'
     graph:
       name: video-yolo
       type: MODEL

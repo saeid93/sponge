@@ -1,6 +1,8 @@
 import logging
 import torch
 from copy import deepcopy
+import os
+# import torchvision
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +15,10 @@ class VideoYolo(object):
         logger.info('Loading the ML models')
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
-        # self.resnet = models.resnet101(pretrained=True)
+        # self.model = torchvision.models.resnet101(pretrained=True)
+        # if not os.path.isdir('/app/.torch/hub'):
         self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
+        logger.info('model loaded!')
         # self.resnet.eval()
         self.loaded = True
         logger.info('model loading complete!')
@@ -29,7 +33,7 @@ class VideoYolo(object):
         logger.info(f"Output:\n{output}\nwas sent!")
         return output
 
-    def get_cropped(result):
+    def get_cropped(self, result):
         """
         crops selected objects for
         the subsequent nodes
