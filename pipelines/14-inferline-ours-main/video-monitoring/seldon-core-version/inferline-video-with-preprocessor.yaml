@@ -1,0 +1,63 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: inferline-video-with-preprocessor
+spec:
+  name: inferline-video-with-preprocessor
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: sdghafouri/inferline:video-transformer
+          name: video-transformer
+          imagePullPolicy: Always
+    - spec:
+        containers:
+        - image: sdghafouri/inferline:video-inception
+          name: video-inception
+          imagePullPolicy: Always
+          env:
+            - name: WITH_PREPROCESSOR
+              value: 'True'
+    - spec:
+        containers:
+        - image: sdghafouri/inferline:video-resnet
+          name: video-resnet
+          imagePullPolicy: Always
+          env:
+            - name: WITH_PREPROCESSOR
+              value: 'True'
+    - spec:
+        containers: 
+        - image: sdghafouri/inferline:video-alexnet
+          name: video-alexnet
+          imagePullPolicy: Always
+          env:
+            - name: WITH_PREPROCESSOR
+              value: 'True'
+    - spec:
+        containers: 
+        - image: sdghafouri/inferline:video-combiner
+          name: video-combiner
+          imagePullPolicy: Always
+    graph:
+      name: video-transformer
+      type: TRANSFORMER
+      children:
+      - name: video-combiner
+        type: COMBINER
+        children:
+        - name: video-alexnet
+          type: MODEL
+          children: []
+        - name: video-inception 
+          type: MODEL
+          children: []
+        - name: video-resnet
+          type: MODEL
+          children: []
+    name: example
+    labels:
+      sidecar.istio.io/inject: "true"
+    replicas: 1
