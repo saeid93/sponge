@@ -55,7 +55,9 @@ for image_name, image in images.items():
 
 for image_name, response in results.items():
     print(f"\nimage name: {image_name}")
+    print(response)
     if response.success:
+
         request_path = response.response['meta']['requestPath'].keys()
         pipeline_response = response.response['jsonData']
         print(f"request path: {request_path}")

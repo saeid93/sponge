@@ -9,7 +9,7 @@ COPY . .
 EXPOSE 5000
 EXPOSE 9000
 
-ENV MODEL_NAME video_resnet_human.VideoResnetHuman
+ENV MODEL_NAME video_openaplr.VideoOpenAPLR
 ENV SERVICE_TYPE MODEL
 # ENV FLASK_DEBUG True
 ENV TORCH_HOME /app/.torch

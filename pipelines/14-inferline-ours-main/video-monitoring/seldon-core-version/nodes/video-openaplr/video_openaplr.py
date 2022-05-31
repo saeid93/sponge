@@ -8,7 +8,7 @@ from PIL import Image
 
 logger = logging.getLogger(__name__)
 
-class VideoResnetHuman(object):
+class VideoOpenAPLR(object):
     def __init__(self) -> None:
         super().__init__()
         self.loaded = False
@@ -43,9 +43,9 @@ class VideoResnetHuman(object):
         if self.loaded == False:
             self.load()
         logger.info(f"Incoming input:\n{X}\nwas recieved!")
-        if X['person'] == []:
+        if X['liscense'] == []:
             return []
-        X = X['person']
+        X = X['liscense']
         # if self.WITH_PREPROCESSOR:
         #     X_trans = torch.from_numpy(X.astype(np.float32))
         # else:

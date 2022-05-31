@@ -51,6 +51,8 @@ for image_name, image in images.items():
     response = sc.predict(
         data=image
     )
+
+
     results[image_name] = response
 
 for image_name, response in results.items():
