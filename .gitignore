@@ -225,5 +225,6 @@ ste*
 raw-repo
 runs
 *.pt
+*data.json
 *.tar
 wget-log

@@ -23,7 +23,7 @@ image_names = os.listdir(dataset_folder_path)
 image_names.sort()
 with open(classes_file_path) as f:
     classes = [line.strip() for line in f.readlines()]
-num_loaded_images = 4
+num_loaded_images = 20
 
 def image_loader(folder_path, image_name):
     image = Image.open(
@@ -40,7 +40,7 @@ images = {
 
 # single node inferline
 gateway_endpoint="localhost:32000"
-deployment_name = 'inferline-video-test'
+deployment_name = 'inferline-video'
 namespace = "saeid"
 sc = SeldonClient(
     gateway_endpoint=gateway_endpoint,
