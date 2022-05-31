@@ -2,6 +2,7 @@ import logging
 import torch
 from copy import deepcopy
 import os
+import numpy as np
 # import torchvision
 
 logger = logging.getLogger(__name__)
@@ -26,7 +27,12 @@ class VideoYolo(object):
     def predict(self, X, features_names=None):
         if self.loaded == False:
             self.load()
-        logger.info(f"Incoming input:\n{X}\nwas recieved!")
+        # logger.info(f"Incoming input:\n{X}\nwas recieved!")
+        logger.info(f"input type: {type(X)}")
+        logger.info(f"input shape: {X.shape}")
+        X = np.array(X, dtype=np.uint8)
+        logger.info(f"output type: {type(X)}")
+        logger.info(f"output shape: {X.shape}")
         # TODO some transformation might be needed
         objs = self.model(X)
         output = self.get_cropped(objs)
@@ -46,14 +52,14 @@ class VideoYolo(object):
         for obj in result:
             for label in liscense_labels:
                 if label in obj['label']:
-                    output_list['liscense'].append(deepcopy(obj['im']))
+                    output_list['liscense'].append(deepcopy(obj['im'].tolist()))
                     break
             for label in car_labels:
                 if label in obj['label']:
-                    output_list['car'].append(deepcopy(obj['im']))
+                    output_list['car'].append(deepcopy(obj['im'].tolist()))
                     break
             for label in person_labels:
                 if label in obj['label']:
-                    output_list['person'].append(deepcopy(obj['im']))
+                    output_list['person'].append(deepcopy(obj['im'].tolist()))
                     break
         return output_list

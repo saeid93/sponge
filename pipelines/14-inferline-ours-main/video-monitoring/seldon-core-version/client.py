@@ -7,6 +7,10 @@ import numpy as np
 
 from seldon_core.seldon_client import SeldonClient
 
+import os
+os.system('sudo umount -l ~/my_mounting_point')
+os.system('cc-cloudfuse mount ~/my_mounting_point')
+
 data_folder_path = '/home/cc/my_mounting_point/datasets'
 dataset_folder_path = os.path.join(
     data_folder_path, 'ILSVRC/Data/DET/test'
@@ -19,7 +23,7 @@ image_names = os.listdir(dataset_folder_path)
 image_names.sort()
 with open(classes_file_path) as f:
     classes = [line.strip() for line in f.readlines()]
-num_loaded_images = 5
+num_loaded_images = 4
 
 def image_loader(folder_path, image_name):
     image = Image.open(
