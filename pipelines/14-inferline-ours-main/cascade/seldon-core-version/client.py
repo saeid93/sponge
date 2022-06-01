@@ -2,6 +2,7 @@ import os
 import PIL
 from PIL import Image
 from typing import Dict
+from PIL import ImageFile
 
 import numpy as np
 
@@ -37,7 +38,7 @@ images = {
 # single node inferline
 gateway_endpoint="localhost:32000"
 deployment_name = 'inferline-cascade-with-preprocessor'
-namespace = "saeid"
+namespace = "alrieza"
 sc = SeldonClient(
     gateway_endpoint=gateway_endpoint,
     gateway="istio",

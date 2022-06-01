@@ -122,21 +122,24 @@ class PromClient:
         self.request_byte_istio()
         self.request_number()
 
-    def cpu_by_deployment(self):
-        query = 'rate(container_cpu_usage_seconds_total{pod=~"%s.*"}[1m])[10m:10s]' % self.deployment_name
+    def cpu_by_deployment(self, image_pattern):
+        query = f'rate(container_cpu_usage_seconds_total{{pod=~"{self.deployment_name}.*", image=~".+{image_pattern}.*"}}[1m])[10m:10s]' 
         response_cpu_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query })
-        plot_values = []
-        print(response_request_istion.json()['data'])
-        for value in response_cpu_usage.json()['data']['result'][0]['values']:
-            plot_values.append((float(value[1]))*100)
+        plot_values = [[] for _ in range(len(response_cpu_usage.json()['data']['result']))]
+        print(response_cpu_usage.json()['data'])
+        for i in range(len(response_cpu_usage.json()['data']['result'])):
+            for value in response_cpu_usage.json()['data']['result'][i]['values']:
+                plot_values[i].append((float(value[1]))*100)
 
         fig, ax = plt.subplots(figsize=(10, 6))
 
         axb = ax.twinx()
         axb.set_ylabel('request')
         print(plot_values)
-        axb.plot([i for i in range(1,len(plot_values)+ 1)], plot_values, color='blue', label='pressure')
+        axb.plot([i for i in range(1,len(plot_values[0])+ 1)], plot_values[0], color='blue', label='pressure')
+        axb.plot([i for i in range(1,len(plot_values[1])+ 1)], plot_values[1], color='red', label='pressure')
+
         plt.savefig('req.png')
 
 pr = PromClient(deployment_name = "inferline-preprocess")
-pr.cpu_by_deployment()
+pr.cpu_by_deployment('sdghafouri')
