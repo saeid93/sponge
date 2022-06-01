@@ -37,7 +37,7 @@ images = {
 # single node inferline
 gateway_endpoint="localhost:32000"
 deployment_name = 'inferline-preprocess'
-namespace = "saeid"
+namespace = "alrieza"
 sc = SeldonClient(
     gateway_endpoint=gateway_endpoint,
     gateway="istio",
@@ -55,7 +55,6 @@ for image_name, image in images.items():
 
 for image_name, response in results.items():
     print(f"\nimage name: {image_name}")
-    print(response)
     if response.success:
 
         request_path = response.response['meta']['requestPath'].keys()

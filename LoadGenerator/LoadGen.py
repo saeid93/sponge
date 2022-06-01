@@ -7,8 +7,9 @@ import PIL
 from PIL import Image
 from typing import Dict
 from abc import ABC, abstractmethod
-from multiprocessing import Process
+from multiprocessing import Process, Manager
 import numpy as np
+from PIL import ImageFile
 
 from seldon_core.seldon_client import SeldonClient
 
@@ -25,6 +26,7 @@ import math
 
 
 def nextParam():
+    return 3
     return random.randint(5, 20)
 
 def image_loader(folder_path, image_name):
@@ -38,7 +40,10 @@ def image_loader(folder_path, image_name):
         
 class StressGenerator:
     def __init__(self, url=None, is_dataset = False,mode='seldon', data_path = None):
-        self.final_data = []
+        manager = Manager()
+        self.final_data = manager.dict()
+
+        # self.final_data = []
         self.url = url
         self.is_dataset = is_dataset
         self.data_path = data_path
@@ -190,7 +195,7 @@ class StressGeneratorSeldon(StressGenerator):
         self.deployment_name = deployment_name
         self.namespace = namespace
         self.num_loaded_images = 2
-
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
         self.image_names = os.listdir(self.dataset_folder_path)
         self.image_names.sort()
         self.sc = SeldonClient(
@@ -223,6 +228,7 @@ class StressGeneratorSeldon(StressGenerator):
                 
                 image_name, image = list(self.images.items())[random.randint(0,len(self.images)-1)]
                 image = np.array(image)
+                print(f"{index} send")
                 response = self.sc.predict(
                     data=image
                 )
@@ -230,14 +236,17 @@ class StressGeneratorSeldon(StressGenerator):
                 if response.success:
                     request_path = response.response['meta']['requestPath'].keys()
                     pipeline_response = response.response['jsonData']
-
+                    print(f"done {index}")
                     end_time = int(round(time.time() * 1000))
-                    self.final_data.append((index, 200, 1, start_time, end_time, end_time - start_time))
-                    
+                    item = self.final_data['list_item'] = list()
+                    item.append((index, 200, 1, start_time, end_time, end_time - start_time))
+                    self.final_data['list_item'] = item
+                    return self.final_data
                 
            
 
-        except :
+        except Exception as e :
+            print(f"there is error {e}")
             return (self.url, 404)
         return (self.url, 400)
 
@@ -258,7 +267,7 @@ deployment_name = 'inferline-preprocess'
 transport='rest'
 gateway='istio'
 gateway_endpoint="localhost:32000"
-namespace='saeid'
+namespace='alrieza'
 seldon = StressGeneratorSeldon(
         data_folder_path = data_folder_path,
         dataset_folder_path = dataset_folder_path,
