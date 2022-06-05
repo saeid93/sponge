@@ -3,7 +3,7 @@
 NFS is our storage file system backend for more information on K8S storage system see [Volummes-k8s-doc](https://kubernetes.io/docs/concepts/storage/volumes/)
 
 1. Follow the instructions [installing-nfs](https://cloud.netapp.com/blog/azure-anf-blg-linux-nfs-server-how-to-set-up-server-and-client)
-2. In the export file find the Chameleon IP network and mask and add it to the export file, to find the network IP and mask:
+2. In the export file find the Chameleon IP network and mask and add it to the export file in the following format `/mnt/myshareddir {subnetIP}/{subnetMask}(rw,sync,no_subtree_check). To find the network IP and mask (Make sure linux package `net-tools` is installed):
 `
 sudo ifconfig | grep -i mask
 `
