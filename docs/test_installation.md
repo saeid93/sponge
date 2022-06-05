@@ -20,7 +20,7 @@ spec:
 EOF
 ```
 
-On your cluster nodes:
+Once all the pods of the seldon deployment are up, on your cluster nodes:
 ```
 curl -s -d '{"data": {"ndarray":[[1.0, 2.0, 5.0, 6.0]]}}' \
 -X POST http://localhost:32000/seldon/default/sklearn/api/v1.0/predictions -H \
