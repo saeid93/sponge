@@ -21,7 +21,7 @@ http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-da
 ```
 microk8s enable prometheus
 ```
-2. For enabling outside access make the `service/prometheus-k8s` and `service/grafana` of type NodePort isntead of ClusterIP using the following command and editing the `type` field. Also set the port for prometheus to 30090 and for grafana to 30300
+2. For enabling outside access make the `service/prometheus-k8s` and `service/grafana` of type NodePort isntead of ClusterIP using the following command and editing the `type` field. Also set the `web` port for prometheus to 30090 and `http` port for grafana to 30300
 ```
 kubectl edit svc prometheus-k8s -n monitoring
 kubectl edit svc grafana -n monitoring
