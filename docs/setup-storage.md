@@ -24,6 +24,9 @@ In k8s you have to set a PV and a claim for that PVC attached to your volume typ
 1. Set up the PV and point it to the NFS directory and IP (in our case 10.140.81.236 and /mnt/myshareddir)
 ```
 IP=10.140.83.56
+```
+Then deploy:
+```
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: PersistentVolume
