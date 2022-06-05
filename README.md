@@ -67,7 +67,7 @@ Do the steps in the following orders to setup the environment:
    2. check out the [guide-obervibility](docs/guide-prometheus.md) for usefule information about using the observability tools
 * **Docker and s2i**
    1. For some of the pipeline you'll need [Dcoker](https://www.docker.com/) and [s2i](https://github.com/openshift/source-to-image)
-   2. Install them using the offical documentation for [docker-doc](https://docs.docker.com/engine/install/ubuntu/) and [s2i-doc](https://github.com/openshift/source-to-image#installation)
+   2. Install them using the offical documentation for [docker-doc](https://docs.docker.com/engine/install/ubuntu/) and [s2i-doc](https://github.com/openshift/source-to-image#installation). For docker also do the [post-installation-steps](https://docs.docker.com/engine/install/linux-postinstall/)
 * **Chameleon object storage**
    1. we keep the datasets and models in the Chameleon object storage to moount it on a directory use the guide on [chameleon website](https://chameleoncloud.readthedocs.io/en/latest/technical/swift.html#:~:text=Chameleon%20provides%20an%20object%20store,results%20produced%20by%20your%20experiments.)
 * **Minio and nfs**
