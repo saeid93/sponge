@@ -72,7 +72,7 @@ Do the steps in the following orders to setup the environment:
    1. we keep the datasets and models in the Chameleon object storage to moount it on a directory use the guide on [chameleon website](https://chameleoncloud.readthedocs.io/en/latest/technical/swift.html#:~:text=Chameleon%20provides%20an%20object%20store,results%20produced%20by%20your%20experiments.)
 * **Minio and nfs**
    1. [Minio](https://min.io/) and [nfs](https://en.wikipedia.org/wiki/Network_File_System) are needed for the storage
-   2. Setup them using [guide-storage](docs/guide-storage.md)
+   2. Setup them using [setup-storage](docs/setup-storage.md)
 * **OpenStack**
    1. TODO
 * **Pipelines**
