@@ -46,9 +46,12 @@ spec:
     path: "/mnt/myshareddir"
 EOF
 ```
-2. Associate a PVC to the generated PV
+2. Create the namespace for minio
 ```
 kubectl create ns minio-system
+```
+3. Associate a PVC to the generated PV
+```
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -65,13 +68,11 @@ spec:
 EOF
 ```
 
-Install the Minio with helm and set the value to our existing pvc, the user and admint sat here will be later used in the real
+4. Install the Minio with helm and set the value to our existing pvc, the user and admint sat here will be later used in the real
 
 ```
 MINIOUSER=minioadmin
 MINIOPASSWORD=minioadmin
-
-kubectl create ns minio-system
 
 helm repo add minio https://helm.min.io/
 
@@ -82,13 +83,13 @@ helm upgrade --install minio minio/minio \
 --set persistence.existingClaim=pvc-nfs
 ```
 
-4. continue the rest of steps from the printed instructions
-5. check the helm is installed from `helm list -n minio-system`
-6. There is two options to access Minio from localhost:
+5. continue the rest of steps from the printed instructions
+6. check the helm is installed from `helm list -n minio-system`
+7. There is two options to access Minio from localhost:
 
-6.1. **Option 1 LoadBalancer (Recommended)**: edit `kubectl edit service/minio -n minio-system` and change `spec.ports.nodePort=31900` and `spec.type=LoadBalancer`. You can now access Minio server on `http://<cluster-ip>:31900`.
+7.1. **Option 1 LoadBalancer (Recommended)**: edit `kubectl edit service/minio -n minio-system` and change `spec.ports.nodePort=31900` and `spec.type=LoadBalancer`. You can now access Minio server on `http://<cluster-ip>:31900`.
 
-6.2. **Option 2 Port forward** run the below commands:
+7.2. **Option 2 Port forward** run the below commands:
 
 ```
 export POD_NAME=$(kubectl get pods --namespace minio-system -l "release=minio" -o jsonpath="{.items[0].metadata.name}")
@@ -97,7 +98,7 @@ kubectl port-forward $POD_NAME 9000 --namespace minio-system
 You can now access Minio server on http://localhost:9000.
 
 
-7. find out access keys
+8. find out access keys
 ```
 ACCESS_KEY=$(kubectl get secret minio -n minio-system -o jsonpath="{.data.accesskey}" | base64 --decode)
 SECRET_KEY=$(kubectl get secret minio -n minio-system -o jsonpath="{.data.secretkey}" | base64 --decode)
@@ -108,7 +109,7 @@ echo $ACCESS_KEY
 echo $SECRET_KEY
 ```
 
-8. Download the Minio mc client - https://docs.minio.io/docs/minio-client-quickstart-guide Downlaod and do `sudo cp mc /usr/local/bin` for terminal access login to the CLI
+9. Download the Minio mc client - https://docs.minio.io/docs/minio-client-quickstart-guide Downlaod and do `sudo cp mc /usr/local/bin` for terminal access login to the CLI
 also use the same values for the command line:
 ```
 mc alias set minio http://localhost:9000 "$ACCESS_KEY" "$SECRET_KEY" --api s3v4
