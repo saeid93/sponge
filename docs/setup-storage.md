@@ -7,6 +7,9 @@ NFS is our storage file system backend for more information on K8S storage syste
 `
 sudo ifconfig | grep -i mask
 `
+
+**KNOWN BUG** For some unknown reason setting the IP to the exact IP subnet does not work at the moment, as a quick fix just set the IP placeholder in the mentioned step to `*` which means all incoming address e.g. `/mnt/myshareddir *(rw,sync,no_subtree_check)` 
+
 3. Install both client and server folders on your machines and make sure that a file created on one of them is accessible on the client folder too.
 
 
