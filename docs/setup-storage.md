@@ -112,8 +112,17 @@ echo $ACCESS_KEY
 echo $SECRET_KEY
 ```
 
-9. Download the Minio mc client - https://docs.minio.io/docs/minio-client-quickstart-guide Downlaod and do `sudo cp mc /usr/local/bin` for terminal access login to the CLI
-also use the same values for the command line:
+9. Download the Minio mc [client](https://docs.minio.io/docs/minio-client-quickstart-guide)
+```
+wget https://dl.min.io/client/mc/release/linux-amd64/mc
+chmod +x mc
+./mc --help
+```
+10. Do the following for terminal access login to the CLI:
+```
+sudo cp mc /usr/local/bin
+``` 
+11. Setup the variables for the command line
 ```
 mc alias set minio http://localhost:9000 "$ACCESS_KEY" "$SECRET_KEY" --api s3v4
 mc ls minio
