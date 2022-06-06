@@ -180,7 +180,7 @@ kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samp
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/jaeger.yaml
 ```
 make them loadbalancer and change the nodeport of kiali to `32001` and jeager to `31166` for persistent access.
-
+8. Setup this [grafana dashboard](grafana-dashboard.json) for our most used metrics
 
 # Minikube
 TODO
