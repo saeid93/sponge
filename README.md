@@ -11,8 +11,9 @@ Dataflow and computational pipelines have a longstanding history in the field of
 
 **Project 3 Summary** TODO Mehran's project
 
-[Google Doc - Notes](https://docs.google.com/document/d/1VbMDl_09n77NCRk58C9vqzDLGkgfliPUYxS3NVX8fgw/edit?usp=sharing) \
-[Paper Draft](https://www.overleaf.com/project/625456ee961f16abadd71f36)
+
+**Related Docs**
+[Google Doc - Notes](https://docs.google.com/document/d/1VbMDl_09n77NCRk58C9vqzDLGkgfliPUYxS3NVX8fgw/edit?usp=sharing)
 
 # Physical Resource
 * [Chameleon Cloud](https://chameleoncloud.org/)
