@@ -11,11 +11,9 @@ Dataflow and computational pipelines have a longstanding history in the field of
 
 **Project 3 Summary** TODO Mehran's project
 
-
-**Related Docs**
 [Google Doc - Notes](https://docs.google.com/document/d/1VbMDl_09n77NCRk58C9vqzDLGkgfliPUYxS3NVX8fgw/edit?usp=sharing)
 
-1. Download source code from GitHub
+1. Download subproject source code from GitHub
    ```
    git clone https://github.com/saeid93/infernece-pipeline-joint-optimization.git
    ```
@@ -24,3 +22,5 @@ Dataflow and computational pipelines have a longstanding history in the field of
    > git submodule init
    > git submodule update
    > ```
+
+For setting infrastructure refer to accompanying repo [infrastructure](https://github.com/reconfigurable-ml-pipeline/infrastructure)
