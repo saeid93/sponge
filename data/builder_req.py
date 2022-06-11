@@ -14,6 +14,7 @@ def build_workload():
     file = open("workload.txt", "w")
 
     # Saving the array in a text file
+    times = [i for i in times if i != 0]
     content = str(times)
     file.write(content)
     file.close()
