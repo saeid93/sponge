@@ -26,7 +26,7 @@ import math
 
 
 def nextParam():
-    return 3
+    return 70
     return random.randint(5, 20)
 
 def image_loader(folder_path, image_name):
@@ -40,8 +40,7 @@ def image_loader(folder_path, image_name):
         
 class StressGenerator:
     def __init__(self, url=None, is_dataset = False,mode='seldon', data_path = None):
-        manager = Manager()
-        self.final_data = manager.dict()
+        self.final_data = []
 
         # self.final_data = []
         self.url = url
@@ -136,6 +135,10 @@ class StressGenerator:
     def send_request_thread(self, idx):
         asyncio.run(self.generator( idx))
 
+
+    # def run_send_process(self, param):
+
+
     def run(self):
         seconds = str(time.ctime()).split(":")[2][:2]
         start = seconds
@@ -152,20 +155,18 @@ class StressGenerator:
                 else:
                     param = nextParam()
 
-                print("time is " + counter.__str__() + " param is "+str(param))
-                print("idx is ", self.idx)
 
                 if counter > 10:
                     break
-            sender = Process(target=self.send_request_thread, args=(self.idx,))
-            next_event = self.nextTimeReqeust(param)
+            sender = threading.Thread(target=self.send_request_thread, args=(self.idx,))
+            next_event = self.nextTimeReqeust(70)
             next_event = next_event + time.time()
             self.idx += 1
             threads.append(sender)
             sender.start()
             next_event = next_event - time.time()
             if next_event  > 0:
-                time.sleep(round(next_event, 8))
+                time.sleep(round(next_event, 4))
             if next_event <= 0:
                 counter1 += 1
 
@@ -197,6 +198,7 @@ class StressGeneratorSeldon(StressGenerator):
         self.num_loaded_images = 2
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         self.image_names = os.listdir(self.dataset_folder_path)
+        self.image_np = []
         self.image_names.sort()
         self.sc = SeldonClient(
             gateway_endpoint=gateway_endpoint,
@@ -209,6 +211,8 @@ class StressGeneratorSeldon(StressGenerator):
                     image_name: self.image_loader(
                         self.dataset_folder_path, image_name) for image_name in self.image_names[
                             :self.num_loaded_images]}
+        for image_name, image in self.images.items():
+            self.image_np.append(np.array(image))
     
     def image_loader(self,folder_path, image_name):
         image = Image.open(
@@ -223,12 +227,9 @@ class StressGeneratorSeldon(StressGenerator):
         try:
             if self.type == "POST":
                 
-                with open(self.classes_file_path) as f:
-                    classes = [line.strip() for line in f.readlines()]
+               
                 
-                image_name, image = list(self.images.items())[random.randint(0,len(self.images)-1)]
-                image = np.array(image)
-                print(f"{index} send")
+                image = self.image_np[random.randint(0,len(self.image_np)-1)]
                 response = self.sc.predict(
                     data=image
                 )
@@ -236,12 +237,8 @@ class StressGeneratorSeldon(StressGenerator):
                 if response.success:
                     request_path = response.response['meta']['requestPath'].keys()
                     pipeline_response = response.response['jsonData']
-                    print(f"done {index}")
                     end_time = int(round(time.time() * 1000))
-                    item = self.final_data['list_item'] = list()
-                    item.append((index, 200, 1, start_time, end_time, end_time - start_time))
-                    self.final_data['list_item'] = item
-                    return self.final_data
+                    self.final_data.append((index, 200, 1, start_time, end_time, end_time - start_time))
                 
            
 
@@ -267,7 +264,7 @@ deployment_name = 'inferline-preprocess'
 transport='rest'
 gateway='istio'
 gateway_endpoint="localhost:32000"
-namespace='alrieza'
+namespace='alireza'
 seldon = StressGeneratorSeldon(
         data_folder_path = data_folder_path,
         dataset_folder_path = dataset_folder_path,
