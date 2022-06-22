@@ -38,7 +38,7 @@ images = {
 # single node inferline
 gateway_endpoint="localhost:32000"
 deployment_name = 'inferline-cascade-with-preprocessor'
-namespace = "alrieza"
+namespace = "saeid"
 sc = SeldonClient(
     gateway_endpoint=gateway_endpoint,
     gateway="istio",
