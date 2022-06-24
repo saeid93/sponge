@@ -228,3 +228,5 @@ runs
 *data.json
 *.tar
 wget-log
+triton/model_repository
+triton/models
