@@ -35,6 +35,17 @@ if __name__ == "__main__":
         sys.exit()
     model_name = "intel_image_class"
 
+    # expand on the transformation
+    # transform = transforms.Compose([
+    #     transforms.Resize(256),
+    #     transforms.CenterCrop(224),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize(
+    #     mean=[0.485, 0.456, 0.406],
+    #     std=[0.229, 0.224, 0.225]
+    # )])
+
+
     image_path = '1.jpeg'
     image = np.asarray(Image.open(image_path).resize((100, 100)))
     image = np.expand_dims(image, axis=0)

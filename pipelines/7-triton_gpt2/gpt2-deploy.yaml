@@ -8,7 +8,7 @@ spec:
       implementation: TRITON_SERVER
       logger:
         mode: all
-      modelUri: s3://onnx-gpt2
+      modelUri: s3://minio-seldon/onnx-gpt2/1
       envSecretRefName: seldon-init-container-secret
       name: gpt2
       type: MODEL
