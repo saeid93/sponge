@@ -17,6 +17,7 @@ class Cluster:
         self.seldon_graphs = [] # list of Seldon graphs in the cluster
 
 
+
 class Nodes:
     # k8s cluster nodes
     def __init__(self) -> None:
@@ -47,20 +48,22 @@ class Metrics:
     def metrics(self):
         pass
 
-
 class TritonNodes:
     def __init__(self) -> None:
         self.models = []
         self.graph = nx.Graph()
         pass
 
-    def load_model(model_name: str):
+    def start_server(self, model_name: str):
         pass
 
-    def unload_model(model_name: str):
+    def load_model(self, model_name: str):
         pass
 
-    def list_nodes(model_name: str):
+    def unload_model(self, model_name: str):
+        pass
+
+    def list_nodes(self, model_name: str):
         # list all nodes in a single Triton node
         pass
 
@@ -68,4 +71,10 @@ class TritonNodes:
     def graph_dependancy(self):
         pass
 
+class MinioController:
+    # 1. load models
+    # 2. generate onnx
+    # 3. upload to minio
+    def __init__(self) -> None:
+        pass
 
