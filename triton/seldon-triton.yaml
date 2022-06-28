@@ -1,0 +1,17 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: image-models
+spec:
+  predictors:
+  - graph:
+      implementation: TRITON_SERVER
+      logger:
+        mode: all
+      modelUri: s3://minio-seldon/models
+      envSecretRefName: seldon-init-container-secret
+      name: image-models
+      type: MODEL
+    name: default
+    replicas: 1
+  protocol: kfserving
