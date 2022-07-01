@@ -1,0 +1,6 @@
+REPO_NAME=concept-proof
+TAG_NAME=yolo
+IMAGE_NAME=$REPO_NAME:$TAG_NAME && \
+docker build --tag=$IMAGE_NAME . && \
+docker tag $IMAGE_NAME sdghafouri/$IMAGE_NAME && \
+docker push sdghafouri/$IMAGE_NAME

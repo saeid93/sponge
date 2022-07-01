@@ -1,0 +1,18 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: multi
+spec:
+  name: default
+  predictors:
+  - graph:
+      implementation: TRITON_SERVER
+      logger:
+        mode: all
+      modelUri: s3://minio-seldon/models
+      envSecretRefName: seldon-init-container-secret
+      name: multi # This should have the same name as the model inside otherwise endpoint not accesible
+      type: MODEL
+    name: default
+    replicas: 1
+  protocol: kfserving

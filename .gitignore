@@ -230,3 +230,4 @@ runs
 wget-log
 triton/model_repository
 triton/models
+git-clone
