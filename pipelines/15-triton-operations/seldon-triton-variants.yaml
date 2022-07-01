@@ -1,0 +1,18 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: resnet-variants
+spec:
+  name: default
+  predictors:
+  - graph:
+      implementation: TRITON_SERVER
+      logger:
+        mode: all
+      modelUri: s3://minio-seldon/resnet-variants
+      envSecretRefName: seldon-init-container-secret
+      name: resnet # This should have the same name as the model inside
+      type: MODEL
+    name: default
+    replicas: 1
+  protocol: kfserving

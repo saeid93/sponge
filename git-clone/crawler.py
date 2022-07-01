@@ -1,12 +1,13 @@
 from lxml import html
+import re
 import requests
-from bs4 import BeautifulSoup
+from bs4 import *
 from time import sleep
 class Crawler:
     def __init__(self):
         self.p = 1
         self.index = 0
-        self.q = ['inference pipeline', 'seldon core']
+        self.q = ['inference pipeline', 'seldon core', 'raytune','inference sagemaker']
         self.base_urls = [f'https://github.com/search?p={self.p}&q={self.q[0]}&type=Repositories']
         self.urls = []
 
@@ -62,10 +63,28 @@ class Crawler:
             data, len_parts = self.data_getter(new_url)
             if len_parts > 0 :
                 print(new_url)
+    def download_images(self, urls):
+        for url in urls:
+            print(f'processing {url}...')
+            response = requests.get('https://github.com'+url)
+            soup = BeautifulSoup(response.text, 'html.parser')
+            image_tags = soup.find_all('img')
+            images = [img['src'] for img in image_tags]
+            for img in images:
+                filename = re.search(r'/([\w_-]+[.](jpg|gif|png))$', img)
+                if not filename:
+                    print("Regular expression didn't match with the url: {}".format(img))
+                    continue
+                with open(filename.group(1), 'wb') as f:
+                    if 'http' not in img:
+                        img = '{}{}'.format('https://github.com'+url, img)
+                    response = requests.get(img)
+                    f.write(response.content)
+            print("Download complete, downloaded images can be found in current directory!")
 
 crawler = Crawler()
 urls = crawler.request()
-
+crawler.download_images(urls)
 
 
 from pydriller import Repository
