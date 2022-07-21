@@ -1,0 +1,22 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: yolo
+spec:
+  name: yolo
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: sdghafouri/concept-proof:yolo
+          name: yolo
+          imagePullPolicy: Always
+    graph:
+      name: yolo
+      type: MODEL
+      children: []
+    name: example
+    labels:
+      sidecar.istio.io/inject: "true"
+    replicas: 1
