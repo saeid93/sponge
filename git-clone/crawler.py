@@ -65,7 +65,10 @@ class Crawler:
                 print(new_url)
     def download_images(self, urls):
 <<<<<<< HEAD
+<<<<<<< HEAD
         f1 = open("reses.txt",a)
+=======
+>>>>>>> 2c730123a2996da74dd0bd978fd20cf37b5f2aa3
 =======
 >>>>>>> 2c730123a2996da74dd0bd978fd20cf37b5f2aa3
         for url in urls:
@@ -80,16 +83,22 @@ class Crawler:
                     print("Regular expression didn't match with the url: {}".format(img))
                     continue
 <<<<<<< HEAD
+<<<<<<< HEAD
                 with open('images/'+filename.group(1), 'wb') as f:
                     if 'http' not in img:
                         img = '{}{}'.format('https://github.com'+url, img)
                     response = requests.get(img)
                     f1.write(url + " : "+ filename.group(1))
 =======
+=======
+>>>>>>> 2c730123a2996da74dd0bd978fd20cf37b5f2aa3
                 with open(filename.group(1), 'wb') as f:
                     if 'http' not in img:
                         img = '{}{}'.format('https://github.com'+url, img)
                     response = requests.get(img)
+<<<<<<< HEAD
+>>>>>>> 2c730123a2996da74dd0bd978fd20cf37b5f2aa3
+=======
 >>>>>>> 2c730123a2996da74dd0bd978fd20cf37b5f2aa3
                     f.write(response.content)
             print("Download complete, downloaded images can be found in current directory!")

@@ -2,10 +2,14 @@ apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2c730123a2996da74dd0bd978fd20cf37b5f2aa3
   name: multi
 spec:
   name: default
   predictors:
+<<<<<<< HEAD
   - componentSpecs:
     - spec:
         containers:
@@ -23,10 +27,13 @@ spec:
   name: default
   predictors:
 >>>>>>> 2c730123a2996da74dd0bd978fd20cf37b5f2aa3
+=======
+>>>>>>> 2c730123a2996da74dd0bd978fd20cf37b5f2aa3
   - graph:
       implementation: TRITON_SERVER
       logger:
         mode: all
+<<<<<<< HEAD
 <<<<<<< HEAD
       modelUri: s3://minio-seldon/models
       envSecretRefName: seldon-init-container-secret
@@ -39,6 +46,11 @@ spec:
 =======
       name: multi # This should have the same name as the model inside otherwise endpoint not accesible
 >>>>>>> 2c730123a2996da74dd0bd978fd20cf37b5f2aa3:pipelines/15-triton-operations/seldon-triton-multi.yaml
+>>>>>>> 2c730123a2996da74dd0bd978fd20cf37b5f2aa3
+=======
+      modelUri: s3://minio-seldon/models
+      envSecretRefName: seldon-init-container-secret
+      name: multi # This should have the same name as the model inside otherwise endpoint not accesible
 >>>>>>> 2c730123a2996da74dd0bd978fd20cf37b5f2aa3
       type: MODEL
     name: default
