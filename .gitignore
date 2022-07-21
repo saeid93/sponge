@@ -230,3 +230,8 @@ runs
 wget-log
 triton/model_repository
 triton/models
+git-clone
+seldon
+config.pbtxt
+1647201420.zip
+pytorch_model.bin
