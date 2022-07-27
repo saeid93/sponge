@@ -2,7 +2,7 @@ from typing import List
 import os
 import timm
 import torch
-# TODO
+import shutil
 # add clean path
 
 PATH=(
@@ -72,6 +72,8 @@ def generate_model_variants(
         BUCKET_NAME,
         model_name,
     )
+    if os.path.exists(model_path):
+        shutil.rmtree(model_path)
     # TODO no config for yolo for now - if used solve it by:
     # https://github.com/ultralytics/yolov5/search?q=triton&type=issues
     # or it's own onnx tool:
@@ -159,8 +161,6 @@ model_generator(
 )
 
 # copy generated models to minio
-os.system(f"mc mb minio/minio-seldon -p")
-os.system(f"mc cp -r {PATH}/{BUCKET_NAME} minio/minio-seldon")
-
-# TODO
-# Remove generated models from here once uploaded to minio
+os.system(f"mc mb minio/{BUCKET_NAME} -p")
+os.system(f"mc cp -r {PATH}{BUCKET_NAME} minio/{BUCKET_NAME}")
+shutil.rmtree(os.path.join(PATH, BUCKET_NAME))
