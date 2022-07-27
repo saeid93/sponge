@@ -23,7 +23,7 @@ image_names = os.listdir(dataset_folder_path)
 image_names.sort()
 with open(classes_file_path) as f:
     classes = [line.strip() for line in f.readlines()]
-num_loaded_images = 20
+num_loaded_images = 30
 
 def image_loader(folder_path, image_name):
     image = Image.open(
@@ -41,7 +41,7 @@ images = {
 # single node inferline
 gateway_endpoint="localhost:32000"
 deployment_name = 'inferline-video'
-namespace = "saeid"
+namespace = "default"
 sc = SeldonClient(
     gateway_endpoint=gateway_endpoint,
     gateway="istio",
@@ -62,11 +62,8 @@ for image_name, response in results.items():
     print(f"-"*50)
     if response.success:
         request_path = response.response['meta']['requestPath'].keys()
-        pipeline_response = response.response['jsonData']
-        for model_name, model_response in pipeline_response.items():
-            print(f"*"*25)
-            print(f"model: {model_name}")
-            print(f"max_prob_percentage: {model_response['max_prob_percentage']}")
-            print(f"max_prob_class: {classes[model_response['max_prob_class']]}")
+        pipeline_response = response.response['data']
+        print(f"request path: {request_path}")
+        print(f"pipeline_response: {pipeline_response}")
     else:
         print(f"{image_name} -> {response.msg}")
