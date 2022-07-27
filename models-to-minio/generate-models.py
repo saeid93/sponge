@@ -175,7 +175,7 @@ def upload_minio(bucket_name: str):
     """
     output_dir = os.path.join(TEMP_MODELS_PATH, bucket_name)
     # copy generated models to minio
-    os.system(f"mc mb minio/minio-seldon -p")
+    os.system(f"mc mb minio/{bucket_name} -p")
     os.system(f"mc cp -r {output_dir}"
               f" minio/{bucket_name}")
     shutil.rmtree(output_dir)
