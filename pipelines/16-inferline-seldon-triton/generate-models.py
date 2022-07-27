@@ -2,9 +2,12 @@ from typing import List
 import os
 import timm
 import torch
+# TODO
+# add clean path
+
 PATH=(
     "/home/cc/infernece-pipeline-joint-optimization"
-    "/pipelines/18-models-proof-concept-triton/")
+    "/pipelines/16-inferline-seldon-triton/")
 
 BUCKET_NAME="seldon"
 
@@ -33,7 +36,7 @@ output [
 ]
 version_policy: { all { }}
         """
-  else: # TODO nothing for now
+  else:
         common_config="""
 input [
     {
@@ -130,7 +133,7 @@ def generate_model_variants(
                    'output': {
                        0: 'batch',
                        1: 'anchors'}  # shape(1,25200,85)
-               })           
+               })
 
 def model_generator(
     source: List[str],
@@ -158,3 +161,6 @@ model_generator(
 # copy generated models to minio
 os.system(f"mc mb minio/minio-seldon -p")
 os.system(f"mc cp -r {PATH}/{BUCKET_NAME} minio/minio-seldon")
+
+# TODO
+# Remove generated models from here once uploaded to minio
