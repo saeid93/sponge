@@ -1,167 +1,170 @@
 # %%
 print("alireza")
+import os
+from PIL import Image
+import transformers
+import torch
+# %%
+# !kubectl create secret generic aws-credentials --from-literal=AWS_ACCESS_KEY_ID=minioadmin --from-literal=AWS_SECRET_ACCESS_KEY=minioadmin
 
 # %%
-!kubectl create secret generic aws-credentials --from-literal=AWS_ACCESS_KEY_ID=minioadmin --from-literal=AWS_SECRET_ACCESS_KEY=minioadmin
+# %%writefile triton-deploy.yaml
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   labels:
+#     app: triton
+#   name: triton
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: triton
+#   template:
+#     metadata:
+#       labels:
+#         app: triton
+#     spec:
+#       containers:
+#       - image: nvcr.io/nvidia/tritonserver:21.09-py3
+#         name: tritonserver
+#         command: ["/bin/bash"]
+#         args: ["-c", "cp /var/run/secrets/kubernetes.io/serviceaccount/ca.crt /usr/local/share/ca-certificates && update-ca-certificates && /opt/tritonserver/bin/tritonserver --model-store=s3://http://minio.minio-system.svc.cluster.local:9000/minio-seldon/models --strict-model-config=false"]
+#         env:
+#         - name: AWS_ACCESS_KEY_ID
+#           valueFrom:
+#             secretKeyRef:
+#               name: aws-credentials
+#               key: AWS_ACCESS_KEY_ID
+#         - name: AWS_SECRET_ACCESS_KEY
+#           valueFrom:
+#             secretKeyRef:
+#               name: aws-credentials
+#               key: AWS_SECRET_ACCESS_KEY      
+#         ports:
+#           - containerPort: 8000
+#             name: http
+#           - containerPort: 8001
+#             name: grpc
+#           - containerPort: 8002
+#             name: metrics
+#         volumeMounts:
+#         - mountPath: /dev/shm
+#           name: dshm
+#       volumes:
+#       - name: dshm
+#         emptyDir:
+#           medium: Memory
 
-# %%
-%%writefile triton-deploy.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app: triton
-  name: triton
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: triton
-  template:
-    metadata:
-      labels:
-        app: triton
-    spec:
-      containers:
-      - image: nvcr.io/nvidia/tritonserver:21.09-py3
-        name: tritonserver
-        command: ["/bin/bash"]
-        args: ["-c", "cp /var/run/secrets/kubernetes.io/serviceaccount/ca.crt /usr/local/share/ca-certificates && update-ca-certificates && /opt/tritonserver/bin/tritonserver --model-store=s3://http://minio.minio-system.svc.cluster.local:9000/minio-seldon/models --strict-model-config=false"]
-        env:
-        - name: AWS_ACCESS_KEY_ID
-          valueFrom:
-            secretKeyRef:
-              name: aws-credentials
-              key: AWS_ACCESS_KEY_ID
-        - name: AWS_SECRET_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: aws-credentials
-              key: AWS_SECRET_ACCESS_KEY      
-        ports:
-          - containerPort: 8000
-            name: http
-          - containerPort: 8001
-            name: grpc
-          - containerPort: 8002
-            name: metrics
-        volumeMounts:
-        - mountPath: /dev/shm
-          name: dshm
-      volumes:
-      - name: dshm
-        emptyDir:
-          medium: Memory
+# # %%
+# %%writefile triton-service.yaml
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: triton
+# spec:
+#   type: NodePort
+#   selector:
+#     app: triton
+#   ports:
+#     - protocol: TCP
+#       name: http
+#       port: 8000
+#       nodePort: 30800
+#       targetPort: 8000
+#     - protocol: TCP
+#       name: grpc
+#       port: 8001
+#       nodePort: 30801
+#       targetPort: 8001
+#     - protocol: TCP
+#       name: metrics
+#       nodePort: 30802
+#       port: 8002
+#       targetPort: 8002
 
-# %%
-%%writefile triton-service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: triton
-spec:
-  type: NodePort
-  selector:
-    app: triton
-  ports:
-    - protocol: TCP
-      name: http
-      port: 8000
-      nodePort: 30800
-      targetPort: 8000
-    - protocol: TCP
-      name: grpc
-      port: 8001
-      nodePort: 30801
-      targetPort: 8001
-    - protocol: TCP
-      name: metrics
-      nodePort: 30802
-      port: 8002
-      targetPort: 8002
+# # %%
+# model_names = ['resnet-18', 'resnet-50', 'vit-base-32', 'vit-base-64']
 
-# %%
-model_names = ['resnet-18', 'resnet-50', 'vit-base-32', 'vit-base-64']
+# # %%
+# for model in model_names:
+#     os.system(f'python -m transformers.onnx --model={model} models/{model}/1 ')
 
-# %%
-for model in model_names:
-    os.system(f'python -m transformers.onnx --model={model} models/{model}/1 ')
+# # %%
+# %%writefile triton-deploy.yaml
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   labels:
+#     app: triton
+#   name: triton
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: triton
+#   template:
+#     metadata:
+#       labels:
+#         app: triton
+#     spec:
+#       containers:
+#       - image: nvcr.io/nvidia/tritonserver:21.09-py3
+#         name: tritonserver
+#         command: ["/bin/bash"]
+#         args: ["-c", "cp /var/run/secrets/kubernetes.io/serviceaccount/ca.crt /usr/local/share/ca-certificates && update-ca-certificates && /opt/tritonserver/bin/tritonserver --model-store=s3://http://minio.minio-system.svc.cluster.local:9000/minio-seldon/models --strict-model-config=false"]
+#         env:
+#         - name: AWS_ACCESS_KEY_ID
+#           valueFrom:
+#             secretKeyRef:
+#               name: aws-credentials
+#               key: AWS_ACCESS_KEY_ID
+#         - name: AWS_SECRET_ACCESS_KEY
+#           valueFrom:
+#             secretKeyRef:
+#               name: aws-credentials
+#               key: AWS_SECRET_ACCESS_KEY      
+#         ports:
+#           - containerPort: 8000
+#             name: http
+#           - containerPort: 8001
+#             name: grpc
+#           - containerPort: 8002
+#             name: metrics
+#         volumeMounts:
+#         - mountPath: /dev/shm
+#           name: dshm
+#       volumes:
+#       - name: dshm
+#         emptyDir:
+#           medium: Memory
 
-# %%
-%%writefile triton-deploy.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app: triton
-  name: triton
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: triton
-  template:
-    metadata:
-      labels:
-        app: triton
-    spec:
-      containers:
-      - image: nvcr.io/nvidia/tritonserver:21.09-py3
-        name: tritonserver
-        command: ["/bin/bash"]
-        args: ["-c", "cp /var/run/secrets/kubernetes.io/serviceaccount/ca.crt /usr/local/share/ca-certificates && update-ca-certificates && /opt/tritonserver/bin/tritonserver --model-store=s3://http://minio.minio-system.svc.cluster.local:9000/minio-seldon/models --strict-model-config=false"]
-        env:
-        - name: AWS_ACCESS_KEY_ID
-          valueFrom:
-            secretKeyRef:
-              name: aws-credentials
-              key: AWS_ACCESS_KEY_ID
-        - name: AWS_SECRET_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: aws-credentials
-              key: AWS_SECRET_ACCESS_KEY      
-        ports:
-          - containerPort: 8000
-            name: http
-          - containerPort: 8001
-            name: grpc
-          - containerPort: 8002
-            name: metrics
-        volumeMounts:
-        - mountPath: /dev/shm
-          name: dshm
-      volumes:
-      - name: dshm
-        emptyDir:
-          medium: Memory
-
-# %%
-%%writefile triton-service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: triton
-spec:
-  type: NodePort
-  selector:
-    app: triton
-  ports:
-    - protocol: TCP
-      name: http
-      port: 8000
-      nodePort: 30800
-      targetPort: 8000
-    - protocol: TCP
-      name: grpc
-      port: 8001
-      nodePort: 30801
-      targetPort: 8001
-    - protocol: TCP
-      name: metrics
-      nodePort: 30802
-      port: 8002
-      targetPort: 8002
+# # %%
+# %%writefile triton-service.yaml
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: triton
+# spec:
+#   type: NodePort
+#   selector:
+#     app: triton
+#   ports:
+#     - protocol: TCP
+#       name: http
+#       port: 8000
+#       nodePort: 30800
+#       targetPort: 8000
+#     - protocol: TCP
+#       name: grpc
+#       port: 8001
+#       nodePort: 30801
+#       targetPort: 8001
+#     - protocol: TCP
+#       name: metrics
+#       nodePort: 30802
+#       port: 8002
+#       targetPort: 8002
 
 # %%
 def create_batch(batch_size):
@@ -247,14 +250,53 @@ class Profiler:
             
 
 # %%
-results = [[] for i in range(len(model_names))]
-for i,model in enumerate(model_names):
-    for batch in [1, 2, 4, 16]:
-        p = Profiler(model, create_batch_images(batch))
-        p.runner()
-        results[i].append(requests.get("localhost:8003/metrics"))
+# results = [[] for i in range(len(model_names))]
+# for i,model in enumerate(model_names):
+#     for batch in [1, 2, 4, 16]:
+#         p = Profiler(model, create_batch_images(batch))
+#         p.runner()
+#         results[i].append(requests.get("localhost:8003/metrics"))
 
 # %%
+import tritonclient.http as httpclient
+from tritonclient.utils import InferenceServerException
+from torchvision import transforms
+
+try:
+    triton_client = httpclient.InferenceServerClient(
+        url='localhost:5000', verbose=True
+    )
+except Exception as e:
+    print("context creation failed: " + str(e))
+
+model_name = "resnet50"
+results = []
+inputs = []
+for bat in [1,2,4,16]:
+  batch =create_batch_image(bat)
+  inputs.append(
+      httpclient.InferInput(
+          name="pixel_values", shape=batch.shape, datatype="FP32")
+  )
+  inputs[0].set_data_from_numpy(batch.numpy(), binary_data=False)
+  
+  outputs = []
+  outputs.append(httpclient.InferRequestedOutput(name="last_hidden_state"))
+  for i in range(100):
+    
+    try:
+        triton_client = httpclient.InferenceServerClient(
+            url='localhost:5000', verbose=True
+        )
+    except Exception as e:
+        print("context creation failed: " + str(e))
+
+    print("iiiiiiiiiiiii",i)
+    result = triton_client.infer(
+        model_name=model_name, inputs=inputs, outputs=outputs)
+    triton_client.close()
+  results.append(requests.get('localhost:5002/metrics'))
+
 
 
 
