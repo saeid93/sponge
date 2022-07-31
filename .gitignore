@@ -236,4 +236,5 @@ config.pbtxt
 1647201420.zip
 pytorch_model.bin
 models
-data
+data/*
+!data/yamls
