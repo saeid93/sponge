@@ -5,9 +5,8 @@ import torch
 import shutil
 # add clean path
 
-PATH=(
-    "/home/cc/infernece-pipeline-joint-optimization"
-    "/pipelines/18-outside-poc/")
+PATH=("/home/cc/infernece-pipeline-joint-optimization"
+      "/pipelines/18-outside-poc/")
 
 BUCKET_NAME="separate-servers"
 
