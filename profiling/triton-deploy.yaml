@@ -15,10 +15,13 @@ spec:
         app: triton
     spec:
       containers:
-      - image: nvcr.io/nvidia/tritonserver:21.09-py3
+      - image: nvcr.io/nvidia/tritonserver:22.05-py3
         name: tritonserver
+        resources:
+          limits:
+            nvidia.com/gpu: "0"
         command: ["/bin/bash"]
-        args: ["-c", "cp /var/run/secrets/kubernetes.io/serviceaccount/ca.crt /usr/local/share/ca-certificates && update-ca-certificates && /opt/tritonserver/bin/tritonserver --model-store=s3://http://minio.minio-system.svc.cluster.local:9000/minio-seldon/models --strict-model-config=false"]
+        args: ["-c", "cp /var/run/secrets/kubernetes.io/serviceaccount/ca.crt /usr/local/share/ca-certificates && update-ca-certificates && /opt/tritonserver/bin/tritonserver --model-store=s3://http://minio.minio-system.svc.cluster.local:9000/triton-server/triton-server/ --strict-model-config=False"]
         env:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:

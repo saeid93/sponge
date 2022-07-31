@@ -9,7 +9,7 @@ spec:
       implementation: TRITON_SERVER
       logger:
         mode: all
-      modelUri: s3://minio-seldon/models
+      modelUri: s3://separate-servers/separate-servers
       envSecretRefName: seldon-init-container-secret
       name: image-models # This should have the same name as the model inside
       type: MODEL

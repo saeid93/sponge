@@ -4,6 +4,7 @@ import os
 from PIL import Image
 import transformers
 import torch
+from time import sleep
 # %%
 # !kubectl create secret generic aws-credentials --from-literal=AWS_ACCESS_KEY_ID=minioadmin --from-literal=AWS_SECRET_ACCESS_KEY=minioadmin
 
@@ -224,7 +225,7 @@ class Profiler:
         self.batch = batch
         try:
             triton_client = httpclient.InferenceServerClient(
-                url='localhost:5000', verbose=True
+                url='localhost:30800', verbose=True
             )
         except Exception as e:
             print("context creation failed: " + str(e))
@@ -264,38 +265,41 @@ from torchvision import transforms
 
 try:
     triton_client = httpclient.InferenceServerClient(
-        url='localhost:5000', verbose=True
+        url='localhost:30800', verbose=True
     )
 except Exception as e:
     print("context creation failed: " + str(e))
 
-model_name = "resnet50"
+model_names = [ 'xception',"resnet", 'inception']
 results = []
 inputs = []
-for bat in [1,2,4,16]:
-  batch =create_batch_image(bat)
-  inputs.append(
-      httpclient.InferInput(
-          name="pixel_values", shape=batch.shape, datatype="FP32")
-  )
-  inputs[0].set_data_from_numpy(batch.numpy(), binary_data=False)
-  
-  outputs = []
-  outputs.append(httpclient.InferRequestedOutput(name="last_hidden_state"))
-  for i in range(100):
+for model_name in model_names:
+  print(model_name)
+  for bat in [4]:
+    batch =create_batch_image(bat)
+    inputs.append(
+        httpclient.InferInput(
+            name="input", shape=batch.shape, datatype="FP32")
+    )
+    inputs[0].set_data_from_numpy(batch.numpy(), binary_data=False)
     
-    try:
-        triton_client = httpclient.InferenceServerClient(
-            url='localhost:5000', verbose=True
-        )
-    except Exception as e:
-        print("context creation failed: " + str(e))
+    outputs = []
+    outputs.append(httpclient.InferRequestedOutput(name="output"))
+    for i in range(100):
+      print("counter is ",i)
+      sleep(2)
+      try:
+          triton_client = httpclient.InferenceServerClient(
+              url='localhost:30800', verbose=True
+          )
+      except Exception as e:
+          print("context creation failed: " + str(e))
 
-    print("iiiiiiiiiiiii",i)
-    result = triton_client.infer(
-        model_name=model_name, inputs=inputs, outputs=outputs)
-    triton_client.close()
-  results.append(requests.get('localhost:5002/metrics'))
+      print("iiiiiiiiiiiii",i)
+      result = triton_client.infer(
+          model_name=model_name, inputs=inputs, outputs=outputs)
+      triton_client.close()
+    results.append(requests.get('localhost:5002/metrics'))
 
 
 
