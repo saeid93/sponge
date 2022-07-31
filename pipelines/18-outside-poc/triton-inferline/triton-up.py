@@ -1,25 +1,20 @@
 import os
 from jinja2 import Environment, FileSystemLoader
 
-svc_vars = [
-    {"name": "Sandrine",  "score": 100},
-    {"name": "Gergeley", "score": 87},
-    {"name": "Frieda", "score": 92},
-]
+PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/18-outside-poc"
 
-environment = Environment(loader=FileSystemLoader("templates/"))
-template = environment.get_template("message.txt")
+svc_vars = {"username": "minioadmin",  "password": "minioadmin"},
 
-for student in students:
-    filename = f"message_{student['name'].lower()}.txt"
-    content = template.render(
-        student,
-        max_score=max_score,
-        test_name=test_name
-    )
-    with open(filename, mode="w", encoding="utf-8") as message:
-        message.write(content)
-        print(f"... wrote {filename}")
+environment = Environment(
+    loader=FileSystemLoader(os.path.join(
+        PATH, "templates/")))
+svc_template = environment.get_template("service.yaml")
+
+filename = os.path.join(PATH, "service.yaml")
+content = template.render(svc_vars)
+
+with open(filename, mode="w", encoding="utf-8") as message:
+    message.write(content)
 
 # # %%
 # apiVersion: machinelearning.seldon.io/v1
