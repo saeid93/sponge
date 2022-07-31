@@ -72,6 +72,7 @@ def generate_model_variants(
     versions: List[list],
     bucket_name: str):
     # model name
+    print(model_name, versions)
     if source == 'timm':
         models_list = timm.list_models(model_name+'*', pretrained=True)
     else:
@@ -189,7 +190,7 @@ def main(config_file: str):
     with open(config_file_path, 'r') as cf:
         config = yaml.safe_load(cf)
     model_generator(**config)
-    upload_minio(bucket_name='minio-seldon')
+    upload_minio(bucket_name='triton-server')
 
 if __name__ == "__main__":
     main()
