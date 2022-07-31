@@ -1,0 +1,21 @@
+source:
+  - "timm"
+  - "timm"
+  - "timm"
+  - "timm"
+model_names:
+  - "resnet"
+  - "xception"
+  - "inception"
+  - "vit"
+versions:
+  - - "18"
+    - "34"
+    - "101"
+  - - "41"
+    - "65"
+  - - "_v3"
+    - "_v4"
+  - - "_tiny_patch16_224_in21k"
+
+bucket_name: "triton-server"
