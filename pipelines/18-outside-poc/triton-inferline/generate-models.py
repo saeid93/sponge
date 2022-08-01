@@ -116,7 +116,7 @@ def generate_model_variants(
                 output_names = ['output'],
                 dynamic_axes={'input' : {0 : 'batch_size'},
                             'output' : {0 : 'batch_size'}})
-        else:
+        elif source == 'ultralytics/yolov5':
             dummy_input = torch.randn(1, 3, 640, 640)
             torch.onnx.export(
                model,
