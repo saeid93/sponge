@@ -62,7 +62,7 @@ elif model_name == 'yolo':
 URL = f"http://localhost:32000/seldon/{namespace}/{deployment_name}"
 
 def predict(data, model_name):
-    payload = {
+    data = {
         "inputs": [
             {
                 "name": "input",
@@ -73,7 +73,7 @@ def predict(data, model_name):
         ]
     }
     print(data.shape)
-    r = requests.post(f"{URL}/v2/models/{model_name}/infer", json=payload)
+    r = requests.post(f"{URL}/v2/models/{model_name}/infer", json=data)
     predictions = np.array(r.json()["outputs"][0]["data"]).reshape(
         r.json()["outputs"][0]["shape"]
     )
@@ -83,7 +83,6 @@ def predict(data, model_name):
 if model_name == 'yolo':
     selected = 19
     batch = batch[selected]
-    batch = torch.unsqueeze(batch, dim=0)
 
 triton_seldon_output = predict(batch.numpy(), model_name)
 
