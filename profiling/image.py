@@ -225,7 +225,7 @@ class Profiler:
         self.batch = batch
         try:
             triton_client = httpclient.InferenceServerClient(
-                url='localhost:30800', verbose=True
+                url='localhost:30800'
             )
         except Exception as e:
             print("context creation failed: " + str(e))
@@ -262,45 +262,45 @@ class Profiler:
 import tritonclient.http as httpclient
 from tritonclient.utils import InferenceServerException
 from torchvision import transforms
+import threading
 
-try:
-    triton_client = httpclient.InferenceServerClient(
-        url='localhost:30800', verbose=True
-    )
-except Exception as e:
-    print("context creation failed: " + str(e))
+def send_request(model_name, model_version):
+    try:
+        triton_client = httpclient.InferenceServerClient(
+            url='localhost:30800'
+        )
+    except Exception as e:
+        print("context creation failed: " + str(e))
+
+    result = triton_client.infer(
+                    model_name=model_name,model_version=model_version, inputs=inputs, outputs=outputs)
+    triton_client.close()
+
+    
+
 
 model_names = [ 'xception',"resnet", 'inception']
+model_versions = [['1', '2'], ['1', '2', '3'], ['1','2']]
 results = []
 inputs = []
-for model_name in model_names:
-  print(model_name)
-  for bat in [4]:
+for bat in [2,4,8]:
     batch =create_batch_image(bat)
     inputs.append(
-        httpclient.InferInput(
-            name="input", shape=batch.shape, datatype="FP32")
-    )
+                    httpclient.InferInput(
+                        name="input", shape=batch.shape, datatype="FP32")
+                )
     inputs[0].set_data_from_numpy(batch.numpy(), binary_data=False)
     
     outputs = []
     outputs.append(httpclient.InferRequestedOutput(name="output"))
     for i in range(100):
-      print("counter is ",i)
-      sleep(2)
-      try:
-          triton_client = httpclient.InferenceServerClient(
-              url='localhost:30800', verbose=True
-          )
-      except Exception as e:
-          print("context creation failed: " + str(e))
-
-      print("iiiiiiiiiiiii",i)
-      result = triton_client.infer(
-          model_name=model_name, inputs=inputs, outputs=outputs)
-      triton_client.close()
-    results.append(requests.get('localhost:5002/metrics'))
-
+        for j,model_name in enumerate(model_names):
+            for version in model_versions[j]:
+                print(model_name, version)
+                threading.Thread(target=send_request, args=(model_name,version,)).start()
+                            
+                
+                
 
 
 

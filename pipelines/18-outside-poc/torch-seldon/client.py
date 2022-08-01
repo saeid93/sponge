@@ -52,12 +52,22 @@ sc = SeldonClient(
     namespace=namespace)
 
 results = {}
+
+# selected_image = 19
+# images = {
+#     list(images.keys())[
+#         selected_image]: list(
+#             images.values())[selected_image]}
+
+
 for image_name, image in images.items():
     image = np.array(image)
     response = sc.predict(
         data=image
     )
     results[image_name] = response
+
+
 
 for image_name, response in results.items():
     print(f"\nimage name: {image_name}")

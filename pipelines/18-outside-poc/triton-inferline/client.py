@@ -4,12 +4,8 @@ from PIL import Image
 from typing import Dict
 import requests
 import torch
-
+from torchvision import transforms
 import numpy as np
-
-from seldon_core.seldon_client import SeldonClient
-
-import os
 
 
 os.system('sudo umount -l ~/my_mounting_point')
@@ -44,11 +40,10 @@ images = {
 
 # single node inferline
 gateway_endpoint="localhost:32000"
-deployment_name = 'resnet'
+deployment_name = 'yolo'
 namespace = "default"
+model_name = 'yolo'
 
-from torchvision import transforms
- 
 transform = transforms.Compose([
     transforms.Resize(256),
     transforms.CenterCrop(224),
@@ -58,29 +53,16 @@ transform = transforms.Compose([
     std=[0.229, 0.224, 0.225]
 )])
  
-batch = torch.stack(list(map(lambda a: transform(a), list(images.values()))))
+if model_name == 'resnet':
+    batch = torch.stack(list(map(lambda a: transform(a), list(images.values()))))
+elif model_name == 'yolo':
+    yolo_resize = transforms.Resize((640, 640))
+    batch = torch.stack(list(map(lambda a: yolo_resize(transform(a)), list(images.values()))))
 
-# sc = SeldonClient(
-#     gateway_endpoint=gateway_endpoint,
-#     gateway="istio",
-#     transport="rest",
-#     deployment_name=deployment_name,
-#     namespace=namespace)
-
-# results = {}
-# for image_name, image in images.items():
-#     image = np.array(image)
-#     response = sc.predict(
-#         data=image
-#     )
-#     results[image_name] = response
-
-# TODO substitute this with version 2
-# TODO add model versioning
 URL = f"http://localhost:32000/seldon/{namespace}/{deployment_name}"
- 
-def predict(data):
-    data = {
+
+def predict(data, model_name):
+    payload = {
         "inputs": [
             {
                 "name": "input",
@@ -90,23 +72,23 @@ def predict(data):
             }
         ]
     }
- 
-    r = requests.post(f"{URL}/v2/models/resnet/infer", json=data)
+    print(data.shape)
+    r = requests.post(f"{URL}/v2/models/{model_name}/infer", json=payload)
     predictions = np.array(r.json()["outputs"][0]["data"]).reshape(
         r.json()["outputs"][0]["shape"]
     )
     output = [np.argmax(x) for x in predictions]
     return output
-triton_seldon_output = predict(batch.numpy())
-triton_seldon_classes = np.array(classes)[triton_seldon_output]
 
-# for image_name, response in results.items():
-#     print(f"\nimage name: {image_name}")
-#     print(f"-"*50)
-#     if response.success:
-#         request_path = response.response['meta']['requestPath'].keys()
-#         pipeline_response = response.response['data']
-#         print(f"request path: {request_path}")
-#         print(f"pipeline_response: {pipeline_response}")
-#     else:
-#         print(f"{image_name} -> {response.msg}")
+if model_name == 'yolo':
+    selected = 19
+    batch = batch[selected]
+    batch = torch.unsqueeze(batch, dim=0)
+
+triton_seldon_output = predict(batch.numpy(), model_name)
+
+if model_name == 'resnet':
+    triton_seldon_classes = np.array(classes)[triton_seldon_output]
+    print(triton_seldon_classes)
+elif model_name == 'yolo':
+    pass
