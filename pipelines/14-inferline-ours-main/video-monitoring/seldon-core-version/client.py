@@ -67,3 +67,4 @@ for image_name, response in results.items():
         print(f"pipeline_response: {pipeline_response}")
     else:
         print(f"{image_name} -> {response.msg}")
+

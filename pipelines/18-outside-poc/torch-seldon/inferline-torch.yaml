@@ -20,21 +20,13 @@ spec:
           env:
             - name: WITH_PREPROCESSOR
               value: 'False'
-    - spec:
-        containers: 
-        - image: sdghafouri/inferline:video-combiner
-          name: video-combiner
-          imagePullPolicy: Always
     graph:
       name: video-yolo
       type: MODEL
       children:
-      - name: video-combiner
-        type: COMBINER
-        children:
-        - name: video-resnet-human
-          type: MODEL
-          children: []
+      - name: video-resnet-human
+        type: MODEL
+        children: []
     name: example
     labels:
       sidecar.istio.io/inject: "true"
