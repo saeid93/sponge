@@ -298,9 +298,4 @@ for bat in [2,4,8]:
             for version in model_versions[j]:
                 print(model_name, version)
                 threading.Thread(target=send_request, args=(model_name,version,)).start()
-                            
-                
-                
-
-
-
+ 
