@@ -33,12 +33,12 @@ def get_inference_count():
 
 
 def get_inference_failure():
-    query = f"rate(container_cpu_usage_seconds_total{{pod=~'{pod_name}', image!='', container_name!='POD'}}[5m])"
+    query = f"rate(container_cpu_usage_seconds_total{{pod=~'{pod_name}', image!='', container_name!='POD'}}[1m])[1h:1m]"
     response_memory_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
 
 
 def get_memory_usage(pod_name):
-    query = f"rate(container_memory_working_set_bytes{{pod='{pod_name}'}}[5m])[4h:10m]"
+    query = f"rate(container_memory_working_set_bytes{{pod='{pod_name}'}}[1m])[1h:1m]"
     response_memory_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
     values = response_memory_usage.json()['data']['result']
     plot_values = [[] for _ in range(len(values))]
@@ -47,9 +47,8 @@ def get_memory_usage(pod_name):
     for val in range(len(values)):
         data = values[val]['values']
         for dat in data:
-            plot_values[val].append((float(dat[1])*10000))
+            plot_values[val].append((float(dat[1])))
     cmap = plt.get_cmap('gnuplot')
-    plt.ylim(0, 5)
 
     colors = [cmap(i) for i in np.linspace(0, 1, len(plot_values))]
     for i, pl in enumerate(plot_values):
@@ -60,7 +59,7 @@ def get_memory_usage(pod_name):
     plt.savefig("memory.png")
 
 def get_cpu_usage(pod_name):
-    query = f"rate(container_cpu_usage_seconds_total{{pod=~'{pod_name}', image!='', container_name!='POD'}}[5m])[4h:15m]"
+    query = f"rate(container_cpu_usage_seconds_total{{pod=~'{pod_name}', image!='', container_name!='POD'}}[1m])[4h:1m]"
     response_cpu_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
 
     values = response_cpu_usage.json()['data']['result']
@@ -69,10 +68,10 @@ def get_cpu_usage(pod_name):
     print(type(values))
     for val in range(len(values)):
         data = values[val]['values']
+        print(data)
         for dat in data:
             plot_values[val].append((float(dat[1])*10000))
     cmap = plt.get_cmap('gnuplot')
-    plt.ylim(0, 2)
 
     colors = [cmap(i) for i in np.linspace(0, 1, len(plot_values))]
     for i, pl in enumerate(plot_values):
@@ -82,5 +81,5 @@ def get_cpu_usage(pod_name):
 
     plt.savefig("cpu.png")
 
-get_cpu_usage('triton-6f85749896-7pgcm')
-get_memory_usage('triton-6f85749896-7pgcm')
+get_cpu_usage('triton-6f85749896-jh96w')
+get_memory_usage('triton-6f85749896-jh96w')

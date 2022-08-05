@@ -5,6 +5,9 @@ from PIL import Image
 import transformers
 import torch
 from time import sleep
+import time
+import multiprocessing as mp
+
 # %%
 # !kubectl create secret generic aws-credentials --from-literal=AWS_ACCESS_KEY_ID=minioadmin --from-literal=AWS_SECRET_ACCESS_KEY=minioadmin
 
@@ -263,18 +266,28 @@ import tritonclient.http as httpclient
 from tritonclient.utils import InferenceServerException
 from torchvision import transforms
 import threading
+import pandas as pd
 
-def send_request(model_name, model_version):
-    try:
-        triton_client = httpclient.InferenceServerClient(
-            url='localhost:30800'
-        )
-    except Exception as e:
-        print("context creation failed: " + str(e))
+data = []
+def send_request(model_name, model_version, inputs, outputs, batch_size):
+    print(model_name, model_version, "start")
+    for i in range(20):
+        try:
+            triton_client = httpclient.InferenceServerClient(
+                url='localhost:30800'
+            )
+            start_time = time.time()
+            result = triton_client.infer(
+                        model_name=model_name,model_version=model_version, inputs=inputs, outputs=outputs)
+            triton_client.close()
+            latency = time.time() - start_time
 
-    result = triton_client.infer(
-                    model_name=model_name,model_version=model_version, inputs=inputs, outputs=outputs)
-    triton_client.close()
+            data.append([i, model_name, model_version,bat, latency])
+            print(i)
+        except Exception as e:
+            print("context creation failed: " + str(e))
+
+        
 
     
 
@@ -282,20 +295,43 @@ def send_request(model_name, model_version):
 model_names = [ 'xception',"resnet", 'inception']
 model_versions = [['1', '2'], ['1', '2', '3'], ['1','2']]
 results = []
-inputs = []
-for bat in [2,4,8]:
+processes = []
+for bat in [2, 4, 8, 16, 32, 64]:
+    os.system('sudo umount -l ~/my_mounting_point')
+    os.system('cc-cloudfuse mount ~/my_mounting_point')
+    inputs = []
+
+    print(f"start batch {bat}")
     batch =create_batch_image(bat)
     inputs.append(
                     httpclient.InferInput(
                         name="input", shape=batch.shape, datatype="FP32")
                 )
     inputs[0].set_data_from_numpy(batch.numpy(), binary_data=False)
-    
+    print(type(batch))
+    print(batch.shape)
     outputs = []
     outputs.append(httpclient.InferRequestedOutput(name="output"))
-    for i in range(100):
-        for j,model_name in enumerate(model_names):
-            for version in model_versions[j]:
-                print(model_name, version)
-                threading.Thread(target=send_request, args=(model_name,version,)).start()
- 
+    for j,model_name in enumerate(model_names):
+        for version in model_versions[j]:
+            # p = mp.Process(target=send_request, args=(model_name,version,inputs,outputs,))
+            # p.start()
+            # processes.append(p)
+            send_request(model_name, version, inputs, outputs, bat)
+            sleep(60)
+
+sleep(120)
+df = pd.DataFrame(columns=['index', 'model-name', 'model-version', 'batch-size', 'latency'])
+for i, m, v, b, l in data:
+    df.loc[len(df)] = [i, m, v, b, l]
+
+df.to_csv("data.csv")
+
+
+
+
+                
+                
+
+
+
