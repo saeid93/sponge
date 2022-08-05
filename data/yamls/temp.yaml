@@ -1,0 +1,12 @@
+source:
+
+  - "huggingface"
+model_names:
+
+  - "distilbert-base-uncased-finetuned-sst-2-english"
+versions:
+
+  - - "1"
+
+
+bucket_name: "triton-server-new1"

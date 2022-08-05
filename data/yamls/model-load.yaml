@@ -3,19 +3,53 @@ source:
   - "timm"
   - "timm"
   - "timm"
+  - "timm"
+  - "timm"
+  - "timm"
+  - "huggingface"
 model_names:
   - "resnet"
   - "xception"
   - "inception"
-  - "vit"
+  - "visformer"
+  - "regnetx"
+  - "vgg"
+  - "beit"
+  - "distilbert-base-uncased-finetuned-sst-2-english"
 versions:
   - - "18"
+    - "18d"
+    - "26"
     - "34"
     - "101"
+    - "rs152"
+    - "rs350"
+    - "rs420"
+
   - - "41"
     - "65"
+
   - - "_v3"
     - "_v4"
-  - - "_tiny_patch16_224_in21k"
 
-bucket_name: "triton-server"
+  - - "_small"
+
+  - - "_002"
+    - "_008"
+    - "_032"
+    - "_080"
+    - "_320"
+
+  - - "11"
+    - "13"
+    - "16"
+    - "19"
+
+  - - "_base_patch16_224"
+    - "_large_patch16_224"
+    - "_large_patch16_224_in22k"
+
+  - - "1"
+
+
+bucket_name: "triton-server-new"

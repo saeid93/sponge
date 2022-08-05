@@ -7,8 +7,6 @@ import torch
 import click
 import yaml
 import shutil
-import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 
 # TODO fix later for other models
@@ -48,7 +46,6 @@ output [
 ]
 version_policy: { all { }}
         """
-  
   else:
         common_config="""
 input [
@@ -81,11 +78,8 @@ def generate_model_variants(
     print(model_name, versions)
     if source == 'timm':
         models_list = timm.list_models(model_name+'*', pretrained=True)
-    elif source == "huggingface":
-        model = AutoModelForSequenceClassification.from_pretrained(model_name)
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        models_list = []
-        models_list.append(model_name)
+    else:
+        models_list = torch.hub.list(source)
     model_path = os.path.join(
         TEMP_MODELS_PATH,
         bucket_name,
@@ -97,10 +91,9 @@ def generate_model_variants(
     # https://github.com/ultralytics/yolov5/search?q=triton&type=issues
     # or it's own onnx tool:
     # https://github.com/ultralytics/yolov5/blob/master/export.py
-    if source == "timm":
-        config_path = os.path.join(
-            model_path,
-            'config.pbtxt')
+    config_path = os.path.join(
+        model_path,
+        'config.pbtxt')
     os.makedirs(model_path)
     if source == 'timm':
         if model_name == "beit":
@@ -126,8 +119,11 @@ def generate_model_variants(
                 )
             model = timm.create_model(model_full_name, pretrained=True)
         else:
-            
-            model = model
+            if not model_variant in models_list:
+                raise ValueError(
+                    f"Model {model_full_name} does not exist"
+                )
+            model = torch.hub.load(source, model_variant)
             pass
         model.eval()
         model_variant_dir = os.path.join(model_path, str(variant_id+1))
@@ -147,20 +143,22 @@ def generate_model_variants(
                             'output' : {0 : 'batch_size'}})
             
         else:
-            dummy_model_input = tokenizer("This is a sample", return_tensors="pt")
-
+            dummy_input = torch.randn(1, 3, 640, 640)
             torch.onnx.export(
-            model, 
-            tuple(dummy_model_input.values()),
-            f=model_variant_path,  
-            input_names=['input_ids', 'attention_mask'], 
-            output_names=['logits'], 
-            dynamic_axes={'input_ids': {0: 'batch_size', 1: 'sequence'}, 
-                        'attention_mask': {0: 'batch_size', 1: 'sequence'}, 
-                        'logits': {0: 'batch_size', 1: 'sequence'}}, 
-            do_constant_folding=True, 
-            opset_version=13, 
-        )
+               model,
+               dummy_input,
+               f=model_variant_path,
+               input_names=['input'],
+               output_names=['output'],
+               dynamic_axes={
+                   'images': {
+                       0: 'batch',
+                       2: 'height',
+                       3: 'width'},  # shape(1,3,640,640)
+                   'output': {
+                       0: 'batch',
+                       1: 'anchors'}  # shape(1,25200,85)
+               })        
 
 def model_generator(
     source: List[str],
@@ -206,14 +204,14 @@ def upload_minio(bucket_name: str):
 
 
 @click.command()
-@click.option('--config-file', type=str, default='temp')
+@click.option('--config-file', type=str, default='model-load')
 def main(config_file: str):
     config_file_path = os.path.join(
         KUBE_YAMLS_PATH, f"{config_file}.yaml")
     with open(config_file_path, 'r') as cf:
         config = yaml.safe_load(cf)
     model_generator(**config)
-    upload_minio(bucket_name='triton-server-new1')
+    upload_minio(bucket_name='triton-server-new')
 
 if __name__ == "__main__":
     main()
