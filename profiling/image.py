@@ -1,5 +1,5 @@
 # %%
-print("alireza")
+print("start")
 import os
 from PIL import Image
 import transformers
@@ -7,7 +7,8 @@ import torch
 from time import sleep
 import time
 import multiprocessing as mp
-
+from prom import *
+import requests
 # %%
 # !kubectl create secret generic aws-credentials --from-literal=AWS_ACCESS_KEY_ID=minioadmin --from-literal=AWS_SECRET_ACCESS_KEY=minioadmin
 
@@ -270,6 +271,13 @@ import pandas as pd
 
 data = []
 def send_request(model_name, model_version, inputs, outputs, batch_size):
+    start_load = time.time()
+    requests.post(url=f'http://localhost:30800/v2/repository/models/{model_name}/load')
+    load_time = time.time() - start_load
+    with open("load-time.txt", "a") as f:
+        f.write(f"load time of {model_name} is {load_time} \n")
+
+    
     print(model_name, model_version, "start")
     for i in range(20):
         try:
@@ -286,6 +294,17 @@ def send_request(model_name, model_version, inputs, outputs, batch_size):
             print(i)
         except Exception as e:
             print("context creation failed: " + str(e))
+    sleep(60)
+    cpu_usage = get_cpu_usage("triton-67dff8d668-6qstk")
+    memory_usage = get_memory_usage("triton-67dff8d668-6qstk")
+    with open("cpu.txt", "a") as cpu_file:
+        cpu_file.write(f"usage of {model_name} {model_version} on batch {batch_size} is {cpu_usage} \n")
+
+    with open("memory.txt", 'a') as memory_file:
+        memory_file.write(f"usage of {model_name} {model_version} on batch {batch_size} is {memory_usage} \n")
+    sleep(5)
+    requests.post(url=f'http://localhost:30800/v2/repository/models/{model_name}/unload')
+
 
         
 
@@ -308,8 +327,7 @@ for bat in [2, 4, 8, 16, 32, 64]:
                         name="input", shape=batch.shape, datatype="FP32")
                 )
     inputs[0].set_data_from_numpy(batch.numpy(), binary_data=False)
-    print(type(batch))
-    print(batch.shape)
+
     outputs = []
     outputs.append(httpclient.InferRequestedOutput(name="output"))
     for j,model_name in enumerate(model_names):
@@ -318,7 +336,7 @@ for bat in [2, 4, 8, 16, 32, 64]:
             # p.start()
             # processes.append(p)
             send_request(model_name, version, inputs, outputs, bat)
-            sleep(60)
+            sleep(120)
 
 sleep(120)
 df = pd.DataFrame(columns=['index', 'model-name', 'model-version', 'batch-size', 'latency'])
