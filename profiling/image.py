@@ -290,7 +290,7 @@ def send_request(model_name, model_version, inputs, outputs, batch_size):
             triton_client.close()
             latency = time.time() - start_time
 
-            data.append([i, model_name, model_version,bat, latency])
+            data.append([i, model_name, model_version,batch_size, latency])
             print(i)
         except Exception as e:
             print("context creation failed: " + str(e))
@@ -308,44 +308,68 @@ def send_request(model_name, model_version, inputs, outputs, batch_size):
 
         
 
-    
+import click
+import sys
+import yaml
+import os
+project_dir = os.path.dirname(os.path.join(os.getcwd(), __file__))
+sys.path.append(os.path.normpath(os.path.join(project_dir, '..')))
 
+from utils.constants import (
+    TEMP_MODELS_PATH,
+    KUBE_YAMLS_PATH
+    )
 
-model_names = [ 'xception',"resnet", 'inception']
-model_versions = [['1', '2'], ['1', '2', '3'], ['1','2']]
-results = []
-processes = []
-for bat in [2, 4, 8, 16, 32, 64]:
-    os.system('sudo umount -l ~/my_mounting_point')
-    os.system('cc-cloudfuse mount ~/my_mounting_point')
-    inputs = []
+@click.command()
+@click.option('--config-file', type=str, default='model-load')
+def main(config_file: str):
+    config_file_path = os.path.join(
+        KUBE_YAMLS_PATH, f"{config_file}.yaml")
+    with open(config_file_path, 'r') as cf:
+        config = yaml.safe_load(cf)
 
-    print(f"start batch {bat}")
-    batch =create_batch_image(bat)
-    inputs.append(
-                    httpclient.InferInput(
-                        name="input", shape=batch.shape, datatype="FP32")
-                )
-    inputs[0].set_data_from_numpy(batch.numpy(), binary_data=False)
+    model_names = config['model_names']
+    versions = config['versions']
+    model_versions = [[] for _ in range(len(versions))]
+    for k, version in enumerate(versions):
+        for i in range(len(version)):
+            model_versions[k].append(str(i+1))
+    print(model_versions)
 
-    outputs = []
-    outputs.append(httpclient.InferRequestedOutput(name="output"))
-    for j,model_name in enumerate(model_names):
-        for version in model_versions[j]:
-            # p = mp.Process(target=send_request, args=(model_name,version,inputs,outputs,))
-            # p.start()
-            # processes.append(p)
-            send_request(model_name, version, inputs, outputs, bat)
-            sleep(120)
+    results = []
+    processes = []
+    for bat in [2, 4, 8, 16, 32, 64]:
+        os.system('sudo umount -l ~/my_mounting_point')
+        os.system('cc-cloudfuse mount ~/my_mounting_point')
+        inputs = []
 
-sleep(120)
-df = pd.DataFrame(columns=['index', 'model-name', 'model-version', 'batch-size', 'latency'])
-for i, m, v, b, l in data:
-    df.loc[len(df)] = [i, m, v, b, l]
+        print(f"start batch {bat}")
+        batch =create_batch_image(bat)
+        inputs.append(
+                        httpclient.InferInput(
+                            name="input", shape=batch.shape, datatype="FP32")
+                    )
+        inputs[0].set_data_from_numpy(batch.numpy(), binary_data=False)
 
-df.to_csv("data.csv")
+        outputs = []
+        outputs.append(httpclient.InferRequestedOutput(name="output"))
+        for j,model_name in enumerate(model_names):
+            for version in model_versions[j]:
+                # p = mp.Process(target=send_request, args=(model_name,version,inputs,outputs,))
+                # p.start()
+                # processes.append(p)
+                send_request(model_name, version, inputs, outputs, bat)
+                sleep(120)
 
+    sleep(120)
+    df = pd.DataFrame(columns=['index', 'model-name', 'model-version', 'batch-size', 'latency'])
+    for i, m, v, b, l in data:
+        df.loc[len(df)] = [i, m, v, b, l]
 
+    df.to_csv("data.csv")
+
+if __name__ == "__main__":
+    main()
 
 
                 

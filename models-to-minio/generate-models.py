@@ -26,7 +26,7 @@ def config_builder(
   name: str, platform: str, max_batch_size: int, source: str, dim):
   config = (f"name: \"{name}\"\n"
             f"platform: \"{platform}\"\n"
-            f"max_batch_size: \"{max_batch_size}\"\n"
+            f"max_batch_size: {max_batch_size}\n"
             f"dynamic_batching {{max_queue_delay_microseconds: 0}}")
             
   if source == 'timm':
@@ -36,7 +36,7 @@ input [
     name: "input"
     data_type: TYPE_FP32
     format: FORMAT_NCHW
-    dims: [ 3, {dim}, {dim} ]
+    dims: [ 3, 224, 224 ]
     }
 ]
 output [
@@ -206,14 +206,15 @@ def upload_minio(bucket_name: str):
 
 
 @click.command()
-@click.option('--config-file', type=str, default='temp')
+@click.option('--config-file', type=str, default='model-load')
 def main(config_file: str):
     config_file_path = os.path.join(
         KUBE_YAMLS_PATH, f"{config_file}.yaml")
     with open(config_file_path, 'r') as cf:
         config = yaml.safe_load(cf)
-    model_generator(**config)
-    upload_minio(bucket_name='triton-server-new1')
+        print(config)
+    # model_generator(**config)
+    # upload_minio(bucket_name='triton-server-new')
 
 if __name__ == "__main__":
     main()

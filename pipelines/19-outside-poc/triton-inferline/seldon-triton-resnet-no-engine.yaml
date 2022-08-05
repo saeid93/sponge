@@ -1,0 +1,20 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: resnet
+spec:
+  name: default
+  predictors:
+  - graph:
+      implementation: TRITON_SERVER
+      logger:
+        mode: all
+      modelUri: s3://separate-servers/separate-servers/resnet
+      envSecretRefName: seldon-init-container-secret
+      name: resnet
+      type: MODEL
+    annotations:
+        seldon.io/no-engine: "true"
+    name: default
+    replicas: 1
+  protocol: kfserving
