@@ -147,20 +147,23 @@ def generate_model_variants(
                             'output' : {0 : 'batch_size'}})
             
         else:
-            dummy_model_input = tokenizer("This is a sample", return_tensors="pt")
+            try:
+                dummy_model_input = tokenizer("This is a sample", return_tensors="pt")
 
-            torch.onnx.export(
-            model, 
-            tuple(dummy_model_input.values()),
-            f=model_variant_path,  
-            input_names=['input_ids', 'attention_mask'], 
-            output_names=['logits'], 
-            dynamic_axes={'input_ids': {0: 'batch_size', 1: 'sequence'}, 
-                        'attention_mask': {0: 'batch_size', 1: 'sequence'}, 
-                        'logits': {0: 'batch_size', 1: 'sequence'}}, 
-            do_constant_folding=True, 
-            opset_version=13, 
-        )
+                torch.onnx.export(
+                model, 
+                tuple(dummy_model_input.values()),
+                f=model_variant_path,  
+                input_names=['input_ids', 'attention_mask'], 
+                output_names=['logits'], 
+                dynamic_axes={'input_ids': {0: 'batch_size', 1: 'sequence'}, 
+                            'attention_mask': {0: 'batch_size', 1: 'sequence'}, 
+                            'logits': {0: 'batch_size', 1: 'sequence'}}, 
+                do_constant_folding=True, 
+                opset_version=13, 
+            )
+            except:
+                pass
 
 def model_generator(
     source: List[str],
@@ -213,8 +216,8 @@ def main(config_file: str):
     with open(config_file_path, 'r') as cf:
         config = yaml.safe_load(cf)
         print(config)
-    # model_generator(**config)
-    # upload_minio(bucket_name='triton-server-new')
+    model_generator(**config)
+    upload_minio(bucket_name='triton-server-all')
 
 if __name__ == "__main__":
     main()

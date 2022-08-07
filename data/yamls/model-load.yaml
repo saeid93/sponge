@@ -6,7 +6,9 @@ source:
   - "timm"
   - "timm"
   - "timm"
-  - "huggingface"
+  - "timm"
+  - "timm"
+  - "timm"
 model_names:
   - "resnet"
   - "xception"
@@ -15,11 +17,11 @@ model_names:
   - "regnetx"
   - "vgg"
   - "beit"
-  - "distilbert-base-uncased-finetuned-sst-2-english"
+  - "densenet"
+  - "vit"
+  - "legacy"
 versions:
   - - "18"
-    - "18d"
-    - "26"
     - "34"
     - "101"
     - "rs152"
@@ -35,21 +37,21 @@ versions:
   - - "_small"
 
   - - "_002"
-    - "_008"
-    - "_032"
     - "_080"
     - "_320"
 
   - - "11"
     - "13"
-    - "16"
     - "19"
 
   - - "_base_patch16_224"
     - "_large_patch16_224"
-    - "_large_patch16_224_in22k"
+  - - "121"
 
-  - - "1"
+  - - "_base_patch32_224"
+
+  - - "_seresnet152"
 
 
-bucket_name: "triton-server-new"
+
+bucket_name: "triton-server-all"
