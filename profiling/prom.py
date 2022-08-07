@@ -9,10 +9,16 @@ import requests
 PROMETHEUS = "http://localhost:30090"
 prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
-def get_inference_duration():
-    query = f"nv_inference_compute_infer_duration_us"
-    response_memory_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
+def get_inference_duration(model, version, end):
+    PROMETHEUS = "http://localhost:30090"
+    prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
+    query = f"max_over_time(rate(nv_inference_compute_infer_duration_us{{model='{model}', version='{version}'}}[45s])[{end}m:10s])"
+    infer_time_res = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
+    values = infer_time_res.json()['data']['result'][0]['value']
+    return_values = values[1]
+    
+    return return_values
 
 def get_comput_input_duration():
     query = f"nv_inference_compute_input_duration_us"
@@ -37,33 +43,36 @@ def get_inference_failure():
     response_memory_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
 
 
-def get_memory_usage(pod_name):
+def get_memory_usage(pod_name, name_space,end):
     PROMETHEUS = "http://localhost:30090"
     prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
-    query = f"rate(container_memory_working_set_bytes{{pod='{pod_name}'}}[1m])[3m:1m]"
+    query = f"max_over_time(rate(container_memory_usage_bytes{{pod='{pod_name}', namespace='{name_space}', container='tritonserver'}}[45s])[{end}m:10s])"
     response_memory_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
     values = response_memory_usage.json()['data']['result']
     plot_values = [[] for _ in range(len(values))]
 
     for val in range(len(values)):
-        data = values[val]['values']
-        for dat in data:
-            plot_values[val].append((float(dat[1])))
+        data = values[val]['value']
+        plot_values[val].append((float(data[1])))
     return plot_values
 
-def get_cpu_usage(pod_name):
+def get_cpu_usage(pod_name, name_space, end):
     PROMETHEUS = "http://localhost:30090"
     prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
-    query = f"rate(container_cpu_usage_seconds_total{{pod=~'{pod_name}', image!='', container_name!='POD'}}[1m])[3m:1m]"
+    query = f"max_over_time(rate(container_cpu_usage_seconds_total{{pod='{pod_name}', namespace='{name_space}', container='tritonserver'}}[45s])[{end}m:10s])"
     response_cpu_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
-
-    values = response_cpu_usage.json()['data']['result']
+    try:
+        values = response_cpu_usage.json()['data']['result']
+    except:
+        print(response_cpu_usage.json())
+        exit()
     plot_values = [[] for _ in range(len(values))]
 
     for val in range(len(values)):
-        data = values[val]['values']
-        for dat in data:
-            plot_values[val].append((float(dat[1])))
+        data = values[val]['value']
+        plot_values[val].append((float(data[1])))
     return plot_values
+
+print(get_memory_usage('triton-6b684d4964-wq8v4', 'default', 1))

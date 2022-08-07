@@ -37,6 +37,13 @@ outputs.append(httpclient.InferRequestedOutput(name="logits"))
  
 result = triton_client.infer(
     model_name=model_name, inputs=inputs, outputs=outputs)
+
+print(result.as_numpy('logits'))
+triton_output = torch.nn.functional.softmax(
+    torch.tensor(triton_output), dim=1) * 100
+triton_output = triton_output.detach().numpy()
+triton_output = triton_output.argmax(axis=1)
+print(triton_class)
 triton_client.close()
 
 # # %%

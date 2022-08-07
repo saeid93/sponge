@@ -1,0 +1,23 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: triton-nostorage
+spec:
+  name: triton-nostorage
+  predictors:
+  - name: default
+    annotations:
+      seldon.io/no-engine: "true" 
+    graph:
+      implementation: TRITON_SERVER
+      modelUri: s3://triton-server-new/triton-server-new
+      parameters: # specify explicit control, and load two models
+        - name: --model-control-mode
+          value: explicit
+          type: STRING
+      envSecretRefName: seldon-init-container-secret
+#       storageInitializerImage: seldonio/rclone-storage-initializer:1.15.0-dev            
+      name: titanic
+      type: MODEL
+    replicas: 1
+  protocol: v2
