@@ -1,13 +1,6 @@
 source:
 
-  - "huggingface"
-  - "huggingface"
-  - "huggingface"
-  - "huggingface"
-  - "huggingface"
-  - "huggingface"
-  - "huggingface"
-  - "huggingface"
+
   - "huggingface"
   - "huggingface"
   - "huggingface"
@@ -20,28 +13,14 @@ model_names:
 
   - "distilbert-base-uncased-finetuned-sst-2-english"
   - "distilbert-base-uncased"
-  - "bert-base-uncased"
-  - "bert-base-cased"
   - "roberta-base"
-  - "albert-base-v2"
   - "xlm-roberta-large-finetuned-conll03-english"
-  - "bert-large-uncased"
   - "facebook/bart-large-mnli"
   - "xlm-roberta-large"
-  - "bert-large-cased"
-  - "gpt2-medium"
-  - "gpt2-large"
-  - "google/mobilebert-uncased"
+
 versions:
 
-  - - "1"
-  - - "1"
-  - - "1"
-  - - "1"
-  - - "1"
-  - - "1"
-  - - "1"
-  - - "1"
+  
   - - "1"
   - - "1"
   - - "1"

@@ -24,6 +24,11 @@ from utils.constants import (
 
 def config_builder(
   name: str, platform: str, max_batch_size: int, source: str, dim):
+  
+  model_name = name
+  if "/" in name:
+      name = name.replace("/","")
+
   config = (f"name: \"{name}\"\n"
             f"platform: \"{platform}\"\n"
             f"max_batch_size: {max_batch_size}\n"
@@ -49,26 +54,37 @@ output [
 version_policy: { all { }}
         """
   
-  else:
-        common_config="""
-input [
-    {
-    name: "input"
-    data_type: TYPE_FP32
-    format: FORMAT_NCHW
-    dims: [ 1, 3, 640, 640 ]
-    }
-]
-output [
-    {
-    name: "output"
-    data_type: TYPE_FP32
-    dims: [ 1000 ]
-    }
-]
-version_policy: { all { }}
+  elif source == "huggingface":
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        dummy_model_input = tokenizer("This is a sample", return_tensors="pt")
+        inputs = dummy_model_input.keys()
+
+        output_config = """
+                    output [
+                        {
+                        name: "logits"
+                        data_type: TYPE_FP32
+                        dims: [ -1 ]
+                        }
+                    ]"""
+        input_config = """
+            input[
         """
-  return config + common_config
+        for i, inp in enumerate(inputs):
+            input_config += f"""
+            {{
+                name: "{inp}"
+                data_type: TYPE_INT64
+                format: FORMAT_NONE
+                dims: [ -1 ]
+            }}"""
+            if i != len(inputs)-1:
+                input_config += ","
+        input_config += "]"
+        common_config=input_config + output_config
+        print(common_config)
+  print(config)
+  return config 
 
 
 def generate_model_variants(
@@ -78,14 +94,19 @@ def generate_model_variants(
     bucket_name: str,
     dim=224):
     # model name
-    print(model_name, versions)
     if source == 'timm':
         models_list = timm.list_models(model_name+'*', pretrained=True)
     elif source == "huggingface":
+        print(f"#######################{model_name}#################3")
         model = AutoModelForSequenceClassification.from_pretrained(model_name)
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         models_list = []
         models_list.append(model_name)
+    model_t = "model"
+    if "/" in model_name:
+        model_t = model_name
+        model_name = model_name.replace("/","")
+        print(model_name)
     model_path = os.path.join(
         TEMP_MODELS_PATH,
         bucket_name,
@@ -97,18 +118,23 @@ def generate_model_variants(
     # https://github.com/ultralytics/yolov5/search?q=triton&type=issues
     # or it's own onnx tool:
     # https://github.com/ultralytics/yolov5/blob/master/export.py
-    if source == "timm":
+    if source == "timm" or source =="huggingface":
         config_path = os.path.join(
             model_path,
             'config.pbtxt')
     os.makedirs(model_path)
-    if source == 'timm':
+    if source == 'timm' or source =="huggingface":
         if model_name == "beit":
             dim = 512
         else:
             dim = 224
+        
+        if "/" in model_t:
+            model_name_s = model_t
+        else:
+            model_name_s = model_name
         config = config_builder(
-            name=model_name,
+            name=model_name_s,
             platform='onnxruntime_onnx',
             max_batch_size=256,
             source=source, dim = dim)
@@ -209,7 +235,7 @@ def upload_minio(bucket_name: str):
 
 
 @click.command()
-@click.option('--config-file', type=str, default='model-load')
+@click.option('--config-file', type=str, default='temp')
 def main(config_file: str):
     config_file_path = os.path.join(
         KUBE_YAMLS_PATH, f"{config_file}.yaml")
@@ -217,7 +243,7 @@ def main(config_file: str):
         config = yaml.safe_load(cf)
         print(config)
     model_generator(**config)
-    upload_minio(bucket_name='triton-server-all')
+    upload_minio(bucket_name='triton-server-new-text')
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,0 @@
-infertime of resnet 1 on batch 2 is 36687.36666666667 
-infertime of resnet 2 on batch 2 is 63212.46666666667 
-infertime of resnet 3 on batch 2 is 105704.8 
-infertime of resnet 4 on batch 2 is 309186.63333333336 
-infertime of resnet 5 on batch 2 is 503627.7 

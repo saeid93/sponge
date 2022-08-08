@@ -1,5 +1,0 @@
-usage of resnet 1 on batch 2 is [[8.3066963594]] 
-usage of resnet 2 on batch 2 is [[9.119561748233341]] 
-usage of resnet 3 on batch 2 is [[11.25651524056666]] 
-usage of resnet 4 on batch 2 is [[22.190415470799994]] 
-usage of resnet 5 on batch 2 is [[33.72626244680002]] 

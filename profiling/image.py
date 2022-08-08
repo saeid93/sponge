@@ -271,9 +271,9 @@ import pandas as pd
 import math
 
 data = []
-pod = "triton-6b684d4964-wq8v4"
+pod = "triton-6b684d4964-l5bs6"
 name_space = "default"
-database = "big-run/experimental/"
+database = "big-run/test-batches/"
 num_requests = [120, 90, 50, 30, 20, 15]
 def send_request(model_name, model_version, inputs, outputs, batch_size):
     start_load = time.time()
@@ -286,7 +286,7 @@ def send_request(model_name, model_version, inputs, outputs, batch_size):
 
     
     print(model_name, model_version, "start")
-    for i in range(200):
+    for i in range(40):
         try:
             triton_client = httpclient.InferenceServerClient(
                 url='localhost:30800'
@@ -309,8 +309,8 @@ def send_request(model_name, model_version, inputs, outputs, batch_size):
     total_time = time.time() - start_load
     minutes = total_time // 60
     minutes = int(minutes)
-    if minutes < 1:
-        minutes = 1
+    if minutes < 2:
+        minutes = 2
     end_infer = 0
     if minutes < 10:
         end_infer = 10
@@ -319,9 +319,9 @@ def send_request(model_name, model_version, inputs, outputs, batch_size):
         end_infer = minutes + 5
 
 
-    cpu_usage = get_cpu_usage(pod, name_space, minutes)
-    memory_usage = get_memory_usage(pod, name_space, minutes)
-    compute_inference = get_inference_duration(model_name, model_version, end_infer)
+    cpu_usage = get_cpu_usage(pod, name_space, minutes, minutes)
+    memory_usage = get_memory_usage(pod, name_space, minutes, minutes)
+    compute_inference = get_inference_duration(model_name, model_version)
     with open(database+"cpu.txt", "a") as cpu_file:
         cpu_file.write(f"usage of {model_name} {model_version} on batch {batch_size} is {cpu_usage} \n")
 
@@ -329,7 +329,7 @@ def send_request(model_name, model_version, inputs, outputs, batch_size):
         memory_file.write(f"usage of {model_name} {model_version} on batch {batch_size} is {memory_usage} \n")
 
     with open(database+"infer-prom.txt", "a") as infer:
-        infer.write(f"infertime of {model_name} {model_version} on batch {batch_size} is {compute_inference} \n")
+        infer.write(f"infertime of {model_name} {model_version} on batch {batch_size} is {compute_inference/200} \n")
 
     requests.post(url=f'http://localhost:30800/v2/repository/models/{model_name}/unload')
 
@@ -352,7 +352,7 @@ from utils.constants import (
 @click.option('--config-file', type=str, default='model-load')
 def main(config_file: str):
     print("sleep for one minute to heavy start")
-    sleep(100)
+    sleep(10)
     config_file_path = os.path.join(
         KUBE_YAMLS_PATH, f"{config_file}.yaml")
     with open(config_file_path, 'r') as cf:
@@ -368,7 +368,7 @@ def main(config_file: str):
 
     results = []
     processes = []
-    for bat in [2,4,8, 16, 32, 64]:
+    for bat in [2, 4, 8, 16, 32]:
         os.system('sudo umount -l ~/my_mounting_point')
         os.system('cc-cloudfuse mount ~/my_mounting_point')
         inputs = []
@@ -386,13 +386,15 @@ def main(config_file: str):
         for j,model_name in enumerate(model_names):
             for version in model_versions[j]:
                 send_request(model_name, version, inputs, outputs, bat)
+                break
+            break
 
     sleep(120)
     df = pd.DataFrame(columns=['index', 'model-name', 'model-version', 'batch-size', 'latency'])
     for i, m, v, b, l in data:
         df.loc[len(df)] = [i, m, v, b, l]
 
-    df.to_csv(database+"data2.csv")
+    df.to_csv(database+"data.csv")
 
 if __name__ == "__main__":
     main()
