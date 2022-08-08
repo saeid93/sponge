@@ -1,8 +1,0 @@
-load time of resnet is 0.14900779724121094 
-load time of resnet is 0.14815139770507812 
-load time of resnet is 0.13529133796691895 
-load time of resnet is 11.630974054336548 
-load time of resnet is 12.07059931755066 
-load time of resnet is 12.516839981079102 
-load time of resnet is 12.049498558044434 
-load time of resnet is 12.31505799293518 
