@@ -3,7 +3,7 @@ kind: SeldonDeployment
 metadata:
   name: resnet
 spec:
-  name: default
+  name: resnet
   annotations:
     seldon.io/no-storage-initializer: "true"
   predictors:
@@ -13,14 +13,11 @@ spec:
         mode: all
       modelUri: s3://triton-server-all/triton-server-all
       parameters: # specify explicit control, and load two models
-        - name: model_control_mode
-          value: explicit
-          type: STRING
-      envSecretRefName: seldon-init-container-secret
+      envSecretRefName: seldon-triton-secret
       name: resnet
       type: MODEL
     annotations:
       seldon.io/no-engine: "true"
     name: default
     replicas: 1
-  protocol: kfserving
+  protocol: v2

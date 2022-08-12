@@ -196,7 +196,7 @@ def plot_infer_prom(txt, type):
 
         #     # Draw a bar for every value of that type
             for x, y in enumerate(values):
-                bar = ax.bar(x/3 + x_offset, plot_array[c], width=bar_width * 0.9, color=cs[c])
+                bar = ax.bar(x/3 + x_offset, y, width=bar_width * 0.9, color=colors[i%len(colors)])
                 c += 1
                 xs.append(x/3 + x_offset)
                 bars.add(bar[0])
@@ -221,7 +221,7 @@ def plot_infer_prom(txt, type):
             ax.set_xticks(xs, new_mv_dict)
             ax.tick_params(axis='both', which='minor', labelsize=1)
             plt.xticks(rotation=45)
-        plt.savefig(f"big-run/experimental/v3/{type}-batchsize-{2**(j+1)}.png", bbox_inches="tight")
+        plt.savefig(f"profile-exp4/1/images/permodel/regular/{type}-batchsize-{2**(j+1)}.png", bbox_inches="tight")
 
 
     # plt.savefig(f"big-run/ultimate/{type}.png")
@@ -249,6 +249,7 @@ def plot_per_batch(txt, type):
         for v in versions[i]:
 
             mv_dict.append(m+v)
+        
 
     for i, m in enumerate(model_names):
         names[m] = [[] for _ in range(len(versions[i]))]
@@ -279,8 +280,7 @@ def plot_per_batch(txt, type):
     for i, name in enumerate(names.keys()):
         # The offset in x direction of that bar
         values = names[name]
-        print(name, values)
-        return
+
     #     # Draw a bar for every value of that type
         bars = []
         for k, val in enumerate(values):
@@ -293,6 +293,7 @@ def plot_per_batch(txt, type):
                 xs.append(x/3 + x_offset)
             c += 1
             if True:
+            
 
                 
                 plt.legend(bars,[f"batch {2**x}" for x in[1,2,3,4,5] ],bbox_to_anchor=(1.04,1), loc="upper left" )
@@ -304,13 +305,39 @@ def plot_per_batch(txt, type):
                 ax.set_xticks(xs, [2, 4, 8, 16, 32])
                 ax.tick_params(axis='both', which='minor', labelsize=1)
                 plt.xticks(rotation=45)
-            plt.savefig(f"big-run/experimental/v4/{type}-model-{mv_dict[c-1]}.png", bbox_inches="tight")
+            print("hiiiii")
+            plt.savefig(f"profile-exp4/1/images/perbatch/{type}-model-{mv_dict[c-1]}.png", bbox_inches="tight")
         
-
+            
 
 def plot_load_time(txt):
     model_names = []
     load_times = []
+    config_file = "model-load"
+    mv_dict = []
+    names = {}
+
+    N = 3
+    ind = np.arange(6)  # the x locations for the groups
+    width = 0.27
+    config_file_path = os.path.join(
+        KUBE_YAMLS_PATH, f"{config_file}.yaml")
+
+    with open(config_file_path, 'r') as cf:
+        config = yaml.safe_load(cf)
+
+    model_names = config['model_names']
+    versions = config['versions']
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']   
+
+    for i, m in enumerate(model_names):
+        for v in versions[i]:
+
+            mv_dict.append(m+v)
+        
+
+    for i, m in enumerate(model_names):
+        names[m] = [[] for _ in range(len(versions[i]))]
     with open(txt) as f:
         for line in f:
             data = line.split()
@@ -321,11 +348,100 @@ def plot_load_time(txt):
     plt.bar(model_names, load_times)
     plt.savefig("loadlatency.png")
 
-where = "experimental"
 
-plot_per_batch(f"big-run/{where}/infer-prom.txt","infer")
-plot_per_batch(f"big-run/{where}/cpu.txt","cpu")
-plot_per_batch(f"big-run/{where}/memory.txt","memory")
+import plotly.express as px
+import plotly.io as pio
+
+w,h = 1000,800
+
+def show_all(df, title, size, batch_size):
+    fig = px.scatter(df, width=w, height=h, title=title,
+        x='time',  y='accuracy', log_x=True, color='model', hover_name='model')
+    fig.update_traces(marker=dict(size=20))
+
+    pio.write_image(fig, f"profile-exp4/1/images/acc-lat/{title}/{batch_size}.png")
+
+
+def plot_accuracy_latency(txt, type, size):
+    config_file = "model-load"
+    mv_dict = []
+    names = {}
+
+    N = 3
+    ind = np.arange(6)  # the x locations for the groups
+    width = 0.27
+    config_file_path = os.path.join(
+        KUBE_YAMLS_PATH, f"{config_file}.yaml")
+
+    with open(config_file_path, 'r') as cf:
+        config = yaml.safe_load(cf)
+
+    model_names = config['model_names']
+    versions = config['versions']
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']   
+
+    for i, m in enumerate(model_names):
+        for v in versions[i]:
+
+            mv_dict.append(m+v)
+        
+
+    for i, m in enumerate(model_names):
+        names[m] = [[] for _ in range(len(versions[i]))]
+    latencies = []
+    with open(txt) as f:
+        for line in f:
+            data = line.split()
+            model = data[2]
+            version = data[3]
+            batch_size = data[6]
+            if int(batch_size) != size:
+                continue
+            batch_size = int(batch_size)
+            if batch_size == 64:
+                break
+            if type == "infer":
+                latency = float(data[8])
+                latency = latency / (10**6)
+            else:
+                latency = data[8].replace("[","")
+                latency = latency.replace("]","")
+                latency = latency.replace(",","")
+                latency = latency.replace(" ","")
+                latency = float(latency)
+            v = int(version) - 1
+            latencies.append(latency)
+            if type == "cpu" and batch_size == 32:
+                latencies.append(414.687180389179591)
+
+    
+    df = pd.read_csv("results-imagenet.csv")
+    df = df[df['model'].isin(mv_dict)][["model", "top1"]]
+    pl_arr = []
+    accs = []
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']   
+
+    for i, mv in enumerate(mv_dict):
+        print(mv, end = " ")
+        print(latencies[i])
+        pl_arr.append([mv, df.loc[df['model']==mv].iloc[0]['top1'], latencies[i], colors[i%len(colors)]])
+    
+    final_df = pd.DataFrame(columns=['model', 'accuracy', f'time', 'type'])
+    for i, m, v, t in pl_arr:
+        final_df.loc[len(final_df)] = [i, m, v, t]
+    show_all(final_df, f"{type}", "img-size", size)
+
+
+
+
+where = "1"
+
+for i in [2, 4, 8, 16, 32]:
+    plot_accuracy_latency(f"profile-exp4/{where}/infer-prom.txt","infer", i)
+
+
+for i in [2, 4, 8, 16, 32]:
+    plot_accuracy_latency(f"profile-exp4/{where}/cpu.txt","cpu", i)
 
 
 

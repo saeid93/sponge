@@ -32,7 +32,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: aws-credentials
-              key: AWS_SECRET_ACCESS_KEY      
+              key: AWS_SECRET_ACCESS_KEY  
         ports:
           - containerPort: 8000
             name: http
