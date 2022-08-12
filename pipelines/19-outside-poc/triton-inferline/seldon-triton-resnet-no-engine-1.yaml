@@ -16,7 +16,7 @@ spec:
         - name: model_control_mode
           value: explicit
           type: STRING
-      envSecretRefName: seldon-init-container-secret
+      envSecretRefName: aws-credentials
       name: resnet
       type: MODEL
     annotations:

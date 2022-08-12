@@ -273,20 +273,30 @@ import math
 data = []
 pod = "triton-6b684d4964-l5bs6"
 name_space = "default"
-database = "big-run/test-batches/"
+database = "profile-exp4/1/"
 num_requests = [120, 90, 50, 30, 20, 15]
 def send_request(model_name, model_version, inputs, outputs, batch_size):
     start_load = time.time()
     res = requests.post(url=f'http://localhost:30800/v2/repository/models/{model_name}/load')
     load_time = time.time() - start_load
-    sleep(10)
+      
 
     with open(database+"load-time.txt", "a") as f:
         f.write(f"load time of {model_name} is {load_time} \n")
 
+    sleep(10)
+    cpu_usages = []
+    memory_usages = []
+    infer_times = []
+    input_times = []
+    output_times = []
+    queue_times = []
+    success_times = []
+
+  
     
     print(model_name, model_version, "start")
-    for i in range(40):
+    for i in range(200):
         try:
             triton_client = httpclient.InferenceServerClient(
                 url='localhost:30800'
@@ -300,12 +310,18 @@ def send_request(model_name, model_version, inputs, outputs, batch_size):
 
             data.append([i, model_name, model_version,batch_size, latency])
             print(i)
+            minutes = 1
+            cpu_usages.append(get_cpu_usage(pod, name_space, minutes, minutes))
+            memory_usages.append(get_memory_usage(pod, name_space, minutes, minutes))
+            infer_times.append(get_inference_duration(model_name, model_version))
+            queue_times.append(get_queue_duration(model_name, model_version))
+            success_times.append(get_inference_count(model_name, model_version))
         except Exception as e:
             print("context creation failed: " + str(e))
 
     end_time = 5
    
-    sleep(15)
+    sleep(10)
     total_time = time.time() - start_load
     minutes = total_time // 60
     minutes = int(minutes)
@@ -364,7 +380,6 @@ def main(config_file: str):
     for k, version in enumerate(versions):
         for i in range(len(version)):
             model_versions[k].append(str(i+1))
-    print(model_versions)
 
     results = []
     processes = []
@@ -386,8 +401,6 @@ def main(config_file: str):
         for j,model_name in enumerate(model_names):
             for version in model_versions[j]:
                 send_request(model_name, version, inputs, outputs, bat)
-                break
-            break
 
     sleep(120)
     df = pd.DataFrame(columns=['index', 'model-name', 'model-version', 'batch-size', 'latency'])
