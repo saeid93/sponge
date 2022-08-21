@@ -1,7 +1,7 @@
 import os
 from jinja2 import Environment, FileSystemLoader
 
-PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/18-outside-poc/triton-inferline"
+PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/19-outside-poc/triton-inferline"
 
 
 def setup_minio_secret(username: str, password: str):
