@@ -3,10 +3,12 @@ import pandas as pd
 import numpy as np
 import matplotlib.cm as cm
 import matplotlib.patches as mpatches
-
+import glob
 import click
 import sys
 import yaml
+import matplotlib.lines as mlines
+
 import os
 project_dir = os.path.dirname(os.path.join(os.getcwd(), __file__))
 sys.path.append(os.path.normpath(os.path.join(project_dir, '..')))
@@ -567,17 +569,81 @@ def plot_array_data(txt, type, size, yaml_file, per, kind):
         path = create_file_on_doesnot_exists(files[0], files[1], per, kind)
         plt.savefig(f"{path}/{type}-batchsize-{2**(j+1)}.png", bbox_inches="tight")
 
+def create_color_column(names):
+    families = []
+    for name in names:
+        families.append(name.split("-")[0])
+    colors = {}
+    number = 12
+    cmap = plt.get_cmap('gnuplot')
+    all_colors = [cmap(i) for i in np.linspace(0, 1, number)]
+    index = -1
+    for fam in families:
+        if fam not in colors:
+            index += 1
+            colors[fam] = [all_colors[index]]
+        else:
+            colors[fam].append(all_colors[index])
+    all_returns = []
+    for k in colors.keys():
+        data = colors[k]
+        for d in data:
+            all_returns.append(d)
+    return all_returns
+
+def plot_perf_analyzer(path):
+    csv_files = glob.glob(os.path.join(path, "*.csv"))
+    frames = []
+    for f in csv_files:
+        df = pd.read_csv(f)
+        name = f.split("\\")[-1].split(".")[0].split("/")[-1]
+        df["name"] = name
+        group = name.split("-")[0]
+        df["group"] = group
+        frames.append(df)
+    
+    df = pd.concat(frames)
+    df = df.sort_values(by=['name'])
+    df.rename({'Inferences/Second': 'throughput'}, axis=1, inplace=True)
+
+    colors = create_color_column(df["name"])
+    groups = df.groupby('group')
+    plt.rcParams["figure.figsize"] = (14,8)
+    df["color"] = colors
+    patches = []
+    print(df.columns)
+    data_to_plots = ["throughput", "p90 latency", "p95 latency", "p99 latency"]
+    y_axis = ["Inferences/Second", "usec", "usec", "usec"]
+    for i, val in enumerate(data_to_plots):
+        k = 0
+        patches = []
+        for name, group   in groups:
+            k = 0
+            for index, g in group.iterrows():
+                pl = plt.bar(g['name'], g[val], color=g["color"], align='center')
+                if k == 0:
+                    k += 1
+                    patches.append(mpatches.Patch(color=g["color"], label=name))
+        print(len(patches))
+        plt.legend(handles=patches,bbox_to_anchor=(1.01,1), loc="upper left" )
+        plt.xticks(rotation = 90)
+        plt.ylabel(f'{val}({y_axis[i]})', size = 30)
+        plt.xlabel("model-version")
+        pa = create_file_on_doesnot_exists(path.split("/")[0], path.split("/")[1], "perf", "perf")
+        plt.savefig(f"{pa}/{data_to_plots[i]}.png")
+
+    
 
 
-root = "profile-exp7-object"
-where = "1"
+root = "profile-exp6-cores"
+where = "8"
 f_names = ["infer-prom.txt", "cpu.txt", "memory.txt", "queue_times.txt"]
 types = ["infer", "cpu", "memory", "queue_times"]
-yaml_file = "yolov5"
-per = "models"
-kind = "regular"
-for k, f in enumerate(f_names):
-    for i in [2]:
-        plot_array_data(f"{root}/{where}/{f}",types[k], i, yaml_file, per, kind)
+# yaml_file = "yolov5"
+# per = "models"
+# kind = "regular"
+# for k, f in enumerate(f_names):
+#     for i in [2]:
+#         plot_array_data(f"{root}/{where}/{f}",types[k], i, yaml_file, per, kind)
 
-
+plot_perf_analyzer(f"{root}/{where}")
