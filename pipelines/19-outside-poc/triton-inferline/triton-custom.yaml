@@ -41,9 +41,10 @@ spec:
             - "--model-repository=models"
             - "--model-control-mode=explicit"
             - "--load-model=*"
+            - "--model-store=s3://http://minio.minio-system.svc.cluster.local:9000/triton-server-all/triton-server-all/"
           envFrom:
             - secretRef: 
-                name: seldon-init-container-secret
+                name: aws-credentials
           imagePullPolicy: IfNotPresent
           name: image-models
         terminationGracePeriodSeconds: 1

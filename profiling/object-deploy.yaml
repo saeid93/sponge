@@ -2,17 +2,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: triton
-  name: triton
+    app: triton-object
+  name: triton-object
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: triton
+      app: triton-object
   template:
     metadata:
       labels:
-        app: triton
+        app: triton-object
     spec:
       containers:
       - image: nvcr.io/nvidia/tritonserver:22.05-py3
@@ -20,9 +20,8 @@ spec:
         resources:
           limits:
             nvidia.com/gpu: "0"
-            cpu: "8"
         command: ["/bin/bash"]
-        args: ["-c", "cp /var/run/secrets/kubernetes.io/serviceaccount/ca.crt /usr/local/share/ca-certificates && update-ca-certificates && /opt/tritonserver/bin/tritonserver --model-store=s3://http://minio.minio-system.svc.cluster.local:9000/triton-server-all/triton-server-all/ --strict-model-config=False --model-control-mode=explicit"]
+        args: ["-c", "cp /var/run/secrets/kubernetes.io/serviceaccount/ca.crt /usr/local/share/ca-certificates && update-ca-certificates && /opt/tritonserver/bin/tritonserver --model-store=s3://http://minio.minio-system.svc.cluster.local:9000/triton-server-new-obj/triton-server-new-obj/ --strict-model-config=False --model-control-mode=explicit"]
         env:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
@@ -33,7 +32,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: aws-credentials
-              key: AWS_SECRET_ACCESS_KEY
+              key: AWS_SECRET_ACCESS_KEY      
         ports:
           - containerPort: 8000
             name: http

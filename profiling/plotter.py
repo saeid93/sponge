@@ -11,7 +11,7 @@ import os
 project_dir = os.path.dirname(os.path.join(os.getcwd(), __file__))
 sys.path.append(os.path.normpath(os.path.join(project_dir, '..')))
 
-from utils.constants import (
+from utilspr.constants import (
     TEMP_MODELS_PATH,
     KUBE_YAMLS_PATH
     )
@@ -431,18 +431,153 @@ def plot_accuracy_latency(txt, type, size):
         final_df.loc[len(final_df)] = [i, m, v, t]
     show_all(final_df, f"{type}", "img-size", size)
 
+def convert_to_float(data):
+    data = data.replace("[","")
+    data = data.replace("]","")
+
+    data = data.replace(',',"")
+    data = list(map(float, data.split()))
+    return data
+
+def create_file_on_doesnot_exists(root, where, per, kind):
+    path = os.path.join(root, where, "images", per, kind)
+    print(path)
+    isExist = os.path.exists(path)
+
+    if not isExist:
+    
+    # Create a new directory because it does not exist 
+        os.makedirs(path)
+        print("The new directory is created!")
+    return path
+
+def plot_array_data(txt, type, size, yaml_file, per, kind):
+    config_file = yaml_file
+    mv_dict = []
+    names = {}
+
+    N = 3
+    ind = np.arange(6)  # the x locations for the groups
+    width = 0.27
+    config_file_path = os.path.join(
+        KUBE_YAMLS_PATH, f"{config_file}.yaml")
+
+    with open(config_file_path, 'r') as cf:
+        config = yaml.safe_load(cf)
+
+    model_names = config['model_names']
+    versions = config['versions']
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']   
+
+    for i, m in enumerate(model_names):
+        for v in versions[i]:
+
+            mv_dict.append(m+v)
+        
+
+    for i, m in enumerate(model_names):
+        names[m] = [[] for _ in range(len(versions[i]))]
+
+    with open(txt) as f:
+        for line in f:
+            data = line.split()
+            model = data[2]
+            version = data[3]
+            batch_size = data[6]
+            batch_size = int(batch_size)
+            if batch_size == 64:
+                break
+           
+            metric = convert_to_float(" ".join(data[8:]))
+            if type == "memory":
+                met = max(metric)
+            elif type == 'cpu':
+                met = max(metric) - min(metric)
+            else:
+                met = metric[-1]
+            v = int(version)-1
+            names[model][v].append(met)
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']   
+    
+
+    # data = {}
+    # for i, b in enumerate(model_version_batch):
+    #     data[f"batch {2**i}"] = b
+   
+    for j in range(5):
+        plot_array = []
+        for key in names.keys():
+            versions = names[key]
+            for v in versions:
+                plot_array.append(v[j])
+        cs = []
+        lg = []
+        for i, n in enumerate(names.keys()):
+            data = names[n]
+            for k in data:
+                cs.append(colors[i])
+            lg.append([colors[i], n])
+        plot_array1, new_mv_dict = zip(*sorted(zip(plot_array, mv_dict)))
+        plot_array, cs = zip(*sorted(zip(plot_array, cs)))
+
+        n_bars = sum(len(l) for l in versions)
+        fig, ax = plt.subplots(figsize=(8, 6))
+        # The width of a single bar
+        bar_width = 0.3
+
+        # # List containing handles for the drawn bars, used for the legend
+        bars = set()
+        x_offset = 0
+        c = 0
+        xs = []
+        
+        
+        # # Iterate over all data
+        for i, (name, values) in enumerate(names.items()):
+            # The offset in x direction of that bar
+
+        #     # Draw a bar for every value of that type
+            for x, y in enumerate(values):
+                bar = ax.bar(x/3 + x_offset, y, width=bar_width * 0.9, color=colors[i%len(colors)])
+                c += 1
+                xs.append(x/3 + x_offset)
+                bars.add(bar[0])
+
+            x_offset += len(values)/3
+
+        #     # Add a handle to the last drawn bar, which we'll need for the legend
+        #         bars.append(bar[0])
+
+        # # Draw legend if we need
+        if True:
+
+            patches = []
+            for l in lg:
+                patches.append(mpatches.Patch(color=l[0], label=l[1]))
+            plt.legend(handles=patches,bbox_to_anchor=(1.04,1), loc="upper left" )
+
+            if type == "infer":
+                ax.set_ylabel(f"{type} time latency (seconds)")
+            else:
+                ax.set_ylabel(f"{type} usage")
+            ax.set_xticks(xs, new_mv_dict)
+            ax.tick_params(axis='both', which='minor', labelsize=1)
+            plt.xticks(rotation=45)
+        files = txt.split("/")
+        path = create_file_on_doesnot_exists(files[0], files[1], per, kind)
+        plt.savefig(f"{path}/{type}-batchsize-{2**(j+1)}.png", bbox_inches="tight")
 
 
 
+root = "profile-exp7-object"
 where = "1"
-
-for i in [2, 4, 8, 16, 32]:
-    plot_accuracy_latency(f"profile-exp4/{where}/infer-prom.txt","infer", i)
-
-
-for i in [2, 4, 8, 16, 32]:
-    plot_accuracy_latency(f"profile-exp4/{where}/cpu.txt","cpu", i)
-
-
+f_names = ["infer-prom.txt", "cpu.txt", "memory.txt", "queue_times.txt"]
+types = ["infer", "cpu", "memory", "queue_times"]
+yaml_file = "yolov5"
+per = "models"
+kind = "regular"
+for k, f in enumerate(f_names):
+    for i in [2]:
+        plot_array_data(f"{root}/{where}/{f}",types[k], i, yaml_file, per, kind)
 
 

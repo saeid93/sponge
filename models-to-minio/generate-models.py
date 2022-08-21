@@ -17,7 +17,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 project_dir = os.path.dirname(os.path.join(os.getcwd(), __file__))
 sys.path.append(os.path.normpath(os.path.join(project_dir, '..')))
 
-from utils.constants import (
+from utilspr.constants import (
     TEMP_MODELS_PATH,
     KUBE_YAMLS_PATH
     )
@@ -32,7 +32,10 @@ def config_builder(
   config = (f"name: \"{name}\"\n"
             f"platform: \"{platform}\"\n"
             f"max_batch_size: {max_batch_size}\n"
-            f"dynamic_batching {{max_queue_delay_microseconds: 0}}")
+            f"dynamic_batching {{max_queue_delay_microseconds: 0}}"
+            )
+  if source == "onnx" or source == "ultralytics":
+      return config
             
   if source == 'timm':
         common_config="""
@@ -54,7 +57,7 @@ output [
 version_policy: { all { }}
         """
   
-  elif source == "huggingface":
+  else:
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         dummy_model_input = tokenizer("This is a sample", return_tensors="pt")
         inputs = dummy_model_input.keys()
@@ -83,7 +86,6 @@ version_policy: { all { }}
         input_config += "]"
         common_config=input_config + output_config
         print(common_config)
-  print(config)
   return config 
 
 
@@ -118,12 +120,12 @@ def generate_model_variants(
     # https://github.com/ultralytics/yolov5/search?q=triton&type=issues
     # or it's own onnx tool:
     # https://github.com/ultralytics/yolov5/blob/master/export.py
-    if source == "timm" or source =="huggingface":
+    if source == "timm" or source =="huggingface" or True:
         config_path = os.path.join(
             model_path,
             'config.pbtxt')
     os.makedirs(model_path)
-    if source == 'timm' or source =="huggingface":
+    if source == 'timm' or source =="huggingface" or True:
         if model_name == "beit":
             dim = 512
         else:
@@ -144,25 +146,28 @@ def generate_model_variants(
     
     # TODO add language models the same way
     for variant_id, model_variant in enumerate(versions):
-        if source == 'timm':
-            model_full_name = model_name + model_variant
-            if not model_full_name in models_list:
-                raise ValueError(
-                    f"Model {model_full_name} does not exist"
-                )
-            model = timm.create_model(model_full_name, pretrained=True)
-        else:
+        if source == "timm" or  source == "huggingface":
+            if source == 'timm':
+                model_full_name = model_name + model_variant
+                if not model_full_name in models_list:
+                    raise ValueError(
+                        f"Model {model_full_name} does not exist"
+                    )
+                model = timm.create_model(model_full_name, pretrained=True)
             
-            model = model
-            pass
-        model.eval()
+            elif source == "huggingface":
+                
+                model = model
+                pass
+            model.eval()
         model_variant_dir = os.path.join(model_path, str(variant_id+1))
+
         model_variant_path = os.path.join(model_variant_dir, 'model.onnx')
         # if 'models' not in os.listdir("./"):
         os.makedirs(model_variant_dir)
         if source == 'timm':
             dim = 224
-            print(dim)
+            
             dummy_input = torch.randn(1, 3, dim, dim)
             torch.onnx.export(
                 model, dummy_input,
@@ -171,7 +176,30 @@ def generate_model_variants(
                 output_names = ['output'],
                 dynamic_axes={'input' : {0 : 'batch_size'},
                             'output' : {0 : 'batch_size'}})
-            
+        elif source == "onnx":
+            os.system(f"wget https://github.com/onnx/models/raw/main/vision/object_detection_segmentation/{model_name}/model/{model_variant}.onnx -O {model_variant_path}")
+
+        elif source == "ultralytics":
+            # check why create in current foolder
+            imgsz = [640, 640]
+            dummy_input = torch.zeros(1, 3, *imgsz).to('cpu')
+            print(f"$$$$$$$$$$$$$$ {model_variant}$$$$$$$$$$$$$$$$$$44")
+            model = torch.hub.load('ultralytics/yolov5', model_variant, pretrained=True)
+            torch.onnx.export( model,  # --dynamic only compatible with cpu
+                dummy_input,
+                model_variant_path,
+                verbose=False,
+                input_names=['images'],
+                output_names=['output'],
+                dynamic_axes={
+                    'images': {
+                        0: 'batch',
+                        2: 'height',
+                        3: 'width'},  # shape(1,3,640,640)
+                    'output': {
+                        0: 'batch',
+                        1: 'anchors'}  # shape(1,25200,85)
+                } )
         else:
             try:
                 dummy_model_input = tokenizer("This is a sample", return_tensors="pt")
@@ -235,7 +263,7 @@ def upload_minio(bucket_name: str):
 
 
 @click.command()
-@click.option('--config-file', type=str, default='temp')
+@click.option('--config-file', type=str, default='yolov5')
 def main(config_file: str):
     config_file_path = os.path.join(
         KUBE_YAMLS_PATH, f"{config_file}.yaml")
@@ -243,7 +271,7 @@ def main(config_file: str):
         config = yaml.safe_load(cf)
         print(config)
     model_generator(**config)
-    upload_minio(bucket_name='triton-server-new-text')
+    upload_minio(bucket_name='triton-server-new-obj')
 
 if __name__ == "__main__":
     main()
