@@ -1,18 +1,5 @@
 # %%
-import os
-
-#
-# %%
-import tritonclient.http as httpclient
-from tritonclient.utils import InferenceServerException
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-import torch
-import tritonclient.http as httpclient
-from tritonclient.utils import InferenceServerException
-from torchvision import transforms
-import threading
-import pandas as pd
-import math
+print("start")
 import os
 from PIL import Image
 import transformers
@@ -23,12 +10,67 @@ import multiprocessing as mp
 from prom import *
 import requests
 
+def create_batch(batch_size):
+    batch = []
+    for i in range(batch_size):
+        batch.append(read_file())
+    return batch
+
+# %%
+os.system('sudo umount -l ~/my_mounting_point')
+os.system('cc-cloudfuse mount ~/my_mounting_point')
+ 
+data_folder_path = '/home/cc/my_mounting_point/datasets'
+dataset_folder_path = os.path.join(
+    data_folder_path, 'ILSVRC/Data/DET/test'
+)
+classes_file_path = os.path.join(
+    data_folder_path, 'imagenet_classes.txt'
+)
+ 
+image_names = os.listdir(dataset_folder_path)
+image_names.sort()
+with open(classes_file_path) as f:
+    classes = [line.strip() for line in f.readlines()]
+
+def image_loader(folder_path, image_name):
+    image = Image.open(
+        os.path.join(folder_path, image_name))
+    return image
+
+# %%
+def create_batch_image(batch_size):
+    num_loaded_images = batch_size
+    images = {
+        image_name: image_loader(
+            dataset_folder_path, image_name) for image_name in image_names[
+                :num_loaded_images]}
+    transform = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize(
+    mean=[0.485, 0.456, 0.406],
+    std=[0.229, 0.224, 0.225]
+)])
+ 
+    return torch.stack(list(map(lambda a: transform(a), list(images.values()))))
+
+
+#
+import tritonclient.http as httpclient
+from tritonclient.utils import InferenceServerException
+from torchvision import transforms
+import threading
+import pandas as pd
+import math
+
 data = []
-pod = "triton1-678549f99c-l9ff5"
+pod = "triton-object-78898df476-m9qsq"
 name_space = "default"
-database = "profile-exp8-text/1/"
+database = "profile-exp7-object/1/"
 num_requests = [120, 90, 50, 30, 20, 15]
-url = 30803
+url = "30806"
 def send_request(model_name, model_version, inputs, outputs, batch_size):
     global url
     start_load = time.time()
@@ -119,7 +161,6 @@ def send_request(model_name, model_version, inputs, outputs, batch_size):
 
         
 
-
 import click
 import sys
 import yaml
@@ -132,18 +173,11 @@ from utilspr.constants import (
     KUBE_YAMLS_PATH
     )
 
-
-def create_input(inp):
-    inputs = []
-    for k in inp.keys():
-        pass
-
-
 @click.command()
-@click.option('--config-file', type=str, default='temp')
+@click.option('--config-file', type=str, default='yolov5')
 def main(config_file: str):
     print("sleep for one minute to heavy start")
-    sleep(25)
+    # sleep(10)
     config_file_path = os.path.join(
         KUBE_YAMLS_PATH, f"{config_file}.yaml")
     with open(config_file_path, 'r') as cf:
@@ -155,42 +189,27 @@ def main(config_file: str):
     for k, version in enumerate(versions):
         for i in range(len(version)):
             model_versions[k].append(str(i+1))
-    print(model_versions)
 
     results = []
     processes = []
-
-    inputs = []
     for bat in [2, 4, 8, 16, 32]:
-        print(f"start batch 1")
-        
+        os.system('sudo umount -l ~/my_mounting_point')
+        os.system('cc-cloudfuse mount ~/my_mounting_point')
+        inputs = []
+
+        print(f"start batch {bat}")
+        batch =torch.rand(bat, 3, 640, 640).to('cpu')
+        inputs.append(
+                        httpclient.InferInput(
+                            name="images", shape=batch.shape, datatype="FP32")
+                    )
+        inputs[0].set_data_from_numpy(batch.numpy(), binary_data=False)
+
+        outputs = []
+        outputs.append(httpclient.InferRequestedOutput(name="output"))
         for j,model_name in enumerate(model_names):
             for version in model_versions[j]:
-                tokenizer = AutoTokenizer.from_pretrained(model_name)
-                inp = tokenizer(["This is a sample" for _ in range(bat)], return_tensors="pt")
-                inputs = []
-                inputs.append(
-                    httpclient.InferInput(
-                        name="input_ids",shape=inp['input_ids'].shape, datatype="INT64"
-                )
-                )
-                inputs[0].set_data_from_numpy(inp['input_ids'].numpy(), binary_data=False)
-                
-                inputs.append(
-                    httpclient.InferInput(
-                        name="attention_mask", shape=inp['attention_mask'].shape, datatype="INT64")
-                )
-                inputs[1].set_data_from_numpy(inp['attention_mask'].numpy())
-                
-                outputs = []
-                outputs.append(httpclient.InferRequestedOutput(name="logits"))
-    
-
-                model_name_s = model_name
-                if "/" in model_names:
-                    model_name_s = model_names.replace("/","")
-                
-                send_request(model_name_s, version, inputs, outputs, bat)
+                send_request(model_name, version, inputs, outputs, bat)
 
     sleep(120)
     df = pd.DataFrame(columns=['index', 'model-name', 'model-version', 'batch-size', 'latency'])
@@ -203,12 +222,8 @@ if __name__ == "__main__":
     main()
 
 
-
-
-
-# # %%
-# # use onnx model
-
+                
+                
 
 
 

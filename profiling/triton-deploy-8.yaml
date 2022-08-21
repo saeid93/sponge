@@ -2,17 +2,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: triton
-  name: triton
+    app: triton-8
+  name: triton-8
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: triton
+      app: triton-8
   template:
     metadata:
       labels:
-        app: triton
+        app: triton-8
     spec:
       containers:
       - image: nvcr.io/nvidia/tritonserver:22.05-py3

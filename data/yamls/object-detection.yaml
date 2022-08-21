@@ -1,0 +1,48 @@
+source:
+  - "onnx"
+  - "onnx"
+  - "onnx"
+  - "onnx"
+  - "onnx"
+  - "onnx"
+  - "onnx"
+  - "onnx"
+  - "ultralytics"
+model_names:
+  - "faster-rcnn"
+  - "fcn"
+  - "retinanet"
+  - "tiny-yolov2"
+  - "tiny-yolov3"
+  - "yolov2-coco"
+  - "yolov3"
+  - "yolov4"
+  - "yolov5"
+versions:
+  - - "FasterRCNN-10"
+    - "FasterRCNN-12"
+
+
+  - - "fcn-resnet101-11"
+    - "fcn-resnet50-11"
+
+  - - "retinanet-9"
+
+  - - "tinyyolov2-7"
+
+  - - "tiny-yolov3-11"
+
+
+  - - "yolov2-coco-9"
+
+  - - "yolov3-10"
+    - "yolov3-12"
+
+  - - "yolov4"
+
+  - - "yolov5"
+
+
+
+
+bucket_name: "triton-server-new-obj"

@@ -9,21 +9,21 @@ import requests
 PROMETHEUS = "http://localhost:30090"
 prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
-def get_inference_duration(model, version):
+def get_inference_duration(model, version, pod):
     PROMETHEUS = "http://localhost:30090"
     prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
-    query = f"nv_inference_compute_infer_duration_us{{model='{model}', version='{version}'}}"
+    query = f"nv_inference_compute_infer_duration_us{{model='{model}', version='{version}', pod='{pod}'}}"
     infer_time_res = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
     values = infer_time_res.json()['data']['result'][-1]['value']
     return_values = float(values[1])   
     return return_values
 
-def get_queue_duration(model, version):
+def get_queue_duration(model, version, pod):
     PROMETHEUS = "http://localhost:30090"
     prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
-    query = f"nv_inference_queue_duration_us{{model='{model}', version='{version}'}}"
+    query = f"nv_inference_queue_duration_us{{model='{model}', version='{version}', pod='{pod}'}}"
     infer_time_res = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
     values = infer_time_res.json()['data']['result'][-1]['value']
     return_values = float(values[1])   
@@ -53,11 +53,11 @@ def get_computer_output_duration(model, version):
 
 
 
-def get_inference_count(model, version):
+def get_inference_count(model, version, pod):
     PROMETHEUS = "http://localhost:30090"
     prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
-    query = f"nv_inference_count{{model='{model}', version='{version}'}}"
+    query = f"nv_inference_count{{model='{model}', version='{version}', pod='{pod}'}}"
     infer_time_res = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
     values = infer_time_res.json()['data']['result'][-1]['value']
     return_values = float(values[1])   
@@ -96,4 +96,3 @@ def get_cpu_usage(pod_name, name_space, end, rate):
         plot_values[val].append((float(data[1])))
     return plot_values[0][0]
 
-print(get_memory_usage("triton-6b684d4964-l5bs6", "default", 5, 1))
