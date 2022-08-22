@@ -2,6 +2,7 @@ import os
 from PIL import Image
 import numpy as np
 from seldon_core.seldon_client import SeldonClient
+import pprint
 
 os.system('sudo umount -l ~/my_mounting_point')
 os.system('cc-cloudfuse mount ~/my_mounting_point')
@@ -35,7 +36,7 @@ images = {
 
 # single node inferline
 gateway_endpoint="localhost:32000"
-deployment_name = 'video-pipeline'
+deployment_name = 'video-pipeline-with-log'
 namespace = "default"
 sc = SeldonClient(
     gateway_endpoint=gateway_endpoint,
@@ -57,8 +58,13 @@ for image_name, response in results.items():
     print(f"-"*50)
     if response.success:
         request_path = response.response['meta']['requestPath'].keys()
-        pipeline_response = response.response['data']
+        if 'jsonData' in response.response.keys(): 
+            pipeline_response = response.response['jsonData']
+            pp = pprint.PrettyPrinter(indent=4)
+            pp.pprint(pipeline_response)
+        else:
+            pipeline_response = response.response['data']
         print(f"request path: {request_path}")
-        print(f"pipeline_response: {pipeline_response}")
+        # print(f"pipeline_response: {pipeline_response}")
     else:
         print(f"{image_name} -> {response.msg}")

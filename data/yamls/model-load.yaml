@@ -9,50 +9,82 @@ source:
   - "timm"
   - "timm"
   - "timm"
+  - "timm"
+  - "timm"
+  - "timm"
+  - "timm"
+  - "timm"
+  - "timm"
+  - "timm"
+  - "timm"
+  - "timm"
+  - "timm"
+  - "timm"
+  - "timm"
 model_names:
-  - "resnet"
-  - "xception"
-  - "inception"
-  - "visformer"
-  - "regnetx"
-  - "vgg"
-  - "beit"
-  - "densenet"
-  - "vit"
-  - "legacy"
+  - "resnet18"
+  - "resnet34"
+  - "resnet101"
+  - "resnetrs152"
+  - "resnetrs350"
+  - "resnetrs420"
+
+  - "xception41"
+  - "xception65"
+  - "inception_v3"
+  - "inception_v4"
+
+  - "visformer_small"
+
+  - "regnetx_002"
+  - "regnetx_080"
+  - "regnetx_320"
+
+  - "vgg11"
+  - "vgg13"
+  - "vgg19"
+
+  - "beit_base_patch16_224"
+  - "beit_large_patch16_224"
+  - "densenet121"
+
+  - "vit_base_patch32_224"
+
+  - "legacy_seresnet152"
+
 versions:
-  - - "18"
-    - "34"
-    - "101"
-    - "rs152"
-    - "rs350"
-    - "rs420"
+  - - "resnet18"
+  - - "resnet34"
+  - - "resnet101"
+  - - "resnetrs152"
+  - - "resnetrs350"
+  - - "resnetrs420"
 
-  - - "41"
-    - "65"
+  - - "xception41"
+  - - "xception65"
 
-  - - "_v3"
-    - "_v4"
+  - - "inception_v3"
+  - - "inception_v4"
 
-  - - "_small"
+  - - "visformer_small"
 
-  - - "_002"
-    - "_080"
-    - "_320"
+  - - "regnetx_002"
+  - - "regnetx_080"
+  - - "regnetx_320"
 
-  - - "11"
-    - "13"
-    - "19"
+  - - "vgg11"
+  - - "vgg13"
+  - - "vgg19"
 
-  - - "_base_patch16_224"
-    - "_large_patch16_224"
+  - - "beit_base_patch16_224"
+  - - "beit_large_patch16_224"
 
-  - - "121"
+  - - "densenet121"
 
-  - - "_base_patch32_224"
+  - - "vit_base_patch32_224"
 
-  - - "_seresnet152"
+  - - "legacy_seresnet152"
 
 
 
-bucket_name: "triton-server-all"
+bucket_name: "triton-server-all-new"

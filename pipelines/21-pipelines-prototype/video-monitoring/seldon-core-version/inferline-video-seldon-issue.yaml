@@ -2,27 +2,24 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: video-pipeline
+  name: inferline-video
 spec:
-  name: video-pipeline
+  name: inferline-video
   predictors:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/motivational-tests:video-yolo
+        - image: sdghafouri/inferline:video-yolo
           name: video-yolo
           imagePullPolicy: Always
-          env:
-            - name: MODEL_VARIANT
-              value: yolov5n
     - spec:
         containers:
-        - image: sdghafouri/motivational-tests:video-resnet-human
+        - image: sdghafouri/inferline:video-resnet-human
           name: video-resnet-human
           imagePullPolicy: Always
           env:
-            - name: MODEL_VARIANT
-              value: resnet18
+            - name: WITH_PREPROCESSOR
+              value: 'False'
     graph:
       name: video-yolo
       type: MODEL

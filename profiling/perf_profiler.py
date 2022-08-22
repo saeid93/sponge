@@ -16,7 +16,7 @@ import math
 data = []
 pod = "triton-6c66d4b4df-vzs59"
 name_space = "default"
-database = "profile-exp6-cores/8/"
+database = "profile-exp6-cores/8-new/"
 num_requests = [120, 90, 50, 30, 20, 15]
 url = "30900"
 def send_request(model_name, model_version):
@@ -24,7 +24,8 @@ def send_request(model_name, model_version):
     start_load = time.time()
     res = requests.post(url=f'http://localhost:{url}/v2/repository/models/{model_name}/load')
     load_time = time.time() - start_load
-    os.system(f"perf_analyzer -m {model_name} -x {model_version}  -b 2 --shape IMAGE:3,224,224 -t1 -v -p 10000 -u localhost:{url} -f {database}/{model_name}-{model_version}.csv")
+    os.system(f"perf_analyzer -m {model_name} -b 2 --shape IMAGE:3,224,224 -t1 -v -p 10000 -u localhost:{url} -f {database}/{model_name}-{model_version}.csv")
+    res = requests.post(url=f'http://localhost:{url}/v2/repository/models/{model_name}/unload')
 
 
 

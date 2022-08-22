@@ -2,9 +2,9 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: video-pipeline
+  name: nlp
 spec:
-  name: video-pipeline
+  name: nlp
   predictors:
   - componentSpecs:
     - spec:
@@ -23,13 +23,24 @@ spec:
           env:
             - name: MODEL_VARIANT
               value: resnet18
+    - spec:
+        containers:
+        - image: sdghafouri/motivational-tests:video-resnet-human
+          name: video-resnet-machine
+          imagePullPolicy: Always
+          env:
+            - name: MODEL_VARIANT
+              value: resnet18
     graph:
       name: video-yolo
       type: MODEL
       children:
       - name: video-resnet-human
         type: MODEL
-        children: []
+        children:
+        - name: video-resnet-machine
+          type: MODEL
+          children: []
     name: example
     labels:
       sidecar.istio.io/inject: "true"
