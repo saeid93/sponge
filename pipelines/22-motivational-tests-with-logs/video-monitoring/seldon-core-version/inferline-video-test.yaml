@@ -2,14 +2,14 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: video-pipeline
+  name: video-pipeline-with-log
 spec:
-  name: video-pipeline
+  name: video-pipeline-with-log
   predictors:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/motivational-tests:video-yolo
+        - image: sdghafouri/motivational-tests-with-logs:video-yolo
           name: video-yolo
           imagePullPolicy: Always
           env:
@@ -17,7 +17,7 @@ spec:
               value: yolov5n
     - spec:
         containers:
-        - image: sdghafouri/motivational-tests:video-resnet-human
+        - image: sdghafouri/motivational-tests-with-logs:video-resnet-human
           name: video-resnet-human
           imagePullPolicy: Always
           env:

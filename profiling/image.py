@@ -271,11 +271,11 @@ import pandas as pd
 import math
 
 data = []
-pod = "triton-6c66d4b4df-vzs59"
+pod = "triton-8-7d5c8bd578-dzh6x"
 name_space = "default"
-database = "profile-exp6-cores/1/"
+database = "profile-exp6-cores/8-new1/"
 num_requests = [120, 90, 50, 30, 20, 15]
-url = "30800"
+url = "30900"
 def send_request(model_name, model_version, inputs, outputs, batch_size):
     global url
     start_load = time.time()
@@ -319,14 +319,14 @@ def send_request(model_name, model_version, inputs, outputs, batch_size):
         minutes = 1
         if i > 10:
             cpu_usages.append(get_cpu_usage(pod, name_space, minutes, minutes))
-            memory_usages.append(get_memory_usage(pod, name_space, minutes, minutes))
+            memory_usages.append(get_memory_usage(pod, name_space, minutes, minutes, True))
             infer_times.append(get_inference_duration(model_name, model_version, pod))
             queue_times.append(get_queue_duration(model_name, model_version, pod))
             success_times.append(get_inference_count(model_name, model_version, pod))
     
     end_time = 5
    
-    sleep(10)
+    sleep(80)
     total_time = time.time() - start_load
     minutes = total_time // 60
     minutes = int(minutes)
@@ -412,9 +412,14 @@ def main(config_file: str):
 
         outputs = []
         outputs.append(httpclient.InferRequestedOutput(name="output"))
+        counter = 0
         for j,model_name in enumerate(model_names):
             for version in model_versions[j]:
+                if counter != 0:
+                    break
                 send_request(model_name, version, inputs, outputs, bat)
+                counter += 1
+
 
     sleep(120)
     df = pd.DataFrame(columns=['index', 'model-name', 'model-version', 'batch-size', 'latency'])

@@ -492,7 +492,7 @@ def plot_array_data(txt, type, size, yaml_file, per, kind):
            
             metric = convert_to_float(" ".join(data[8:]))
             if type == "memory":
-                met = max(metric)
+                met = max(metric) - min(metric)
             elif type == 'cpu':
                 met = max(metric) - min(metric)
             else:
@@ -591,9 +591,23 @@ def create_color_column(names):
             all_returns.append(d)
     return all_returns
 
+
+all_models = {
+    "resnet": 6,
+    "xception": 2,
+    "inception": 2,
+    "visformer": 1,
+    "regnetx":3,
+    "vgg": 3,
+    "beit":2,
+    "densenet": 1,
+    "vit": 1,
+    "legacy": 1
+}
 def plot_perf_analyzer(path):
     csv_files = glob.glob(os.path.join(path, "*.csv"))
     frames = []
+    ret = []
     for f in csv_files:
         df = pd.read_csv(f)
         name = f.split("\\")[-1].split(".")[0].split("/")[-1]
@@ -601,49 +615,145 @@ def plot_perf_analyzer(path):
         group = name.split("-")[0]
         df["group"] = group
         frames.append(df)
-    
-    df = pd.concat(frames)
-    df = df.sort_values(by=['name'])
-    df.rename({'Inferences/Second': 'throughput'}, axis=1, inplace=True)
+        for m in all_models.keys():
+            if m in group:
+                    family = m
+        ret.append([group, df.iloc[0]["Inferences/Second"], "thoughput",2, family ])
+    return ret
+        # plt.legend(handles=patches,bbox_to_anchor=(1.01,1), loc="upper left" )
+        # plt.xticks(rotation = 90)
+        # plt.ylabel(f'{val}({y_axis[i]})', size = 30)
+        # plt.xlabel("model-version")
+        # pa = create_file_on_doesnot_exists(path.split("/")[0], path.split("/")[1], "perf", "perf")
+        # plt.savefig(f"{pa}/{data_to_plots[i]}.png")
 
-    colors = create_color_column(df["name"])
-    groups = df.groupby('group')
-    plt.rcParams["figure.figsize"] = (14,8)
-    df["color"] = colors
+
+all_models = {
+    "resnet": 6,
+    "xception": 2,
+    "inception": 2,
+    "visformer": 1,
+    "regnetx":3,
+    "vgg": 3,
+    "beit":2,
+    "densenet": 1,
+    "vit": 1,
+    "legacy": 1
+}
+number = 12
+cmap = plt.get_cmap('gnuplot')
+all_colors = [cmap(i) for i in np.linspace(0, 1, number)]
+for i, k in enumerate(all_models.keys()):
+    all_models[k] = all_colors[i]
+def plot_all(txt, type):
+    ret = []
+    with open(txt) as f:
+        for line in f:
+            data = line.split()
+            model = data[2]
+            batch_size = data[6]
+            batch_size = int(batch_size)
+           
+            metric = convert_to_float(" ".join(data[8:]))
+            if type == "memory":
+                met = max(metric)
+            elif type == 'cpu':
+                met = max(metric) - min(metric)
+            else:
+                met = metric[-1]
+            for m in all_models.keys():
+                if m in model:
+                    family = m
+            ret.append([model, met, type, batch_size, family])
+    return ret
+
+root = "profile-exp6-cores"
+where = "8-new"
+f_names = ["infer-prom.txt", "cpu.txt", "memory.txt"]
+types = ["infer", "cpu", "memory"]
+yaml_file = "model-load"
+per = "models"
+kind = "regular"
+
+def four_plot_in_one():
+    df = []
+    for i, f in enumerate(f_names):
+        df.append(plot_all(f"{root}/{where}/{f}", types[i]))
+    df.append(plot_perf_analyzer(f"{root}/{where}"))
+
+    figure, ax = plt.subplots(2, 2, figsize=(17, 15))
+    infer_data = df[0]
+    infer_data.sort(key=lambda i: i[1])
+    # infer_data = infer_data.sort(key=lambda i: i[1])
+    x_offset = 0
+    bar_width = 0.3
+    labels= []
+    ind = []
+    for x, data in enumerate(infer_data):
+        bar = ax[0,0].bar(x/3 + x_offset, data[1]/(10**6),label=data[0], width=bar_width * 0.9, color=all_models[data[-1]])
+        labels.append(data[0])
+        ind.append(x/3 + x_offset)
+    ax[0, 0].set_xticks(ind)
+    ax[0, 0].set_xticklabels(labels, rotation = 90)
+    ax[0,0].set_ylabel(f"inference time(s)", fontsize=18)
+    labels= []
+    ind = []
+    cpu_data = df[1]
+    cpu_data.sort(key=lambda i: i[1])
+    labels = []
+    for x, data in enumerate(cpu_data):
+        bar = ax[0,1].bar(x/3 + x_offset, data[1],label=data[0], width=bar_width * 0.9, color=all_models[data[-1]])
+        labels.append(data[0])
+        ind.append(x/3 + x_offset)
+    ax[0,1].set_ylabel(f"cpu usage time(s)", fontsize=18)
+
+    ax[0,1].set_xticks(ind)
+    ax[0,1].set_xticklabels(labels, rotation = 90)
+    labels= []
+    ind = []
+    memory_data = df[2]
+    memory_data.sort(key=lambda i: i[1])
+
+    for x, data in enumerate(memory_data):
+        bar = ax[1,0].bar(x/3 + x_offset, data[1],label=data[0], width=bar_width * 0.9, color=all_models[data[-1]])
+        labels.append(data[0])
+        ind.append(x/3 + x_offset)
+    
+    ax[1,0].set_ylabel(f"memory usage(bytes)", fontsize=18)
+
+    ax[1, 0].set_xticks(ind)
+    ax[1, 0].set_xticklabels(labels, rotation = 90)
+    labels= []
+    ind = []
+    throuput_data = df[3]
+    throuput_data.sort(key=lambda i: i[1])
+    for x, data in enumerate(throuput_data):
+        bar = ax[1,1].bar(x/3 + x_offset, data[1],label=data[0], width=bar_width * 0.9, color=all_models[data[-1]])
+        labels.append(data[0])
+        ind.append(x/3 + x_offset)
+    ax[1, 1].set_xticks(ind)
+    ax[1, 1].set_xticklabels(labels, rotation = 90)
+    ax[1, 1].set_ylabel(f"throughput(Inference/seconds)", fontsize=18)
     patches = []
-    print(df.columns)
-    data_to_plots = ["throughput", "p90 latency", "p95 latency", "p99 latency"]
-    y_axis = ["Inferences/Second", "usec", "usec", "usec"]
-    for i, val in enumerate(data_to_plots):
-        k = 0
-        patches = []
-        for name, group   in groups:
-            k = 0
-            for index, g in group.iterrows():
-                pl = plt.bar(g['name'], g[val], color=g["color"], align='center')
-                if k == 0:
-                    k += 1
-                    patches.append(mpatches.Patch(color=g["color"], label=name))
-        print(len(patches))
-        plt.legend(handles=patches,bbox_to_anchor=(1.01,1), loc="upper left" )
-        plt.xticks(rotation = 90)
-        plt.ylabel(f'{val}({y_axis[i]})', size = 30)
-        plt.xlabel("model-version")
-        pa = create_file_on_doesnot_exists(path.split("/")[0], path.split("/")[1], "perf", "perf")
-        plt.savefig(f"{pa}/{data_to_plots[i]}.png")
-
+    for l in all_models.keys():
+        patches.append(mpatches.Patch(color=all_models[l], label=l))
+    plt.legend(handles=patches,bbox_to_anchor=(1.00,2.22), loc="upper left", prop={'size': 13} )
+    figure.savefig("here.png")
+    # print(df)
     
+
 
 
 root = "profile-exp6-cores"
-where = "8"
-f_names = ["infer-prom.txt", "cpu.txt", "memory.txt", "queue_times.txt"]
-types = ["infer", "cpu", "memory", "queue_times"]
-# yaml_file = "yolov5"
-# per = "models"
-# kind = "regular"
+where = "8-new"
+f_names = ["infer-prom.txt", "cpu.txt", "memory.txt"]
+types = ["infer", "cpu", "memory"]
+yaml_file = "model-load"
+per = "models"
+kind = "regular"
 # for k, f in enumerate(f_names):
 #     for i in [2]:
 #         plot_array_data(f"{root}/{where}/{f}",types[k], i, yaml_file, per, kind)
 
-plot_perf_analyzer(f"{root}/{where}")
+# plot_perf_analyzer(f"{root}/{where}")
+four_plot_in_one()

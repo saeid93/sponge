@@ -64,11 +64,14 @@ def get_inference_count(model, version, pod):
     return return_values
 
 
-def get_memory_usage(pod_name, name_space,end, rate):
+def get_memory_usage(pod_name, name_space,end, rate, need_max = False):
     PROMETHEUS = "http://localhost:30090"
     prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
-    query = f"container_memory_usage_bytes{{pod='{pod_name}', namespace='{name_space}', container='tritonserver'}}"
+    query = f"sum(container_memory_usage_bytes{{pod='{pod_name}', container!=''}}) by (namespace, pod)"
+    if need_max:
+        query = f"max_over_time(container_memory_usage_bytes{{pod='{pod_name}', container!=''}}[{end}m])"
+
     response_memory_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
     values = response_memory_usage.json()['data']['result']
     plot_values = [[] for _ in range(len(values))]

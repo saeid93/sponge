@@ -86,7 +86,7 @@ version_policy: { all { }}
         input_config += "]"
         common_config=input_config + output_config
         print(common_config)
-  return config 
+  return config + common_config
 
 
 def generate_model_variants(
@@ -148,7 +148,7 @@ def generate_model_variants(
     for variant_id, model_variant in enumerate(versions):
         if source == "timm" or  source == "huggingface":
             if source == 'timm':
-                model_full_name = model_name + model_variant
+                model_full_name = model_variant
                 if not model_full_name in models_list:
                     raise ValueError(
                         f"Model {model_full_name} does not exist"
@@ -263,7 +263,7 @@ def upload_minio(bucket_name: str):
 
 
 @click.command()
-@click.option('--config-file', type=str, default='yolov5')
+@click.option('--config-file', type=str, default='model-load')
 def main(config_file: str):
     config_file_path = os.path.join(
         KUBE_YAMLS_PATH, f"{config_file}.yaml")
@@ -271,7 +271,7 @@ def main(config_file: str):
         config = yaml.safe_load(cf)
         print(config)
     model_generator(**config)
-    upload_minio(bucket_name='triton-server-new-obj')
+    upload_minio(bucket_name='triton-server-all-new')
 
 if __name__ == "__main__":
     main()

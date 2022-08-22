@@ -35,7 +35,7 @@ images = {
 
 # single node inferline
 gateway_endpoint="localhost:32000"
-deployment_name = 'video-pipeline'
+deployment_name = 'video-monitoring'
 namespace = "default"
 sc = SeldonClient(
     gateway_endpoint=gateway_endpoint,
