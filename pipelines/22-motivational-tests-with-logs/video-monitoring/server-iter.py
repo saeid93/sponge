@@ -42,7 +42,7 @@ def load_images(num_loaded_images = 10):
     images = {
         image_name: image_loader(
             dataset_folder_path, image_name) for image_name in image_names[
-                :num_loaded_images]}
+                1:2]}
     transform = transforms.Compose([
     transforms.Resize(256),
     transforms.CenterCrop(224),
@@ -52,8 +52,8 @@ def load_images(num_loaded_images = 10):
     std=[0.229, 0.224, 0.225]
 )])
  
-    return torch.stack(list(map(lambda a: transform(a), list(images.values()))))
-
+    return images
+    
 
 def load_test(
     pipeline_name: str,
@@ -73,14 +73,23 @@ def load_test(
         deployment_name=deployment_name,
         namespace=namespace)
 
-    # images = dict(islice(images.items(), n_items))
+    images = dict(islice(images.items(), n_items))
+    print(images)
     results = {}
-    # for image_name, image in enumerate(images):
-    images_np = images.numpy()
-    response = sc.predict(
-        data=images_np
-    )
-    results["a"] = response
+    cpu_usages = []
+    memory_usages = []
+    infer_times = []
+    input_times = []
+    output_times = []
+    queue_times = []
+    success_times = []
+    for i in range(100):
+        for image_name, image in enumerate(images):
+            response = sc.predict(
+                data=image
+            )
+            print(response)
+            results[image_name] = response
         # results[image_name] = response
 
     for image_name, response in results.items():
@@ -91,6 +100,26 @@ def load_test(
             pipeline_response = response.response['data']
             print(f"request path: {request_path}")
             print(f"pipeline_response: {pipeline_response}")
+            cpu_usages.append(get_cpu_usage(pod, name_space, minutes, minutes))
+            memory_usages.append(get_memory_usage(pod, name_space, minutes, minutes, True))
+            infer_times.append(get_inference_duration(model_name, model_version, pod))
+            queue_times.append(get_queue_duration(model_name, model_version, pod))
+            success_times.append(get_inference_count(model_name, model_version, pod))
+    with open(database+"cpu.txt", "a") as cpu_file:
+        cpu_file.write(f"usage of {pipeline_name}  on batch 1 is {cpu_usages} \n")
+
+    with open(database+"memory.txt", 'a') as memory_file:
+        memory_file.write(f"usage of {pipeline_name}  on batch {batch_size} is {memory_usages} \n")
+
+    with open(database+"infer-prom.txt", "a") as infer:
+        infer.write(f"infertime of {pipeline_name}  on batch {batch_size} is {infer_times} \n")
+    
+    with open(database+"queue_times.txt", 'a') as q:
+        q.write(f"Queuetimes of {pipeline_name}  on batch {batch_size} is {queue_times} \n")
+
+    with open(database+"success.txt", "a") as s:
+        s.write(f"success of {pipeline_name}  on batch {batch_size} is {success_times} \n")
+
         else:
             print(f"{image_name} -> {response.msg}")
 
@@ -117,7 +146,7 @@ def setup_pipeline(
 def remove_pipeline(pipeline_name):
     os.system(f"kubectl delete seldondeployment {pipeline_name} -n default")
 
-images = load_images(num_loaded_images=2)
+images = load_images(num_loaded_images=10)
 # check all the possible combination
 
 

@@ -273,7 +273,7 @@ import math
 data = []
 pod = "triton-8-7d5c8bd578-dzh6x"
 name_space = "default"
-database = "profile-exp6-cores/8-new1/"
+database = "profile-exp6-cores/8-new-batch/"
 num_requests = [120, 90, 50, 30, 20, 15]
 url = "30900"
 def send_request(model_name, model_version, inputs, outputs, batch_size):
@@ -415,7 +415,8 @@ def main(config_file: str):
         counter = 0
         for j,model_name in enumerate(model_names):
             for version in model_versions[j]:
-                if counter != 0:
+                counter += 1
+                if counter != 3:
                     break
                 send_request(model_name, version, inputs, outputs, bat)
                 counter += 1

@@ -48,3 +48,5 @@ ipython  # interactive notebook
 # albumentations>=1.0.3
 # pycocotools>=2.0  # COCO mAP
 # roboflow
+transformers==4.21.1
+sentencepiece==0.1.97
