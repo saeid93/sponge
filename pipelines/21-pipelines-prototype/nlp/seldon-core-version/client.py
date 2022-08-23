@@ -3,39 +3,9 @@ from PIL import Image
 import numpy as np
 from seldon_core.seldon_client import SeldonClient
 
-os.system('sudo umount -l ~/my_mounting_point')
-os.system('cc-cloudfuse mount ~/my_mounting_point')
-
-data_folder_path = '/home/cc/my_mounting_point/datasets'
-dataset_folder_path = os.path.join(
-    data_folder_path, 'ILSVRC/Data/DET/test'
-)
-classes_file_path = os.path.join(
-    data_folder_path, 'imagenet_classes.txt'
-)
-
-image_names = os.listdir(dataset_folder_path)
-image_names.sort()
-with open(classes_file_path) as f:
-    classes = [line.strip() for line in f.readlines()]
-num_loaded_images = 10
-
-def image_loader(folder_path, image_name):
-    image = Image.open(
-        os.path.join(folder_path, image_name))
-    # if there was a need to filter out only color images
-    # if image.mode == 'RGB':
-    #     pass
-    return image
-
-images = {
-    image_name: image_loader(
-        dataset_folder_path, image_name) for image_name in image_names[
-            :num_loaded_images]}
-
 # single node inferline
 gateway_endpoint="localhost:32000"
-deployment_name = 'video-monitoring'
+deployment_name = 'nlp'
 namespace = "default"
 sc = SeldonClient(
     gateway_endpoint=gateway_endpoint,
@@ -44,21 +14,24 @@ sc = SeldonClient(
     deployment_name=deployment_name,
     namespace=namespace)
 
-results = {}
-for image_name, image in images.items():
-    image = np.array(image)
-    response = sc.predict(
-        data=image
-    )
-    results[image_name] = response
 
-for image_name, response in results.items():
-    print(f"\nimage name: {image_name}")
-    print(f"-"*50)
-    if response.success:
-        request_path = response.response['meta']['requestPath'].keys()
-        pipeline_response = response.response['data']
-        print(f"request path: {request_path}")
-        print(f"pipeline_response: {pipeline_response}")
-    else:
-        print(f"{image_name} -> {response.msg}")
+# image = np.array(image)
+response = sc.predict(
+    str_data="""
+Après des décennies en tant que pratiquant d'arts martiaux et coureur, Wes a "trouvé" le yoga en 2010.
+Il en est venu à apprécier que son ampleur et sa profondeur fournissent un merveilleux lest pour stabiliser
+le corps et l'esprit dans le style de vie rapide et axé sur la technologie d'aujourd'hui ;
+le yoga est un antidote au stress et une voie vers une meilleure compréhension de soi et des autres.
+Il est instructeur de yoga certifié RYT 500 du programme YogaWorks et s'est formé avec des maîtres contemporains,
+dont Mme Maty Ezraty, co-fondatrice de YogaWorks et maître instructeur des traditions Iyengar et Ashtanga,
+ainsi qu'une spécialisation avec M. Bernie. Clark, un maître instructeur de la tradition Yin.
+Ses cours reflètent ces traditions, où il combine la base fondamentale d'un alignement précis avec des éléments
+d'équilibre et de concentration. Ceux-ci s'entremêlent pour aider à fournir une voie pour cultiver une conscience
+de vous-même, des autres et du monde qui vous entoure, ainsi que pour créer un refuge contre le style de vie rapide
+et axé sur la technologie d'aujourd'hui. Il enseigne à aider les autres à réaliser le même bénéfice de la pratique dont il a lui-même bénéficié.
+Mieux encore, les cours de yoga sont tout simplement merveilleux :
+ils sont à quelques instants des exigences de la vie où vous pouvez simplement prendre soin de vous physiquement et émotionnellement.
+    """
+)
+
+a = 1

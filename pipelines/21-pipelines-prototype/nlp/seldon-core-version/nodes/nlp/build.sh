@@ -1,4 +1,4 @@
-IMAGE_NAME=motivational-tests:video-yolo && \
+IMAGE_NAME=nlp-pipelines:generalnlp && \
 docker build --tag=$IMAGE_NAME . && \
 docker tag $IMAGE_NAME sdghafouri/$IMAGE_NAME && \
 docker push sdghafouri/$IMAGE_NAME

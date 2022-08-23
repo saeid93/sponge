@@ -8,6 +8,8 @@ import click
 import sys
 import yaml
 import matplotlib.lines as mlines
+import matplotlib.lines as mlines
+
 
 import os
 project_dir = os.path.dirname(os.path.join(os.getcwd(), __file__))
@@ -645,6 +647,7 @@ cmap = plt.get_cmap('gnuplot')
 all_colors = [cmap(i) for i in np.linspace(0, 1, number)]
 for i, k in enumerate(all_models.keys()):
     all_models[k] = all_colors[i]
+
 def plot_all(txt, type):
     ret = []
     with open(txt) as f:
@@ -668,13 +671,49 @@ def plot_all(txt, type):
     return ret
 
 root = "profile-exp6-cores"
-where = "8-new"
+where = "8-new-batch"
 f_names = ["infer-prom.txt", "cpu.txt", "memory.txt"]
 types = ["infer", "cpu", "memory"]
 yaml_file = "model-load"
 per = "models"
 kind = "regular"
 
+def batchy_plot():
+    df = []
+    plt.rcParams["figure.figsize"] = (16,12)
+
+    global f_names
+    f_names = f_names[:2]
+    for i, f in enumerate(f_names):
+        df.append(plot_all(f"{root}/{where}/{f}", types[i]))
+
+    infer_data = df[0]
+    xs = []
+    x_offset = 0
+    bar_width = 0.3
+    all_colors = [cmap(i) for i in np.linspace(0, 1, 5)]
+    x_labels = [f"batch {2 ** (i + 1)}" for i in range(5)]
+    for x, data in enumerate(infer_data):
+        plt.bar(x/3 + x_offset, data[1]/(10**6*20),label=data[3], width=bar_width * 0.9, color=all_colors[x])
+        xs.append(x/3 + x_offset)
+    
+    cpu_data = df[1]
+    y = []
+    for d in cpu_data:
+        y.append(d[1]/170)
+    plt.plot(xs, y, color='blue', marker='o', linestyle='dashed',
+     linewidth=2, markersize=12)
+    patches = []
+    for i, k in enumerate(all_colors):
+        patches.append(mpatches.Patch(color=all_colors[i], label=x_labels[i]))
+    patches.append( mlines.Line2D([], [], color='blue', marker='.',
+                          markersize=15, label='cpu(seconds \n usage total)'))
+    plt.xticks(xs, x_labels)
+    plt.legend(handles=patches,bbox_to_anchor=(1.00, 1), loc="upper left", prop={'size': 13} )
+    plt.ylabel("time spend(s)", fontsize=24)
+    title = 'compare inference time and cpu time of different batches of resnet 101'
+    plt.title(title,fontsize = 24)
+    plt.savefig("here2.png",bbox_inches='tight')
 def four_plot_in_one():
     df = []
     for i, f in enumerate(f_names):
@@ -745,7 +784,7 @@ def four_plot_in_one():
 
 
 root = "profile-exp6-cores"
-where = "8-new"
+where = "8-new-batch"
 f_names = ["infer-prom.txt", "cpu.txt", "memory.txt"]
 types = ["infer", "cpu", "memory"]
 yaml_file = "model-load"
@@ -756,4 +795,4 @@ kind = "regular"
 #         plot_array_data(f"{root}/{where}/{f}",types[k], i, yaml_file, per, kind)
 
 # plot_perf_analyzer(f"{root}/{where}")
-four_plot_in_one()
+batchy_plot()
