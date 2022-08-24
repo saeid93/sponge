@@ -1,9 +1,11 @@
 import logging
+from textwrap import indent
 import torch
 from copy import deepcopy
 import os
 import numpy as np
 from transformers import pipeline
+from pprint import PrettyPrinter
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +40,16 @@ class GeneralNLP(object):
             self.load()
         logger.info(f'Incoming input type: {type(X)}')
         logger.info(f"Incoming input:\n{X}\nwas recieved!")
-        if type(X) is not str:
-            X = list(X[0].values())[0]
+        if type(X) is not str: # If not the first node
+            if type(X) is dict and 'label' in X.keys():
+                label = X['label'] # To be later used for node logic
+                X = X['input']
+            else:
+                X = list(X[0].values())[0]
         output = self.model(X)
+        if self.TASK == "text-classification":
+            output = {
+                'label': output[0]['label'],
+                'input': X}
         logger.info(f"Output:\n{output}\nwas sent!")
         return output

@@ -5,40 +5,54 @@ metadata:
   name: nlp
 spec:
   name: nlp
+  annotations:
+    seldon.io/engine-separate-pod: "true"
   predictors:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/motivational-tests:video-yolo
-          name: video-yolo
+        - image: sdghafouri/nlp-pipelines:generalnlp
+          name: nlp-1
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
-              value: yolov5n
+              value: dinalzein/xlm-roberta-base-finetuned-language-identification
+            - name: TRANSFORMERS_CACHE
+              value: /app/.cache
+            - name: TASK
+              value: text-classification
     - spec:
         containers:
-        - image: sdghafouri/motivational-tests:video-resnet-human
-          name: video-resnet-human
+        - image: sdghafouri/nlp-pipelines:generalnlp
+          name: nlp-2
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
-              value: resnet18
+              value: Helsinki-NLP/opus-mt-fr-en
+            - name: TRANSFORMERS_CACHE
+              value: /app/.cache
+            - name: TASK
+              value: translation_fr_to_en
     - spec:
         containers:
-        - image: sdghafouri/motivational-tests:video-resnet-human
-          name: video-resnet-machine
+        - image: sdghafouri/nlp-pipelines:generalnlp
+          name: nlp-3
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
-              value: resnet18
+              value: sshleifer/distilbart-cnn-12-6
+            - name: TRANSFORMERS_CACHE
+              value: /app/.cache
+            - name: TASK
+              value: summarization
     graph:
-      name: video-yolo
+      name: nlp-1
       type: MODEL
       children:
-      - name: video-resnet-human
+      - name: nlp-2
         type: MODEL
         children:
-        - name: video-resnet-machine
+        - name: nlp-3
           type: MODEL
           children: []
     name: example

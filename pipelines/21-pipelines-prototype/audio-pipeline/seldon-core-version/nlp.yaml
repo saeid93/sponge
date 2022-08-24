@@ -5,12 +5,26 @@ metadata:
   name: nlp
 spec:
   name: nlp
+  annotations:
+    seldon.io/engine-separate-pod: "true"
   predictors:
   - componentSpecs:
     - spec:
         containers:
         - image: sdghafouri/nlp-pipelines:generalnlp
           name: nlp-1
+          imagePullPolicy: Always
+          env:
+            - name: MODEL_VARIANT
+              value: dinalzein/xlm-roberta-base-finetuned-language-identification
+            - name: TRANSFORMERS_CACHE
+              value: /app/.cache
+            - name: TASK
+              value: text-classification
+    - spec:
+        containers:
+        - image: sdghafouri/nlp-pipelines:generalnlp
+          name: nlp-2
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
@@ -22,7 +36,7 @@ spec:
     - spec:
         containers:
         - image: sdghafouri/nlp-pipelines:generalnlp
-          name: nlp-2
+          name: nlp-3
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
@@ -37,7 +51,10 @@ spec:
       children:
       - name: nlp-2
         type: MODEL
-        children: []
+        children:
+        - name: nlp-3
+          type: MODEL
+          children: []
     name: example
     labels:
       sidecar.istio.io/inject: "true"
