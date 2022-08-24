@@ -1,6 +1,9 @@
 FROM python:3.8-slim
 WORKDIR /app
 
+RUN apt-get update
+RUN apt-get install ffmpeg libsm6 libxext6  -y
+
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
@@ -9,7 +12,7 @@ COPY . .
 EXPOSE 5000
 EXPOSE 9000
 
-ENV MODEL_NAME video_resnet_human.VideoResnetHuman
+ENV MODEL_NAME nlp.GeneralNLP
 ENV SERVICE_TYPE MODEL
 # ENV FLASK_DEBUG True
 ENV TORCH_HOME /app/.torch
