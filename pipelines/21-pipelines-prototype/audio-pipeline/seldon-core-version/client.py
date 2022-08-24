@@ -2,6 +2,9 @@ import os
 from PIL import Image
 import numpy as np
 from seldon_core.seldon_client import SeldonClient
+from transformers import pipeline
+from datasets import load_dataset
+
 
 # single node inferline
 gateway_endpoint="localhost:32000"
@@ -14,25 +17,24 @@ sc = SeldonClient(
     deployment_name=deployment_name,
     namespace=namespace)
 
+ds = load_dataset(
+    "hf-internal-testing/librispeech_asr_demo",
+    "clean",
+    split="validation")
+# path = "/home/cc/infernece-pipeline-joint-optimization/pipelines/21-pipelines-prototype/audio-pipeline/seldon-core-version/sample-dataset.mp3"
+# translator  = pipeline(task="automatic-speech-recognition", model="facebook/s2t-small-librispeech-asr")
+# audio_dataset = Dataset.from_dict({"audio": [path]}).cast_column("audio", Audio())
+# audio_dataset[0]
+
+
+translator  = pipeline(task="automatic-speech-recognition", model="facebook/s2t-small-librispeech-asr")
+print(translator(ds[0]["audio"]["array"]))
+
 
 # image = np.array(image)
-response = sc.predict(
-    str_data="""
-Après des décennies en tant que pratiquant d'arts martiaux et coureur, Wes a "trouvé" le yoga en 2010.
-Il en est venu à apprécier que son ampleur et sa profondeur fournissent un merveilleux lest pour stabiliser
-le corps et l'esprit dans le style de vie rapide et axé sur la technologie d'aujourd'hui ;
-le yoga est un antidote au stress et une voie vers une meilleure compréhension de soi et des autres.
-Il est instructeur de yoga certifié RYT 500 du programme YogaWorks et s'est formé avec des maîtres contemporains,
-dont Mme Maty Ezraty, co-fondatrice de YogaWorks et maître instructeur des traditions Iyengar et Ashtanga,
-ainsi qu'une spécialisation avec M. Bernie. Clark, un maître instructeur de la tradition Yin.
-Ses cours reflètent ces traditions, où il combine la base fondamentale d'un alignement précis avec des éléments
-d'équilibre et de concentration. Ceux-ci s'entremêlent pour aider à fournir une voie pour cultiver une conscience
-de vous-même, des autres et du monde qui vous entoure, ainsi que pour créer un refuge contre le style de vie rapide
-et axé sur la technologie d'aujourd'hui. Il enseigne à aider les autres à réaliser le même bénéfice de la pratique dont il a lui-même bénéficié.
-Mieux encore, les cours de yoga sont tout simplement merveilleux :
-ils sont à quelques instants des exigences de la vie où vous pouvez simplement prendre soin de vous physiquement et émotionnellement.
-    """
-)
+# response = sc.predict(
+#     data=ds[0]["audio"]["array"]
+# )
 
 
-print(response.response['data']['ndarray'][0]['summary_text'])
+# print(response.response['data']['ndarray'][0])
