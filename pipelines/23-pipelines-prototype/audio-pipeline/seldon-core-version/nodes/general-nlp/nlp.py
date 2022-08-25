@@ -6,9 +6,10 @@ import os
 import numpy as np
 from transformers import pipeline
 from seldon_core.user_model import SeldonResponse
+import time
 
 logger = logging.getLogger(__name__)
-
+PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
 
 class GeneralNLP(object):
     def __init__(self) -> None:
@@ -40,7 +41,19 @@ class GeneralNLP(object):
             self.load()
         logger.info(f'Incoming input type: {type(X)}')
         logger.info(f"Incoming input:\n{X}\nwas recieved!")
-        output = self.model(X['text'])
-        output = output[0]
+        arrival_time = time.time()
+        former_steps_timing = X['time']
+        X = X['output']['text']
+        output = self.model(X)
+        serving_time = time.time()
+        timing = {
+            f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
+            f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
+        }
+        timing.update(former_steps_timing)
+        output = {
+            'time': timing,
+            'output': output
+        }
         logger.info(f"Output:\n{output}\nwas sent!")
-        return X
+        return output

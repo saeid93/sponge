@@ -1,7 +1,7 @@
 REPOS=(
     sdghafouri
     gcr.io/hale-ivy-335012)
-IMAGE_NAME=motivational-tests-with-logs:video-yolo
+IMAGE_NAME=pipeline-prototype:yolo
 docker build --tag=$IMAGE_NAME .
 for REPO in ${REPOS[@]}
 do

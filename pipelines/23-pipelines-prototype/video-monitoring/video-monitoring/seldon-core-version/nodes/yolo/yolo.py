@@ -7,8 +7,9 @@ import time
 # import torchvision
 
 logger = logging.getLogger(__name__)
+PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
 
-class VideoYolo(object):
+class Yolo(object):
     def __init__(self) -> None:
         super().__init__()
         self.loaded = False
@@ -24,8 +25,6 @@ class VideoYolo(object):
         logger.info('Loading the ML models')
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
-        # self.model = torchvision.models.resnet101(pretrained=True)
-        # if not os.path.isdir('/app/.torch/hub'):
         self.model = torch.hub.load('ultralytics/yolov5', self.MODEL_VARIANT)
         logger.info('model loaded!')
         # self.resnet.eval()
@@ -36,21 +35,24 @@ class VideoYolo(object):
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
-        # logger.info(f"Incoming input:\n{X}\nwas recieved!")
+        logger.info(f"Incoming input:\n{X}\nwas recieved!")
         logger.info(f"input type: {type(X)}")
         logger.info(f"input shape: {X.shape}") 
         X = np.array(X, dtype=np.uint8)
         logger.info(f"output type: {type(X)}")
         logger.info(f"output shape: {X.shape}")
-        # TODO some transformation might be needed
         objs = self.model(X)
         serving_time = time.time()
         output = self.get_cropped(objs)
-        # logger.info(f"Output:\n{output}\nwas sent!")
-        logger.info(f"arrival time yolo: {arrival_time}")
-        logger.info(f"serving time yolo: {serving_time}")
-        output['arrival_time_yolo'] = arrival_time
-        output['serving_time_yolo'] = serving_time
+        logger.info(f"arrival time {PREDICTIVE_UNIT_ID}: {arrival_time}")
+        logger.info(f"serving time {PREDICTIVE_UNIT_ID}: {serving_time}")
+        # output[f'arrival_{PREDICTIVE_UNIT_ID}'] = arrival_time
+        # output[f'serving_{PREDICTIVE_UNIT_ID}'] = serving_time
+        output['time'] = {
+            f'arrival_{PREDICTIVE_UNIT_ID}': arrival_time,
+            f'serving_{PREDICTIVE_UNIT_ID}': serving_time
+        }
+        logger.info(f"Output:\n{output}\nwas sent!")
         return output
 
     def get_cropped(self, result):

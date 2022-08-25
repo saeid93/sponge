@@ -5,9 +5,10 @@ from copy import deepcopy
 import os
 import numpy as np
 from transformers import pipeline
+import time
 
 logger = logging.getLogger(__name__)
-
+PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
 
 class GeneralAudio(object):
     def __init__(self) -> None:
@@ -37,8 +38,18 @@ class GeneralAudio(object):
     def predict(self, X, features_names=None):
         if self.loaded == False:
             self.load()
+        arrival_time = time.time()
         logger.info(f'Incoming input type: {type(X)}')
         logger.info(f"Incoming input:\n{X}\nwas recieved!")
         output = self.model(X)
+        serving_time = time.time()
+        timing = {
+            f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
+            f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
+        }
+        output = {
+            'time': timing,
+            'output': output
+        }
         logger.info(f"Output:\n{output}\nwas sent!")
         return output
