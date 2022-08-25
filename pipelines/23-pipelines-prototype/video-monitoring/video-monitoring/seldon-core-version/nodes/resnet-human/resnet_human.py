@@ -8,8 +8,9 @@ from PIL import Image
 import time
 
 logger = logging.getLogger(__name__)
+PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
 
-class VideoResnetHuman(object):
+class ResnetHuman(object):
     def __init__(self) -> None:
         super().__init__()
         self.loaded = False
@@ -51,11 +52,12 @@ class VideoResnetHuman(object):
         if self.loaded == False:
             self.load()
         # logger.info(f"Incoming input:\n{X}\nwas recieved!")
-        arrival_time_resnet = time.time()
-        arrival_time_yolo = X['arrival_time_yolo']
-        serving_time_yolo = X['serving_time_yolo']
-        logger.info(f"arrival time yolo: {arrival_time_yolo}")
-        logger.info(f"serving time yolo: {serving_time_yolo}")
+        arrival_time = time.time()
+        former_steps_timing = X['time']
+        # arrival_yolo = X['time']['arrival_yolo']
+        # serving_yolo = X['time']['serving_yolo']
+        # logger.info(f"arrival time yolo: {arrival_yolo}")
+        # logger.info(f"serving time yolo: {serving_yolo}")
         if X['person'] == []:
             return []
         X = X['person']
@@ -73,14 +75,17 @@ class VideoResnetHuman(object):
         percentages = torch.nn.functional.softmax(out, dim=1) * 100
         percentages = percentages.detach().numpy()
         image_net_class = np.argmax(percentages, axis=1)
-        serving_time_resnet = time.time()
-        logger.info(f"arrival time yolo: {arrival_time_resnet}")
-        logger.info(f"serving time yolo: {serving_time_resnet}")
+        serving_time = time.time()
+        # logger.info(f"arrival time yolo: {arrival_resnet}")
+        # logger.info(f"serving time yolo: {serving_resnet}")
+        timing = {
+            f"arrival_{PREDICTIVE_UNIT_ID}": arrival_time,
+            f"serving_{PREDICTIVE_UNIT_ID}": serving_time,
+        }
+        timing.update(former_steps_timing)
         output = {
-            "arrival_time_yolo": arrival_time_yolo,
-            "serving_time_yolo": serving_time_yolo,
-            "arrival_time_resnet": arrival_time_resnet,
-            "serving_time_resnet": serving_time_resnet,
+            "time": timing,
             "output": image_net_class.tolist()
         }
+        logger.info(f"Output:\n{output}\nwas sent!")
         return output

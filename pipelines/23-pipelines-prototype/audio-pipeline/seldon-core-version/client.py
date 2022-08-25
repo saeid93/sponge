@@ -4,7 +4,9 @@ import numpy as np
 from seldon_core.seldon_client import SeldonClient
 from transformers import pipeline
 from datasets import load_dataset
+from pprint import PrettyPrinter
 
+pp = PrettyPrinter(indent=4)
 
 # single node inferline
 gateway_endpoint="localhost:32000"
@@ -26,4 +28,4 @@ response = sc.predict(
     data=ds[0]["audio"]["array"]
 )
 
-print(response.response['jsonData']['text'])
+pp.pprint(response.response['jsonData'])
