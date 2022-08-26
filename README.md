@@ -24,3 +24,8 @@ TODO pending the main document
    > ```
 
 For setting infrastructure refer to accompanying repo [infrastructure](https://github.com/reconfigurable-ml-pipeline/infrastructure)
+
+# Related project Repository
+
+1. **Twitter Trace preprocessing** code is available at [web-service-datasets](https://github.com/reconfigurable-ml-pipeline/web-service-datasets) repository.
+2. **Load tester** code is available at [load_tester](https://github.com/reconfigurable-ml-pipeline/load_tester) repository.
