@@ -5,20 +5,8 @@ from seldon_core.seldon_client import SeldonClient
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
-# single node inferline
-gateway_endpoint="localhost:32000"
-deployment_name = 'nlp'
-namespace = "default"
-sc = SeldonClient(
-    gateway_endpoint=gateway_endpoint,
-    gateway="istio",
-    transport="rest",
-    deployment_name=deployment_name,
-    namespace=namespace)
 
-# image = np.array(image)
-response = sc.predict(
-    str_data="""
+str_data = """
 Après des décennies en tant que pratiquant d'arts martiaux et coureur, Wes a "trouvé" le yoga en 2010.
 Il en est venu à apprécier que son ampleur et sa profondeur fournissent un merveilleux lest pour stabiliser
 le corps et l'esprit dans le style de vie rapide et axé sur la technologie d'aujourd'hui ;
@@ -33,6 +21,21 @@ et axé sur la technologie d'aujourd'hui. Il enseigne à aider les autres à ré
 Mieux encore, les cours de yoga sont tout simplement merveilleux :
 ils sont à quelques instants des exigences de la vie où vous pouvez simplement prendre soin de vous physiquement et émotionnellement.
     """
+
+# single node inferline
+gateway_endpoint="localhost:32000"
+deployment_name = 'nlp'
+namespace = "default"
+sc = SeldonClient(
+    gateway_endpoint=gateway_endpoint,
+    gateway="istio",
+    transport="rest",
+    deployment_name=deployment_name,
+    namespace=namespace)
+
+# image = np.array(image)
+response = sc.predict(
+    str_data=str_data
 )
 
 pp.pprint(response.response['jsonData'])

@@ -16,7 +16,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
-              value: facebook/s2t-small-librispeech-asr 
+              value: facebook/s2t-small-librispeech-asr
             - name: TRANSFORMERS_CACHE
               value: /app/.cache
             - name: TASK
@@ -28,7 +28,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
-              value: distilbert-base-uncased-finetuned-sst-2-english 
+              value: distilbert-base-uncased-finetuned-sst-2-english
             - name: TRANSFORMERS_CACHE
               value: /app/.cache
             - name: TASK
