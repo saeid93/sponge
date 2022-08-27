@@ -24,3 +24,5 @@ pandas>=1.1.4
 seaborn>=0.11.0
 click==8.0.4
 opencv-python==4.6.0.66
+prometheus-api-client==0.5.1
+geventhttpclient==2.0

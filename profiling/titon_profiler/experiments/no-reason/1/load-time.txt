@@ -1,0 +1,3 @@
+load time of resnet18 is 0.07192158699035645 
+load time of resnet18 is 0.07228755950927734 
+load time of resnet18 is 0.07231020927429199 
