@@ -14,7 +14,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
-              value: yolov5n
+              value: yolov5n6
     - spec:
         containers:
         - image: sdghafouri/pipeline-prototype:resnet-human
