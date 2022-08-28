@@ -9,7 +9,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/motivational-tests:video-yolo
+        - image: sdghafouri/pipeline-prototype:yolo
           name: video-yolo
           imagePullPolicy: Always
           env:
@@ -17,7 +17,7 @@ spec:
               value: {{ yolo_variant }}
     - spec:
         containers:
-        - image: sdghafouri/motivational-tests:video-resnet-human
+        - image: sdghafouri/pipeline-prototype:resnet-human
           name: video-resnet-human
           imagePullPolicy: Always
           env:

@@ -11,7 +11,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: gcr.io/hale-ivy-335012/audio-pipelines:generalaudio
+        - image: gcr.io/hale-ivy-335012/audio-sent-pipelines:generalaudio
           name: audio-1
           imagePullPolicy: Always
           env:
@@ -23,7 +23,7 @@ spec:
               value: automatic-speech-recognition 
     - spec:
         containers:
-        - image: gcr.io/hale-ivy-335012/audio-pipelines:generalnlp
+        - image: gcr.io/hale-ivy-335012/audio-sent-pipelines:generalnlp
           name: audio-2
           imagePullPolicy: Always
           env:

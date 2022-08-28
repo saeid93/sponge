@@ -10,7 +10,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/nlp-pipelines:generalnlp
+        - image: sdghafouri/sum-qa-pipelines:nlpsum
           name: nlp-1
           imagePullPolicy: Always
           env:
@@ -19,41 +19,28 @@ spec:
             - name: TRANSFORMERS_CACHE
               value: /app/.cache
             - name: TASK
-              value: text-classification
+              value: summarization
     - spec:
         containers:
-        - image: sdghafouri/nlp-pipelines:generalnlp
+        - image: gcr.io/hale-ivy-335012/sum-qa-pipelines:nlpqa
           name: nlp-2
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
-              value:  {{ node_2_variant }}
+              value: {{ node_2_variant }}
             - name: TRANSFORMERS_CACHE
               value: /app/.cache
             - name: TASK
-              value: translation_fr_to_en
-    - spec:
-        containers:
-        - image: sdghafouri/nlp-pipelines:generalnlp
-          name: nlp-3
-          imagePullPolicy: Always
-          env:
-            - name: MODEL_VARIANT
-              value: {{ node_3_variant }}
-            - name: TRANSFORMERS_CACHE
-              value: /app/.cache
-            - name: TASK
-              value: summarization
+              value: question-answering
+            - name: CONTEXT
+              value: default
     graph:
       name: nlp-1
       type: MODEL
       children:
       - name: nlp-2
         type: MODEL
-        children:
-        - name: nlp-3
-          type: MODEL
-          children: []
+        children: []
     name: example
     labels:
       sidecar.istio.io/inject: "true"

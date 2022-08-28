@@ -2,8 +2,6 @@ import os
 from plistlib import load
 from re import TEMPLATE
 from typing import Any, Dict
-from PIL import Image
-import numpy as np
 from seldon_core.seldon_client import SeldonClient
 from jinja2 import Environment, FileSystemLoader
 import time
@@ -13,9 +11,9 @@ from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
 
-PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/23-pipelines-prototype/audio/seldon-core-version"
+PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-audio-sent/seldon-core-version"
 CHECK_TIMEOUT = 2
-RETRY_TIMEOUT = 60
+RETRY_TIMEOUT = 120
 DELETE_WAIT = 10
 TEMPLATE = "audio"
 
@@ -81,7 +79,7 @@ node_1_models = [
     'facebook/s2t-small-librispeech-asr']
 
 node_2_models = [
-    'distilbert-base-uncased-finetuned-sst-2-english']
+    'distilbert-base-uncased']
 
 for node_1_model in node_1_models:
     for node_2_model in node_2_models:
