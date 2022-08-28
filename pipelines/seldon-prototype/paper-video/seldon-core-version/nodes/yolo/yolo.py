@@ -22,14 +22,17 @@ class Yolo(object):
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
 
     def load(self):
-        logger.info('Loading the ML models')
-        self.device = torch.device(
-            "cuda:0" if torch.cuda.is_available() else "cpu")
-        self.model = torch.hub.load('ultralytics/yolov5', self.MODEL_VARIANT)
-        logger.info('model loaded!')
-        # self.resnet.eval()
-        self.loaded = True
-        logger.info('model loading complete!')
+        try:
+            logger.info('Loading the ML models')
+            self.device = torch.device(
+                "cuda:0" if torch.cuda.is_available() else "cpu")
+            self.model = torch.hub.load('ultralytics/yolov5', self.MODEL_VARIANT)
+            logger.info('model loaded!')
+            # self.resnet.eval()
+            self.loaded = True
+            logger.info('model loading complete!')
+        except:
+            pass
 
     def predict(self, X, features_names=None):
         if self.loaded == False:
