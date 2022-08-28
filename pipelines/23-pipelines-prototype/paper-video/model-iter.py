@@ -15,7 +15,7 @@ import subprocess
 from itertools import islice
 from torchvision import transforms
 import pprint
-PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-video/seldon-core-version"
+PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/se-prototype/paper-video/seldon-core-version"
 CHECK_TIMEOUT = 2
 RETRY_TIMEOUT = 60
 DELETE_WAIT = 15
@@ -46,8 +46,8 @@ def load_images(num_loaded_images = 10):
         return image
     images = {
         image_name: image_loader(
-            dataset_folder_path, image_name) for image_name in image_names[
-                :]}
+            dataset_folder_path, image_name) fonum_loaded_imagesr image_name in image_names[
+                :num_loaded_images]}
     transform = transforms.Compose([
     transforms.Resize(256),
     transforms.CenterCrop(224),
