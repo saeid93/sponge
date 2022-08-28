@@ -7,6 +7,7 @@ import os
 from plistlib import load
 from typing import Any, Dict
 from PIL import Image
+from prom import get_cpu_usage, get_memory_usage
 import numpy as np
 from seldon_core.seldon_client import SeldonClient
 from jinja2 import Environment, FileSystemLoader
@@ -47,7 +48,7 @@ def load_images(num_loaded_images = 10):
     images = {
         image_name: image_loader(
             dataset_folder_path, image_name) for image_name in image_names[
-                :]}
+                1:num_loaded_images+1]}
     transform = transforms.Compose([
     transforms.Resize(256),
     transforms.CenterCrop(224),
@@ -61,14 +62,15 @@ def load_images(num_loaded_images = 10):
 def load_test(
     pipeline_name: str,
     images: Dict[str, Any],
-    n_items: int
+    n_items: int,
+    n_iters:int
     ):
     # TODO change here
     # single node inferline
     gateway_endpoint="localhost:32000"
     deployment_name = pipeline_name 
     namespace = "default"
-
+    start = time.time()
     sc = SeldonClient(
         gateway_endpoint=gateway_endpoint,
         gateway="istio",
@@ -77,39 +79,68 @@ def load_test(
         namespace=namespace)
 
     images = dict(islice(images.items(), n_items))
-    print(images)
+    # print(images)
     results = {}
     cpu_usages = []
     memory_usages = []
-    infer_times = []
-    input_times = []
-    output_times = []
-    queue_times = []
-    success_times = []
-    for i in range(1):
-        print("hiiiiiiiiiiiii")
+    e_e_lats = []
+    yolo_lats = []
+    resnet_lats = []
+    print(f"start load test on {pipeline_name} after 60 seconds ")
+    time.sleep(60)
+    for i in range(n_iters):
+        # print("hiiiiiiiiiiiii")
         for image_name, image in images.items():
             response = sc.predict(
                 data=np.array(image)
             )
-            print("response is")
-            print(response)
-            results[image_name] = response
-        # results[image_name] = response
 
-    for image_name, response in results.items():
-        print(f"\nimage name: {image_name}")
-        print(f"-"*50)
-        if response.success:
-            request_path = response.response['meta']['requestPath'].keys()
-            pipeline_response = response.response['data']
-            print(f"request path: {request_path}")
-            print(f"pipeline_response: {pipeline_response}")
-            if 'jsonData' in response.response.keys(): 
-                pipeline_response = response.response['jsonData']
-                pp = pprint.PrettyPrinter(indent=4)
-                pp.pprint(pipeline_response)
-            
+            results[image_name] = response
+
+        for image_name, response in results.items():
+            print(f"\nimage name: {image_name}")
+            print(f"-"*50)
+            if response.success:
+                request_path = response.response['meta']['requestPath'].keys()
+                print(f"request path: {request_path}")
+                if 'jsonData' in response.response.keys(): 
+                    pipeline_response = response.response['jsonData']
+                    times = pipeline_response['time']
+                    arrival_yolo = times['arrival_video-yolo']
+                    arrival_resnet = times['arrival_video-resnet-human']
+                    serving_yolo = times['serving_video-yolo']
+                    serving_resnet = times['serving_video-resnet-human']
+                    end_to_end_latency = serving_resnet - arrival_yolo
+                    yolo_latency = serving_yolo - arrival_yolo
+                    resnet_latency = serving_resnet - arrival_resnet
+                    e_e_lats.append(end_to_end_latency)
+                    yolo_lats.append(yolo_latency)
+                    resnet_lats.append(resnet_latency)
+
+                    cpu_usages.append(get_cpu_usage(pipeline_name, "default"))
+                    memory_usages.append(get_memory_usage(pipeline_name, "default", 0))
+
+                else:
+                    pipeline_response = response.response['data']
+    total_time = int((time.time() - start)//60)
+    cpu_usages.append(get_cpu_usage(pipeline_name, "default"))
+    memory_usages.append(get_memory_usage(pipeline_name, "default", total_time, True)) 
+
+    database = ""
+    with open(database+"cpu.txt", "a") as cpu_file:
+        cpu_file.write(f"usage of {pipeline_name} is {cpu_usages} \n")
+
+    with open(database+"memory.txt", 'a') as memory_file:
+        memory_file.write(f"usage of {pipeline_name} is {memory_usages} \n")
+
+    with open(database+"yolo.txt", "a") as infer:
+        infer.write(f"yololats of {pipeline_name} is {yolo_lats} \n")
+    
+    with open(database+"resnet.txt", 'a') as q:
+        q.write(f"resnetlats of {pipeline_name} is {resnet_lats} \n")
+
+    with open(database+"ee.txt", "a") as s:
+        s.write(f"eelat of {pipeline_name} is {e_e_lats} \n")
     
 
 
@@ -136,7 +167,8 @@ def setup_pipeline(
 def remove_pipeline(pipeline_name):
     os.system(f"kubectl delete seldondeployment {pipeline_name} -n default")
 
-images = load_images(num_loaded_images=10)
+images = load_images(num_loaded_images=1)
+n_iters = 170
 # check all the possible combination
 print("images loaded")
 print("-"*50)
@@ -174,10 +206,10 @@ for resnet_model in resnet_models:
                 time.sleep(DELETE_WAIT)
 
         print('\starting the load test ...\n')
-        load_test(pipeline_name=pipeline_name, images=images, n_items=10)
+        load_test(pipeline_name=pipeline_name, images=images, n_items=10, n_iters=n_iters)
 
         time.sleep(30)
-
+        exit(1)
         print("operation done, deleting the pipeline ...")
         remove_pipeline(pipeline_name=pipeline_name)
         print('waiting to delete ...')

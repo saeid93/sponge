@@ -13,7 +13,7 @@ from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
 
-PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/23-pipelines-prototype/audio/seldon-core-version"
+PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-audio-qa/seldon-core-version"
 CHECK_TIMEOUT = 2
 RETRY_TIMEOUT = 60
 DELETE_WAIT = 10

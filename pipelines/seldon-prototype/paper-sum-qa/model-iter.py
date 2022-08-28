@@ -11,7 +11,7 @@ import subprocess
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
-PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/23-pipelines-prototype/nlp/seldon-core-version"
+PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-sum-qa/seldon-core-version"
 CHECK_TIMEOUT = 2
 RETRY_TIMEOUT = 60
 DELETE_WAIT = 10
@@ -38,8 +38,6 @@ def load_test(
     inputs: Dict[str, Any],
     n_items: int
     ):
-    # TODO change here
-    # single node inferline
     gateway_endpoint="localhost:32000"
     deployment_name = pipeline_name 
     namespace = "default"
@@ -64,13 +62,11 @@ def load_test(
 def setup_pipeline(
     node_1_model: str,
     node_2_model: str,
-    node_3_model: str,   
     template: str,
     pipeline_name: str):
     svc_vars = {
         "node_1_variant": node_1_model,
         "node_2_variant": node_2_model,
-        "node_3_variant": node_3_model,        
         "pipeline_name": pipeline_name}
     environment = Environment(
         loader=FileSystemLoader(os.path.join(
@@ -87,47 +83,43 @@ def remove_pipeline(pipeline_name):
 
 # check all the possible combination
 node_1_models = [
-    'dinalzein/xlm-roberta-base-finetuned-language-identification']
+    'sshleifer/distilbart-cnn-12-6',
+    'sshleifer/distilbart-cnn-12-6']
 
 node_2_models = [
-    'Helsinki-NLP/opus-mt-fr-en']
-
-node_3_models = [
-    'sshleifer/distilbart-cnn-12-6']
+    'distilbert-base-uncased']
 
 for node_1_model in node_1_models:
     for node_2_model in node_2_models:
-        for node_3_model in node_3_models:
-            pipeline_name = node_1_model[:8].lower() + "-" +\
-                node_2_model[:8].lower() + "-" + node_3_model[:8].lower()
-            start_time = time.time()
-            while True:
-                setup_pipeline(
-                    node_1_model=node_1_model,
-                    node_2_model=node_2_model,
-                    node_3_model=node_3_model,                    
-                    template=TEMPLATE, pipeline_name=pipeline_name)
-                time.sleep(CHECK_TIMEOUT)
-                command = ("kubectl rollout status deploy/$(kubectl get deploy"
-                        f" -l seldon-deployment-id={pipeline_name} -o"
-                        " jsonpath='{.items[0].metadata.name}')")
-                time.sleep(CHECK_TIMEOUT)
-                p = subprocess.Popen(command, shell=True)
-                try:
-                    p.wait(RETRY_TIMEOUT)
-                    break
-                except subprocess.TimeoutExpired:
-                    p.kill()
-                    print("corrupted pipeline, should be deleted ...")
-                    remove_pipeline(pipeline_name=pipeline_name)
-                    print('waiting to delete ...')
-                    time.sleep(DELETE_WAIT)
+        pipeline_name = node_1_model[:8].lower() + "-" +\
+            node_2_model[:8].lower()
+        start_time = time.time()
+        while True:
+            setup_pipeline(
+                node_1_model=node_1_model,
+                node_2_model=node_2_model,                 
+                template=TEMPLATE, pipeline_name=pipeline_name)
+            time.sleep(CHECK_TIMEOUT)
+            command = ("kubectl rollout status deploy/$(kubectl get deploy"
+                    f" -l seldon-deployment-id={pipeline_name} -o"
+                    " jsonpath='{.items[0].metadata.name}')")
+            time.sleep(CHECK_TIMEOUT)
+            p = subprocess.Popen(command, shell=True)
+            try:
+                p.wait(RETRY_TIMEOUT)
+                break
+            except subprocess.TimeoutExpired:
+                p.kill()
+                print("corrupted pipeline, should be deleted ...")
+                remove_pipeline(pipeline_name=pipeline_name)
+                print('waiting to delete ...')
+                time.sleep(DELETE_WAIT)
 
-            print('starting the load test ...\n')
-            load_test(pipeline_name=pipeline_name, inputs=inputs, n_items=1)
+        print('starting the load test ...\n')
+        load_test(pipeline_name=pipeline_name, inputs=inputs, n_items=1)
 
-            time.sleep(DELETE_WAIT)
+        time.sleep(DELETE_WAIT)
 
-            print("operation done, deleting the pipeline ...")
-            remove_pipeline(pipeline_name=pipeline_name)
-            print('pipeline successfuly deleted')
+        print("operation done, deleting the pipeline ...")
+        remove_pipeline(pipeline_name=pipeline_name)
+        print('pipeline successfuly deleted')

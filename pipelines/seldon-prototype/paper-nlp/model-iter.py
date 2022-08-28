@@ -2,8 +2,6 @@ import os
 from plistlib import load
 from re import TEMPLATE
 from typing import Any, Dict
-from PIL import Image
-import numpy as np
 from seldon_core.seldon_client import SeldonClient
 from jinja2 import Environment, FileSystemLoader
 import time
@@ -11,7 +9,7 @@ import subprocess
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
-PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/23-pipelines-prototype/nlp/seldon-core-version"
+PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-nlp/seldon-core-version"
 CHECK_TIMEOUT = 2
 RETRY_TIMEOUT = 60
 DELETE_WAIT = 10
@@ -90,6 +88,7 @@ node_1_models = [
     'dinalzein/xlm-roberta-base-finetuned-language-identification']
 
 node_2_models = [
+    'Helsinki-NLP/opus-mt-fr-en',
     'Helsinki-NLP/opus-mt-fr-en']
 
 node_3_models = [
