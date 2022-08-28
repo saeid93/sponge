@@ -90,6 +90,7 @@ def load_test(
     time.sleep(60)
     for i in range(n_iters):
         # print("hiiiiiiiiiiiii")
+        print(i)
         for image_name, image in images.items():
             response = sc.predict(
                 data=np.array(image)
@@ -98,11 +99,8 @@ def load_test(
             results[image_name] = response
 
         for image_name, response in results.items():
-            print(f"\nimage name: {image_name}")
-            print(f"-"*50)
             if response.success:
                 request_path = response.response['meta']['requestPath'].keys()
-                print(f"request path: {request_path}")
                 if 'jsonData' in response.response.keys(): 
                     pipeline_response = response.response['jsonData']
                     times = pipeline_response['time']
@@ -122,7 +120,9 @@ def load_test(
 
                 else:
                     pipeline_response = response.response['data']
+    sc.close()
     total_time = int((time.time() - start)//60)
+    time.sleep(70)
     cpu_usages.append(get_cpu_usage(pipeline_name, "default"))
     memory_usages.append(get_memory_usage(pipeline_name, "default", total_time, True)) 
 
@@ -168,7 +168,7 @@ def remove_pipeline(pipeline_name):
     os.system(f"kubectl delete seldondeployment {pipeline_name} -n default")
 
 images = load_images(num_loaded_images=1)
-n_iters = 170
+n_iters = 100
 # check all the possible combination
 print("images loaded")
 print("-"*50)
@@ -204,12 +204,12 @@ for resnet_model in resnet_models:
                 remove_pipeline(pipeline_name=pipeline_name)
                 print('waiting to delete ...')
                 time.sleep(DELETE_WAIT)
-
+                continue
+        time.sleep(20)
         print('\starting the load test ...\n')
         load_test(pipeline_name=pipeline_name, images=images, n_items=10, n_iters=n_iters)
 
         time.sleep(30)
-        exit(1)
         print("operation done, deleting the pipeline ...")
         remove_pipeline(pipeline_name=pipeline_name)
         print('waiting to delete ...')
