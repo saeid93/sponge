@@ -1,3 +1,5 @@
+
+
 """
 Iterate through all possible combination
 of models and servers
@@ -17,9 +19,34 @@ from itertools import islice
 from torchvision import transforms
 import pprint
 PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-video/seldon-core-version"
-CHECK_TIMEOUT = 2
-RETRY_TIMEOUT = 60
-DELETE_WAIT = 15
+DATABASE = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline"
+CHECK_TIMEOUT = 2 
+RETRY_TIMEOUT = 90
+DELETE_WAIT = 45
+LOAD_TEST_WAIT = 60
+TRIAL_END_WAIT = 60
+n_iters = 60
+resnet_models = [
+    'resnet18', 'resnet34', 'resnet50',
+    'resnet101', 'resnet152']
+
+yolo_models = [
+    'yolov5n', 'yolov5s', 'yolov5m',
+    'yolov5l', 'yolov5x', 'yolov5n6',
+    'yolov5s6', 'yolov5m6', 'yolov5l6',
+    'yolov5l6']
+
+resnet_models = ["resnet152"]
+yolo_models = [
+    'yolov5s', 'yolov5m',
+    'yolov5l', 'yolov5x', 'yolov5n6',
+    'yolov5s6', 'yolov5m6', 'yolov5l6',
+    'yolov5l6'
+]
+
+save_path = os.path.join(DATABASE, "yolo-video-test")
+if not os.path.exists(save_path):
+    os.makedirs(save_path)
 
 def load_images(num_loaded_images = 10):
     os.system('sudo umount -l ~/my_mounting_point')
@@ -59,6 +86,7 @@ def load_images(num_loaded_images = 10):
 )])
     return images
 
+
 def load_test(
     pipeline_name: str,
     images: Dict[str, Any],
@@ -79,17 +107,19 @@ def load_test(
         namespace=namespace)
 
     images = dict(islice(images.items(), n_items))
-    # print(images)
+    yolo_container = "video-yolo"
+    resnet_container = "video-resnet-human"
     results = {}
-    cpu_usages = []
-    memory_usages = []
+    cpu_usages_yolo = []
+    memory_usages_yolo = []
+    cpu_usages_resnet = []
+    memory_usages_resnet = []
     e_e_lats = []
     yolo_lats = []
     resnet_lats = []
-    print(f"start load test on {pipeline_name} after 60 seconds ")
-    time.sleep(60)
+    print(f"start load test on {pipeline_name} after {LOAD_TEST_WAIT} seconds ")
+    time.sleep(LOAD_TEST_WAIT)
     for i in range(n_iters):
-        # print("hiiiiiiiiiiiii")
         print(i)
         for image_name, image in images.items():
             response = sc.predict(
@@ -115,31 +145,40 @@ def load_test(
                     yolo_lats.append(yolo_latency)
                     resnet_lats.append(resnet_latency)
 
-                    cpu_usages.append(get_cpu_usage(pipeline_name, "default"))
-                    memory_usages.append(get_memory_usage(pipeline_name, "default", 0))
-
+                    cpu_usages_yolo.append(get_cpu_usage(pipeline_name, "default", yolo_container))
+                    memory_usages_yolo.append(get_memory_usage(pipeline_name, "default", yolo_container, 0))
+                    cpu_usages_resnet.append(get_cpu_usage(pipeline_name, "default", resnet_container))
+                    memory_usages_resnet.append(get_memory_usage(pipeline_name, "default", resnet_container, 0))
                 else:
                     pipeline_response = response.response['data']
-    sc.close()
+    time.sleep(TRIAL_END_WAIT)
     total_time = int((time.time() - start)//60)
-    time.sleep(70)
-    cpu_usages.append(get_cpu_usage(pipeline_name, "default"))
-    memory_usages.append(get_memory_usage(pipeline_name, "default", total_time, True)) 
+
+    cpu_usages_yolo.append(get_cpu_usage(pipeline_name, "default", yolo_container))
+    memory_usages_yolo.append(get_memory_usage(pipeline_name, "default", yolo_container,  total_time, True))
+    cpu_usages_resnet.append(get_cpu_usage(pipeline_name, "default", resnet_container))
+    memory_usages_resnet.append(get_memory_usage(pipeline_name, "default", resnet_container, total_time, True))
 
     database = ""
-    with open(database+"cpu.txt", "a") as cpu_file:
-        cpu_file.write(f"usage of {pipeline_name} is {cpu_usages} \n")
+    with open(save_path+"/cpu_yolo.txt", "a") as cpu_file:
+        cpu_file.write(f"usage of yolo {pipeline_name} is {cpu_usages_yolo} \n")
 
-    with open(database+"memory.txt", 'a') as memory_file:
-        memory_file.write(f"usage of {pipeline_name} is {memory_usages} \n")
+    with open(save_path+"/memory_yolo.txt", 'a') as memory_file:
+        memory_file.write(f"usage of yolo {pipeline_name} is {memory_usages_yolo} \n")
 
-    with open(database+"yolo.txt", "a") as infer:
+    with open(save_path+"/cpu_resnet.txt", "a") as cpu_file:
+        cpu_file.write(f"usage of resnet {pipeline_name} is {cpu_usages_resnet} \n")
+
+    with open(save_path+"/memory_resnet.txt", 'a') as memory_file:
+        memory_file.write(f"usage of resnet {pipeline_name} is {memory_usages_resnet} \n")
+
+    with open(save_path+"/yolo.txt", "a") as infer:
         infer.write(f"yololats of {pipeline_name} is {yolo_lats} \n")
     
-    with open(database+"resnet.txt", 'a') as q:
+    with open(save_path+"/resnet.txt", 'a') as q:
         q.write(f"resnetlats of {pipeline_name} is {resnet_lats} \n")
 
-    with open(database+"ee.txt", "a") as s:
+    with open(save_path+"/ee.txt", "a") as s:
         s.write(f"eelat of {pipeline_name} is {e_e_lats} \n")
     
 
@@ -168,20 +207,10 @@ def remove_pipeline(pipeline_name):
     os.system(f"kubectl delete seldondeployment {pipeline_name} -n default")
 
 images = load_images(num_loaded_images=1)
-n_iters = 100
+
 # check all the possible combination
 print("images loaded")
 print("-"*50)
-
-resnet_models = [
-    'resnet18', 'resnet34', 'resnet50',
-    'resnet101', 'resnet152']
-
-yolo_models = [
-    'yolov5n', 'yolov5s', 'yolov5m',
-    'yolov5l', 'yolov5x', 'yolov5n6',
-    'yolov5s6', 'yolov5m6', 'yolov5l6',
-    'yolov5l6']
 
 for resnet_model in resnet_models:
     for yolo_model in yolo_models:
@@ -204,11 +233,24 @@ for resnet_model in resnet_models:
                 remove_pipeline(pipeline_name=pipeline_name)
                 print('waiting to delete ...')
                 time.sleep(DELETE_WAIT)
-                continue
-        time.sleep(20)
+                
+        time.sleep(60)
+        retry_counter = 3
         print('\starting the load test ...\n')
-        load_test(pipeline_name=pipeline_name, images=images, n_items=10, n_iters=n_iters)
-
+        while True:
+            try:
+                load_test(pipeline_name=pipeline_name, images=images, n_items=10, n_iters=n_iters)
+                break
+            except Exception as e:
+                time.sleep(20)
+                
+                print(f"there is error on sending request {e}")
+                with open("logs.txt", "a") as f:
+                    f.write(e)
+                retry_counter -= 1
+                if retry_counter < 0:
+                    break
+                continue
         time.sleep(30)
         print("operation done, deleting the pipeline ...")
         remove_pipeline(pipeline_name=pipeline_name)

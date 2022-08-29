@@ -1,15 +1,24 @@
-# Source
-adapted from [FA2: Fast, Accurate Autoscaling for Serving Deep Learning Inference with SLA Guarantees](https://ieeexplore.ieee.org/abstract/document/9804606)
-
-
-Two node pipeline
+Three node pipeline
 
 list of available models per node:
 
-text-summerization: node 1
+language-identification: node 1
+source: https://huggingface.co/models?pipeline_tag=text-classification
+dinalzein/xlm-roberta-base-finetuned-language-identification
+
+translation: node 2
+source: https://huggingface.co/models?filter=translation
+
+List of models:
+
+Helsinki-NLP/opus-mt-fr-en
+Helsinki-NLP/opus-mt-tc-big-fr-en
+
+text-summerization: node 3
 source: https://huggingface.co/models?pipeline_tag=summarization
 
-list of models:
+List of models:
+
 sshleifer/distilbart-cnn-12-6
 sshleifer/distilbart-xsum-1-1
 sshleifer/distill-pegasus-cnn-16-4
@@ -29,11 +38,3 @@ google/pegasus-cnn_dailymail
 google/roberta2roberta_L-24_cnn_daily_mail
 google/pegasus-large
 
-Question-answering: node 2
-source: https://huggingface.co/models?pipeline_tag=question-answering
-
-list of models:
-deepset/roberta-base-squad2
-deepset/xlm-roberta-large-squad2
-distilbert-base-cased-distilled-squad
-deepset/xlm-roberta-base-squad2

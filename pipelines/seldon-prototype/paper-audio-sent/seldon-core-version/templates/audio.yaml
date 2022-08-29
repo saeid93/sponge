@@ -41,6 +41,6 @@ spec:
         type: MODEL
         children: []
     name: example
-    labels:
-      sidecar.istio.io/inject: "true"
+    # labels:
+    #   sidecar.istio.io/inject: "true"
     replicas: 1

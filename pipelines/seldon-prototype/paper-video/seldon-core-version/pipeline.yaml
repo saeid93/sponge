@@ -5,6 +5,8 @@ metadata:
   name: video-monitoring
 spec:
   name: video-monitoring
+  annotations:
+    seldon.io/engine-separate-pod: "true"
   predictors:
   - componentSpecs:
     - spec:
@@ -14,7 +16,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
-              value: yolov5n6
+              value: yolov5m
     - spec:
         containers:
         - image: sdghafouri/pipeline-prototype:resnet-human
@@ -31,6 +33,6 @@ spec:
         type: MODEL
         children: []
     name: example
-    labels:
-      sidecar.istio.io/inject: "true"
+    # labels:
+    #   sidecar.istio.io/inject: "true"
     replicas: 1
