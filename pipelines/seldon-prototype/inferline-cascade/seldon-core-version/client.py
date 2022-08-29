@@ -23,7 +23,7 @@ image_names = os.listdir(dataset_folder_path)
 image_names.sort()
 with open(classes_file_path) as f:
     classes = [line.strip() for line in f.readlines()]
-num_loaded_images = 2
+num_loaded_images = 10
 
 def image_loader(folder_path, image_name):
     image = Image.open(
@@ -38,13 +38,13 @@ images = {
         dataset_folder_path, image_name) for image_name in image_names[
             :num_loaded_images]}
 
-# deployment_name = 'inferline-cascade-with-preprocessor'
-deployment_name = 'inferline-cascade'
+deployment_name = 'inferline-cascade-with-preprocessor'
+# deployment_name = 'inferline-cascade'
 
 # single node inferline
 gateway_endpoint="localhost:32000"
 deployment_name = deployment_name
-namespace = "saeid"
+namespace = "default"
 sc = SeldonClient(
     gateway_endpoint=gateway_endpoint,
     gateway="istio",

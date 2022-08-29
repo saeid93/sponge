@@ -9,6 +9,7 @@ TRAIN_RESULTS_PATH = os.path.join(DATA_PATH, "train-results")
 TESTS_RESULTS_PATH = os.path.join(DATA_PATH, "test-results")
 KUBE_YAMLS_PATH = os.path.join(DATA_PATH, "yamls")
 TRITON_CONFIG_PATH = os.path.join(DATA_PATH, "triton-configs")
+PIPELINES_MODELS = os.path.join(DATA_PATH, "pipeline-test-meta")
 
 def _create_dirs():
     """
@@ -24,5 +25,7 @@ def _create_dirs():
         os.makedirs(KUBE_YAMLS_PATH)
     if not os.path.exists(TRITON_CONFIG_PATH):
         os.makedirs(TRITON_CONFIG_PATH)
+    if not os.path.exists(PIPELINES_MODELS):
+        os.makedirs(PIPELINES_MODELS)
 
 _create_dirs()

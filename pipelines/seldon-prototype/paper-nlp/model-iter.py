@@ -1,6 +1,6 @@
 import os
-from plistlib import load
 from re import TEMPLATE
+import yaml
 from typing import Any, Dict
 from seldon_core.seldon_client import SeldonClient
 from jinja2 import Environment, FileSystemLoader
@@ -9,11 +9,18 @@ import subprocess
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
+
 PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-nlp/seldon-core-version"
-CHECK_TIMEOUT = 2
-RETRY_TIMEOUT = 60
-DELETE_WAIT = 10
+PIPELINES_MODELS_PATH = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline-test-meta" # TODO fix be moved to utilspr
+DATABASE = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline"
+CHECK_TIMEOUT = 2 
+RETRY_TIMEOUT = 90
+DELETE_WAIT = 45
+LOAD_TEST_WAIT = 60
+TRIAL_END_WAIT = 60
 TEMPLATE = "nlp"
+CONFIG_FILE = "paper-nlp"
+
 
 inputs = """
 Après des décennies en tant que pratiquant d'arts martiaux et coureur, Wes a "trouvé" le yoga en 2010.
@@ -36,8 +43,6 @@ def load_test(
     inputs: Dict[str, Any],
     n_items: int
     ):
-    # TODO change here
-    # single node inferline
     gateway_endpoint="localhost:32000"
     deployment_name = pipeline_name 
     namespace = "default"
@@ -83,22 +88,31 @@ def setup_pipeline(
 def remove_pipeline(pipeline_name):
     os.system(f"kubectl delete seldondeployment {pipeline_name} -n default")
 
-# check all the possible combination
-node_1_models = [
-    'dinalzein/xlm-roberta-base-finetuned-language-identification']
+config_file_path = os.path.join(
+    PIPELINES_MODELS_PATH, f"{CONFIG_FILE}.yaml")
+with open(config_file_path, 'r') as cf:
+    config = yaml.safe_load(cf)
 
-node_2_models = [
-    'Helsinki-NLP/opus-mt-fr-en',
-    'Helsinki-NLP/opus-mt-fr-en']
+node_1_models = config['node_1']
+node_2_models = config['node_2']
+node_3_models = config['node_3']
 
-node_3_models = [
-    'sshleifer/distilbart-cnn-12-6']
+def prune_name(name, len):
+    forbidden_strs = ['facebook', '/', 'huggingface', '-',
+                      'dinalzein', 'HelsinkiNLP', 'sshleifer',
+                      'google']
+    for forbidden_str in forbidden_strs:
+        name = name.replace(forbidden_str, '')
+    name = name.lower()
+    name = name[:len]
+    return name
 
 for node_1_model in node_1_models:
     for node_2_model in node_2_models:
         for node_3_model in node_3_models:
-            pipeline_name = node_1_model[:8].lower() + "-" +\
-                node_2_model[:8].lower() + "-" + node_3_model[:8].lower()
+            pipeline_name = prune_name(node_1_model, 8) + "-" +\
+                prune_name(node_2_model, 8) + "-" +\
+                    prune_name(node_3_model, 8)
             start_time = time.time()
             while True:
                 setup_pipeline(

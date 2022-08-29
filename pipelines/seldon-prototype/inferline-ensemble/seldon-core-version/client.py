@@ -40,9 +40,9 @@ images = {
 
 # single node inferline
 gateway_endpoint="localhost:32000"
-# deployment_name = 'inferline-ensemble-with-preprocessor'
-deployment_name = 'inferline-ensemble'
-namespace = "alireza"
+deployment_name = 'inferline-ensemble-with-preprocessor'
+# deployment_name = 'inferline-ensemble'
+namespace = "default"
 sc = SeldonClient(
     gateway_endpoint=gateway_endpoint,
     gateway="istio",
