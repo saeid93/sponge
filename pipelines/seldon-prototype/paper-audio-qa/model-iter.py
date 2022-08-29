@@ -1,23 +1,30 @@
+"""
+Iterate through all possible combination
+of models and servers
+"""
+
 import os
-from plistlib import load
-from re import TEMPLATE
 from typing import Any, Dict
-from PIL import Image
-import numpy as np
 from seldon_core.seldon_client import SeldonClient
 from jinja2 import Environment, FileSystemLoader
 import time
 import subprocess
 from datasets import load_dataset
 from pprint import PrettyPrinter
+import yaml
 pp = PrettyPrinter(indent=4)
 
 
 PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-audio-qa/seldon-core-version"
-CHECK_TIMEOUT = 2
-RETRY_TIMEOUT = 60
-DELETE_WAIT = 10
+PIPELINES_MODELS_PATH = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline-test-meta" # TODO fix be moved to utilspr
+DATABASE = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline"
+CHECK_TIMEOUT = 2 
+RETRY_TIMEOUT = 90
+DELETE_WAIT = 45
+LOAD_TEST_WAIT = 60
+TRIAL_END_WAIT = 60
 TEMPLATE = "audio"
+CONFIG_FILE = "paper-audio-qa"
 
 
 ds = load_dataset(
@@ -76,17 +83,26 @@ def setup_pipeline(
 def remove_pipeline(pipeline_name):
     os.system(f"kubectl delete seldondeployment {pipeline_name} -n default")
 
-# check all the possible combination
-node_1_models = [
-    'facebook/s2t-small-librispeech-asr']
+config_file_path = os.path.join(
+    PIPELINES_MODELS_PATH, f"{CONFIG_FILE}.yaml")
+with open(config_file_path, 'r') as cf:
+    config = yaml.safe_load(cf)
 
-node_2_models = [
-    'distilbert-base-uncased-finetuned-sst-2-english']
+node_1_models = config['node_1']
+node_2_models = config['node_2']
+
+def prune_name(name, len):
+    forbidden_strs = ['facebook', '/', 'deepset', '-']
+    for forbidden_str in forbidden_strs:
+        name = name.replace(forbidden_str, '')
+    name = name.lower()
+    name = name[:len]
+    return name
 
 for node_1_model in node_1_models:
     for node_2_model in node_2_models:
-        pipeline_name = node_1_model[:8].lower() + "-" +\
-            node_2_model[:8].lower()
+        pipeline_name = prune_name(node_1_model, 8) + "-" +\
+            prune_name(node_2_model, 8)
         start_time = time.time()
         while True:
             setup_pipeline(

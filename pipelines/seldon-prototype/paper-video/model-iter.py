@@ -6,7 +6,6 @@ of models and servers
 """
 
 import os
-from plistlib import load
 from typing import Any, Dict
 from PIL import Image
 from prom import get_cpu_usage, get_memory_usage
@@ -18,6 +17,8 @@ import subprocess
 from itertools import islice
 from torchvision import transforms
 import pprint
+
+
 PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-video/seldon-core-version"
 DATABASE = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline"
 CHECK_TIMEOUT = 2 
@@ -36,12 +37,9 @@ yolo_models = [
     'yolov5s6', 'yolov5m6', 'yolov5l6',
     'yolov5l6']
 
-resnet_models = ["resnet152"]
+resnet_models = ["resnet101"]
 yolo_models = [
-    'yolov5s', 'yolov5m',
-    'yolov5l', 'yolov5x', 'yolov5n6',
-    'yolov5s6', 'yolov5m6', 'yolov5l6',
-    'yolov5l6'
+    'yolov5s'
 ]
 
 save_path = os.path.join(DATABASE, "yolo-video-test")
