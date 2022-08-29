@@ -5,6 +5,8 @@ metadata:
   name: {{ pipeline_name }}
 spec:
   name: {{ pipeline_name }}
+  annotations:
+    seldon.io/engine-separate-pod: "true"
   predictors:
   - componentSpecs:
     - spec:
@@ -31,6 +33,6 @@ spec:
         type: MODEL
         children: []
     name: example
-    labels:
-      sidecar.istio.io/inject: "true"
+    # labels:
+    #   sidecar.istio.io/inject: "true"
     replicas: 1

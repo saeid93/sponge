@@ -31,8 +31,9 @@ class Yolo(object):
             # self.resnet.eval()
             self.loaded = True
             logger.info('model loading complete!')
-        except:
+        except OSError:
             pass
+
 
     def predict(self, X, features_names=None):
         if self.loaded == False:
