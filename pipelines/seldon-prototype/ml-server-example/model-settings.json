@@ -1,0 +1,7 @@
+{
+    "name": "blank-model",
+    "implementation": "models.MyCustomRuntime",
+    "parameters": {
+        "uri": "./fakeuri"
+    }
+}

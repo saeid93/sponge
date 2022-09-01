@@ -4,6 +4,8 @@ from re import TEMPLATE
 from typing import Any, Dict
 from seldon_core.seldon_client import SeldonClient
 from jinja2 import Environment, FileSystemLoader
+from prom import get_cpu_usage, get_memory_usage
+
 import time
 import subprocess
 from pprint import PrettyPrinter
@@ -12,13 +14,17 @@ pp = PrettyPrinter(indent=4)
 PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-sum-qa/seldon-core-version"
 PIPELINES_MODELS_PATH = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline-test-meta" # TODO fix be moved to utilspr
 DATABASE = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline"
-CHECK_TIMEOUT = 2 
+CHECK_TIMEOUT = 60
 RETRY_TIMEOUT = 90
 DELETE_WAIT = 45
 LOAD_TEST_WAIT = 60
 TRIAL_END_WAIT = 60
 TEMPLATE = "nlp"
 CONFIG_FILE = "paper-sum-qa"
+
+save_path = os.path.join(DATABASE, "sum-qa-data")
+if not os.path.exists(save_path):
+    os.makedirs(save_path)
 
 inputs = """
 Après des décennies en tant que pratiquant d'arts martiaux et coureur, Wes a "trouvé" le yoga en 2010.
@@ -36,15 +42,47 @@ Mieux encore, les cours de yoga sont tout simplement merveilleux :
 ils sont à quelques instants des exigences de la vie où vous pouvez simplement prendre soin de vous physiquement et émotionnellement.
     """
 
+def change_names(names):
+    return_names = []
+    for name in names:
+        return_names.append(name.replace("_", "-"))
+    return return_names
+
+
+def extract_node_timer(json_data : dict):
+    keys = list(json_data.keys())
+    nodes = []
+    sir_names = ["arrival_"]
+    for name in sir_names:
+        for key in keys:
+            if name in key:
+                nodes.append(key.replace(name, ""))
+
+    return_nodes = change_names(nodes)
+    return_timer = {}
+    for node in nodes:
+        return_timer[node] = json_data["serving_" + node] - json_data["arrival_" + node]
+    e2e_lats = json_data[keys[-1]] - json_data[keys[0]]
+
+    return return_nodes, return_timer, e2e_lats
+    
 def load_test(
     pipeline_name: str,
     inputs: Dict[str, Any],
-    n_items: int
+    node_1_model, 
+    node_2_model,
+    n_items: int,
+    n_iters = 40
     ):
+    start = time.time()
     gateway_endpoint="localhost:32000"
     deployment_name = pipeline_name 
     namespace = "default"
-
+    num_nodes = pipeline_name.split("-").__len__()
+    e2e_lats = []
+    node_latencies = [[] for _ in range(num_nodes)]
+    cpu_usages = [[] for _ in range(num_nodes) ]
+    memory_usages = [[] for _ in range(num_nodes) ]
     sc = SeldonClient(
         gateway_endpoint=gateway_endpoint,
         gateway="istio",
@@ -53,14 +91,43 @@ def load_test(
         namespace=namespace)
 
     time.sleep(CHECK_TIMEOUT)
-    response = sc.predict(
-        str_data=inputs
-    )
+    for iter in range(n_iters):
+        response = sc.predict(
+            str_data=inputs
+        )
 
-    if response.success:
-        pp.pprint(response.response['jsonData'])
-    else:
-        pp.pprint(response.msg)
+        if response.success:
+            json_data_timer = response.response['jsonData']['time']
+            return_nodes, return_timer, e2e_lat = extract_node_timer(json_data_timer)
+            for i , name in enumerate(return_nodes):
+                cpu_usages[i].append(get_cpu_usage(pipeline_name, "default", name))
+                memory_usages[i].append(get_memory_usage(pipeline_name, "default", name, 1))
+                e2e_lats.append(e2e_lat)
+            for i, time_ in enumerate(return_timer.keys()):
+                node_latencies[i].append(return_timer[time_])
+
+        else:
+            pp.pprint(response.msg)
+        print(iter)
+    time.sleep(CHECK_TIMEOUT)
+    total_time = int((time.time() - start)//60)
+    for i , name in enumerate(return_nodes):
+        cpu_usages[i].append(get_cpu_usage(pipeline_name, "default", name))
+        memory_usages[i].append(get_memory_usage(pipeline_name, "default", name, total_time, True))
+    models = node_1_model + "*" + node_2_model + "*"
+    with open(save_path+"/cpu.txt", "a") as cpu_file:
+        cpu_file.write(f"usage of {models} {pipeline_name} is {cpu_usages} \n")
+
+    with open(save_path+"/memory.txt", 'a') as memory_file:
+        memory_file.write(f"usage of {models} {pipeline_name} is {memory_usages} \n")
+
+
+    with open(save_path+"/node-latency.txt", "a") as infer:
+        infer.write(f"lats of {models} {pipeline_name} is {node_latencies} \n")
+    
+    with open(save_path+"/ee.txt", "a") as s:
+        s.write(f"eelat of {models} {pipeline_name} is {e2e_lats} \n")
+    
 
 def setup_pipeline(
     node_1_model: str,
@@ -128,7 +195,7 @@ for node_1_model in node_1_models:
                 time.sleep(DELETE_WAIT)
 
         print('starting the load test ...\n')
-        load_test(pipeline_name=pipeline_name, inputs=inputs, n_items=1)
+        load_test(pipeline_name=pipeline_name, inputs=inputs, node_1_model=node_1_model, node_2_model=node_2_model, n_items=1)
 
         time.sleep(DELETE_WAIT)
 

@@ -13,7 +13,7 @@ import matplotlib.lines as mlines
 
 import os
 project_dir = os.path.dirname(os.path.join(os.getcwd(), __file__))
-sys.path.append(os.path.normpath(os.path.join(project_dir, '..')))
+sys.path.append(os.path.normpath(os.path.join(project_dir, '../..')))
 
 from utilspr.constants import (
     TEMP_MODELS_PATH,
@@ -631,16 +631,12 @@ def plot_perf_analyzer(path):
 
 
 all_models = {
-    "resnet": 6,
-    "xception": 2,
-    "inception": 2,
-    "visformer": 1,
-    "regnetx":3,
-    "vgg": 3,
-    "beit":2,
-    "densenet": 1,
-    "vit": 1,
-    "legacy": 1
+     "yolov5s" :1,
+     "yolov5n6": 1,
+     "yolov5m6": 1,
+     "yolov5s6": 1,
+     "yolov5l6": 1,
+     "yolov5x6": 1
 }
 number = 12
 cmap = plt.get_cmap('gnuplot')
@@ -693,6 +689,7 @@ def batchy_plot():
     bar_width = 0.3
     all_colors = [cmap(i) for i in np.linspace(0, 1, 5)]
     x_labels = [f"batch {2 ** (i + 1)}" for i in range(5)]
+    print(len(infer_data))
     for x, data in enumerate(infer_data):
         plt.bar(x/3 + x_offset, data[1]/(10**6*20),label=data[3], width=bar_width * 0.9, color=all_colors[x])
         xs.append(x/3 + x_offset)
@@ -720,7 +717,7 @@ def four_plot_in_one():
         df.append(plot_all(f"{root}/{where}/{f}", types[i]))
     df.append(plot_perf_analyzer(f"{root}/{where}"))
 
-    figure, ax = plt.subplots(2, 2, figsize=(17, 15))
+    figure, ax = plt.subplots(1, 2, figsize=(17, 15))
     infer_data = df[0]
     infer_data.sort(key=lambda i: i[1])
     # infer_data = infer_data.sort(key=lambda i: i[1])
@@ -783,8 +780,8 @@ def four_plot_in_one():
 
 
 
-root = "profile-exp6-cores"
-where = "8-new-batch"
+root = "../profile-exp7-object"
+where = "1"
 f_names = ["infer-prom.txt", "cpu.txt", "memory.txt"]
 types = ["infer", "cpu", "memory"]
 yaml_file = "model-load"

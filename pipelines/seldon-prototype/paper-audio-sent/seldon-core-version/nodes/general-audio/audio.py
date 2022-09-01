@@ -1,6 +1,5 @@
 import logging
 from textwrap import indent
-import torch
 from copy import deepcopy
 import os
 import numpy as np
