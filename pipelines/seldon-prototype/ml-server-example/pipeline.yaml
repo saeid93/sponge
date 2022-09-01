@@ -1,0 +1,17 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: models
+spec:
+  protocol: v2
+  predictors:
+    - name: default
+      graph:
+        name: models
+        type: MODEL
+      componentSpecs:
+        - spec:
+            containers:
+              - name: models
+                image: sdghafouri/custom-mlserver:custom
+                imagePullPolicy: Always

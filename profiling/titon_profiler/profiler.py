@@ -12,6 +12,7 @@ import requests
 import tritonclient.http as httpclient
 from tritonclient.utils import InferenceServerException
 from torchvision import transforms
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from prom import (
     get_cpu_usage,
@@ -301,7 +302,7 @@ class Profiler:
 
         results = []
         processes = []
-        for bat in [2, 4, 8, 16, 32]:
+        for bat in [2]:
             print(f"start batch {bat}")
             inputs, outputs, m_name = self.input_output_creator(bat)
             for j,model_name in enumerate(model_names):
@@ -311,6 +312,7 @@ class Profiler:
                     else:
                         inputs, outputs, m_name = self.input_output_creator(bat, model_name)
                         self.send_request(m_name, version, inputs, outputs, bat)
+                   
 
 
 if __name__ == "__main__":
@@ -319,23 +321,23 @@ if __name__ == "__main__":
     profile_parser.add_argument('-t',
                        '--type',
                        help='type of profiling',
-                       default='image')
+                       default='text_classification')
 
     profile_parser.add_argument('-p',
                        '--port',
                        
                        help='port name',
-                       default='30907')
+                       default='30600')
     
     profile_parser.add_argument('-y',
                        '--yaml',
                        
                        help='yaml file for models',
-                       default='model-load')
+                       default='temp')
     profile_parser.add_argument('-r',
                        '--reason',
                        help='reason to proifile',
-                       default='no-reason')
+                       default='nlp')
     
     profile_parser.add_argument('-f',
                        '--file',
@@ -345,7 +347,7 @@ if __name__ == "__main__":
     profile_parser.add_argument('-n',
                        '--name',
                        help='name of pod',
-                       default='triton-image')
+                       default='triton-text')
 
     profile_parser.add_argument('-c',
                        '--cpu',
@@ -354,7 +356,7 @@ if __name__ == "__main__":
     profile_parser.add_argument('-m',
                        '--models',
                        help='model_repository',
-                       default='triton-server-all-new')
+                       default='triton-server-new-text')
     profile_parser.add_argument('-x',
                        '--exit',
                        help='exit')

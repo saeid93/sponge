@@ -2,23 +2,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: triton-image
-  name: triton-image
+    app: triton-text
+  name: triton-text
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: triton-image
+      app: triton-text
   template:
     metadata:
       labels:
-        app: triton-image
+        app: triton-text
     spec:
       containers:
       - args:
         - -c
         - cp /var/run/secrets/kubernetes.io/serviceaccount/ca.crt /usr/local/share/ca-certificates
-          && update-ca-certificates && /opt/tritonserver/bin/tritonserver --model-store=s3://http://minio.minio-system.svc.cluster.local:9000/triton-server-all-new/triton-server-all-new/
+          && update-ca-certificates && /opt/tritonserver/bin/tritonserver --model-store=s3://http://minio.minio-system.svc.cluster.local:9000/triton-server-new-text/triton-server-new-text/
           --strict-model-config=False --model-control-mode=explicit
         command:
         - /bin/bash
