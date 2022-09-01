@@ -1,0 +1,27 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: mock-pipeline
+spec:
+  name: mock-pipeline
+  annotations:
+    seldon.io/engine-separate-pod: "true"
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: sdghafouri/mock-pipeline:mock
+          name: mock-model
+          imagePullPolicy: Always
+          env:
+            - name: MY_ENV
+              value: test_env
+    graph:
+      name: mock-model
+      type: MODEL
+      children: []
+    name: example
+    labels:
+      sidecar.istio.io/inject: "true"
+    replicas: 1
