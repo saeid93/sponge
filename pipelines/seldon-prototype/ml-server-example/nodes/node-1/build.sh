@@ -1,7 +1,7 @@
 REPOS=(
     sdghafouri
     gcr.io/hale-ivy-335012)
-IMAGE_NAME=custom-mlserver:custom
+IMAGE_NAME=custom-mlserver:node-1
 mlserver build . -t $IMAGE_NAME
 for REPO in ${REPOS[@]}
 do

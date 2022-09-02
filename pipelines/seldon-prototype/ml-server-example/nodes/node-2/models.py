@@ -8,7 +8,7 @@ class MyCustomRuntime(MLModel):
   async def load(self) -> bool:
     # TODO: Replace for custom logic to load a model artifact
     # self.model_uri = await get_model_uri(self._settings)
-    self._model = lambda l: np.shape(l)
+    self._model = lambda l: 3*l
     self.ready = True
     return self.ready
 
