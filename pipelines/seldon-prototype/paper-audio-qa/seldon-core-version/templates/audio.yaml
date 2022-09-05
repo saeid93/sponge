@@ -14,6 +14,9 @@ spec:
         - image: gcr.io/hale-ivy-335012/audio-qa-pipelines:generalaudio
           name: audio-1
           imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 8
           env:
             - name: MODEL_VARIANT
               value: {{ node_1_variant }}
@@ -25,6 +28,9 @@ spec:
         containers:
         - image: gcr.io/hale-ivy-335012/audio-qa-pipelines:generalnlp
           name: audio-2
+          resources:
+            limits:
+              cpu: 8
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT

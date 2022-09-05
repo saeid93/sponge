@@ -28,7 +28,7 @@ LOAD_TEST_WAIT = 60
 TRIAL_END_WAIT = 60
 TEMPLATE = "audio"
 CONFIG_FILE = "paper-audio-sent"
-save_path = os.path.join(DATABASE, "audio-data")
+save_path = os.path.join(DATABASE, "audio-data-so")
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 

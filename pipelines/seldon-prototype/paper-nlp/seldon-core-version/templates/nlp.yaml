@@ -12,6 +12,11 @@ spec:
         containers:
         - image: sdghafouri/nlp-pipelines:generalnlp
           name: nlp-1
+          # resources:
+          #   limits:
+          #     cpu: {{cpu_limits}}
+          #   requests:
+          #     cpu: {{cpu_requests}}
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
@@ -25,6 +30,11 @@ spec:
         - image: sdghafouri/nlp-pipelines:generalnlp
           name: nlp-2
           imagePullPolicy: Always
+          # resources:
+          #   limits:
+          #     cpu: {{cpu_limits}}
+          #   requests:
+          #     cpu: {{cpu_requests}}
           env:
             - name: MODEL_VARIANT
               value:  {{ node_2_variant }}
@@ -36,6 +46,11 @@ spec:
         containers:
         - image: sdghafouri/nlp-pipelines:generalnlp
           name: nlp-3
+          # resources:
+          #   limits:
+          #     cpu: {{cpu_limits}}
+          #   requests:
+          #     cpu: {{cpu_requests}}
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
