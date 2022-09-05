@@ -1,7 +1,0 @@
-{
-    "name": "node-1",
-    "implementation": "models.MyCustomRuntime",
-    "parameters": {
-        "uri": "./fakeuri"
-    }
-}

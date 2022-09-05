@@ -22,7 +22,7 @@ TRIAL_END_WAIT = 60
 TEMPLATE = "nlp"
 CONFIG_FILE = "paper-sum-qa"
 
-save_path = os.path.join(DATABASE, "sum-qa-data")
+save_path = os.path.join(DATABASE, "sum-qa-data-new")
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 

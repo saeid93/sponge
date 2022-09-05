@@ -22,7 +22,7 @@ TRIAL_END_WAIT = 60
 TEMPLATE = "nlp"
 CONFIG_FILE = "paper-nlp"
 
-save_path = os.path.join(DATABASE, "nlp-data")
+save_path = os.path.join(DATABASE, "nlp-data-error")
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
@@ -93,7 +93,7 @@ def load_test(
         deployment_name=deployment_name,
         namespace=namespace)
 
-    time.sleep(CHECK_TIMEOUT)
+    # time.sleep(CHECK_TIMEOUT)
     for iter in range(n_iters):
         response = sc.predict(
             str_data=inputs
@@ -141,7 +141,8 @@ def setup_pipeline(
         "node_1_variant": node_1_model,
         "node_2_variant": node_2_model,
         "node_3_variant": node_3_model,        
-        "pipeline_name": pipeline_name}
+        "pipeline_name": pipeline_name
+        }
     environment = Environment(
         loader=FileSystemLoader(os.path.join(
             PATH, "templates/")))

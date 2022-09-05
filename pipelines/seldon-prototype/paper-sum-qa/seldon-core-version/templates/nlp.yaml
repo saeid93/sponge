@@ -12,6 +12,7 @@ spec:
         containers:
         - image: sdghafouri/sum-qa-pipelines:nlpsum
           name: nlp-1
+          
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
