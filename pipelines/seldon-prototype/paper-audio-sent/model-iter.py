@@ -28,7 +28,7 @@ LOAD_TEST_WAIT = 60
 TRIAL_END_WAIT = 60
 TEMPLATE = "audio"
 CONFIG_FILE = "paper-audio-sent"
-save_path = os.path.join(DATABASE, "audio-data-so")
+save_path = os.path.join(DATABASE, "audio-data-soso")
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
@@ -71,7 +71,7 @@ def load_test(
     node_1_model, 
     node_2_model,
     n_items: int,
-    n_iters = 40
+    n_iters = 15
     ):
     start = time.time()
     gateway_endpoint="localhost:32000"
@@ -135,7 +135,10 @@ def setup_pipeline(
     svc_vars = {
         "node_1_variant": node_1_model,
         "node_2_variant": node_2_model,        
-        "pipeline_name": pipeline_name}
+        "pipeline_name": pipeline_name,
+        "cpu_limits": 6,
+        "cpu_requests": 6
+        }
     environment = Environment(
         loader=FileSystemLoader(os.path.join(
             PATH, "templates/")))
