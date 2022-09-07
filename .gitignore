@@ -239,3 +239,4 @@ models
 data/*
 !data/yamls
 profile-exp*
+*.tar.gz

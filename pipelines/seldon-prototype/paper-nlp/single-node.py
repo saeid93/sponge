@@ -22,7 +22,7 @@ TRIAL_END_WAIT = 60
 TEMPLATE = "nlp"
 CONFIG_FILE = "paper-nlp"
 
-save_path = os.path.join(DATABASE, "nlp-data-error2")
+save_path = os.path.join(DATABASE, "nlp-data-single-node")
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
@@ -117,7 +117,7 @@ def load_test(
     for i , name in enumerate(return_nodes):
         cpu_usages[i].append(get_cpu_usage(pipeline_name, "default", name))
         memory_usages[i].append(get_memory_usage(pipeline_name, "default", name, total_time, True))
-    models = node_1_model + "*" + node_2_model + "*" + node_3_model
+    models = node_1_model 
     with open(save_path+"/cpu.txt", "a") as cpu_file:
         cpu_file.write(f"usage of {models} {pipeline_name} is {cpu_usages} \n")
 
@@ -132,18 +132,14 @@ def load_test(
         s.write(f"eelat of {models} {pipeline_name} is {e2e_lats} \n")
     
 def setup_pipeline(
-    node_1_model: str,
-    node_2_model: str,
-    node_3_model: str,   
+    node_1_model: str,  
     template: str,
     pipeline_name: str):
     svc_vars = {
-        "node_1_variant": node_1_model,
-        "node_2_variant": node_2_model,
-        "node_3_variant": node_3_model,        
+        "node_1_variant": node_1_model,        
         "pipeline_name": pipeline_name,
-        "cpu_limits": 6,
-        "cpu_requests": 6
+        "cpu_limits": 8,
+        "cpu_requests": 8
         }
     environment = Environment(
         loader=FileSystemLoader(os.path.join(
@@ -164,8 +160,6 @@ with open(config_file_path, 'r') as cf:
     config = yaml.safe_load(cf)
 
 node_1_models = config['node_1']
-node_2_models = config['node_2']
-node_3_models = config['node_3']
 
 def prune_name(name, len):
     forbidden_strs = ['facebook', '/', 'huggingface', '-',
@@ -178,39 +172,33 @@ def prune_name(name, len):
     return name
 
 for node_1_model in node_1_models:
-    for node_2_model in node_2_models:
-        for node_3_model in node_3_models:
-            pipeline_name = prune_name(node_1_model, 8) + "-" +\
-                prune_name(node_2_model, 8) + "-" +\
-                    prune_name(node_3_model, 8)
-            start_time = time.time()
-            while True:
-                setup_pipeline(
-                    node_1_model=node_1_model,
-                    node_2_model=node_2_model,
-                    node_3_model=node_3_model,                    
-                    template=TEMPLATE, pipeline_name=pipeline_name)
-                time.sleep(CHECK_TIMEOUT)
-                command = ("kubectl rollout status deploy/$(kubectl get deploy"
-                        f" -l seldon-deployment-id={pipeline_name} -o"
-                        " jsonpath='{.items[0].metadata.name}')")
-                time.sleep(CHECK_TIMEOUT)
-                p = subprocess.Popen(command, shell=True)
-                try:
-                    p.wait(RETRY_TIMEOUT)
-                    break
-                except subprocess.TimeoutExpired:
-                    p.kill()
-                    print("corrupted pipeline, should be deleted ...")
-                    remove_pipeline(pipeline_name=pipeline_name)
-                    print('waiting to delete ...')
-                    time.sleep(DELETE_WAIT)
-
-            print('starting the load test ...\n')
-            load_test(pipeline_name=pipeline_name, inputs=inputs, node_1_model=node_1_model, node_2_model=node_2_model, node_3_model=node_3_model, n_items=1)
-
+    pipeline_name = prune_name(node_1_model, 8)
+    start_time = time.time()
+    while True:
+        setup_pipeline(
+            node_1_model=node_1_model,                   
+            template=TEMPLATE, pipeline_name=pipeline_name)
+        time.sleep(CHECK_TIMEOUT)
+        command = ("kubectl rollout status deploy/$(kubectl get deploy"
+                f" -l seldon-deployment-id={pipeline_name} -o"
+                " jsonpath='{.items[0].metadata.name}')")
+        time.sleep(CHECK_TIMEOUT)
+        p = subprocess.Popen(command, shell=True)
+        try:
+            p.wait(RETRY_TIMEOUT)
+            break
+        except subprocess.TimeoutExpired:
+            p.kill()
+            print("corrupted pipeline, should be deleted ...")
+            remove_pipeline(pipeline_name=pipeline_name)
+            print('waiting to delete ...')
             time.sleep(DELETE_WAIT)
 
-            print("operation done, deleting the pipeline ...")
-            remove_pipeline(pipeline_name=pipeline_name)
-            print('pipeline successfuly deleted')
+    print('starting the load test ...\n')
+    load_test(pipeline_name=pipeline_name, inputs=inputs, node_1_model=node_1_model, node_2_model=None, node_3_model=None, n_items=1)
+
+    time.sleep(DELETE_WAIT)
+
+    print("operation done, deleting the pipeline ...")
+    remove_pipeline(pipeline_name=pipeline_name)
+    print('pipeline successfuly deleted')
