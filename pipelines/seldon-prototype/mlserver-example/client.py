@@ -14,9 +14,7 @@ input_ins = {
         }
     }
 
-# endpoint = "http://localhost:8080/v2/models/node-1/infer"
 endpoint = "http://localhost:32000/seldon/default/custom-mlserver/v2/models/infer"
-# response = requests.post(endpoint, json=payload)
 
 batch_test = 1
 payload = {
@@ -29,12 +27,13 @@ def send_requests():
     # print('\n')
     # print('-' * 50)
     # pp.pprint(response.json())
-
+send_requests()
 responses = []
 
 for i in range(batch_test):
     response = requests.post(endpoint, json=payload)
     responses.append(response)
+    pp.pprint(response.json())
 
 a = 1
 

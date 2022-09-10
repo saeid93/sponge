@@ -11,14 +11,14 @@ spec:
       componentSpecs:
         - spec:
             containers:
-            - name: node-1
-              image: sdghafouri/custom-mlserver:node-1
+            - name: node-2
+              image: sdghafouri/custom-mlserver:node-2
               imagePullPolicy: Always
               env:
                 - name: MLSERVER_MODEL_NAME
-                  value: node-1
+                  value: node-2
       graph:
-        name: node-1
+        name: node-2
         type: MODEL
         children: []
 
