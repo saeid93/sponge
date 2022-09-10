@@ -11,20 +11,24 @@ spec:
       componentSpecs:
         - spec:
             containers:
-              - name: node-1
-                image: sdghafouri/custom-mlserver:node-1
-                imagePullPolicy: Always
-                env:
-                  - name: MLSERVER_MODEL_NAME
-                    value: node-1
+            - name: node-1
+              image: sdghafouri/custom-mlserver:node-1
+              imagePullPolicy: Always
+              env:
+                - name: MLSERVER_MODEL_NAME
+                  value: node-1
+                - name: SELDON_LOG_LEVEL
+                  value: WARNING
         - spec:
             containers:
-              - name: node-2
-                image: sdghafouri/custom-mlserver:node-2
-                imagePullPolicy: Always
-                env:
-                  - name: MLSERVER_MODEL_NAME
-                    value: node-2
+            - name: node-2
+              image: sdghafouri/custom-mlserver:node-2
+              imagePullPolicy: Always
+              env:
+                - name: MLSERVER_MODEL_NAME
+                  value: node-2
+                - name: SELDON_LOG_LEVEL
+                  value: WARNING
       graph:
         name: node-1
         type: MODEL
