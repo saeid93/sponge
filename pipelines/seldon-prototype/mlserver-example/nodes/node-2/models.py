@@ -1,3 +1,4 @@
+from itertools import count
 from mlserver import MLModel
 import numpy as np
 from mlserver.codecs import NumpyCodec
@@ -16,20 +17,27 @@ class NodeTwo(MLModel):
   async def load(self) -> bool:
     # TODO: Replace for custom logic to load a model artifact
     # self.model_uri = await get_model_uri(self._settings)
-    self._model = lambda l: 2*l
+    self._model = lambda l: 3*l
     self.ready = True
+    self.counter = 0
     return self.ready
 
   async def predict(self, payload: InferenceRequest) -> InferenceResponse:
       outputs = []
+      self.counter += 1
+      print(payload.inputs)
+      # print(f'type: {type(payload.inputs)}')
+      # print(f'lenght: {len(payload.inputs)}')
+      print(f"counter: {self.counter}")
+      # print('\n')
       for request_input in payload.inputs:
-          print('-' * 50)
+        #   print('-' * 50)
+        #   print(np.shape(payload))
           decoded_input = self.decode(request_input)
-          as_dict = request_input.dict(exclude=_to_exclude)
-          print(json.dumps(as_dict, indent=2))
+        #   as_dict = request_input.dict(exclude=_to_exclude)
+        #   print(json.dumps(as_dict, indent=2))
           model_output = self._model(decoded_input)
-          print(type(request_input.data))
-          
+        #   print(type(request_input.data))
           outputs.append(
               ResponseOutput(
                   name=request_input.name,

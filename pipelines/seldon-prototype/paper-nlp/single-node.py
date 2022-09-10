@@ -19,7 +19,7 @@ RETRY_TIMEOUT = 90
 DELETE_WAIT = 45
 LOAD_TEST_WAIT = 60
 TRIAL_END_WAIT = 60
-TEMPLATE = "nlp"
+TEMPLATE = "nlp-single"
 CONFIG_FILE = "paper-nlp"
 
 save_path = os.path.join(DATABASE, "nlp-data-single-node")

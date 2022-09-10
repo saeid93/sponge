@@ -4,7 +4,8 @@
     "parallel_workers": 0,
     "parameters": {
         "extra": {
-            "task": "text-classification"
+            "task": "text-generation",
+            "pretrained_model": "distilgpt2"
         }
     }
 }
