@@ -1,0 +1,7 @@
+{
+    "name": "video-1",
+    "implementation": "models.ResnetHuman",
+    "parameters": {
+        "uri": "./fakeuri"
+    }
+}

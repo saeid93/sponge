@@ -1,0 +1,7 @@
+{
+    "name": "video-1",
+    "implementation": "models.Yolo",
+    "parameters": {
+        "uri": "./fakeuri"
+    }
+}
