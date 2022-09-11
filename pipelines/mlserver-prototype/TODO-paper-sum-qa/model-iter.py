@@ -1,24 +1,17 @@
-"""
-Iterate through all possible combination
-of models and servers
-"""
-
 import os
-from plistlib import load
 import yaml
 from re import TEMPLATE
 from typing import Any, Dict
 from seldon_core.seldon_client import SeldonClient
 from jinja2 import Environment, FileSystemLoader
-import time
 from prom import get_cpu_usage, get_memory_usage
+
+import time
 import subprocess
-from datasets import load_dataset
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
-
-PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-audio-sent/seldon-core-version"
+PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-sum-qa/seldon-core-version"
 PIPELINES_MODELS_PATH = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline-test-meta" # TODO fix be moved to utilspr
 DATABASE = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline"
 CHECK_TIMEOUT = 60
@@ -26,20 +19,28 @@ RETRY_TIMEOUT = 90
 DELETE_WAIT = 45
 LOAD_TEST_WAIT = 60
 TRIAL_END_WAIT = 60
-TEMPLATE = "audio-single"
-CONFIG_FILE = "paper-audio-sent"
-save_path = os.path.join(DATABASE, "audio-data-single-node2")
+TEMPLATE = "nlp"
+CONFIG_FILE = "paper-sum-qa"
+
+save_path = os.path.join(DATABASE, "sum-qa-data-new")
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
-
-ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
-
-inputs=ds[0]["audio"]["array"]
-
+inputs = """
+Après des décennies en tant que pratiquant d'arts martiaux et coureur, Wes a "trouvé" le yoga en 2010.
+Il en est venu à apprécier que son ampleur et sa profondeur fournissent un merveilleux lest pour stabiliser
+le corps et l'esprit dans le style de vie rapide et axé sur la technologie d'aujourd'hui ;
+le yoga est un antidote au stress et une voie vers une meilleure compréhension de soi et des autres.
+Il est instructeur de yoga certifié RYT 500 du programme YogaWorks et s'est formé avec des maîtres contemporains,
+dont Mme Maty Ezraty, co-fondatrice de YogaWorks et maître instructeur des traditions Iyengar et Ashtanga,
+ainsi qu'une spécialisation avec M. Bernie. Clark, un maître instructeur de la tradition Yin.
+Ses cours reflètent ces traditions, où il combine la base fondamentale d'un alignement précis avec des éléments
+d'équilibre et de concentration. Ceux-ci s'entremêlent pour aider à fournir une voie pour cultiver une conscience
+de vous-même, des autres et du monde qui vous entoure, ainsi que pour créer un refuge contre le style de vie rapide
+et axé sur la technologie d'aujourd'hui. Il enseigne à aider les autres à réaliser le même bénéfice de la pratique dont il a lui-même bénéficié.
+Mieux encore, les cours de yoga sont tout simplement merveilleux :
+ils sont à quelques instants des exigences de la vie où vous pouvez simplement prendre soin de vous physiquement et émotionnellement.
+    """
 
 def change_names(names):
     return_names = []
@@ -71,7 +72,7 @@ def load_test(
     node_1_model, 
     node_2_model,
     n_items: int,
-    n_iters = 15
+    n_iters = 40
     ):
     start = time.time()
     gateway_endpoint="localhost:32000"
@@ -92,7 +93,7 @@ def load_test(
     time.sleep(CHECK_TIMEOUT)
     for iter in range(n_iters):
         response = sc.predict(
-            data=inputs
+            str_data=inputs
         )
 
         if response.success:
@@ -113,7 +114,7 @@ def load_test(
     for i , name in enumerate(return_nodes):
         cpu_usages[i].append(get_cpu_usage(pipeline_name, "default", name))
         memory_usages[i].append(get_memory_usage(pipeline_name, "default", name, total_time, True))
-    models = node_1_model + "*" 
+    models = node_1_model + "*" + node_2_model + "*"
     with open(save_path+"/cpu.txt", "a") as cpu_file:
         cpu_file.write(f"usage of {models} {pipeline_name} is {cpu_usages} \n")
 
@@ -127,16 +128,16 @@ def load_test(
     with open(save_path+"/ee.txt", "a") as s:
         s.write(f"eelat of {models} {pipeline_name} is {e2e_lats} \n")
     
+
 def setup_pipeline(
     node_1_model: str,
+    node_2_model: str,
     template: str,
     pipeline_name: str):
     svc_vars = {
         "node_1_variant": node_1_model,
-        "pipeline_name": pipeline_name,
-        "cpu_limits": 8,
-        "cpu_requests": 8
-        }
+        "node_2_variant": node_2_model,
+        "pipeline_name": pipeline_name}
     environment = Environment(
         loader=FileSystemLoader(os.path.join(
             PATH, "templates/")))
@@ -149,16 +150,18 @@ def setup_pipeline(
 
 def remove_pipeline(pipeline_name):
     os.system(f"kubectl delete seldondeployment {pipeline_name} -n default")
-
 config_file_path = os.path.join(
     PIPELINES_MODELS_PATH, f"{CONFIG_FILE}.yaml")
 with open(config_file_path, 'r') as cf:
     config = yaml.safe_load(cf)
 
-node_1_models = config['node_2']
+node_1_models = config['node_1']
+node_2_models = config['node_2']
 
 def prune_name(name, len):
-    forbidden_strs = ['facebook', '/', 'huggingface', '-']
+    forbidden_strs = ['facebook', '/', 'huggingface', '-',
+                      'dinalzein', 'HelsinkiNLP', 'sshleifer',
+                      'google']
     for forbidden_str in forbidden_strs:
         name = name.replace(forbidden_str, '')
     name = name.lower()
@@ -166,33 +169,36 @@ def prune_name(name, len):
     return name
 
 for node_1_model in node_1_models:
-    pipeline_name = prune_name(node_1_model, 8) 
-    start_time = time.time()
-    while True:
-        setup_pipeline(
-            node_1_model=node_1_model,
-            template=TEMPLATE, pipeline_name=pipeline_name)
-        time.sleep(CHECK_TIMEOUT)
-        command = ("kubectl rollout status deploy/$(kubectl get deploy"
-                f" -l seldon-deployment-id={pipeline_name} -o"
-                " jsonpath='{.items[0].metadata.name}')")
-        time.sleep(CHECK_TIMEOUT)
-        p = subprocess.Popen(command, shell=True)
-        try:
-            p.wait(RETRY_TIMEOUT)
-            break
-        except subprocess.TimeoutExpired:
-            p.kill()
-            print("corrupted pipeline, should be deleted ...")
-            remove_pipeline(pipeline_name=pipeline_name)
-            print('waiting to delete ...')
-            time.sleep(DELETE_WAIT)
+    for node_2_model in node_2_models:
+        pipeline_name = prune_name(node_1_model, 8) + "-" +\
+            prune_name(node_2_model, 8)
+        start_time = time.time()
+        while True:
+            setup_pipeline(
+                node_1_model=node_1_model,
+                node_2_model=node_2_model,                 
+                template=TEMPLATE, pipeline_name=pipeline_name)
+            time.sleep(CHECK_TIMEOUT)
+            command = ("kubectl rollout status deploy/$(kubectl get deploy"
+                    f" -l seldon-deployment-id={pipeline_name} -o"
+                    " jsonpath='{.items[0].metadata.name}')")
+            time.sleep(CHECK_TIMEOUT)
+            p = subprocess.Popen(command, shell=True)
+            try:
+                p.wait(RETRY_TIMEOUT)
+                break
+            except subprocess.TimeoutExpired:
+                p.kill()
+                print("corrupted pipeline, should be deleted ...")
+                remove_pipeline(pipeline_name=pipeline_name)
+                print('waiting to delete ...')
+                time.sleep(DELETE_WAIT)
 
-    print('starting the load test ...\n')
-    load_test(pipeline_name=pipeline_name, inputs=inputs, node_1_model=node_1_model, node_2_model=None, n_items=1)
+        print('starting the load test ...\n')
+        load_test(pipeline_name=pipeline_name, inputs=inputs, node_1_model=node_1_model, node_2_model=node_2_model, n_items=1)
 
-    time.sleep(DELETE_WAIT)
+        time.sleep(DELETE_WAIT)
 
-    print("operation done, deleting the pipeline ...")
-    remove_pipeline(pipeline_name=pipeline_name)
-    print('pipeline successfuly deleted')
+        print("operation done, deleting the pipeline ...")
+        remove_pipeline(pipeline_name=pipeline_name)
+        print('pipeline successfuly deleted')
