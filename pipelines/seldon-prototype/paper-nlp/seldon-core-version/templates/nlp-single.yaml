@@ -11,12 +11,7 @@ spec:
     - spec:
         containers:
         - image: sdghafouri/nlp-pipelines:generalnlp
-          name: nlp-1
-          resources:
-            limits:
-              cpu: {{cpu_limits}}
-            requests:
-              cpu: {{cpu_requests}}
+          name: nlp-3
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
@@ -27,7 +22,7 @@ spec:
               value: text-classification
     
     graph:
-      name: nlp-1
+      name: nlp-3
       type: MODEL
     name: example
     # labels:

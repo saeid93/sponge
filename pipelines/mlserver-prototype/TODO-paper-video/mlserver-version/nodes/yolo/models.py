@@ -4,12 +4,13 @@ from torchvision import models
 from torchvision import transforms
 from PIL import Image
 import time
+import json
 from mlserver import MLModel
 import numpy as np
 from mlserver.codecs import NumpyCodec
 from mlserver.logging import logger
 from mlserver.utils import get_model_uri
-from mlserver.types import InferenceRequest, InferenceResponse, ResponseOutput
+from mlserver.types import InferenceRequest, InferenceResponse, ResponseOutput, Parameters
 from mlserver import MLModel
 from mlserver.codecs import DecodedParameterName
 from mlserver.cli.serve import load_settings
@@ -49,8 +50,7 @@ class Yolo(MLModel):
         except OSError:
             pass
 
-
-    async def predict(self, payload: InferenceRequest) -> InferenceRequest:
+    async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         outputs = []
         self.counter += 1
         logger.error(f"counter: {self.counter}")
@@ -84,8 +84,24 @@ class Yolo(MLModel):
             f'arrival_{PREDICTIVE_UNIT_ID}': arrival_time,
             f'serving_{PREDICTIVE_UNIT_ID}': serving_time
         }
-        logger.error(f"Output:\n{output}\nwas sent!")
-        return output
+        # logger.error(pd.DataFrame(output))
+        logger.error(f'request output is: {type(output)}')
+        logger.error(f'request output is: {output.keys()}')
+        response_bytes = json.dumps(output).encode("UTF-8")
+        return InferenceResponse(
+            id=payload.id,
+            model_name=self.name,
+            model_version=self.version,
+            outputs=[
+                ResponseOutput(
+                    name="echo_response",
+                    shape=[len(response_bytes)],
+                    datatype="BYTES",
+                    data=[response_bytes],
+                    parameters=Parameters(content_type="str")
+                )
+            ]
+        )
 
     def get_cropped(self, result):
         """

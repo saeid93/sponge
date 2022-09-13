@@ -240,3 +240,4 @@ data/*
 !data/yamls
 profile-exp*
 *.tar.gz
+cache
