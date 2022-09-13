@@ -14,15 +14,15 @@ pp = PrettyPrinter(indent=4)
 PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-nlp/seldon-core-version"
 PIPELINES_MODELS_PATH = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline-test-meta" # TODO fix be moved to utilspr
 DATABASE = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline"
-CHECK_TIMEOUT = 60
+CHECK_TIMEOUT = 30
 RETRY_TIMEOUT = 90
-DELETE_WAIT = 45
-LOAD_TEST_WAIT = 60
+DELETE_WAIT = 15
+LOAD_TEST_WAIT = 45
 TRIAL_END_WAIT = 60
 TEMPLATE = "nlp-single"
 CONFIG_FILE = "paper-nlp"
 
-save_path = os.path.join(DATABASE, "nlp-data-single-node-3")
+save_path = os.path.join(DATABASE, "nlp-data-single-node-3-new")
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
@@ -75,7 +75,7 @@ def load_test(
     node_2_model,
     node_3_model,
     n_items: int,
-    n_iters = 15
+    n_iters = 50
     ):
     start = time.time()
     gateway_endpoint="localhost:32000"
@@ -116,7 +116,7 @@ def load_test(
     total_time = int((time.time() - start)//60)
     for i , name in enumerate(return_nodes):
         cpu_usages[i].append(get_cpu_usage(pipeline_name, "default", name))
-        memory_usages[i].append(get_memory_usage(pipeline_name, "default", name, total_time, True))
+        memory_usages[i].append(get_memory_usage(pipeline_name, "default", name, total_time))
     models = node_1_model 
     with open(save_path+"/cpu.txt", "a") as cpu_file:
         cpu_file.write(f"usage of {models} {pipeline_name} is {cpu_usages} \n")
@@ -137,9 +137,8 @@ def setup_pipeline(
     pipeline_name: str):
     svc_vars = {
         "node_1_variant": node_1_model,        
-        "pipeline_name": pipeline_name,
-        "cpu_limits": 8,
-        "cpu_requests": 8
+        "pipeline_name": pipeline_name
+        
         }
     environment = Environment(
         loader=FileSystemLoader(os.path.join(
