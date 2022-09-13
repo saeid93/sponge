@@ -4,19 +4,36 @@ import numpy as np
 import requests
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
-import json
 
 # single node inferline
-gateway_endpoint="localhost:32000"
-deployment_name = 'nlp-sum'
-namespace = "default"
-
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+gateway_endpoint="localhost:8080"
+endpoint = f"http://{gateway_endpoint}/v2/models/nlp-qa/infer"
 
 
-# # single node inferline
-# gateway_endpoint="localhost:8080"
-# endpoint = f"http://{gateway_endpoint}/v2/models/nlp-sum/infer"
+# {   'id': '1a19f425-33bf-4906-b102-1a53482887a1',
+#     'model_name': 'nlp-sum',
+#     'model_version': None,
+#     'outputs': [   {   'data': [   '{"time": {"arrival_predictive_unit": '
+#                                    '1663087981.0067225, '
+#                                    '"serving_predictive_unit": '
+#                                    '1663087982.9360702}, "output": '
+#                                    '{"summary_text": " Yoga is an antidote for '
+#                                    'stress and a pathway for deeper '
+#                                    'understanding of yourself and others . It '
+#                                    'combines the elements of yoga with '
+#                                    'elements of balance and focus . The '
+#                                    'classes are just plain wonderful: they are '
+#                                    'just a few moments away from the demands '
+#                                    "of life's demands . He is an RYT 500 "
+#                                    'certified yoga teacher and author of '
+#                                    'YogaWorks ."}}'],
+#                        'datatype': 'BYTES',
+#                        'name': 'echo_response',
+#                        'parameters': {'content_type': 'str', 'headers': None},
+#                        'shape': [475]}],
+#     'parameters': {'content_type': None, 'headers': None}}
+
+# TODO add json data
 
 def send_requests(endpoint, data):
     payload = {
@@ -60,7 +77,4 @@ for data_ins in data:
     results.append(response)
 
 
-pp.pprint(json.loads(results[0].json()['outputs'][0]['data'][0]))
-
-print('output:\n')
-print(json.loads(results[0].json()['outputs'][0]['data'][0])['output']['summary_text'])
+pp.pprint(results[0].json())

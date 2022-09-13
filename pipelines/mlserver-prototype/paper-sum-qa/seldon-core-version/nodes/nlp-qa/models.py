@@ -8,7 +8,7 @@ from mlserver.codecs import NumpyCodec
 import json
 from mlserver.logging import logger
 from mlserver.utils import get_model_uri
-from mlserver.types import InferenceRequest, InferenceResponse, ResponseOutput
+from mlserver.types import InferenceRequest, InferenceResponse, ResponseOutput, Parameters
 from mlserver import MLModel
 from mlserver.codecs import DecodedParameterName
 from mlserver.cli.serve import load_settings
@@ -23,13 +23,9 @@ except KeyError as e:
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
 class GeneralNLP(MLModel):
-
     async def load(self):
-        logger.error('Loading the ML models')
-        self.model  = pipeline(task=self.TASK, model=self.MODEL_VARIANT)
-        self.loaded = True
-        logger.error('model loading complete!')
         self.loaded = False
+        self.counter = 0
         try:
             self.MODEL_VARIANT = os.environ['MODEL_VARIANT']
             logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
@@ -51,19 +47,24 @@ class GeneralNLP(MLModel):
             self.CONTEXT = 'default context'
             logger.error(
                 f"CONTEXT env variable not set, using default value: {self.CONTEXT}")
+        logger.error('Loading the ML models')
+        self.model  = pipeline(task=self.TASK, model=self.MODEL_VARIANT)
+        self.loaded = True
+        logger.error('model loading complete!')
+        return self.loaded
 
     async def predict(self, payload, features_names=None):
         if self.loaded == False:
             self.load()
-        logger.error(f'Incoming input type: {type(X)}')
-        logger.error(f"Incoming input:\n{X}\nwas recieved!")
         arrival_time = time.time()
         for request_input in payload.inputs:
             decoded_input = self.decode(request_input)
-            logger.error(f"type of decoded input: {type(decoded_input)}")
-            logger.error(f"size of the input: {np.shape(decoded_input)}")
-            X = decoded_input
-            # TODO batching considerations
+            # TODO possible
+            X = decoded_input[0]
+            logger.error(f"type of decoded input:\n{type(X)}")
+            logger.error(f"size of the input:\n{np.shape(X)}")
+            logger.error(f"input:\n{X}")
+            # TODO add batching
             former_steps_timing = X['time']
             X = X['output']['summary_text']
             qa_input = {
@@ -82,6 +83,7 @@ class GeneralNLP(MLModel):
             'output': output
         }
         logger.error(f"Output:\n{output}\nwas sent!")
+        response_bytes = json.dumps(output).encode("UTF-8")
         return InferenceResponse(
             id=payload.id,
             model_name=self.name,

@@ -13,9 +13,6 @@ from mlserver.cli.serve import load_settings
 from copy import deepcopy
 from transformers import pipeline
 
-import sys
-sys.path.insert(0, './cache/ultralytics_yolov5_master')
-
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
     logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
@@ -59,6 +56,7 @@ class GeneralNLP(MLModel):
             logger.error(f"type of decoded input:\n{type(X)}")
             logger.error(f"size of the input:\n{np.shape(X)}")
             logger.error(f"input:\n{X}")
+            # TODO add batching
             if type(X) is not str: # If not the first node TODO use another check
                 former_steps_timing = X['time']
                 if type(X) is dict and 'label' in X.keys():    
@@ -89,7 +87,7 @@ class GeneralNLP(MLModel):
                 'output': output[0],                
             }
         logger.error(f"Output:\n{output}\nwas sent!")
-        response_bytes = json.dumps(output).encode("UTF-8")        
+        response_bytes = json.dumps(output).encode("UTF-8")
         return InferenceResponse(
             id=payload.id,
             model_name=self.name,
@@ -100,7 +98,7 @@ class GeneralNLP(MLModel):
                     shape=[len(response_bytes)],
                     datatype="BYTES",
                     data=[response_bytes],
-                    parameters=Parameters(content_type="str")
+                    # parameters=Parameters(content_type="str")
                 )
             ]
         )
