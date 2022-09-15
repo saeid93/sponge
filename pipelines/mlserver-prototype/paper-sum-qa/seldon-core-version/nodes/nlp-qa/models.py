@@ -1,6 +1,5 @@
 import os
 import time
-
 from itertools import count
 from mlserver import MLModel
 import numpy as np
@@ -8,7 +7,12 @@ from mlserver.codecs import NumpyCodec
 import json
 from mlserver.logging import logger
 from mlserver.utils import get_model_uri
-from mlserver.types import InferenceRequest, InferenceResponse, ResponseOutput, Parameters
+from mlserver.types import (
+    InferenceRequest,
+    InferenceResponse,
+    ResponseOutput,
+    Parameters)
+from mlserver.codecs.string import StringRequestCodec
 from mlserver import MLModel
 from mlserver.codecs import DecodedParameterName
 from mlserver.cli.serve import load_settings
@@ -53,18 +57,20 @@ class GeneralNLP(MLModel):
         logger.error('model loading complete!')
         return self.loaded
 
-    async def predict(self, payload, features_names=None):
+    async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
         for request_input in payload.inputs:
             decoded_input = self.decode(request_input)
+            logger.error(request_input)
             # TODO possible
-            X = decoded_input[0]
+            X = decoded_input
             logger.error(f"type of decoded input:\n{type(X)}")
             logger.error(f"size of the input:\n{np.shape(X)}")
             logger.error(f"input:\n{X}")
             # TODO add batching
+            # TODO add for it
             former_steps_timing = X['time']
             X = X['output']['summary_text']
             qa_input = {

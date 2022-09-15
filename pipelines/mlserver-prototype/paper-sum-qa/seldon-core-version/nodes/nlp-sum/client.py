@@ -1,18 +1,16 @@
-import os
-from PIL import Image
-import numpy as np
 import requests
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 import json
+from mlserver.types import InferenceResponse
+from mlserver.codecs.string import StringRequestCodec
 
 # single node inferline
 gateway_endpoint="localhost:32000"
-deployment_name = 'nlp-sum'
+deployment_name = 'sum-qa'
 namespace = "default"
 
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
-
 
 # # single node inferline
 # gateway_endpoint="localhost:8080"
@@ -59,8 +57,9 @@ for data_ins in data:
     response = send_requests(endpoint, data_ins)
     results.append(response)
 
+pp.pprint(results[0])
+inference_response = InferenceResponse.parse_raw(response.text)
+raw_json = StringRequestCodec.decode_response(inference_response)
+output = json.loads(raw_json[0])
+pp.pprint(output)
 
-pp.pprint(json.loads(results[0].json()['outputs'][0]['data'][0]))
-
-print('output:\n')
-print(json.loads(results[0].json()['outputs'][0]['data'][0])['output']['summary_text'])

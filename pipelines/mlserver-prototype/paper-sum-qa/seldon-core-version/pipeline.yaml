@@ -6,24 +6,25 @@ spec:
   name: sum-qa
   annotations:
     seldon.io/engine-separate-pod: "true"
+  protocol: v2
   predictors:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/sum-qa-pipelines:nlpsum
-          name: nlp-1
+        - image: sdghafouri/sum-qa-pipelines-mlserver:nlpsum
+          name: nlp-sum
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
               value: sshleifer/distilbart-cnn-12-6
             - name: TRANSFORMERS_CACHE
-              value: /app/.cache
+              value: /opt/mlserver/.cache
             - name: TASK
               value: summarization
     - spec:
         containers:
-        - image: gcr.io/hale-ivy-335012/sum-qa-pipelines:nlpqa
-          name: nlp-2
+        - image: gcr.io/hale-ivy-335012/sum-qa-pipelines-mlserver:nlpqa
+          name: nlp-qa
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
@@ -35,10 +36,10 @@ spec:
             - name: CONTEXT
               value: default
     graph:
-      name: nlp-1
+      name: nlp-sum
       type: MODEL
       children:
-      - name: nlp-2
+      - name: nlp-qa
         type: MODEL
         children: []
     name: example

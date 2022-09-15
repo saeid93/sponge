@@ -6,7 +6,11 @@ import numpy as np
 from mlserver.codecs import NumpyCodec
 from mlserver.logging import logger
 from mlserver.utils import get_model_uri
-from mlserver.types import InferenceRequest, InferenceResponse, ResponseOutput, Parameters
+from mlserver.types import (
+    InferenceRequest,
+    InferenceResponse,
+    ResponseOutput,
+    Parameters)
 from mlserver import MLModel
 from mlserver.codecs import DecodedParameterName
 from mlserver.cli.serve import load_settings
