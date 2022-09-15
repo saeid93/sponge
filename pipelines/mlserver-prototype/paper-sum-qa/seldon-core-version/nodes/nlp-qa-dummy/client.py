@@ -14,8 +14,9 @@ input_ins = {
         }
     }
 
-endpoint = "http://localhost:32000/seldon/default/custom-mlserver-node-one/v2/models/infer"
-# endpoint = "http://localhost:8080/v2/models/node-1/infer"
+
+endpoint = "http://localhost:32000/seldon/default/nlp-qa-dummy/v2/models/infer"
+# endpoint = "http://localhost:8080/v2/models/nlp-qa/infer"
 # response = requests.post(endpoint, json=payload)
 
 batch_test = 20
@@ -32,18 +33,18 @@ def send_requests():
     responses.append(response)
     return response
 
-# for i in range(batch_test):
-#     send_requests()
-
-thread_pool = []
-
 for i in range(batch_test):
-    t = threading.Thread(target=send_requests)
-    t.start()
-    thread_pool.append(t)
+    send_requests()
 
-for t in thread_pool:
-    t.join()
+# thread_pool = []
+
+# for i in range(batch_test):
+#     t = threading.Thread(target=send_requests)
+#     t.start()
+#     thread_pool.append(t)
+
+# for t in thread_pool:
+#     t.join()
 
 
 pp.pprint(list(map(lambda l:l.json(), responses)))

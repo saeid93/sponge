@@ -1,7 +1,7 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: custom-mlserver-single
+  name: nlp-qa-dummy
 spec:
   protocol: v2
   annotations:
@@ -11,14 +11,11 @@ spec:
       componentSpecs:
         - spec:
             containers:
-            - name: node-2
+            - name: nlp-qa
               image: sdghafouri/sum-qa-pipelines-mlserver:nlpqa
               imagePullPolicy: Always
-              env:
-                - name: MLSERVER_MODEL_NAME
-                  value: sum-qa
       graph:
-        name: sum-qa
+        name: nlp-qa
         type: MODEL
         children: []
 
