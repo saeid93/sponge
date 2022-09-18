@@ -16,9 +16,6 @@ from mlserver.codecs import DecodedParameterName
 from mlserver.cli.serve import load_settings
 from copy import deepcopy
 from transformers import pipeline
-from mlserver.codecs import (
-    StringCodec,
-)
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
@@ -57,13 +54,12 @@ class GeneralNLP(MLModel):
             self.load()
         former_steps_timing = None
         arrival_time = time.time()
+        outputs = []
         for request_input in payload.inputs:
-            logger.error(request_input)
             decoded_input = self.decode(request_input)
-            logger.error(f"decoded input:\n{decoded_input}")
             X = decoded_input[0]
-            # logger.error(f"type of decoded input:\n{type(X)}")
-            # logger.error(f"size of the input:\n{np.shape(X)}")
+            logger.error(f"type of decoded input:\n{type(X)}")
+            logger.error(f"size of the input:\n{np.shape(X)}")
             logger.error(f"input:\n{X}")
             # TODO add batching
             if type(X) is not str: # If not the first node TODO use another check
@@ -75,38 +71,40 @@ class GeneralNLP(MLModel):
                     logger.info("Here!!")
                     X = X['output']
                     X = list(X.values())[0]
-        logger.error(f"sending\n{X}\nto the model")
-        output = self.model(X)
-        # logger.info(f"model output:\n{output}")
-        serving_time = time.time()
-        timing = {
-            f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
-            f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
-        }
-        if former_steps_timing is not None:
-            timing.update(former_steps_timing)
-        if self.TASK == "text-classification":
-            output = {
-                'time': timing,
-                'label': output[0]['label'],
-                'input': X}
-        else:
-            output = {
-                'time': timing,
-                'output': output[0],                
+            logger.error(f"sending\n{X}\nto the model")
+            output = self.model(X)
+            logger.info(f"model output:\n{output}")
+            serving_time = time.time()
+            timing = {
+                f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
+                f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
             }
-        logger.error(f"Output:\n{output}\nwas sent!")
-        response_bytes = json.dumps(output).encode("UTF-8")
-        return InferenceResponse(
-            id=payload.id,
-            model_name=self.name,
-            model_version=self.version,
-            outputs=[
-                ResponseOutput( # TODO use string codecs instead
+            if former_steps_timing is not None:
+                timing.update(former_steps_timing)
+            if self.TASK == "text-classification":
+                output = {
+                    'time': timing,
+                    'label': output[0]['label'],
+                    'input': X}
+            else:
+                output = {
+                    'time': timing,
+                    'output': output[0],                
+                }
+            logger.error(f"Output:\n{output}\nwas sent!")
+            response_bytes = json.dumps(output).encode("UTF-8")
+            outputs.append(
+                ResponseOutput(
                     name="echo_response",
                     shape=[len(response_bytes)],
                     datatype="BYTES",
                     data=[response_bytes],
+                    # parameters=Parameters(content_type="str")
+                    )
                 )
-            ]
+        return InferenceResponse(
+            id=payload.id,
+            model_name=self.name,
+            model_version=self.version,
+            outputs=outputs
         )

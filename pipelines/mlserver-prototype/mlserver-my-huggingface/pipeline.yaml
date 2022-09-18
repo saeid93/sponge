@@ -1,0 +1,29 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: nlp-sum-single
+spec:
+  protocol: v2
+  name: nlp-sum-single
+  annotations:
+    seldon.io/engine-separate-pod: "true"
+  predictors:
+  - name: default 
+    componentSpecs:
+    - spec:
+        containers:
+        - image: sdghafouri/sum-qa-pipelines-mlserver:nlpsum
+          name: nlp-qa 
+          imagePullPolicy: Always
+          env:
+            - name: MODEL_VARIANT
+              value: sshleifer/distilbart-cnn-12-6
+            - name: TRANSFORMERS_CACHE
+              value: /opt/mlserver/.cache
+            - name: TASK
+              value: summarization
+    graph:
+      name: nlp-qa
+      type: MODEL
+      children: []
+
