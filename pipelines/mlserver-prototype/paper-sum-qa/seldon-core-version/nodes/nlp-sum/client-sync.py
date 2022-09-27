@@ -63,4 +63,3 @@ inference_response = InferenceResponse.parse_raw(response.text)
 raw_json = StringRequestCodec.decode_response(inference_response)
 output = json.loads(raw_json[0])
 pp.pprint(output)
-

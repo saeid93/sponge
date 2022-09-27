@@ -10,6 +10,9 @@ from mlserver import MLModel
 from mlserver.codecs import DecodedParameterName
 from mlserver.cli.serve import load_settings
 import time
+from mlserver.codecs import (
+    StringCodec,
+)
 # import logging
 
 # logger = logging.getLogger("code.simple")
@@ -44,6 +47,13 @@ class NodeOne(MLModel):
           logger.error(f"decoded_input:\n{decoded_input}")
           logger.error(f"size of the input: {np.shape(decoded_input)}")
           model_output = self._model(decoded_input)
+          logger.error("*"*50)
+          logger.error("model_output item:\n")
+          logger.error(model_output[0])
+          logger.error("model_output:\n")
+          logger.error(model_output.tolist())
+          logger.error("model_output type:\n")
+          logger.error(type(model_output))
           outputs.append(
               ResponseOutput(
                   name=request_input.name,
