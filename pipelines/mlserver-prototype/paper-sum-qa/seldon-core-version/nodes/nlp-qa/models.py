@@ -17,6 +17,10 @@ from mlserver import MLModel
 from mlserver.codecs import DecodedParameterName
 from mlserver.cli.serve import load_settings
 from transformers import pipeline
+from mlserver.codecs import StringCodec
+from mlserver_huggingface.common import NumpyEncoder
+from typing import List, Dict
+
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
@@ -52,7 +56,12 @@ class GeneralNLP(MLModel):
             logger.error(
                 f"CONTEXT env variable not set, using default value: {self.CONTEXT}")
         logger.error('Loading the ML models')
-        self.model  = pipeline(task=self.TASK, model=self.MODEL_VARIANT)
+        logger.error(f'max_batch_size: {self._settings.max_batch_size}')
+        logger.error(f'max_batch_time: {self._settings.max_batch_time}')
+        self.model  = pipeline(
+            task=self.TASK,
+            model=self.MODEL_VARIANT,
+            batch_size=self._settings.max_batch_size)
         self.loaded = True
         logger.error('model loading complete!')
         return self.loaded
@@ -62,10 +71,11 @@ class GeneralNLP(MLModel):
             self.load()
         arrival_time = time.time()
         for request_input in payload.inputs:
+            logger.error('request input:\n')
+            logger.error(f"{request_input}\n")
             decoded_input = self.decode(request_input)
-            logger.error(request_input)
-            # TODO possible
-            X = decoded_input
+            X = decoded_input[0]
+            X = json.loads(X)
             logger.error(f"type of decoded input:\n{type(X)}")
             logger.error(f"size of the input:\n{np.shape(X)}")
             logger.error(f"input:\n{X}")
@@ -84,23 +94,20 @@ class GeneralNLP(MLModel):
             f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
         }
         timing.update(former_steps_timing)
-        output = {
-            'time': timing,
-            'output': output
-        }
+        output_with_time = list()
+        for pred in output:
+            output_with_time.append(
+                {
+                    'time': timing,
+                    'output': pred,                
+                }
+            )
+        str_out = [json.dumps(pred, cls=NumpyEncoder) for pred in output_with_time]
+        prediction_encoded = StringCodec.encode_output(payload=str_out, name="output")
         logger.error(f"Output:\n{output}\nwas sent!")
-        response_bytes = json.dumps(output).encode("UTF-8")
         return InferenceResponse(
             id=payload.id,
             model_name=self.name,
             model_version=self.version,
-            outputs=[
-                ResponseOutput(
-                    name="echo_response",
-                    shape=[len(response_bytes)],
-                    datatype="BYTES",
-                    data=[response_bytes],
-                    parameters=Parameters(content_type="str")
-                )
-            ]
+            outputs = [prediction_encoded]
         )

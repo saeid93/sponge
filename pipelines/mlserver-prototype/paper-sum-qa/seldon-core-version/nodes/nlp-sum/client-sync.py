@@ -6,13 +6,13 @@ from mlserver.types import InferenceResponse
 from mlserver.codecs.string import StringRequestCodec
 
 # single node inferline
-gateway_endpoint="localhost:32000"
-deployment_name = 'sum-qa'
-namespace = "default"
+# gateway_endpoint="localhost:32000"
+# deployment_name = 'nlp-sum'
+# namespace = "default"
 
 # endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
-# # single node inferline
+# single node inferline
 gateway_endpoint="localhost:8080"
 model='nlp-sum'
 endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
