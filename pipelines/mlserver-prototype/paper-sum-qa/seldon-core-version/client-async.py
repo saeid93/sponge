@@ -9,18 +9,14 @@ from pprint import PrettyPrinter
 
 pp = PrettyPrinter(indent=1)
 
-model = 'nlp-sum'
-
-# gateway_endpoint = "localhost:8080"
-# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+# model = 'nlp-sum'
 
 # single node inferline
 gateway_endpoint="localhost:32000"
-deployment_name = 'nlp-sum'
+deployment_name = 'sum-qa'
 namespace = "default"
 
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
-
 
 batch_test = 6
 

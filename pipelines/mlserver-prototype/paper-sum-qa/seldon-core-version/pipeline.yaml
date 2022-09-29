@@ -12,7 +12,7 @@ spec:
     - spec:
         containers:
         - image: sdghafouri/sum-qa-pipelines-mlserver:nlpsum
-          name: nlp-sum
+          name: nlp-sum 
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
@@ -21,6 +21,10 @@ spec:
               value: /opt/mlserver/.cache
             - name: TASK
               value: summarization
+            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+              value: "5"
+            - name: MLSERVER_MODEL_MAX_BATCH_TIME
+              value: "1"
     - spec:
         containers:
         - image: gcr.io/hale-ivy-335012/sum-qa-pipelines-mlserver:nlpqa
@@ -30,7 +34,7 @@ spec:
             - name: MODEL_VARIANT
               value: distilbert-base-uncased
             - name: TRANSFORMERS_CACHE
-              value: /app/.cache
+              value: /opt/mlserver/.cache
             - name: TASK
               value: question-answering
             - name: CONTEXT

@@ -1,18 +1,9 @@
-import json
 import requests
-import threading
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
+import json
 from mlserver.types import InferenceResponse
 from mlserver.codecs.string import StringRequestCodec
-from pprint import PrettyPrinter
-
-pp = PrettyPrinter(indent=1)
-
-model = 'nlp-sum'
-
-# gateway_endpoint = "localhost:8080"
-# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 # single node inferline
 gateway_endpoint="localhost:32000"
@@ -21,11 +12,29 @@ namespace = "default"
 
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
+# # single node inferline
+# gateway_endpoint="localhost:8080"
+# model='nlp-sum'
+# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
-batch_test = 6
+def send_requests(endpoint, data):
+    payload = {
+        "inputs": [
+            {
+            "name": "text_inputs",
+            "shape": [1],
+            "datatype": "BYTES",
+            "data": data,
+            "parameters": {
+                "content_type": "str"
+            }
+            }
+        ]
+    }
+    response = requests.post(endpoint, json=payload)
+    return response
 
-responses = []
-
+# TODO change
 data=["""
 After decades as a martial arts practitioner and runner, Wes "found" yoga in 2010.
 He has come to appreciate that its breadth and depth provide a wonderful ballast to
@@ -44,38 +53,14 @@ where you can simply take care of yourself physically and emotionally.
     """]
 
 
-def send_requests():
-    payload = {
-        "inputs": [
-            {
-                "name": "text_inputs",
-                "shape": [1],
-                "datatype": "BYTES",
-                "data": data,
-            }
-        ]
-    }
-    response = requests.post(endpoint, json=payload)
-    responses.append(response)
-    return response
+# sync version
+results = []
+for data_ins in data:
+    response = send_requests(endpoint, data_ins)
+    results.append(response)
 
-thread_pool = []
-
-for i in range(batch_test):
-    t = threading.Thread(target=send_requests)
-    t.start()
-    thread_pool.append(t)
-
-for t in thread_pool:
-    t.join()
-
-
-inference_responses = list(map(
-    lambda response: InferenceResponse.parse_raw(response.text), responses))
-raw_jsons = list(map(
-    lambda inference_response: StringRequestCodec.decode_response(
-        inference_response), inference_responses))
-outputs = list(map(
-    lambda raw_json: json.loads(raw_json[0]), raw_jsons))
-
-pp.pprint(outputs)
+pp.pprint(results[0])
+inference_response = InferenceResponse.parse_raw(response.text)
+raw_json = StringRequestCodec.decode_response(inference_response)
+output = json.loads(raw_json[0])
+pp.pprint(output)

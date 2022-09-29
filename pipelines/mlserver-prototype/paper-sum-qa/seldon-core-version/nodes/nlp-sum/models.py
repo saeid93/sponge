@@ -16,9 +16,10 @@ from mlserver.codecs import DecodedParameterName
 from mlserver.cli.serve import load_settings
 from copy import deepcopy
 from transformers import pipeline
-from mlserver.codecs import (
-    StringCodec,
-)
+from mlserver.codecs import StringCodec
+from mlserver_huggingface.common import NumpyEncoder
+from typing import List, Dict
+
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
@@ -47,7 +48,13 @@ class GeneralNLP(MLModel):
             logger.error(
                 f"MODEL_VARIANT env variable not set, using default value: {self.TASK}")
         logger.error('Loading the ML models')
-        self.model  = pipeline(task=self.TASK, model=self.MODEL_VARIANT)
+        # TODO add batching like the runtime
+        logger.error(f'max_batch_size: {self._settings.max_batch_size}')
+        logger.error(f'max_batch_time: {self._settings.max_batch_time}')
+        self.model  = pipeline(
+            task=self.TASK,
+            model=self.MODEL_VARIANT,
+            batch_size=self._settings.max_batch_size)
         self.loaded = True
         logger.error('model loading complete!')
         return self.loaded
@@ -55,58 +62,38 @@ class GeneralNLP(MLModel):
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         if self.loaded == False:
             self.load()
-        former_steps_timing = None
+        logger.error(f"payload:\n{payload}")
         arrival_time = time.time()
         for request_input in payload.inputs:
-            logger.error(request_input)
+            logger.error('request input:\n')
+            logger.error(f"{request_input}\n")
             decoded_input = self.decode(request_input)
-            logger.error(f"decoded input:\n{decoded_input}")
-            X = decoded_input[0]
-            # logger.error(f"type of decoded input:\n{type(X)}")
-            # logger.error(f"size of the input:\n{np.shape(X)}")
-            logger.error(f"input:\n{X}")
-            # TODO add batching
-            if type(X) is not str: # If not the first node TODO use another check
-                former_steps_timing = X['time']
-                if type(X) is dict and 'label' in X.keys():    
-                    label = X['label'] # To be later used for node logic
-                    X = X['input']
-                else:
-                    logger.info("Here!!")
-                    X = X['output']
-                    X = list(X.values())[0]
-        logger.error(f"sending\n{X}\nto the model")
-        output = self.model(X)
-        # logger.info(f"model output:\n{output}")
+            X = decoded_input
+        X = list(X)
+        logger.error(f"to the model:\n{X}")
+        logger.error(f"type of the to the model:\n{type(X)}")
+        logger.error(f"len of the to the model:\n{len(X)}")
+        output: List[Dict] = self.model(X)
+        logger.error(f"model output:\n{output}")
         serving_time = time.time()
         timing = {
             f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
             f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
         }
-        if former_steps_timing is not None:
-            timing.update(former_steps_timing)
-        if self.TASK == "text-classification":
-            output = {
-                'time': timing,
-                'label': output[0]['label'],
-                'input': X}
-        else:
-            output = {
-                'time': timing,
-                'output': output[0],                
-            }
+        output_with_time = list()
+        for pred in output:
+            output_with_time.append(
+                {
+                    'time': timing,
+                    'output': pred,                
+                }
+            )
+        str_out = [json.dumps(pred, cls=NumpyEncoder) for pred in output_with_time]
+        prediction_encoded = StringCodec.encode_output(payload=str_out, name="output")
         logger.error(f"Output:\n{output}\nwas sent!")
-        response_bytes = json.dumps(output).encode("UTF-8")
         return InferenceResponse(
             id=payload.id,
             model_name=self.name,
             model_version=self.version,
-            outputs=[
-                ResponseOutput( # TODO use string codecs instead
-                    name="echo_response",
-                    shape=[len(response_bytes)],
-                    datatype="BYTES",
-                    data=[response_bytes],
-                )
-            ]
+            outputs = [prediction_encoded]
         )
