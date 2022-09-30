@@ -1,6 +1,6 @@
 import os
 import time
-from copy import deepcopy
+from itertools import count
 from mlserver import MLModel
 import numpy as np
 from mlserver.codecs import NumpyCodec
@@ -85,32 +85,29 @@ class GeneralNLP(MLModel):
                     'question': json_inputs['output']['summary_text'],
                     'context': self.CONTEXT                    
                 })
-        # logger.error(f"to the model:\n{X}")
-        # logger.error(f"type of the to the model:\n{type(X)}")
-        # logger.error(f"len of the to the model:\n{len(X)}")
+        logger.error(f"to the model:\n{X}")
+        logger.error(f"type of the to the model:\n{type(X)}")
+        logger.error(f"len of the to the model:\n{len(X)}")
         output = self.model(X)
         serving_time = time.time()
         timing = {
             f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
             f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
         }
+        # timing.update("former_steps_timing\n")
+        logger.error("former_steps_timings:\n")
+        logger.error(former_steps_timings)
         output_with_time = list()
         for pred, former_steps_timing in zip(output, former_steps_timings):
-            timing_2_send = deepcopy(timing)
-            timing_2_send.update(former_steps_timing)
-            print(timing_2_send)
             output_with_time.append(
                 {
-                    # 'time': timing.update(former_steps_timing),
-                    'time': timing_2_send,
+                    'time': timing.update(former_steps_timing),
                     'output': pred,
                 }
             )
-        logger.error(f"output_with_time:\n")
-        logger.error(output_with_time)
         str_out = [json.dumps(pred, cls=NumpyEncoder) for pred in output_with_time]
         prediction_encoded = StringCodec.encode_output(payload=str_out, name="output")
-        logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
+        logger.error(f"Output:\n{output}\nwas sent!")
         return InferenceResponse(
             id=payload.id,
             model_name=self.name,
