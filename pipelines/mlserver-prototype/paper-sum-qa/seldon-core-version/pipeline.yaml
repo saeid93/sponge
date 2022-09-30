@@ -39,6 +39,10 @@ spec:
               value: question-answering
             - name: CONTEXT
               value: default
+            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+              value: "5"
+            - name: MLSERVER_MODEL_MAX_BATCH_TIME
+              value: "1"
     graph:
       name: nlp-sum
       type: MODEL

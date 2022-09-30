@@ -1,10 +1,9 @@
 import os
 import time
-from copy import deepcopy
+import json
 from mlserver import MLModel
 import numpy as np
 from mlserver.codecs import NumpyCodec
-import json
 from mlserver.logging import logger
 from mlserver.utils import get_model_uri
 from mlserver.types import (
@@ -12,10 +11,10 @@ from mlserver.types import (
     InferenceResponse,
     ResponseOutput,
     Parameters)
-from mlserver.codecs.string import StringRequestCodec
 from mlserver import MLModel
 from mlserver.codecs import DecodedParameterName
 from mlserver.cli.serve import load_settings
+from copy import deepcopy
 from transformers import pipeline
 from mlserver.codecs import StringCodec
 from mlserver_huggingface.common import NumpyEncoder
@@ -30,7 +29,7 @@ except KeyError as e:
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
-class GeneralNLP(MLModel):
+class GeneralAudio(MLModel):
     async def load(self):
         self.loaded = False
         self.counter = 0
@@ -38,24 +37,18 @@ class GeneralNLP(MLModel):
             self.MODEL_VARIANT = os.environ['MODEL_VARIANT']
             logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
-            self.MODEL_VARIANT = "distilbert-base-uncased"
+            self.MODEL_VARIANT = 'facebook/s2t-small-librispeech-asr'
             logger.error(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         try:
             self.TASK = os.environ['TASK']
             logger.error(f'TASK set to: {self.TASK}')
         except KeyError as e:
-            self.TASK = 'question-answering'
+            self.TASK = 'automatic-speech-recognition' 
             logger.error(
-                f"MODEL_VARIANT env variable not set, using default value: {self.TASK}")
-        try:
-            self.CONTEXT = os.environ['CONTEXT']
-            logger.error(f'CONTEXT set to: {self.CONTEXT}')
-        except KeyError as e:
-            self.CONTEXT = 'default context'
-            logger.error(
-                f"CONTEXT env variable not set, using default value: {self.CONTEXT}")
-        logger.error('Loading the ML models')
+                f"TASK env variable not set, using default value: {self.TASK}")
+        logger.info('Loading the ML models')
+        # TODO add batching like the runtime
         logger.error(f'max_batch_size: {self._settings.max_batch_size}')
         logger.error(f'max_batch_time: {self._settings.max_batch_time}')
         self.model  = pipeline(
@@ -63,54 +56,41 @@ class GeneralNLP(MLModel):
             model=self.MODEL_VARIANT,
             batch_size=self._settings.max_batch_size)
         self.loaded = True
-        logger.error('model loading complete!')
+        logger.info('model loading complete!')
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         if self.loaded == False:
             self.load()
+        # logger.error(f"payload:\n{payload}")
         arrival_time = time.time()
         for request_input in payload.inputs:
-            logger.error('request input:\n')
-            logger.error(f"{request_input}\n")
-            decoded_inputs = self.decode(request_input)
-            logger.error('decoded_input:\n')
-            logger.error(f"{list(decoded_inputs)}\n")
-            X = []
-            former_steps_timings = []
-            for decoded_input in decoded_inputs:
-                json_inputs = json.loads(decoded_input)
-                former_steps_timings.append(json_inputs['time'])
-                X.append({
-                    'question': json_inputs['output']['summary_text'],
-                    'context': self.CONTEXT                    
-                })
-        # logger.error(f"to the model:\n{X}")
-        # logger.error(f"type of the to the model:\n{type(X)}")
-        # logger.error(f"len of the to the model:\n{len(X)}")
-        output = self.model(X)
+            logger.error('request input shape:\n')
+            logger.error(f"{request_input.shape}\n")
+            decoded_input = self.decode(request_input)
+            logger.error(decoded_input)
+            X = decoded_input
+        logger.error(f"to the model:\n{type(X)}")
+        logger.error(f"type of the to the model:\n{type(X)}")
+        logger.error(f"len of the to the model:\n{len(X)}")
+        output: List[Dict] = self.model(X)
+        logger.error(f"model output:\n{output}")
         serving_time = time.time()
         timing = {
             f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
             f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
         }
         output_with_time = list()
-        for pred, former_steps_timing in zip(output, former_steps_timings):
-            timing_2_send = deepcopy(timing)
-            timing_2_send.update(former_steps_timing)
-            print(timing_2_send)
+        for pred in output:
             output_with_time.append(
                 {
-                    # 'time': timing.update(former_steps_timing),
-                    'time': timing_2_send,
-                    'output': pred,
+                    'time': timing,
+                    'output': pred,                
                 }
             )
-        logger.error(f"output_with_time:\n")
-        logger.error(output_with_time)
         str_out = [json.dumps(pred, cls=NumpyEncoder) for pred in output_with_time]
         prediction_encoded = StringCodec.encode_output(payload=str_out, name="output")
-        logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
+        logger.error(f"Output:\n{output}\nwas sent!")
         return InferenceResponse(
             id=payload.id,
             model_name=self.name,

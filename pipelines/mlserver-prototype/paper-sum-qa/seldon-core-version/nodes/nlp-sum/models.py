@@ -68,6 +68,7 @@ class GeneralNLP(MLModel):
             logger.error('request input:\n')
             logger.error(f"{request_input}\n")
             decoded_input = self.decode(request_input)
+            logger.error(decoded_input)
             X = decoded_input
         X = list(X)
         logger.error(f"to the model:\n{X}")

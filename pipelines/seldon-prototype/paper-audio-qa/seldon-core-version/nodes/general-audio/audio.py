@@ -25,9 +25,9 @@ class GeneralAudio(object):
             self.TASK = os.environ['TASK']
             logging.info(f'TASK set to: {self.TASK}')
         except KeyError as e:
-            self.MODEL_VARIANT = 'automatic-speech-recognition' 
+            self.TASK = 'automatic-speech-recognition' 
             logging.warning(
-                f"MODEL_VARIANT env variable not set, using default value: {self.TASK}")
+                f"TASK env variable not set, using default value: {self.TASK}")
 
     def load(self):
         logger.info('Loading the ML models')
