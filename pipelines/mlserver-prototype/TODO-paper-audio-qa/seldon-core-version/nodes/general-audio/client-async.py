@@ -35,7 +35,7 @@ def send_requests():
         "inputs": [
             {
             "name": "array_inputs",
-            "shape": [len(input_data)],
+            "shape": [1, len(input_data)],
             "datatype": "FP32",
             "data": input_data.tolist(),
             "parameters": {
