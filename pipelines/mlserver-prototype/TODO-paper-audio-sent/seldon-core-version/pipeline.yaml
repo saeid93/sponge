@@ -20,7 +20,7 @@ spec:
             - name: TRANSFORMERS_CACHE
               value: /app/.cache
             - name: TASK
-              value: automatic-speech-recognition 
+              value: automatic-speech-recognition
     - spec:
         containers:
         - image: gcr.io/hale-ivy-335012/audio-sent-pipelines:generalnlp

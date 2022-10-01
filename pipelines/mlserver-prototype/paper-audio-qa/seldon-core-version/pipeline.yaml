@@ -1,4 +1,3 @@
-
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
@@ -7,12 +6,13 @@ spec:
   name: audio-qa
   annotations:
     seldon.io/engine-separate-pod: "true"
+  protocol: v2
   predictors:
   - componentSpecs:
     - spec:
         containers:
-        - image: gcr.io/hale-ivy-335012/audio-qa-pipelines:generalaudio
-          name: audio-1
+        - image: sdghafouri/audio-qa-pipelines-mlserver:audio
+          name: audio
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
@@ -20,26 +20,34 @@ spec:
             - name: TRANSFORMERS_CACHE
               value: /app/.cache
             - name: TASK
-              value: automatic-speech-recognition 
+              value: automatic-speech-recognition
+            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+              value: "5"
+            - name: MLSERVER_MODEL_MAX_BATCH_TIME
+              value: "1"
     - spec:
         containers:
-        - image: gcr.io/hale-ivy-335012/audio-qa-pipelines:generalnlp
-          name: audio-2
+        - image: gcr.io/hale-ivy-335012/audio-qa-pipelines-mlserver:nlpqa
+          name: nlp-qa
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
               value: distilbert-base-uncased
             - name: TRANSFORMERS_CACHE
-              value: /app/.cache
+              value: /opt/mlserver/.cache
             - name: TASK
               value: question-answering
             - name: CONTEXT
               value: default
+            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+              value: "5"
+            - name: MLSERVER_MODEL_MAX_BATCH_TIME
+              value: "1"
     graph:
-      name: audio-1
+      name: audio
       type: MODEL
       children:
-      - name: audio-2
+      - name: nlp-qa
         type: MODEL
         children: []
     name: example

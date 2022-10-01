@@ -34,7 +34,7 @@ def send_requests(endpoint):
         "inputs": [
             {
             "name": "array_inputs",
-            "shape": [len(input_data), 1],
+            "shape": [1, len(input_data)],
             "datatype": "FP32",
             "data": input_data.tolist(),
             "parameters": {
