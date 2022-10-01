@@ -1,7 +1,7 @@
 REPOS=(
     sdghafouri
     gcr.io/hale-ivy-335012)
-IMAGE_NAME=audio-qa-pipelines-mlserver:generalaudio
+IMAGE_NAME=audio-qa-pipelines-mlserver:audio
 PYTHON_ENV=central
 mlserver build . -t $IMAGE_NAME
 for REPO in ${REPOS[@]}
