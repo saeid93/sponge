@@ -5,7 +5,7 @@ import numpy as np
 from copy import deepcopy
 pp = PrettyPrinter(indent=4)
 
-batch_test = 20
+batch_test = 23
 
 input_ins = {
     "name": "parameters-np",
@@ -36,7 +36,7 @@ for i in range(batch_test):
 endpoint = "http://localhost:8080/v2/models/node-1/infer"
 # response = requests.post(endpoint, json=payload)
 
-batch_test = 20
+batch_test = 6
 
 
 responses = []

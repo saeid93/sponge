@@ -51,7 +51,8 @@ class GeneralAudio(MLModel):
         # TODO add batching like the runtime
         logger.error(f'max_batch_size: {self._settings.max_batch_size}')
         logger.error(f'max_batch_time: {self._settings.max_batch_time}')
-        self.model  = pipeline(
+        # self.model  = lambda l: l
+        self.model = pipeline(
             task=self.TASK,
             model=self.MODEL_VARIANT,
             batch_size=self._settings.max_batch_size)
@@ -70,6 +71,7 @@ class GeneralAudio(MLModel):
             decoded_input = self.decode(request_input)
             logger.error(decoded_input)
             X = decoded_input
+        X = list(map(lambda l: np.array(l), X))
         logger.error(f"to the model:\n{type(X)}")
         logger.error(f"type of the to the model:\n{type(X)}")
         logger.error(f"len of the to the model:\n{len(X)}")
