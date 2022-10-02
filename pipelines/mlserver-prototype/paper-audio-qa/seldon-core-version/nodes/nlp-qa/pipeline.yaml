@@ -12,7 +12,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/nlp-qa-pipelines-mlserver:nlpqa
+        - image: sdghafouri/audio-qa-pipelines-mlserver:nlpqa
           name: nlp-qa 
           imagePullPolicy: Always
           env:

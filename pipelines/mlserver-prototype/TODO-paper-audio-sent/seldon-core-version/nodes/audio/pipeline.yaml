@@ -12,7 +12,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/audio-qa-pipelines-mlserver:audio
+        - image: sdghafouri/audio-sent-pipelines-mlserver:audio
           name: audio
           imagePullPolicy: Always
           env:

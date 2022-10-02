@@ -51,4 +51,3 @@ ipython  # interactive notebook
 transformers==4.21.1
 sentencepiece==0.1.97
 mlserver-huggingface==1.2.0.dev6
-torchaudio==0.12.1
