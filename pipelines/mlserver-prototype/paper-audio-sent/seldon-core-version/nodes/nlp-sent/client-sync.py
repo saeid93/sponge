@@ -5,17 +5,19 @@ import json
 from mlserver.types import InferenceResponse
 from mlserver.codecs.string import StringRequestCodec
 
-# single node inferline
-# gateway_endpoint="localhost:32000"
-# deployment_name = 'nlp-sent'
-# namespace = "default"
-
-# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 # single node inferline
 gateway_endpoint="localhost:8080"
 model='nlp-sent'
 endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+
+
+# single node inferline
+# gateway_endpoint="localhost:32000"
+# deployment_name = 'nlp-sent'
+# namespace = "default"
+# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+
 
 def send_requests(endpoint, data):
     payload = {

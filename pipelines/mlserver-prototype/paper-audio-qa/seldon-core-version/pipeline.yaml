@@ -18,7 +18,7 @@ spec:
             - name: MODEL_VARIANT
               value: facebook/s2t-small-librispeech-asr
             - name: TRANSFORMERS_CACHE
-              value: /app/.cache
+              value: /opt/mlserver/.cache
             - name: TASK
               value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -27,8 +27,8 @@ spec:
               value: "1"
     - spec:
         containers:
-        - image: gcr.io/hale-ivy-335012/audio-qa-pipelines-mlserver:nlpqa
-          name: nlp-qa
+        - image: sdghafouri/audio-qa-pipelines-mlserver:nlpqa
+          name: nlp-qa 
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
