@@ -11,12 +11,11 @@ import json
 
 # single node inferline
 gateway_endpoint = "localhost:32000"
-deployment_name = 'audio-qa'
+deployment_name = 'audio-sent'
 namespace = "default"
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
-batch_test = 6
-responses = []
+batch_test = 7
 
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
@@ -25,7 +24,7 @@ ds = load_dataset(
 
 input_data = ds[0]["audio"]["array"]
 
-def send_requests():
+def send_requests(endpoint):
     payload = {
         "inputs": [
             {
@@ -40,25 +39,16 @@ def send_requests():
         ]
     }
     response = requests.post(endpoint, json=payload)
-    responses.append(response)
     return response
 
-thread_pool = []
-
+# sync version
+results = []
 for i in range(batch_test):
-    t = threading.Thread(target=send_requests)
-    t.start()
-    thread_pool.append(t)
+    response = send_requests(endpoint)
+    results.append(response)
 
-for t in thread_pool:
-    t.join()
-
-inference_responses = list(map(
-    lambda response: InferenceResponse.parse_raw(response.text), responses))
-raw_jsons = list(map(
-    lambda inference_response: StringRequestCodec.decode_response(
-        inference_response), inference_responses))
-outputs = list(map(
-    lambda raw_json: json.loads(raw_json[0]), raw_jsons))
-
-pp.pprint(outputs)
+pp.pprint(results[0])
+inference_response = InferenceResponse.parse_raw(response.text)
+raw_json = StringRequestCodec.decode_response(inference_response)
+output = json.loads(raw_json[0])
+pp.pprint(output)

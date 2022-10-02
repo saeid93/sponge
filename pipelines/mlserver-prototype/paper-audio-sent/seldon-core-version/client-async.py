@@ -11,7 +11,7 @@ import json
 
 # single node inferline
 gateway_endpoint = "localhost:32000"
-deployment_name = 'audio-qa'
+deployment_name = 'audio-sent'
 namespace = "default"
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 

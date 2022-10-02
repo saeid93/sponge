@@ -11,7 +11,7 @@ import json
 
 # single node inferline
 gateway_endpoint = "localhost:32000"
-deployment_name = 'audio'
+deployment_name = 'audio-qa'
 namespace = "default"
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
@@ -29,8 +29,8 @@ def send_requests(endpoint):
         "inputs": [
             {
             "name": "array_inputs",
-            "shape": [1],
-            "datatype": "BYTES",
+            "shape": [1, len(input_data)],
+            "datatype": "FP32",
             "data": input_data.tolist(),
             "parameters": {
                 "content_type": "np"

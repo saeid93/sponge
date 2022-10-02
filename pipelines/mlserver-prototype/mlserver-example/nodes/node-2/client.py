@@ -15,8 +15,8 @@ input_ins = {
     }
 
 
-# endpoint = "http://localhost:32000/seldon/default/custom-mlserver-node-two/v2/models/infer"
-endpoint = "http://localhost:8080/v2/models/node-2/infer"
+endpoint = "http://localhost:32000/seldon/default/custom-mlserver-node-two/v2/models/infer"
+# endpoint = "http://localhost:8080/v2/models/node-2/infer"
 # response = requests.post(endpoint, json=payload)
 
 batch_test = 20

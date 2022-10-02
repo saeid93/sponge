@@ -98,3 +98,52 @@ class GeneralNLP(MLModel):
             model_version=self.version,
             outputs = [prediction_encoded]
         )
+
+    async def predict(self, payload: InferenceRequest) -> InferenceResponse:
+        if self.loaded == False:
+            self.load()
+        arrival_time = time.time()
+        for request_input in payload.inputs:
+            logger.error('request input:\n')
+            logger.error(f"{request_input}\n")
+            decoded_inputs = self.decode(request_input)
+            logger.error('decoded_input:\n')
+            logger.error(f"{list(decoded_inputs)}\n")
+            X = []
+            former_steps_timings = []
+            for decoded_input in decoded_inputs:
+                json_inputs = json.loads(decoded_input)
+                former_steps_timings.append(json_inputs['time'])
+                X.append(json_inputs['output']['text'])
+        logger.error(f"to the model:\n{X}")
+        # logger.error(f"type of the to the model:\n{type(X)}")
+        # logger.error(f"len of the to the model:\n{len(X)}")
+        output = self.model(X)
+        serving_time = time.time()
+        timing = {
+            f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
+            f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
+        }
+        output_with_time = list()
+        for pred, former_steps_timing in zip(output, former_steps_timings):
+            timing_2_send = deepcopy(timing)
+            timing_2_send.update(former_steps_timing)
+            print(timing_2_send)
+            output_with_time.append(
+                {
+                    # 'time': timing.update(former_steps_timing),
+                    'time': timing_2_send,
+                    'output': pred,
+                }
+            )
+        logger.error(f"output_with_time:\n")
+        logger.error(output_with_time)
+        str_out = [json.dumps(pred, cls=NumpyEncoder) for pred in output_with_time]
+        prediction_encoded = StringCodec.encode_output(payload=str_out, name="output")
+        logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
+        return InferenceResponse(
+            id=payload.id,
+            model_name=self.name,
+            model_version=self.version,
+            outputs = [prediction_encoded]
+        )
