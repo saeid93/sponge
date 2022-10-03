@@ -26,6 +26,14 @@ spec:
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+          resources:
+            requests:
+              cpu: '4'
+              memory: 4Gi
+            limits:
+              cpu: '4'
+              memory: 4Gi
+      replicas: 1
     - spec:
         containers:
         - image: sdghafouri/audio-sent-pipelines-mlserver:nlpsent
@@ -41,7 +49,15 @@ spec:
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: "1" 
+              value: "1"
+          resources:
+            requests:
+              cpu: '4'
+              memory: 4Gi
+            limits:
+              cpu: '4'
+              memory: 4Gi
+      replicas: 2
     graph:
       name: audio
       type: MODEL
@@ -49,6 +65,14 @@ spec:
       - name: nlp-sent
         type: MODEL
         children: []
+    svcOrchSpec:
+      resources:
+        requests:
+          cpu: '4'
+          memory: 4Gi
+        limits:
+          cpu: '4'
+          memory: 4Gi
     name: example
     labels:
       sidecar.istio.io/inject: "true"

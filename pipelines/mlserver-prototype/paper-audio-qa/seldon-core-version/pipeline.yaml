@@ -14,6 +14,13 @@ spec:
         - image: sdghafouri/audio-qa-pipelines-mlserver:audio
           name: audio
           imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: '4'
+              memory: 4Gi
+            limits:
+              cpu: '4'
+              memory: 4Gi
           env:
             - name: MODEL_VARIANT
               value: facebook/s2t-small-librispeech-asr
@@ -25,11 +32,19 @@ spec:
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+      replicas: 1
     - spec:
         containers:
         - image: sdghafouri/audio-qa-pipelines-mlserver:nlpqa
           name: nlp-qa 
           imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: '4'
+              memory: 4Gi
+            limits:
+              cpu: '4'
+              memory: 4Gi
           env:
             - name: MODEL_VARIANT
               value: distilbert-base-uncased
@@ -43,6 +58,7 @@ spec:
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+      replicas: 2
     graph:
       name: audio
       type: MODEL
@@ -50,6 +66,14 @@ spec:
       - name: nlp-qa
         type: MODEL
         children: []
+    svcOrchSpec:
+      resources:
+        requests:
+          cpu: '4'
+          memory: 4Gi
+        limits:
+          cpu: '4'
+          memory: 4Gi
     name: example
     labels:
       sidecar.istio.io/inject: "true"

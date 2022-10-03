@@ -33,7 +33,8 @@ except KeyError as e:
 class GeneralNLP(MLModel):
     async def load(self):
         self.loaded = False
-        self.counter = 0
+        self.request_counter = 0
+        self.batch_counter = 0
         try:
             self.MODEL_VARIANT = os.environ['MODEL_VARIANT']
             logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
@@ -88,6 +89,10 @@ class GeneralNLP(MLModel):
         # logger.error(f"to the model:\n{X}")
         # logger.error(f"type of the to the model:\n{type(X)}")
         # logger.error(f"len of the to the model:\n{len(X)}")
+        received_batch_len = len(X)
+        logger.error(f"recieved batch len:\n{received_batch_len}")
+        self.request_counter += received_batch_len
+        self.batch_counter += 1
         output = self.model(X)
         serving_time = time.time()
         timing = {
@@ -111,6 +116,8 @@ class GeneralNLP(MLModel):
         str_out = [json.dumps(pred, cls=NumpyEncoder) for pred in output_with_time]
         prediction_encoded = StringCodec.encode_output(payload=str_out, name="output")
         logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
+        logger.error(f"request counter:\n{self.request_counter}\n")
+        logger.error(f"batch counter:\n{self.batch_counter}\n")
         return InferenceResponse(
             id=payload.id,
             model_name=self.name,
