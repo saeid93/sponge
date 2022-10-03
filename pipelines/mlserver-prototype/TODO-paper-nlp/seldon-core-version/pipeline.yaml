@@ -3,6 +3,7 @@ kind: SeldonDeployment
 metadata:
   name: nlp
 spec:
+  protocol: v2
   name: nlp
   annotations:
     seldon.io/engine-separate-pod: "true"
@@ -10,48 +11,48 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/nlp-pipelines:generalnlp
-          name: nlp-1
+        - image: sdghafouri/nlp-pipelines-mlserver:nlpli
+          name: nlp-li
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
               value: dinalzein/xlm-roberta-base-finetuned-language-identification
-            - name: TRANSFORMERS_CACHE
-              value: /app/.cache
             - name: TASK
               value: text-classification
+            - name: TRANSFORMERS_CACHE
+              value: /opt/mlserver/.cache
     - spec:
         containers:
-        - image: sdghafouri/nlp-pipelines:generalnlp
-          name: nlp-2
+        - image: sdghafouri/nlp-pipelines-mlserver:nlptrans
+          name: nlp-trans
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
               value: Helsinki-NLP/opus-mt-fr-en
-            - name: TRANSFORMERS_CACHE
-              value: /app/.cache
             - name: TASK
               value: translation_fr_to_en
+            - name: TRANSFORMERS_CACHE
+              value: /opt/mlserver/.cache
     - spec:
         containers:
-        - image: sdghafouri/nlp-pipelines:generalnlp
-          name: nlp-3
+        - image: sdghafouri/nlp-pipelines-mlserver:nlpsum
+          name: nlp-sum
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
               value: sshleifer/distilbart-cnn-12-6
-            - name: TRANSFORMERS_CACHE
-              value: /app/.cache
             - name: TASK
               value: summarization
+            - name: TRANSFORMERS_CACHE
+              value: /opt/mlserver/.cache
     graph:
-      name: nlp-1
+      name: nlp-li
       type: MODEL
       children:
-      - name: nlp-2
+      - name: nlp-trans
         type: MODEL
         children:
-        - name: nlp-3
+        - name: nlp-sum
           type: MODEL
           children: []
     name: example
