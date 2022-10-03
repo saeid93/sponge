@@ -21,6 +21,10 @@ spec:
               value: text-classification
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
+            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+              value: "5"
+            - name: MLSERVER_MODEL_MAX_BATCH_TIME
+              value: "1"
     - spec:
         containers:
         - image: sdghafouri/nlp-pipelines-mlserver:nlptrans
@@ -33,6 +37,10 @@ spec:
               value: translation_fr_to_en
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
+            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+              value: "5"
+            - name: MLSERVER_MODEL_MAX_BATCH_TIME
+              value: "1"
     - spec:
         containers:
         - image: sdghafouri/nlp-pipelines-mlserver:nlpsum
@@ -45,6 +53,10 @@ spec:
               value: summarization
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
+            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+              value: "5"
+            - name: MLSERVER_MODEL_MAX_BATCH_TIME
+              value: "1"
     graph:
       name: nlp-li
       type: MODEL
