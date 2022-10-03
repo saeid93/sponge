@@ -37,14 +37,14 @@ class GeneralNLP(MLModel):
             self.MODEL_VARIANT = os.environ['MODEL_VARIANT']
             logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
-            self.MODEL_VARIANT = 'dinalzein/xlm-roberta-base-finetuned-language-identification'
+            self.MODEL_VARIANT = 'sshleifer/distilbart-cnn-12-6'
             logger.error(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         try:
             self.TASK = os.environ['TASK']
             logger.error(f'TASK set to: {self.TASK}')
         except KeyError as e:
-            self.TASK = 'sentiment-analysis' 
+            self.TASK = 'summarization' 
             logger.error(
                 f"MODEL_VARIANT env variable not set, using default value: {self.TASK}")
         logger.error('Loading the ML models')
@@ -74,7 +74,7 @@ class GeneralNLP(MLModel):
             for decoded_input in decoded_inputs:
                 json_inputs = json.loads(decoded_input)
                 former_steps_timings.append(json_inputs['time'])
-                X.append(json_inputs['output']['text'])
+                X.append(json_inputs['output']['translation_text'])
         logger.error(f"to the model:\n{X}")
         # logger.error(f"type of the to the model:\n{type(X)}")
         # logger.error(f"len of the to the model:\n{len(X)}")

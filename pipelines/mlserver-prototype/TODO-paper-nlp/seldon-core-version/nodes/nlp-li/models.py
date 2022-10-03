@@ -44,7 +44,7 @@ class GeneralNLP(MLModel):
             self.TASK = os.environ['TASK']
             logger.error(f'TASK set to: {self.TASK}')
         except KeyError as e:
-            self.TASK = 'sentiment-analysis' 
+            self.TASK = 'text-classification' 
             logger.error(
                 f"MODEL_VARIANT env variable not set, using default value: {self.TASK}")
         logger.error('Loading the ML models')
@@ -62,45 +62,40 @@ class GeneralNLP(MLModel):
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         if self.loaded == False:
             self.load()
+        logger.error(f"payload:\n{payload}")
         arrival_time = time.time()
         for request_input in payload.inputs:
             logger.error('request input:\n')
             logger.error(f"{request_input}\n")
-            decoded_inputs = self.decode(request_input)
-            logger.error('decoded_input:\n')
-            logger.error(f"{list(decoded_inputs)}\n")
-            X = []
-            former_steps_timings = []
-            for decoded_input in decoded_inputs:
-                json_inputs = json.loads(decoded_input)
-                former_steps_timings.append(json_inputs['time'])
-                X.append(json_inputs['output']['text'])
+            decoded_input = self.decode(request_input)
+            logger.error(decoded_input)
+            X = decoded_input
+        X = list(X)
         logger.error(f"to the model:\n{X}")
-        # logger.error(f"type of the to the model:\n{type(X)}")
-        # logger.error(f"len of the to the model:\n{len(X)}")
-        output = self.model(X)
+        logger.error(f"type of the to the model:\n{type(X)}")
+        logger.error(f"len of the to the model:\n{len(X)}")
+        output: List[Dict] = self.model(X)
+        logger.error(f"model output:\n{output}")
         serving_time = time.time()
         timing = {
             f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
             f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
         }
         output_with_time = list()
-        for pred, former_steps_timing in zip(output, former_steps_timings):
-            timing_2_send = deepcopy(timing)
-            timing_2_send.update(former_steps_timing)
-            print(timing_2_send)
+        for input, pred in zip(X, output):
+            output = {
+                'label': pred['label'],
+                'input': input
+            }
             output_with_time.append(
                 {
-                    # 'time': timing.update(former_steps_timing),
-                    'time': timing_2_send,
-                    'output': pred,
+                    'time': timing,
+                    'output': output,
                 }
             )
-        logger.error(f"output_with_time:\n")
-        logger.error(output_with_time)
         str_out = [json.dumps(pred, cls=NumpyEncoder) for pred in output_with_time]
         prediction_encoded = StringCodec.encode_output(payload=str_out, name="output")
-        logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
+        logger.error(f"Output:\n{output}\nwas sent!")
         return InferenceResponse(
             id=payload.id,
             model_name=self.name,
