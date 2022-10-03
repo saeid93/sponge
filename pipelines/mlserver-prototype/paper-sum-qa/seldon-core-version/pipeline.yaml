@@ -25,6 +25,13 @@ spec:
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+          resources:
+            requests:
+              cpu: '4'
+              memory: 4Gi
+            limits:
+              cpu: '4'
+              memory: 4Gi
     - spec:
         containers:
         - image: gcr.io/hale-ivy-335012/sum-qa-pipelines-mlserver:nlpqa
@@ -43,6 +50,14 @@ spec:
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+          resources:
+            requests:
+              cpu: '4'
+              memory: 4Gi
+            limits:
+              cpu: '4'
+              memory: 4Gi
+      replicas: 2
     graph:
       name: nlp-sum
       type: MODEL
@@ -50,6 +65,14 @@ spec:
       - name: nlp-qa
         type: MODEL
         children: []
+    svcOrchSpec:
+      resources:
+        requests:
+          cpu: '4'
+          memory: 4Gi
+        limits:
+          cpu: '4'
+          memory: 4Gi
     name: example
     labels:
       sidecar.istio.io/inject: "true"

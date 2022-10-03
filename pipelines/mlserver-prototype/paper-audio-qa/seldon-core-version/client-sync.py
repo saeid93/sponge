@@ -15,7 +15,7 @@ deployment_name = 'audio-qa'
 namespace = "default"
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
-batch_test = 6
+batch_test = 5
 
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",

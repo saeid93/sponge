@@ -25,6 +25,14 @@ spec:
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+          resources:
+            requests:
+              cpu: '4'
+              memory: 4Gi
+            limits:
+              cpu: '4'
+              memory: 4Gi
+      replicas: 1
     - spec:
         containers:
         - image: sdghafouri/nlp-pipelines-mlserver:nlptrans
@@ -41,6 +49,14 @@ spec:
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+          resources:
+            requests:
+              cpu: '4'
+              memory: 4Gi
+            limits:
+              cpu: '4'
+              memory: 4Gi
+      replicas: 2
     - spec:
         containers:
         - image: sdghafouri/nlp-pipelines-mlserver:nlpsum
@@ -57,6 +73,14 @@ spec:
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+          resources:
+            requests:
+              cpu: '4'
+              memory: 4Gi
+            limits:
+              cpu: '4'
+              memory: 4Gi
+      replicas: 1
     graph:
       name: nlp-li
       type: MODEL
@@ -67,6 +91,14 @@ spec:
         - name: nlp-sum
           type: MODEL
           children: []
+    svcOrchSpec:
+      resources:
+        requests:
+          cpu: '4'
+          memory: 4Gi
+        limits:
+          cpu: '4'
+          memory: 4Gi
     name: example
     labels:
       sidecar.istio.io/inject: "true"
