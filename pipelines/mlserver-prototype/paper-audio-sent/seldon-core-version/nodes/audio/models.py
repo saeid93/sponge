@@ -3,14 +3,11 @@ import time
 import json
 from mlserver import MLModel
 import numpy as np
-from mlserver.codecs import NumpyCodec
 from mlserver.logging import logger
 from mlserver.utils import get_model_uri
 from mlserver.types import (
     InferenceRequest,
-    InferenceResponse,
-    ResponseOutput,
-    Parameters)
+    InferenceResponse)
 from mlserver import MLModel
 from mlserver.codecs import DecodedParameterName
 from mlserver.cli.serve import load_settings
@@ -19,7 +16,6 @@ from transformers import pipeline
 from mlserver.codecs import StringCodec
 from mlserver_huggingface.common import NumpyEncoder
 from typing import List, Dict
-
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
