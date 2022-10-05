@@ -6,7 +6,6 @@ google.cloud.logging==2.2.0
 kubernetes==11.0.0
 matplotlib==3.2.0
 ipykernel==6.6.0
-transformers[torch]
 seldon-core
 Flask==1.1.1
 Jinja2==3.0.3
@@ -15,8 +14,9 @@ Werkzeug==2.0.2
 pandas==1.2.1
 timm==0.5.4
 pillow
-torch
-torchvision
+torch==1.11.0
+torchaudio==0.12.1
+torchvision==0.12.0
 onnx==1.12.0
 onnxruntime==1.11.1
 tritonclient==2.22.4
@@ -26,3 +26,4 @@ click==8.0.4
 opencv-python==4.6.0.66
 prometheus-api-client==0.5.1
 geventhttpclient==2.0
+transformers[torch]

@@ -11,17 +11,17 @@ import pathlib
 
 pp = PrettyPrinter(indent=1)
 
-model = 'nlp-trans'
+# model = 'nlp-trans'
 
-gateway_endpoint = "localhost:8080"
-endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+# gateway_endpoint = "localhost:8080"
+# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 # single node inferline
-# gateway_endpoint="localhost:32000"
-# deployment_name = 'nlp-sum'
-# namespace = "default"
+gateway_endpoint="localhost:32000"
+deployment_name = 'nlp-trans'
+namespace = "default"
 
-# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 
 batch_test = 6

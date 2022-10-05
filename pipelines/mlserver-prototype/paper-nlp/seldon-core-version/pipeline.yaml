@@ -51,12 +51,12 @@ spec:
               value: "1"
           resources:
             requests:
-              cpu: '4'
-              memory: 4Gi
+              cpu: '8'
+              memory: 8Gi
             limits:
-              cpu: '4'
-              memory: 4Gi
-      replicas: 2
+              cpu: '8'
+              memory: 8Gi
+      replicas: 1
     - spec:
         containers:
         - image: sdghafouri/nlp-pipelines-mlserver:nlpsum
@@ -75,12 +75,12 @@ spec:
               value: "1"
           resources:
             requests:
-              cpu: '4'
+              cpu: '8'
               memory: 4Gi
             limits:
-              cpu: '4'
+              cpu: '8'
               memory: 4Gi
-      replicas: 1
+      replicas: 2
     graph:
       name: nlp-li
       type: MODEL
@@ -94,12 +94,12 @@ spec:
     svcOrchSpec:
       resources:
         requests:
-          cpu: '4'
+          cpu: '8'
           memory: 4Gi
         limits:
-          cpu: '4'
+          cpu: '8'
           memory: 4Gi
     name: example
-    labels:
-      sidecar.istio.io/inject: "true"
+    # labels:
+    #   sidecar.istio.io/inject: "true"
     replicas: 1
