@@ -27,3 +27,5 @@ opencv-python==4.6.0.66
 prometheus-api-client==0.5.1
 geventhttpclient==2.0
 transformers[torch]
+mlserver==1.2.0.dev6
+mlserver-huggingface==1.2.0.dev6

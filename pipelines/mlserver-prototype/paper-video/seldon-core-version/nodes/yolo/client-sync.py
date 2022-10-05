@@ -4,10 +4,11 @@ import numpy as np
 from seldon_core.seldon_client import SeldonClient
 import requests
 from pprint import PrettyPrinter
-import threading
+pp = PrettyPrinter(indent=4)
+import json
 
-# PIPELINES_MODELS_PATH = "/home/cc/infernece-pipeline-joint-optimization/data/sample-image/"
-# dataset_folder_path = PIPELINES_MODELS_PATH
+PIPELINES_MODELS_PATH = "/home/cc/infernece-pipeline-joint-optimization/data/sample-image/"
+dataset_folder_path = PIPELINES_MODELS_PATH
 
 os.system('sudo umount -l ~/my_mounting_point')
 os.system('cc-cloudfuse mount ~/my_mounting_point')
@@ -25,7 +26,7 @@ with open(classes_file_path) as f:
 image_names = os.listdir(dataset_folder_path)
 image_names.sort()
 
-num_loaded_images = 1
+num_loaded_images = 3
 
 def image_loader(folder_path, image_name):
     image = Image.open(
@@ -48,12 +49,12 @@ images = {
 # endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 gateway_endpoint="localhost:8080"
-endpoint = f"http://{gateway_endpoint}/v2/models/video-1/infer"
+endpoint = f"http://{gateway_endpoint}/v2/models/yolo/infer"
 
 def send_requests(endpoint, image):
     input_ins = {
         "name": "parameters-np",
-        "datatype": "FP32",
+        "datatype": "INT32",
         "shape": list(np.shape(image)),
         "data": np.array(image).tolist(),
         "parameters": {
@@ -72,36 +73,6 @@ for image_name, image in images.items():
     response = send_requests(endpoint, image)
     results[image_name] = response
 
-a = 1
-# async version
-# TODO
-
-# send_requests()
-# responses = []
-
-# batch_test = 30000
-
-# responses = []
-# def send_requests():
-#     response = requests.post(endpoint, json=payload)
-#     # print('\n')
-#     # print('-' * 50)
-#     # pp.pprint(response.json())
-#     responses.append(response)
-#     return response
-
-# # for i in range(batch_test):
-# #     send_requests()
-
-# thread_pool = []
-
-# for i in range(batch_test):
-#     t = threading.Thread(target=send_requests)
-#     t.start()
-#     thread_pool.append(t)
-
-# for t in thread_pool:
-#     t.join()
-
-
-# pp.pprint(list(map(lambda l:l.json(), responses)))
+for image_name, response in images.items():
+    print("-"*50, f' {image_name} ', "-"*50)
+    output = json.loads(response.text)
