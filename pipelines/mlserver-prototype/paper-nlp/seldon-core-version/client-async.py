@@ -17,7 +17,7 @@ namespace = "default"
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 
-batch_test = 1
+batch_test = 100
 
 responses = []
 
