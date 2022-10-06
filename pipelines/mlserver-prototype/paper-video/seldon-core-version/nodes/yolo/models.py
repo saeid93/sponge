@@ -47,6 +47,8 @@ class Yolo(MLModel):
             self.device = torch.device(
                 "cuda:0" if torch.cuda.is_available() else "cpu")
             torch.hub.set_dir('./cache')
+            logger.error(f'max_batch_size: {self._settings.max_batch_size}')
+            logger.error(f'max_batch_time: {self._settings.max_batch_time}')
             self.model = torch.hub.load('ultralytics/yolov5', self.MODEL_VARIANT)
             logger.error('model loaded!')
             self.loaded = True
@@ -54,7 +56,6 @@ class Yolo(MLModel):
         except OSError:
             raise ValueError('model loading unsuccessful')
 
-    # TODO batching
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         if self.loaded == False:
             self.load()
@@ -65,11 +66,13 @@ class Yolo(MLModel):
             logger.error(f"type of decoded input: {type(decoded_input)}")
             logger.error(f"size of the input: {np.shape(decoded_input)}")
             X = decoded_input.astype(np.uint8)
-
-        # X = list(map(lambda l: np.array(l), X))
-        logger.error(f'type X:\n{type(X)}')
-        logger.error(f'type X item:\n{type(X[0][0][0])}')
-        logger.error(f'shape X:\n{X.shape}')
+        if len(X.shape) > 3:
+            X = list(X)
+        else:
+            X = [X]
+        logger.error(f'type of X:\n{type(X)}')
+        logger.error(f'type of X item:\n{type(X[0])}')
+        # logger.error(f'shape of X:\n{X.shape}')
         received_batch_len = len(X)
         logger.error(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += received_batch_len
@@ -96,8 +99,8 @@ class Yolo(MLModel):
         str_out = [json.dumps(pred, cls=NumpyEncoder) for pred in output_with_time]
         prediction_encoded = StringCodec.encode_output(payload=str_out, name="output")
         # logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
-        # logger.error(f"request counter:\n{self.request_counter}\n")
-        # logger.error(f"batch counter:\n{self.batch_counter}\n")
+        logger.error(f"request counter:\n{self.request_counter}\n")
+        logger.error(f"batch counter:\n{self.batch_counter}\n")
         return InferenceResponse(
             id=payload.id,
             model_name=self.name,
