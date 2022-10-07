@@ -27,7 +27,7 @@ with open(classes_file_path) as f:
 image_names = os.listdir(dataset_folder_path)
 image_names.sort()
 
-num_loaded_images = 10
+num_loaded_images = 3
 
 def image_loader(folder_path, image_name):
     image = Image.open(
@@ -42,14 +42,13 @@ images = {
         dataset_folder_path, image_name) for image_name in image_names[
             :num_loaded_images]}
 
-# gateway_endpoint="localhost:32000"
-# deployment_name = 'video-monitoring'
-# namespace = "default"
+gateway_endpoint="localhost:32000"
+deployment_name = 'yolo'
+namespace = "default"
+endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
-# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
-
-gateway_endpoint="localhost:8080"
-endpoint = f"http://{gateway_endpoint}/v2/models/yolo/infer"
+# gateway_endpoint="localhost:8080"
+# endpoint = f"http://{gateway_endpoint}/v2/models/yolo/infer"
 
 def send_requests(endpoint, image):
     input_ins = {

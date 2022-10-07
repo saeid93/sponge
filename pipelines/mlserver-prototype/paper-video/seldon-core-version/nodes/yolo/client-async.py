@@ -99,4 +99,4 @@ for index, output in enumerate(outputs):
     output = list(map(lambda l: np.array(l), output['output']['person']))
     pp.pprint(len(output))
 
-# TODO add irregular size inputs
+# TODO add none-consistent size inputs
