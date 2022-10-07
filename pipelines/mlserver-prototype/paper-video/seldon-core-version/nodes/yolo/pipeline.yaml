@@ -1,30 +1,28 @@
-
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: video-monitoring
+  name: yolo
 spec:
-  name: video-monitoring
+  protocol: v2
+  name: yolo
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - componentSpecs:
+  - name: example
+    componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/pipeline-prototype:yolo
-          name: video-yolo
+        - image: sdghafouri/video-yolo-pipelines-mlserver:yolo
+          name: yolo
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
               value: yolov5m
+            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+              value: "5"
+            - name: MLSERVER_MODEL_MAX_BATCH_TIME
+              value: "1"
     graph:
-      name: video-yolo
+      name: yolo
       type: MODEL
-      children:
-      - name: video-resnet-human
-        type: MODEL
-        children: []
-    name: example
-    # labels:
-    #   sidecar.istio.io/inject: "true"
-    replicas: 1
+      children: []

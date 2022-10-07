@@ -115,7 +115,7 @@ class Yolo(MLModel):
         """
         output_list = []
         for res in result.tolist():
-            res = res.crop()
+            res = res.crop(save=False)
             liscense_labels = ['car', 'truck']
             car_labels = ['car']
             person_labels = ['person']

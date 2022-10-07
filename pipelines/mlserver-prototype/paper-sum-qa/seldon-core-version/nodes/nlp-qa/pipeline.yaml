@@ -32,4 +32,6 @@ spec:
       name: nlp-qa
       type: MODEL
       children: []
-
+    # labels:
+    #   sidecar.istio.io/inject: "true"
+    replicas: 1

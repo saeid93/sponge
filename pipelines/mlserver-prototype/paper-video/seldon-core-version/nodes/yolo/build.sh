@@ -1,7 +1,7 @@
 REPOS=(
     sdghafouri
     gcr.io/hale-ivy-335012)
-IMAGE_NAME=pipeline-prototype-mlserver:yolo
+IMAGE_NAME=video-yolo-pipelines-mlserver:yolo
 mlserver build --tag=$IMAGE_NAME .
 for REPO in ${REPOS[@]}
 do
