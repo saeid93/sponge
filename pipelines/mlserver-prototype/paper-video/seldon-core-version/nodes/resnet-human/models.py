@@ -16,6 +16,8 @@ from mlserver.types import (
 from mlserver import MLModel
 from mlserver.codecs import DecodedParameterName
 from mlserver.cli.serve import load_settings
+from mlserver.codecs import StringCodec
+from mlserver_huggingface.common import NumpyEncoder
 import json
 
 try:
@@ -88,24 +90,38 @@ class ResnetHuman(MLModel):
             return []
         logger.error(f"len(X):\n{len(X)}\n")
         logger.error(f"len(X[0])):\n{len(X[0])}\n")
+
+        # TODO add multi input
         X_trans = [
             self.transform(
                 Image.fromarray(
                     np.array(image).astype(np.uint8))) for image in X[0]] # TEMP X[0]
+
+        # TODO set a cap for batch here
         batch = torch.stack(X_trans, axis=0)
         out = self.resnet(batch)
         percentages = torch.nn.functional.softmax(out, dim=1) * 100
         percentages = percentages.detach().numpy()
         image_net_class = np.argmax(percentages, axis=1)
+
+        # TODO add inference stuff
         serving_time = time.time()
         timing = {
             f"arrival_{PREDICTIVE_UNIT_ID}": arrival_time,
             f"serving_{PREDICTIVE_UNIT_ID}": serving_time,
         }
-        # timing.update(former_steps_timing)
+        timing.update(former_steps_timings)
         output = {
             "time": timing,
             "output": image_net_class.tolist()
         }
-        logger.error(f"Output:\n{output}\nwas sent!")
-        return output
+        str_out = [json.dumps(output, cls=NumpyEncoder)]
+        logger.error(f"str_out:\n{str_out}")
+        prediction_encoded = StringCodec.encode_output(
+            payload=str_out, name="output")
+        return InferenceResponse(
+            id=payload.id,
+            model_name=self.name,
+            model_version=self.version,
+            outputs = [prediction_encoded]
+        )
