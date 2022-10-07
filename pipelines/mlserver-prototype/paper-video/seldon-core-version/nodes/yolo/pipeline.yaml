@@ -18,6 +18,10 @@ spec:
           env:
             - name: MODEL_VARIANT
               value: yolov5m
+            - name: TRANSFORMERS_CACHE
+              value: /opt/mlserver/.cache
+            - name: TORCH_HOME
+              value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME

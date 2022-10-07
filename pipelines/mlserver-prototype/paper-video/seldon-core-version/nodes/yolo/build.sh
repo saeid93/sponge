@@ -1,3 +1,5 @@
+rm -r __pycache__
+rm *.pt
 REPOS=(
     sdghafouri
     gcr.io/hale-ivy-335012)
