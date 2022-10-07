@@ -9,10 +9,14 @@ import numpy as np
 from mlserver.codecs import NumpyCodec
 from mlserver.logging import logger
 from mlserver.utils import get_model_uri
-from mlserver.types import InferenceRequest, InferenceResponse, ResponseOutput
+from mlserver.types import (
+    InferenceRequest,
+    InferenceResponse,
+    ResponseOutput)
 from mlserver import MLModel
 from mlserver.codecs import DecodedParameterName
 from mlserver.cli.serve import load_settings
+import json
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
@@ -28,7 +32,8 @@ except KeyError as e:
 class ResnetHuman(MLModel):
     async def load(self) -> bool:
         self.loaded = False
-        self.counter = 0
+        self.request_counter = 0
+        self.batch_counter = 0
         # standard resnet image transformation
         try:
             self.MODEL_VARIANT = os.environ['MODEL_VARIANT']
@@ -54,6 +59,7 @@ class ResnetHuman(MLModel):
             'resnet152': models.resnet152,
         }
         logger.error('Loading the ML models')
+        # TODO cpu and gpu from env variable
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
         self.resnet = model[self.MODEL_VARIANT](pretrained=True)
@@ -63,34 +69,29 @@ class ResnetHuman(MLModel):
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceRequest:
-        outputs = []
-        self.counter += 1
-        logger.error(f"counter: {self.counter}")
-        logger.error('*'*50)
-        # logger.error("This is recieved request")
-        # logger.error(payload.inputs)
-        for request_input in payload.inputs:
-            decoded_input = self.decode(request_input)
-            # logger.error(f"decoded_input:\n{decoded_input}")
-            logger.error(f"type of decoded input: {type(decoded_input)}")
-            logger.error(f"size of the input: {np.shape(decoded_input)}")
         if self.loaded == False:
             self.load()
-        logger.info(f"Incoming input:\n{X}\nwas recieved!")
         arrival_time = time.time()
-        # former_steps_timing = X['time']
-        if X['person'] == []:
+        for request_input in payload.inputs:
+            logger.error('request input:\n')
+            # logger.error(f"{request_input}\n")
+            decoded_inputs = self.decode(request_input)
+            # logger.error('decoded_input:\n')
+            # logger.error(f"{list(decoded_inputs)}\n")
+            X = []
+            former_steps_timings = []
+            for decoded_input in decoded_inputs:
+                json_inputs = json.loads(decoded_input)
+                former_steps_timings.append(json_inputs['time'])
+                X.append(json_inputs['output']['person'])
+        if X == []:
             return []
-        X = X['person']
-        # if self.WITH_PREPROCESSOR:
-        #     X_trans = torch.from_numpy(X.astype(np.float32))
-        # else:
-        #     # X_trans = Image.fromarray(X.astype(np.uint8))
-        #     # X_trans = self.transform(X_trans)
+        logger.error(f"len(X):\n{len(X)}\n")
+        logger.error(f"len(X[0])):\n{len(X[0])}\n")
         X_trans = [
             self.transform(
                 Image.fromarray(
-                    np.array(image).astype(np.uint8))) for image in X]
+                    np.array(image).astype(np.uint8))) for image in X[0]] # TEMP X[0]
         batch = torch.stack(X_trans, axis=0)
         out = self.resnet(batch)
         percentages = torch.nn.functional.softmax(out, dim=1) * 100

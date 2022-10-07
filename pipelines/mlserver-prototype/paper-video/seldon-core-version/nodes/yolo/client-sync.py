@@ -80,5 +80,3 @@ for image_name, output in results.items():
     print("-"*50, f' {image_name} ', "-"*50)
     output = list(map(lambda l: np.array(l), output['output']['person']))
     pp.pprint(len(output))
-    
-

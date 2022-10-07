@@ -1,5 +1,5 @@
 {
-    "name": "video-1",
+    "name": "resnet",
     "implementation": "models.ResnetHuman",
     "parameters": {
         "uri": "./fakeuri"

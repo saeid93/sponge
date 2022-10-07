@@ -75,7 +75,6 @@ def send_requests():
     responses.append(response)
     return response
 
-# ---------------------------------------
 
 thread_pool = []
 
