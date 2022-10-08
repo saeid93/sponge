@@ -1,6 +1,8 @@
 {
     "name": "resnet",
     "implementation": "models.ResnetHuman",
+    "max_batch_size": 5,
+    "max_batch_time": 1,
     "parameters": {
         "uri": "./fakeuri"
     }

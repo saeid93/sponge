@@ -44,6 +44,9 @@ class ResnetHuman(MLModel):
             self.MODEL_VARIANT = 'resnet101'
             logger.error(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
+        logger.error(f'max_batch_size: {self._settings.max_batch_size}')
+        logger.error(f'max_batch_time: {self._settings.max_batch_time}')
+        self.batch_size = self._settings.max_batch_size
         self.transform = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
@@ -91,18 +94,32 @@ class ResnetHuman(MLModel):
         logger.error(f"len(X):\n{len(X)}\n")
         logger.error(f"len(X[0])):\n{len(X[0])}\n")
 
-        # TODO add multi input
+        # First all images recieved in the last step
+        input_index = 0
+        mask = []
+        X_flatten = []
+        for output in X:
+            for image in output:
+                mask.append(input_index)
+                X_flatten.append(image)
+            input_index += 1
+
+        logger.error(f"len(X_flatten):\n{len(X_flatten)}\n")
+        logger.error(f"mask:\n{mask}\n")
         X_trans = [
             self.transform(
                 Image.fromarray(
-                    np.array(image).astype(np.uint8))) for image in X[0]] # TEMP X[0]
+                    np.array(image).astype(np.uint8))) for image in X_flatten]
 
+        # TODO here
         # TODO set a cap for batch here
         batch = torch.stack(X_trans, axis=0)
+        logger.error(f"batch.shape:\n{batch.shape}\n")
         out = self.resnet(batch)
         percentages = torch.nn.functional.softmax(out, dim=1) * 100
         percentages = percentages.detach().numpy()
         image_net_class = np.argmax(percentages, axis=1)
+        logger.error(image_net_class)
 
         # TODO add inference stuff
         serving_time = time.time()
