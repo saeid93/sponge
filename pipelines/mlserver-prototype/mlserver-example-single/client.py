@@ -10,11 +10,11 @@ batch_test = 23
 input_ins = {
     "name": "parameters-np",
     "datatype": "FP32",
-    "shape": [2, 1],
-    "data": [12, 43],
-    "parameters": {
-        "content_type": "np"
-        }
+    "shape": [1,2],
+    "data": [[12, 43]],
+    # "parameters": {
+    #     "content_type": "np"
+    #     }
     }
 
 

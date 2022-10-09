@@ -24,7 +24,7 @@ endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 # endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 
-batch_test = 2
+batch_test = 13
 
 responses = []
 
@@ -63,5 +63,4 @@ for index, response in enumerate(responses):
     inference_response = InferenceResponse.parse_raw(response.text)
     raw_json = StringRequestCodec.decode_response(inference_response)
     output = json.loads(raw_json[0])
-    output = list(map(lambda l: np.array(l), output['output']['person']))
-    pp.pprint(len(output))
+    pp.pprint(output)

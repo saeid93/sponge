@@ -11,7 +11,7 @@ from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
 
-PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-nlp/seldon-core-version"
+PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-sum-qa/seldon-core-version"
 PIPELINES_MODELS_PATH = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline-test-meta" # TODO fix be moved to utilspr
 DATABASE = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline"
 CHECK_TIMEOUT = 30
@@ -22,7 +22,7 @@ TRIAL_END_WAIT = 60
 TEMPLATE = "nlp-single"
 CONFIG_FILE = "paper-sum-qa"
 
-save_path = os.path.join(DATABASE, "sum-qa-2")
+save_path = os.path.join(DATABASE, "sum-qa-1-new")
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
@@ -82,6 +82,7 @@ def load_test(
     deployment_name = pipeline_name 
     namespace = "default"
     num_nodes = pipeline_name.split("-").__len__()
+    print(num_nodes)
     e2e_lats = []
     node_latencies = [[] for _ in range(num_nodes)]
     cpu_usages = [[] for _ in range(num_nodes) ]
@@ -102,9 +103,13 @@ def load_test(
         if response.success:
             json_data_timer = response.response['jsonData']['time']
             return_nodes, return_timer, e2e_lat = extract_node_timer(json_data_timer)
+            
             for i , name in enumerate(return_nodes):
+                print(i)
                 cpu_usages[i].append(get_cpu_usage(pipeline_name, "default", name))
+                print("error")
                 memory_usages[i].append(get_memory_usage(pipeline_name, "default", name, 1))
+                print("error")
                 e2e_lats.append(e2e_lat)
             for i, time_ in enumerate(return_timer.keys()):
                 node_latencies[i].append(return_timer[time_])
@@ -114,6 +119,7 @@ def load_test(
         print(iter)
     time.sleep(CHECK_TIMEOUT)
     total_time = int((time.time() - start)//60)
+    print(return_nodes)
     for i , name in enumerate(return_nodes):
         cpu_usages[i].append(get_cpu_usage(pipeline_name, "default", name))
         memory_usages[i].append(get_memory_usage(pipeline_name, "default", name, total_time))
@@ -158,7 +164,7 @@ config_file_path = os.path.join(
 with open(config_file_path, 'r') as cf:
     config = yaml.safe_load(cf)
 
-node_1_models = config['node_2']
+node_1_models = config['node_1']
 
 def prune_name(name, len):
     forbidden_strs = ['facebook', '/', 'huggingface', '-',
@@ -196,8 +202,10 @@ for node_1_model in node_1_models:
     print('starting the load test ...\n')
     try:
         load_test(pipeline_name=pipeline_name, inputs=inputs, node_1_model=node_1_model, node_2_model=None, node_3_model=None, n_items=1)
-    except:
-        continue
+    except Exception as e:
+        print("error on creating")
+        print(str(e))
+        pass
     time.sleep(DELETE_WAIT)
 
     print("operation done, deleting the pipeline ...")
