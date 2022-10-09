@@ -87,6 +87,7 @@ class ResnetHuman(MLModel):
                 json_inputs = json.loads(decoded_input)
                 former_steps_timings.append(json_inputs['time'])
                 X.append(json_inputs['output']['person'])
+        # TODO add handling of zero person in the iamge
         if X == []:
             return []
         received_batch_len = len(X)

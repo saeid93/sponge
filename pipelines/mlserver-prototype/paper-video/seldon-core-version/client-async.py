@@ -1,10 +1,13 @@
 import os
 from PIL import Image
 import numpy as np
-from seldon_core.seldon_client import SeldonClient
+from mlserver.types import InferenceResponse
+from mlserver.codecs.string import StringRequestCodec
 import requests
 from pprint import PrettyPrinter
+pp = PrettyPrinter(indent=4)
 import threading
+import json
 
 # PIPELINES_MODELS_PATH = "/home/cc/infernece-pipeline-joint-optimization/data/sample-image/"
 # dataset_folder_path = PIPELINES_MODELS_PATH
@@ -25,7 +28,7 @@ with open(classes_file_path) as f:
 image_names = os.listdir(dataset_folder_path)
 image_names.sort()
 
-num_loaded_images = 1
+num_loaded_images = 20
 
 def image_loader(folder_path, image_name):
     image = Image.open(
@@ -40,22 +43,25 @@ images = {
         dataset_folder_path, image_name) for image_name in image_names[
             :num_loaded_images]}
 
-# single node inferline
-# gateway_endpoint="localhost:32000"
-# deployment_name = 'video-monitoring'
-# namespace = "default"
+input_data = images["ILSVRC2017_test_00000009.JPEG"]
+input_data_shape = [1] + list(np.shape(input_data))
 
-# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+gateway_endpoint="localhost:32000"
+deployment_name = 'video'
+namespace = "default"
 
-gateway_endpoint="localhost:8080"
-endpoint = f"http://{gateway_endpoint}/v2/models/video-1/infer"
+endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
-def send_requests(endpoint, image):
+
+batch_test = 1
+responses = []
+
+def send_requests():
     input_ins = {
         "name": "parameters-np",
-        "datatype": "FP32",
-        "shape": list(np.shape(image)),
-        "data": np.array(image).tolist(),
+        "datatype": "INT32",
+        "shape": input_data_shape,
+        "data": np.array(input_data).tolist(),
         "parameters": {
             "content_type": "np"
             }
@@ -64,10 +70,23 @@ def send_requests(endpoint, image):
     "inputs": [input_ins]
     }
     response = requests.post(endpoint, json=payload)
+    responses.append(response)
     return response
 
-# sync version
-results = {}
-for image_name, image in images.items():
-    response = send_requests(endpoint, image)
-    results[image_name] = response
+
+thread_pool = []
+
+for i in range(batch_test):
+    t = threading.Thread(target=send_requests)
+    t.start()
+    thread_pool.append(t)
+
+for t in thread_pool:
+    t.join()
+
+for index, response in enumerate(responses):
+    print("-"*50, f'output {index} ', "-"*50)
+    inference_response = InferenceResponse.parse_raw(response.text)
+    raw_json = StringRequestCodec.decode_response(inference_response)
+    output = json.loads(raw_json[0])
+    pp.pprint(output)

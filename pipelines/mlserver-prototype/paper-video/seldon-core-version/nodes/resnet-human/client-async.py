@@ -12,16 +12,16 @@ import numpy as np
 
 pp = PrettyPrinter(indent=1)
 
-model = 'resnet'
-gateway_endpoint = "localhost:8080"
-endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+# model = 'resnet'
+# gateway_endpoint = "localhost:8080"
+# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
-# single node inferline
-# gateway_endpoint="localhost:32000"
-# model='resnet'
-# namespace = "default"
 
-# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+gateway_endpoint="localhost:32000"
+deployment_name='resnet'
+namespace = "default"
+
+endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 
 batch_test = 13
