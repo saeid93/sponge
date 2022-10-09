@@ -32,6 +32,7 @@ def get_cpu_usage(pod_name, name_space,container):
     query = f"container_cpu_usage_seconds_total{{pod=~'{pod_name}.*', namespace='{name_space}', container='{container}'}}"
     response_cpu_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
     try:
+        print(pod_name)
         values = response_cpu_usage.json()['data']['result']
     except:
         print(response_cpu_usage.json())

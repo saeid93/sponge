@@ -24,7 +24,7 @@ _to_exclude = {
 
 def model(input):
   time.sleep(1)
-  output =  input * 2
+  output =  input
   return output
 
 class NodeOne(MLModel):
@@ -51,18 +51,18 @@ class NodeOne(MLModel):
           logger.error("model_output item:\n")
           logger.error(model_output[0])
           logger.error("model_output:\n")
-          logger.error(model_output.tolist())
+          # logger.error(model_output.tolist())
           logger.error("model_output type:\n")
           logger.error(type(model_output))
           outputs.append(
               ResponseOutput(
                   name=request_input.name,
                   datatype=request_input.datatype,
-                  parameters={
-                    "content_type": "np"
-                  },
+                  # parameters={
+                  #   "content_type": "np"
+                  # },
                   shape=request_input.shape,
-                  data=model_output.tolist()
+                  data=model_output
               )
           )
       logger.error(outputs)

@@ -96,12 +96,12 @@ class GeneralNLP(MLModel):
             f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
             f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
         }
-        output_with_time = list()
+        preds_with_time = list()
         for pred, former_steps_timing in zip(output, former_steps_timings):
             timing_2_send = deepcopy(timing)
             timing_2_send.update(former_steps_timing)
             print(timing_2_send)
-            output_with_time.append(
+            preds_with_time.append(
                 {
                     # 'time': timing.update(former_steps_timing),
                     'time': timing_2_send,
@@ -109,8 +109,8 @@ class GeneralNLP(MLModel):
                 }
             )
         logger.error(f"output_with_time:\n")
-        logger.error(output_with_time)
-        str_out = [json.dumps(pred, cls=NumpyEncoder) for pred in output_with_time]
+        logger.error(preds_with_time)
+        str_out = [json.dumps(pred, cls=NumpyEncoder) for pred in preds_with_time]
         prediction_encoded = StringCodec.encode_output(payload=str_out, name="output")
         logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
         logger.error(f"request counter:\n{self.request_counter}\n")
