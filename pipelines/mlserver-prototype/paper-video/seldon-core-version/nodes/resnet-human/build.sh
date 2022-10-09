@@ -1,7 +1,8 @@
+rm -r __pycache__
 REPOS=(
     sdghafouri
     gcr.io/hale-ivy-335012)
-IMAGE_NAME=video-yolo-pipelines-mlserver:resnet-human
+IMAGE_NAME=video-pipelines-mlserver:resnet-human
 mlserver build --tag=$IMAGE_NAME .
 for REPO in ${REPOS[@]}
 do

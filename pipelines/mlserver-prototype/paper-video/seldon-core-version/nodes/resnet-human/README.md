@@ -1,3 +1,5 @@
+TODO add handing of zero person in the pipeline
+
 Make sure the yolo cache is in the folder
 
 if you are using the mlser server throught command line like:
