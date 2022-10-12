@@ -80,7 +80,7 @@ spec:
             limits:
               cpu: '8'
               memory: 4Gi
-      replicas: 2
+      replicas: 1
     graph:
       name: nlp-li
       type: MODEL

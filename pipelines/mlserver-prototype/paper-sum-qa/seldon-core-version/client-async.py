@@ -9,8 +9,6 @@ from pprint import PrettyPrinter
 
 pp = PrettyPrinter(indent=1)
 
-# model = 'nlp-sum'
-
 # single node inferline
 gateway_endpoint="localhost:32000"
 deployment_name = 'sum-qa'
