@@ -113,8 +113,10 @@ class GeneralNLP(MLModel):
             )
         logger.error(f"output_with_time:\n")
         logger.error(output_with_time)
-        str_out = [json.dumps(pred, cls=NumpyEncoder) for pred in output_with_time]
-        prediction_encoded = StringCodec.encode_output(payload=str_out, name="output")
+        str_out = [json.dumps(
+            pred, cls=NumpyEncoder) for pred in output_with_time]
+        prediction_encoded = StringCodec.encode_output(
+            payload=str_out, name="output")
         logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
         logger.error(f"request counter:\n{self.request_counter}\n")
         logger.error(f"batch counter:\n{self.batch_counter}\n")
