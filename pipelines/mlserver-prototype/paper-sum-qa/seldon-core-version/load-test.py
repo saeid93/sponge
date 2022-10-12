@@ -1,24 +1,12 @@
-import json
-import requests
-import threading
-from pprint import PrettyPrinter
-pp = PrettyPrinter(indent=4)
-from mlserver.types import InferenceResponse
-from mlserver.codecs.string import StringRequestCodec
-from pprint import PrettyPrinter
-
-pp = PrettyPrinter(indent=1)
+from barazmoon import MLServerBarAzmoon
 
 gateway_endpoint="localhost:32000"
-deployment_name = 'nlp'
+deployment_name = 'sum-qa'
 namespace = "default"
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 
-batch_test = 100
-
-responses = []
-
+workload = [10, 7, 4, 12, 15]
 data=["""
 Après des décennies en tant que pratiquant d'arts martiaux et coureur, Wes a "trouvé" le yoga en 2010.
 Il en est venu à apprécier que son ampleur et sa profondeur fournissent un merveilleux lest pour stabiliser
@@ -34,43 +22,16 @@ et axé sur la technologie d'aujourd'hui. Il enseigne à aider les autres à ré
 Mieux encore, les cours de yoga sont tout simplement merveilleux :
 ils sont à quelques instants des exigences de la vie où vous pouvez simplement prendre soin de vous physiquement et émotionnellement.
     """]
+data_shape = [1]
+http_method = 'post'
+data_type = 'text'
 
+load_tester = MLServerBarAzmoon(
+    endpoint=endpoint,
+    http_method=http_method,
+    workload=workload,
+    data=data,
+    data_shape=data_shape,
+    data_type=data_type)
 
-def send_requests():
-    payload = {
-        "inputs": [
-            {
-                "name": "text_inputs",
-                "shape": [1],
-                "datatype": "BYTES",
-                "data": data,
-                "parameters": {
-                    "content_type": "str"
-                }
-            }
-        ]
-    }
-    response = requests.post(endpoint, json=payload)
-    responses.append(response)
-    return response
-
-thread_pool = []
-
-for i in range(batch_test):
-    t = threading.Thread(target=send_requests)
-    t.start()
-    thread_pool.append(t)
-
-for t in thread_pool:
-    t.join()
-
-
-inference_responses = list(map(
-    lambda response: InferenceResponse.parse_raw(response.text), responses))
-raw_jsons = list(map(
-    lambda inference_response: StringRequestCodec.decode_response(
-        inference_response), inference_responses))
-outputs = list(map(
-    lambda raw_json: json.loads(raw_json[0]), raw_jsons))
-
-pp.pprint(outputs)
+load_tester.start()

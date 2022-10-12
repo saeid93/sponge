@@ -58,7 +58,7 @@ spec:
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
-      replicas: 2
+      replicas: 1
     graph:
       name: audio
       type: MODEL
