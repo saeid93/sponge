@@ -64,7 +64,6 @@ class Yolo(MLModel):
         arrival_time = time.time()
         for request_input in payload.inputs:
             decoded_input = self.decode(request_input)
-            # logger.error(f"decoded_input:\n{decoded_input}")
             logger.error(f"type of decoded input: {type(decoded_input)}")
             logger.error(f"size of the input: {np.shape(decoded_input)}")
             X = decoded_input.astype(np.uint8)
@@ -74,7 +73,6 @@ class Yolo(MLModel):
             X = [X]
         logger.error(f'type of X:\n{type(X)}')
         logger.error(f'type of X item:\n{type(X[0])}')
-        # logger.error(f'shape of X:\n{X.shape}')
         received_batch_len = len(X)
         logger.error(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += received_batch_len
@@ -82,13 +80,10 @@ class Yolo(MLModel):
         objs = self.model(X)
         serving_time = time.time()
         output = self.get_cropped(objs)
-        # logger.error(f"arrival time {PREDICTIVE_UNIT_ID}: {arrival_time}")
-        # logger.error(f"serving time {PREDICTIVE_UNIT_ID}: {serving_time}")
         timing = {
             f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
             f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
         }
-        # logger.error(f"output:\n{output}")
         output_with_time = list()
         for pred in output:
             output_with_time.append(
@@ -97,10 +92,8 @@ class Yolo(MLModel):
                     'output': pred,                
                 }
             )
-        # logger.error(f"output_with_time:\n{output_with_time}")
         str_out = [json.dumps(pred, cls=NumpyEncoder) for pred in output_with_time]
         prediction_encoded = StringCodec.encode_output(payload=str_out, name="output")
-        # logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
         logger.error(f"request counter:\n{self.request_counter}\n")
         logger.error(f"batch counter:\n{self.batch_counter}\n")
         return InferenceResponse(

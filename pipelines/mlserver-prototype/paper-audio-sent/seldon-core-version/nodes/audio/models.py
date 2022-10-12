@@ -77,8 +77,10 @@ class GeneralAudio(MLModel):
         logger.error(f"model output:\n{output}")
         serving_time = time.time()
         timing = {
-            f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
-            f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
+            f"arrival_{PREDICTIVE_UNIT_ID}".replace(
+                "-","_"): arrival_time,
+            f"serving_{PREDICTIVE_UNIT_ID}".replace(
+                "-", "_"): serving_time
         }
         output_with_time = list()
         for pred in output:
@@ -88,8 +90,10 @@ class GeneralAudio(MLModel):
                     'output': pred,                
                 }
             )
-        str_out = [json.dumps(pred, cls=NumpyEncoder) for pred in output_with_time]
-        prediction_encoded = StringCodec.encode_output(payload=str_out, name="output")
+        str_out = [json.dumps(
+            pred, cls=NumpyEncoder) for pred in output_with_time]
+        prediction_encoded = StringCodec.encode_output(
+            payload=str_out, name="output")
         logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
         logger.error(f"request counter:\n{self.request_counter}\n")
         logger.error(f"batch counter:\n{self.batch_counter}\n")
