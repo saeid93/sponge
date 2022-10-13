@@ -57,18 +57,18 @@ batch_test = 1
 responses = []
 
 def send_requests():
-    input_ins = {
-        "name": "parameters-np",
-        "datatype": "INT32",
-        "shape": input_data_shape,
-        "data": np.array(input_data).tolist(),
-        "parameters": {
-            "content_type": "np"
-            }
-        }
     payload = {
-    "inputs": [input_ins]
-    }
+        "inputs":[
+            {
+                "name": "parameters-np",
+                "datatype": "INT32",
+                "shape": input_data_shape,
+                "data": np.array(input_data).tolist(),
+                "parameters": {
+                    "content_type": "np"
+                    }
+            }]
+        }
     response = requests.post(endpoint, json=payload)
     responses.append(response)
     return response
