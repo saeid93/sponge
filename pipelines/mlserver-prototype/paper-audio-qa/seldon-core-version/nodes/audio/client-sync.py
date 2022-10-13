@@ -9,16 +9,16 @@ from datasets import load_dataset
 import threading
 import json
 
-# single node inferline
-# gateway_endpoint = "localhost:32000"
-# deployment_name = 'audio'
-# namespace = "default"
-# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+# single node inference
+gateway_endpoint = "localhost:32000"
+deployment_name = 'audio'
+namespace = "default"
+endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
-# single node inferline
-gateway_endpoint = "localhost:8080"
-model = 'audio'
-endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+# single node inference
+# gateway_endpoint = "localhost:8080"
+# model = 'audio'
+# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 batch_test = 7
 
@@ -28,6 +28,13 @@ ds = load_dataset(
     split="validation")
 
 input_data = ds[0]["audio"]["array"]
+
+# # Serializing json
+# json_object = json.dumps(input_data, indent=4)
+ 
+# # Writing to sample.json
+# with open("input-sample.json", "w") as outfile:
+#     outfile.write(json_object)
 
 def send_requests(endpoint):
     payload = {
