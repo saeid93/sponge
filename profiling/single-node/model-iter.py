@@ -25,42 +25,24 @@ from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
 from barazmoon import MLServerBarAzmoon
-
+from barazmoon.twitter import twitter_workload_generator
 
 
 # TODO from constants
 pipelines_path = "/home/cc/infernece-pipeline-joint-optimization/pipelines/mlserver-prototype"
 results_path = "/home/cc/infernece-pipeline-joint-optimization/data/nodes"
 configs_path = "/home/cc/infernece-pipeline-joint-optimization/data/configs/profiling/single-node"
-timeout = 5
-# # TODO from click variables
-# pipeline_name = "paper-audio-qa"
-# node_name = "audio"
-# config_name = ""
+timeout = 10
 
-# TODO from config file
-# config = {
-#     "model_vairants" : ["facebook/s2t-small-librispeech-asr"],
-#     "max_batch_size": ["5", "10"],
-#     "max_batch_time": ["1", "10"],
-#     "cpu_request": ["4"],
-#     "memory_request": ["4Gi"],
-#     "replicas": [2],
-#     "data_type": "audio"
-# }
-
-
-# input_sample_path = os.path.join(
-#     node_path, 'input-sample.json'
-# )
-
-def experiments(node_name: str, config: dict, node_path: str, experiment_type: str, data_type):
+def experiments(node_name: str, config: dict, node_path: str, data_type: str):
     model_vairants = config['model_vairants']
     max_batch_sizes = config['max_batch_size']
     max_batch_times = config['max_batch_time']
     cpu_requests = config['cpu_request']
     memory_requests = config["memory_request"]
     replicas = config['replicas']
+    workload_type = config['workload_type']
+    workload_config = config['workload_config']
     # Better solution instead of nested for loops
     for model_variant in model_vairants:
         for max_batch_size in max_batch_sizes:
@@ -83,7 +65,8 @@ def experiments(node_name: str, config: dict, node_path: str, experiment_type: s
                                 node_name=node_name,
                                 data_type=data_type,
                                 node_path=node_path,
-                                experiment_type=experiment_type)
+                                workload_type=workload_type,
+                                workload_config=workload_config)
                             time.sleep(timeout) # TODO better validation -> some request
                             # TODO remove node upon finishing the tests
                             # TODO add some sleep
@@ -114,7 +97,8 @@ def setup_node(node_name: str, cpu_request: str, memory_request: str,
     os.system(command)
 
 def load_test(node_name: str, data_type: str,
-              node_path: str, experiment_type: str):
+              node_path: str, workload_type: str,
+              workload_config: dict):
     input_sample_path = os.path.join(
         node_path, 'input-sample.json'
     )
@@ -126,24 +110,37 @@ def load_test(node_name: str, data_type: str,
     with open(input_sample_shape_path, 'r') as openfile:
         data_shape = json.load(openfile)
         data_shape = data_shape['data_shape']
-    # TODO load workload
     gateway_endpoint = "localhost:32000"
     namespace = "default"
-    if experiment_type == 'static':
-        workload = [10, 4, 8] # TODO fix
-    elif experiment_type == 'dynamic':
-        workload = [10, 4, 8] # TODO fix
-    else:
-        raise ValueError(f"Invalid experiment type: {experiment_type}")
     endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/infer"
-    load_tester = MLServerBarAzmoon(
-        endpoint=endpoint,
-        http_method='post',
-        workload=workload,
-        data=data,
-        data_shape=data_shape,
-        data_type=data_type)
-    load_tester.start()
+    if workload_type == 'static':
+        loads_to_test = workload_config['loads_to_test']
+        load_duration = workload_config['load_duration']
+        for load in loads_to_test:
+            workload = [load] * load_duration
+            load_tester = MLServerBarAzmoon(
+                endpoint=endpoint,
+                http_method='post',
+                workload=workload,
+                data=data,
+                data_shape=data_shape,
+                data_type=data_type)
+            load_tester.start()
+    # TODO check
+    elif workload_type == 'twitter':
+        start_day = workload_config['start_day']
+        end_day = workload_config['end_day']
+        workload = twitter_workload_generator(f"{start_day}-{end_day}")
+        load_tester = MLServerBarAzmoon(
+            endpoint=endpoint,
+            http_method='post',
+            workload=workload,
+            data=data,
+            data_shape=data_shape,
+            data_type=data_type)
+        load_tester.start()
+    else:
+        raise ValueError(f"Invalid experiment type: {workload_type}")
     a = 1
     pass
 
@@ -158,10 +155,8 @@ def save_report(results: dict):
 @click.option('--pipeline-name', required=True, type=str, default='paper-audio-qa')
 @click.option('--node-name', required=True, type=str, default='audio')
 @click.option('--data-type', required=True, type=str, default='audio')
-@click.option('--experiment-type', required=True, type=str, default='static')
-@click.option('--config-name', required=True, type=str, default='config_1')
-def main(pipeline_name: str, node_name: str, data_type: str,
-         experiment_type: str, config_name: str):
+@click.option('--config-name', required=True, type=str, default='config_static')
+def main(pipeline_name: str, node_name: str, data_type: str, config_name: str):
     config_path = os.path.join(configs_path, f"{config_name}.yaml")
     with open(config_path, 'r') as cf:
         config = yaml.safe_load(cf)
@@ -176,7 +171,6 @@ def main(pipeline_name: str, node_name: str, data_type: str,
         node_name=node_name,
         config=config,
         node_path=node_path,
-        experiment_type=experiment_type,
         data_type=data_type
         )
 
