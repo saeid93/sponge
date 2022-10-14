@@ -1,10 +1,10 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: {{ name }}
+  name: audio
 spec:
   protocol: v2
-  name: {{ name }}
+  name: audio
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
@@ -17,25 +17,24 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '{{ cpu_request }}'
-              memory: '{{ memory_request }}'
+              cpu: '4'
+              memory: '4Gi'
             limits:
-              cpu: '{{ cpu_limit }}'
-              memory: '{{ memory_limit }}'
+              cpu: '4'
+              memory: '4Gi'
           env:
             - name: MODEL_VARIANT
-              value: {{ model_vairant }}
+              value: facebook/s2t-small-librispeech-asr
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TASK
               value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: '{{ max_batch_size }}'
+              value: '5'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: '{{ max_batch_time }}'
-      replicas: {{ replicas }}
+              value: '1'
+      replicas: 2
     graph:
       name: audio
       type: MODEL
       children: []
-
