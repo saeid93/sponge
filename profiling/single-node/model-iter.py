@@ -3,10 +3,17 @@ Iterate through all possible combination
 of models and servers
 """
 
+from email.policy import default
+from importlib.metadata import requires
+from operator import mod
 import os
+from pickletools import read_uint1
+from platform import node
+import re
 import time
 import json
 import yaml
+import click
 
 from typing import Any, Dict
 from seldon_core.seldon_client import SeldonClient
@@ -23,71 +30,158 @@ from barazmoon import MLServerBarAzmoon
 
 # TODO from constants
 pipelines_path = "/home/cc/infernece-pipeline-joint-optimization/pipelines/mlserver-prototype"
-database = "/home/cc/infernece-pipeline-joint-optimization/data/pipeline"
-
-# TODO from click variables
-pipeline_name = "paper-audio-qa"
-node_name = "audio"
-config_name = ""
+results_path = "/home/cc/infernece-pipeline-joint-optimization/data/nodes"
+configs_path = "/home/cc/infernece-pipeline-joint-optimization/data/configs/profiling/single-node"
+timeout = 5
+# # TODO from click variables
+# pipeline_name = "paper-audio-qa"
+# node_name = "audio"
+# config_name = ""
 
 # TODO from config file
-config = {
-    'model_vairants' : ["facebook/s2t-small-librispeech-asr"],
-    "max_batch_size": ["5", "10"],
-    "max_batch_time": ["1", "10"],
-    "cpu_request": ["4"],
-    "memory_request": ["4Gi"],
-    "replicas": [2],
-    "data_type": 'audio'
-}
+# config = {
+#     "model_vairants" : ["facebook/s2t-small-librispeech-asr"],
+#     "max_batch_size": ["5", "10"],
+#     "max_batch_time": ["1", "10"],
+#     "cpu_request": ["4"],
+#     "memory_request": ["4Gi"],
+#     "replicas": [2],
+#     "data_type": "audio"
+# }
 
-model_vairants = config['model_vairants']
-max_batch_size = config['max_batch_size']
-max_batch_time = config['max_batch_time']
-cpu_request = config['cpu_request']
-memory_request = config["memory_request"]
-data_type = config['audio']
-replicas = config['replicas']
 
-node_path = os.path.join(
-    pipelines_path,
-    pipeline_name,
-    'seldon-core-version',
-    'nodes',
-    node_name
-)
+# input_sample_path = os.path.join(
+#     node_path, 'input-sample.json'
+# )
 
-input_sample_path = os.path.join(
-    node_path, 'input-sample.json'
-)
+def experiments(node_name: str, config: dict, node_path: str, experiment_type: str, data_type):
+    model_vairants = config['model_vairants']
+    max_batch_sizes = config['max_batch_size']
+    max_batch_times = config['max_batch_time']
+    cpu_requests = config['cpu_request']
+    memory_requests = config["memory_request"]
+    replicas = config['replicas']
+    # Better solution instead of nested for loops
+    for model_variant in model_vairants:
+        for max_batch_size in max_batch_sizes:
+            for max_batch_time in max_batch_times:
+                for cpu_request in cpu_requests:
+                    for memory_request in memory_requests:
+                        for replica in replicas:
+                            setup_node(
+                                node_name=node_name,
+                                cpu_request=cpu_request,
+                                memory_request=memory_request,
+                                model_variant=model_variant,
+                                max_batch_size=max_batch_size,
+                                max_batch_time=max_batch_time,
+                                replica=replica,
+                                node_path=node_path
+                            )
+                            time.sleep(timeout) # TODO better validation -> some request
+                            results = load_test(
+                                node_name=node_name,
+                                data_type=data_type,
+                                node_path=node_path,
+                                experiment_type=experiment_type)
+                            time.sleep(timeout) # TODO better validation -> some request
+                            # TODO remove node upon finishing the tests
+                            # TODO add some sleep
+                            remove_node(node_name=node_name)
+                            save_report(results=results)
 
-with open(input_sample_path, 'r') as openfile:
-    json_object = json.load(openfile)
-
-svc_vars = {
-    "name": "audio",
-    "cpu_request": cpu_request[0],
-    "memory_request": memory_request[0],
-    "cpu_limit": cpu_request[0],
-    "memory_limit": cpu_request[0],
-    "model_vairant": model_vairants[0],
-    "max_batch_size": max_batch_size[0],
-    "max_batch_time": max_batch_size[0],
-    "replicas": replicas[0]
-    }
-environment = Environment(
-    loader=FileSystemLoader(node_path))
-svc_template = environment.get_template('node-template.yaml')
-content = svc_template.render(svc_vars)
-command = f"""cat <<EOF | kubectl apply -f -
+def setup_node(node_name: str, cpu_request: str, memory_request: str,
+               model_variant: str, max_batch_size: str,
+               max_batch_time: str, replica: int, node_path: str):
+    svc_vars = {
+        "name": node_name,
+        "cpu_request": cpu_request,
+        "memory_request": memory_request,
+        "cpu_limit": cpu_request,
+        "memory_limit": memory_request,
+        "model_vairant": model_variant,
+        "max_batch_size": max_batch_size,
+        "max_batch_time": max_batch_time,
+        "replicas": replica
+        }
+    environment = Environment(
+        loader=FileSystemLoader(node_path))
+    svc_template = environment.get_template('node-template.yaml')
+    content = svc_template.render(svc_vars)
+    command = f"""cat <<EOF | kubectl apply -f -
 {content}
-    """
-os.system(command)
+        """
+    os.system(command)
+
+def load_test(node_name: str, data_type: str,
+              node_path: str, experiment_type: str):
+    input_sample_path = os.path.join(
+        node_path, 'input-sample.json'
+    )
+    input_sample_shape_path = os.path.join(
+        node_path, 'input-sample-shape.json'
+    )
+    with open(input_sample_path, 'r') as openfile:
+        data = json.load(openfile)
+    with open(input_sample_shape_path, 'r') as openfile:
+        data_shape = json.load(openfile)
+        data_shape = data_shape['data_shape']
+    # TODO load workload
+    gateway_endpoint = "localhost:32000"
+    namespace = "default"
+    if experiment_type == 'static':
+        workload = [10, 4, 8] # TODO fix
+    elif experiment_type == 'dynamic':
+        workload = [10, 4, 8] # TODO fix
+    else:
+        raise ValueError(f"Invalid experiment type: {experiment_type}")
+    endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/infer"
+    load_tester = MLServerBarAzmoon(
+        endpoint=endpoint,
+        http_method='post',
+        workload=workload,
+        data=data,
+        data_shape=data_shape,
+        data_type=data_type)
+    load_tester.start()
+    a = 1
+    pass
 
 
+def remove_node(node_name):
+    os.system(f"kubectl delete seldondeployment {node_name} -n default")
 
+def save_report(results: dict):
+    pass
 
+@click.command()
+@click.option('--pipeline-name', required=True, type=str, default='paper-audio-qa')
+@click.option('--node-name', required=True, type=str, default='audio')
+@click.option('--data-type', required=True, type=str, default='audio')
+@click.option('--experiment-type', required=True, type=str, default='static')
+@click.option('--config-name', required=True, type=str, default='config_1')
+def main(pipeline_name: str, node_name: str, data_type: str,
+         experiment_type: str, config_name: str):
+    config_path = os.path.join(configs_path, f"{config_name}.yaml")
+    with open(config_path, 'r') as cf:
+        config = yaml.safe_load(cf)
+    node_path = os.path.join(
+        pipelines_path,
+        pipeline_name,
+        'seldon-core-version',
+        'nodes',
+        node_name
+    )
+    experiments(
+        node_name=node_name,
+        config=config,
+        node_path=node_path,
+        experiment_type=experiment_type,
+        data_type=data_type
+        )
 
+if __name__ == "__main__":
+    main()
 # -=================
 
 PATH = "/home/cc/infernece-pipeline-joint-optimization/pipelines/seldon-prototype/paper-audio-qa/seldon-core-version"
