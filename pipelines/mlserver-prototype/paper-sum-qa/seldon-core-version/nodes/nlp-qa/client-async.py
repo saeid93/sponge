@@ -1,3 +1,5 @@
+import os
+import pathlib
 import json
 import requests
 import threading
@@ -9,30 +11,27 @@ from pprint import PrettyPrinter
 
 pp = PrettyPrinter(indent=1)
 
-model = 'nlp-qa'
+# model = 'nlp-qa'
+# gateway_endpoint = "localhost:8080"
+# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
-gateway_endpoint = "localhost:8080"
-endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
-
-# single node inferline
-# gateway_endpoint="localhost:32000"
-# deployment_name = 'nlp-qa'
-# namespace = "default"
-
-# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+# single node inference
+gateway_endpoint="localhost:32000"
+deployment_name = 'nlp-qa'
+namespace = "default"
+endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 
 batch_test = 11
 
 responses = []
 
-data=['{"time": {"arrival_nlp_sum": 1664473950.8936176, "serving_nlp_sum":'
-      ' 1664473952.8370514}, "output": {"summary_text": " Yoga is an antidote'
-      ' for stress and a pathway for deeper understanding of yourself and'
-      ' others . It combines the elements of yoga with elements of balance'
-      ' and focus . The classes are just plain wonderful: they are just a'
-      ' few moments away from the demands of life\'s demands . He is an RYT'
-      ' 500 certified yoga teacher and author of YogaWorks ."}}']
+PATH = pathlib.Path(__file__).parent.resolve()
+
+with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
+    data = openfile.read()
+
+data = [data]
 
 
 def send_requests():

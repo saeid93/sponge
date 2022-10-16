@@ -30,8 +30,8 @@ responses = []
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
-with open(os.path.join(PATH, 'input-sample.json'), 'r') as openfile:
-    data = json.load(openfile)
+with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
+    data = openfile.read()
 
 def send_requests():
     payload = {
@@ -40,7 +40,7 @@ def send_requests():
                 "name": "text_inputs",
                 "shape": [1],
                 "datatype": "BYTES",
-                "data": [json.dumps(data)],
+                "data": [data],
             }
         ]
     }

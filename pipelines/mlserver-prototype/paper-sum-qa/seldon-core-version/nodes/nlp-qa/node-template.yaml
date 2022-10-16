@@ -1,10 +1,10 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: nlp-qa
+  name: {{ name }}
 spec:
   protocol: v2
-  name: nlp-qa
+  name: {{ name }}
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
@@ -15,9 +15,16 @@ spec:
         - image: sdghafouri/sum-qa-pipelines-mlserver:nlpqa
           name: nlp-qa 
           imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: '{{ cpu_request }}'
+              memory: '{{ memory_request }}'
+            limits:
+              cpu: '{{ cpu_limit }}'
+              memory: '{{ memory_limit }}'
           env:
             - name: MODEL_VARIANT
-              value: distilbert-base-uncased
+              value: {{ model_vairant }}
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TASK
@@ -25,13 +32,19 @@ spec:
             - name: CONTEXT
               value: default
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: "1"
+              value: '{{ max_batch_time }}'
+      replicas: {{ replicas }}
     graph:
       name: nlp-qa
       type: MODEL
       children: []
-    # labels:
-    #   sidecar.istio.io/inject: "true"
-    replicas: 1
+    svcOrchSpec:
+      resources:
+        requests:
+          cpu: '4'
+          memory: 4Gi
+        limits:
+          cpu: '4'
+          memory: 4Gi

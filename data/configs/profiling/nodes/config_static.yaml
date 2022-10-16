@@ -1,0 +1,27 @@
+pipeline_name: paper-sum-qa
+node_name: nlp-sum
+data_type: text
+model_vairants:
+  - sshleifer/distilbart-cnn-12-6
+max_batch_size:
+  - '5'
+  - '10'
+max_batch_time:
+  - '1'
+  - '10'
+cpu_request:
+  - '4'
+memory_request:
+  - 4Gi
+replicas:
+  - 1
+workload_type: static
+repetition: 3
+workload_config:
+  loads_to_test:
+  - 8
+  - 16
+  - 32
+  - 64
+  - 128
+  load_duration: 30
