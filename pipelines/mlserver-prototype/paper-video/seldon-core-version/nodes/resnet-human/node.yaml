@@ -1,10 +1,10 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: yolo
+  name: resnet
 spec:
   protocol: v2
-  name: yolo
+  name: resnet
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
@@ -12,12 +12,19 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/video-pipelines-mlserver:yolo
-          name: yolo
+        - image: sdghafouri/video-pipelines-mlserver:resnet-human
+          name: resnet
           imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: '4'
+              memory: 4Gi
+            limits:
+              cpu: '4'
+              memory: 4Gi
           env:
             - name: MODEL_VARIANT
-              value: yolov5m
+              value: resnet18
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TORCH_HOME
@@ -26,7 +33,16 @@ spec:
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+      replicas: 1
     graph:
-      name: yolo
+      name: resnet
       type: MODEL
       children: []
+    svcOrchSpec:
+      resources:
+        requests:
+          cpu: '4'
+          memory: 4Gi
+        limits:
+          cpu: '4'
+          memory: 4Gi

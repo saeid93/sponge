@@ -9,6 +9,8 @@ import json
 import yaml
 import click
 import sys
+from PIL import Image
+import numpy as np
 
 from typing import Any, Dict
 from jinja2 import Environment, FileSystemLoader
@@ -117,7 +119,7 @@ def load_test(node_name: str, data_type: str,
         with open(input_sample_shape_path, 'r') as openfile:
             data_shape = json.load(openfile)
             data_shape = data_shape['data_shape']
-    if data_type == 'text':
+    elif data_type == 'text':
         input_sample_path = os.path.join(
             node_path, 'input-sample.txt'
         )
@@ -126,6 +128,17 @@ def load_test(node_name: str, data_type: str,
         )
         with open(input_sample_path, 'r') as openfile:
             data = [openfile.read()]
+        with open(input_sample_shape_path, 'r') as openfile:
+            data_shape = json.load(openfile)
+            data_shape = data_shape['data_shape']
+    elif data_type == 'image':
+        input_sample_path = os.path.join(
+            node_path, 'input-sample.JPEG'
+        )
+        input_sample_shape_path = os.path.join(
+            node_path, 'input-sample-shape.json'
+        )
+        data = np.array(Image.open(input_sample_path)).tolist()
         with open(input_sample_shape_path, 'r') as openfile:
             data_shape = json.load(openfile)
             data_shape = data_shape['data_shape']
