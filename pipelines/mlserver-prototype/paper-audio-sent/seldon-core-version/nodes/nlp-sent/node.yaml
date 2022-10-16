@@ -1,40 +1,48 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: audio
+  name: nlp-sent
 spec:
   protocol: v2
-  name: audio
+  name: nlp-sent
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: default
+  - name: default 
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/audio-qa-pipelines-mlserver:audio
-          name: audio
+        - image: sdghafouri/audio-sent-pipelines-mlserver:nlpsent
+          name: nlp-sent
           imagePullPolicy: Always
           resources:
             requests:
               cpu: '4'
-              memory: '4Gi'
+              memory: 4Gi
             limits:
               cpu: '4'
-              memory: '4Gi'
+              memory: 4Gi
           env:
             - name: MODEL_VARIANT
-              value: facebook/s2t-small-librispeech-asr
+              value: distilbert-base-uncased-finetuned-sst-2-english
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TASK
-              value: automatic-speech-recognition
+              value: sentiment-analysis
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: '5'
+              value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: '1'
-      replicas: 2
+              value: "1"
+      replicas: 1
     graph:
-      name: audio
+      name: nlp-sent
       type: MODEL
       children: []
+    svcOrchSpec:
+      resources:
+        requests:
+          cpu: '4'
+          memory: 4Gi
+        limits:
+          cpu: '4'
+          memory: 4Gi

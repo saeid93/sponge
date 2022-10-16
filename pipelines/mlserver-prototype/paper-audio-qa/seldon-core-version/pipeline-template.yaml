@@ -47,6 +47,14 @@ spec:
       - name: audio-2
         type: MODEL
         children: []
+    svcOrchSpec:
+      resources:
+        requests:
+          cpu: '4'
+          memory: 4Gi
+        limits:
+          cpu: '4'
+          memory: 4Gi
     name: example
     labels:
       sidecar.istio.io/inject: "true"

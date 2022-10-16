@@ -17,11 +17,11 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: {{ cpu_request }}
-              memory: {{ memory_request }}
+              cpu: '{{ cpu_request }}'
+              memory: '{{ memory_request }}'
             limits:
-              cpu: {{ cpu_limit }}
-              memory: {{ memory_limit }}
+              cpu: '{{ cpu_limit }}'
+              memory: '{{ memory_limit }}'
           env:
             - name: MODEL_VARIANT
               value: {{ model_vairant }}
@@ -32,11 +32,19 @@ spec:
             - name: CONTEXT
               value: default
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: {{ max_batch_size }}
+              value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: {{ max_batch_time }}
+              value: '{{ max_batch_time }}'
       replicas: {{ replicas }}
     graph:
       name: nlp-qa
       type: MODEL
       children: []
+    svcOrchSpec:
+      resources:
+        requests:
+          cpu: '4'
+          memory: 4Gi
+        limits:
+          cpu: '4'
+          memory: 4Gi
