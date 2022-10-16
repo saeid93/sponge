@@ -16,7 +16,7 @@ pp = PrettyPrinter(indent=1)
 # gateway_endpoint = "localhost:8080"
 # endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
-# single node inferline
+# single node inference 
 gateway_endpoint="localhost:32000"
 deployment_name = 'nlp-trans'
 namespace = "default"
@@ -30,8 +30,8 @@ responses = []
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
-with open(os.path.join(PATH, 'input-sample.json'), 'r') as openfile:
-    data = json.load(openfile)
+with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
+    data = openfile.read()
 
 def send_requests():
     payload = {
@@ -40,7 +40,7 @@ def send_requests():
                 "name": "text_inputs",
                 "shape": [1],
                 "datatype": "BYTES",
-                "data": [json.dumps(data)],
+                "data": [data],
             }
         ]
     }
