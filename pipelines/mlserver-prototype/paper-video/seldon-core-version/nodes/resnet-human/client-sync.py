@@ -7,17 +7,16 @@ from mlserver.types import InferenceResponse
 from mlserver.codecs.string import StringRequestCodec
 import pathlib
 
-# single node inferline
-# gateway_endpoint="localhost:32000"
-# deployment_name = 'nlp-sum'
-# namespace = "default"
+# single node inference
+gateway_endpoint="localhost:32000"
+deployment_name = 'resnet-human'
+namespace = "default"
+endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
-# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
-
-# single node inferline
-gateway_endpoint="localhost:8080"
-model='resnet'
-endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+# single node inference
+# gateway_endpoint="localhost:8080"
+# model='resnet'
+# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 def send_requests(endpoint, data):
     payload = {
@@ -38,7 +37,7 @@ def send_requests(endpoint, data):
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
-with open(os.path.join(PATH, 'input-sample.json'), 'r') as openfile:
+with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
     data = json.load(openfile)
 
 data = [data]

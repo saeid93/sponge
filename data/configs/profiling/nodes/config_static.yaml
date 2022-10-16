@@ -1,8 +1,8 @@
-pipeline_name: paper-sum-qa
-node_name: nlp-sum
-data_type: text
+pipeline_name: paper-video
+node_name: yolo
+data_type: image 
 model_vairants:
-  - sshleifer/distilbart-cnn-12-6
+  - yolov5n
 max_batch_size:
   - '5'
   - '10'
