@@ -14,7 +14,7 @@ NODE_PROFILING_CONFIGS_PATH = os.path.join(PROFILING_CONFIGS_PATH, "nodes")
 PIPELINE_PROFILING_CONFIGS_PATH = os.path.join(PROFILING_CONFIGS_PATH, "pipelines")
 
 # results path
-RESULTS_PATH = os.path.join(PROJECT_PATH, "results")
+RESULTS_PATH = os.path.join(DATA_PATH, "results")
 PROFILING_RESULTS_PATH = os.path.join(RESULTS_PATH, "profiling")
 NODE_PROFILING_RESULTS_PATH = os.path.join(PROFILING_RESULTS_PATH, "nodes")
 PIPELINE_PROFILING_RESULTS_PATH = os.path.join(PROFILING_RESULTS_PATH, "pipelines")
