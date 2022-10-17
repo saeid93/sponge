@@ -26,3 +26,5 @@ load_tester = MLServerBarAzmoon(
     data_type=data_type)
 
 load_tester.start()
+
+print(load_tester.get_responses())

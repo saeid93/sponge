@@ -2,12 +2,11 @@ import os
 import pathlib
 from barazmoon import MLServerBarAzmoon
 from barazmoon import queue
-from experiments.profiling.single-node.model-iter import load_test
 # from barazmoon import responses
 
 
 gateway_endpoint = "localhost:32000"
-deployment_name = 'nlp-sum'
+deployment_name = 'nlp-sent'
 namespace = "default"
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
