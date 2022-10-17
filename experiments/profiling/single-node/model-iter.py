@@ -6,11 +6,14 @@ of models and servers
 import os
 import time
 import json
+from urllib import response
 import yaml
 import click
 import sys
 from PIL import Image
 import numpy as np
+import csv
+import pandas as pd
 
 from typing import Any, Dict
 from jinja2 import Environment, FileSystemLoader
@@ -34,16 +37,60 @@ sys.path.append(os.path.normpath(os.path.join(project_dir, '..', '..', '..')))
 from experiments.utils.constants import (
     PIPLINES_PATH,
     NODE_PROFILING_RESULTS_PATH,
-    NODE_PROFILING_CONFIGS_PATH
+    NODE_PROFILING_CONFIGS_PATH,
+    NODE_PROFILING_RESULTS_PATH
 )
 
-def experiments(node_name: str, config: dict, node_path: str, data_type: str):
+KEY_CONFIG_FILENAME = 'key_config_mapper.csv'
+
+def key_config_mapper(
+    pipeline_name: str, node_name: str, cpu_request: str,
+    memory_request: str, model_variant: str, max_batch_size: str,
+    max_batch_time: str, replica: int):
+    file_path = os.path.join(
+        NODE_PROFILING_RESULTS_PATH, KEY_CONFIG_FILENAME)
+    header = [
+        'experiment_id','pipeline_name', 'node_name',
+        'model_variant', 'cpu_request',
+        'memory_request', 'max_batch_size',
+        'max_batch_time', 'replicas']
+    if not os.path.exists(file_path):
+        with open(file_path, 'w', newline="") as file:
+            csvwriter = csv.writer(file)
+            csvwriter.writerow(header)
+        experiment_id = 0
+    else:
+        with open(file_path) as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            line_count = 0
+            for row in csv_reader:
+                line_count += 1
+        experiment_id = line_count
+    row = {
+        'experiment_id': experiment_id,
+        'pipeline_name': pipeline_name,
+        'model_variant': model_variant,
+        'node_name': node_name,
+        'cpu_request': cpu_request,
+        'memory_request': memory_request,
+        'max_batch_size': max_batch_size,
+        'max_batch_time': max_batch_time,
+        'replicas': replica
+        }
+    with open(file_path, 'a') as row_writer:
+        dictwriter_object = csv.DictWriter(row_writer, fieldnames=header)
+        dictwriter_object.writerow(row)
+        row_writer.close()
+    return experiment_id
+
+def experiments(pipeline_name: str, node_name: str,
+                config: dict, node_path: str, data_type: str):
     model_vairants = config['model_vairants']
     max_batch_sizes = config['max_batch_size']
     max_batch_times = config['max_batch_time']
     cpu_requests = config['cpu_request']
     memory_requests = config["memory_request"]
-    replicas = config['replicas']
+    replica = config['replicas']
     workload_type = config['workload_type']
     workload_config = config['workload_config']
     repetition = config['repetition']
@@ -54,7 +101,7 @@ def experiments(node_name: str, config: dict, node_path: str, data_type: str):
             for max_batch_time in max_batch_times:
                 for cpu_request in cpu_requests:
                     for memory_request in memory_requests:
-                        for replica in replicas:
+                        for replica in replica:
                             setup_node(
                                 node_name=node_name,
                                 cpu_request=cpu_request,
@@ -66,22 +113,44 @@ def experiments(node_name: str, config: dict, node_path: str, data_type: str):
                                 node_path=node_path
                             )
                             time.sleep(timeout) # TODO better validation -> some request
-                            results = []
+                            if workload_type == 'static':
+                                pass
+                                a = 1
+                            elif workload_type == 'dynamic':
+                                pass
+                            else:
+                                raise ValueError(f"Invalid workload type")
                             for _ in range(repetition):
-                                results.append(
-                                    load_test(
-                                        node_name=node_name,
-                                        data_type=data_type,
-                                        node_path=node_path,
-                                        workload_type=workload_type,
-                                        workload_config=workload_config))
+                                experiment_id = key_config_mapper(
+                                    pipeline_name=pipeline_name,
+                                    node_name=node_name,
+                                    cpu_request=cpu_request,
+                                    memory_request=memory_request,
+                                    model_variant=model_variant,
+                                    max_batch_size=max_batch_size,
+                                    max_batch_time=max_batch_time,
+                                    replica=replica)
+                                start_time = time.time()
+                                responses = list()
+                                responses = load_test(
+                                    node_name=node_name,
+                                    data_type=data_type,
+                                    node_path=node_path,
+                                    workload_type=workload_type,
+                                    workload_config=workload_config)
                                 time.sleep(timeout) # TODO better validation -> some request
+                                end_time = time.time()
+                                time.sleep(timeout) # TODO better validation -> some request
+                                save_report(
+                                    experiment_id=experiment_id,
+                                    responses = responses,
+                                    node_name=node_name,
+                                    start_time=start_time,
+                                    end_time=end_time) # TODO id system for the experiments
                             remove_node(node_name=node_name)
-                            time.sleep(timeout) # TODO better validation -> some request
-                            save_report(results=results, experiment_id=1) # TODO id system for the experiments
 
-def setup_node(node_name: str, cpu_request: str, memory_request: str,
-               model_variant: str, max_batch_size: str,
+def setup_node(node_name: str, cpu_request: str,
+               memory_request: str, model_variant: str, max_batch_size: str,
                max_batch_time: str, replica: int, node_path: str):
     svc_vars = {
         "name": node_name,
@@ -144,7 +213,6 @@ def load_test(node_name: str, data_type: str,
             data_shape = data_shape['data_shape']
     else:
         raise ValueError(f"Invalid data_type: {data_type}")
-
     # load test on the server
     gateway_endpoint = "localhost:32000"
     namespace = "default"
@@ -152,6 +220,7 @@ def load_test(node_name: str, data_type: str,
     if workload_type == 'static':
         loads_to_test = workload_config['loads_to_test']
         load_duration = workload_config['load_duration']
+        # TODO move this for up
         for load in loads_to_test:
             workload = [load] * load_duration
             load_tester = MLServerBarAzmoon(
@@ -161,7 +230,8 @@ def load_test(node_name: str, data_type: str,
                 data=data,
                 data_shape=data_shape,
                 data_type=data_type)
-            results = load_tester.start()
+            load_tester.start()
+            responses = load_tester.get_responses()
             # TODO load tester should return an output
     # TODO check
     elif workload_type == 'twitter':
@@ -175,28 +245,47 @@ def load_test(node_name: str, data_type: str,
             data=data,
             data_shape=data_shape,
             data_type=data_type)
-        results = load_tester.start()
-        # TODO load tester should return an output
+        load_tester.start()
+        responses = load_tester.get_responses()
     else:
         raise ValueError(f"Invalid experiment type: {workload_type}")
-    return results
+    return responses
 
 def remove_node(node_name):
     os.system(f"kubectl delete seldondeployment {node_name} -n default")
 
 
-def save_report(results: dict, experiment_id):
-    save_path = os.path.join(NODE_PROFILING_RESULTS_PATH, experiment_id) # TODO experiments id system
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
+def save_report(experiment_id: int,
+                responses: str,
+                node_name: str,
+                start_time: float,
+                end_time: float):
+    results = {
+        'cpu': [1, 2],
+        'memory': [1, 2],
+        'responses': responses,
+        'latency': [1, 2],
+        'throughput': [1, 2]
+    }
+    save_path = os.path.join(
+        NODE_PROFILING_RESULTS_PATH, f"{experiment_id}.json") # TODO experiments id system
+    # if not os.path.exists(save_path):
+    #     os.makedirs(save_path)
     # TODO postprocess of results
+    # TODO consider repetition_id
     # TODO save results
+    with open(
+        os.path.join(
+            save_path, f"{experiment_id}.json"), "w") as outfile:
+        outfile.write(results)
     print(f'results have been sucessfully saved in:\n{save_path}')
 
 @click.command()
-@click.option('--config-name', required=True, type=str, default='config_static')
+@click.option(
+    '--config-name', required=True, type=str, default='config_static')
 def main(config_name: str):
-    config_path = os.path.join(NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
+    config_path = os.path.join(
+        NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, 'r') as cf:
         config = yaml.safe_load(cf)
     pipeline_name = config['pipeline_name']
@@ -210,6 +299,7 @@ def main(config_name: str):
         node_name
     )
     experiments(
+        pipeline_name=pipeline_name,
         node_name=node_name,
         config=config,
         node_path=node_path,

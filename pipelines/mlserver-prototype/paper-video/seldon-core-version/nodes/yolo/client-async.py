@@ -110,5 +110,3 @@ for index, output in enumerate(outputs):
     print("-"*50, f' {index} ', "-"*50)
     output = list(map(lambda l: np.array(l), output['output']['person']))
     pp.pprint(len(output))
-
-# TODO add none-consistent size inputs
