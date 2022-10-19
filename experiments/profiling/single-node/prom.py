@@ -48,3 +48,26 @@ def get_cpu_usage(pod_name, name_space,container, duration):
             times[val].append(float(d[0]))
 
     return plot_values[0] , times[0]
+
+
+def get_cpu_usage_rate(pod_name, name_space,container, duration, rate=16):
+    PROMETHEUS = "http://localhost:30090"
+    prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
+
+    query = f"rate(container_cpu_usage_seconds_total{{pod=~'{pod_name}.*', namespace='{name_space}', container='{container}'}}[{rate}s])[{duration}m:1s]"
+    response_cpu_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
+    try:
+        values = response_cpu_usage.json()['data']['result']
+    except:
+        print(response_cpu_usage.json())
+        exit()
+    plot_values = [[] for _ in range(len(values))]
+    times = [[] for _ in range(len(values))]
+
+    for val in range(len(values)):
+        data = values[val]['values']
+        for d in data:
+            plot_values[val].append((float(d[1])))
+            times[val].append(float(d[0]))
+
+    return plot_values[0] , times[0]

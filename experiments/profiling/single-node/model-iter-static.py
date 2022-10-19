@@ -31,7 +31,7 @@ from kubernetes.stream import stream
 from barazmoon import MLServerBarAzmoon
 from barazmoon.twitter import twitter_workload_generator
 
-timeout = 10
+timeout = 30
 
 def get_pod_name(node_name: str, namespace='default'):
     pod_regex = f"{node_name}.*"
@@ -69,20 +69,20 @@ def key_config_mapper(
     pipeline_name: str, node_name: str, cpu_request: str,
     memory_request: str, model_variant: str, max_batch_size: str,
     max_batch_time: str, load: int,
-    load_duration: int, replica: int):
+    load_duration: int, series: int, series_meta: str, replica: int):
     file_path = os.path.join(
         NODE_PROFILING_RESULTS_STATIC_PATH, KEY_CONFIG_FILENAME)
     header = [
         'experiment_id','pipeline_name', 'node_name',
         'model_variant', 'cpu_request',
         'memory_request', 'max_batch_size',
-        'max_batch_time', 'load',
-        'load_duration', 'replicas']
+        'max_batch_time', 'load', 'load_duration',
+        'series', 'series_meta', 'replicas']
     if not os.path.exists(file_path):
         with open(file_path, 'w', newline="") as file:
             csvwriter = csv.writer(file)
             csvwriter.writerow(header)
-        experiment_id = 0
+        experiment_id = 1
     else:
         with open(file_path) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
@@ -101,6 +101,8 @@ def key_config_mapper(
         'max_batch_time': max_batch_time,
         'load': load,
         'load_duration': load_duration,
+        'series': series,
+        'series_meta': series_meta,
         'replicas': replica
         }
     with open(file_path, 'a') as row_writer:
@@ -119,9 +121,11 @@ def experiments(pipeline_name: str, node_name: str,
     replica = config['replicas']
     workload_config = config['workload_config']
     repetition = config['repetition']
+    series = config['series']
+    series_meta = config['series_meta']
     loads_to_test = workload_config['loads_to_test']
     load_duration = workload_config['load_duration']
-    # Better solution instead of nested for loops
+    # TODO Better solution instead of nested for loops
     # TODO also add the random - maybe just use Tune
     for model_variant in model_vairants:
         for max_batch_size in max_batch_sizes:
@@ -130,6 +134,7 @@ def experiments(pipeline_name: str, node_name: str,
                     for memory_request in memory_requests:
                         for replica in replica:
                             for load in loads_to_test:
+
                                 setup_node(
                                     node_name=node_name,
                                     cpu_request=cpu_request,
@@ -140,8 +145,11 @@ def experiments(pipeline_name: str, node_name: str,
                                     replica=replica,
                                     node_path=node_path
                                 )
-                                time.sleep(timeout) # TODO better validation -> some request
-                                for _ in range(repetition):
+
+                                for rep in range(repetition):
+                                    print('-'*25 + f' starting repetition {rep} ' + '-'*25)
+                                    print('\n')
+                                    if rep != 0: time.sleep(120) # TODO timeout var
                                     experiment_id = key_config_mapper(
                                         pipeline_name=pipeline_name,
                                         node_name=node_name,
@@ -152,29 +160,31 @@ def experiments(pipeline_name: str, node_name: str,
                                         max_batch_time=max_batch_time,
                                         load=load,
                                         load_duration=load_duration,
+                                        series=series,
+                                        series_meta=series_meta,
                                         replica=replica)
-                                    start_time = time.time()
-                                    responses = list()
-                                    responses = load_test(
+
+                                    start_time, end_time, responses = load_test(
                                         node_name=node_name,
                                         data_type=data_type,
                                         node_path=node_path,
                                         load=load,
                                         load_duration=load_duration)
-                                    time.sleep(timeout) # TODO better validation -> some request
-                                    end_time = time.time()
-                                    time.sleep(timeout) # TODO better validation -> some request
+
                                     save_report(
                                         experiment_id=experiment_id,
                                         responses = responses,
                                         node_name=node_name,
                                         start_time=start_time,
                                         end_time=end_time) # TODO id system for the experiments
+                                time.sleep(timeout) # TODO better validation -> some request
                                 remove_node(node_name=node_name)
 
 def setup_node(node_name: str, cpu_request: str,
                memory_request: str, model_variant: str, max_batch_size: str,
                max_batch_time: str, replica: int, node_path: str):
+    print('-'*25 + ' setting up the node with following config' + '-'*25)
+    print('\n')
     svc_vars = {
         "name": node_name,
         "cpu_request": cpu_request,
@@ -190,14 +200,23 @@ def setup_node(node_name: str, cpu_request: str,
         loader=FileSystemLoader(node_path))
     svc_template = environment.get_template('node-template.yaml')
     content = svc_template.render(svc_vars)
+    pp.pprint(content)
     command = f"""cat <<EOF | kubectl apply -f -
 {content}
         """
     os.system(command)
+    time.sleep(timeout) # TODO better validation -> some request
+    print('-'*25 + f' waiting {timeout} to make sure the node is up ' + '-'*25)
+    print('\n')
+    print('-'*25 + f' model pod {timeout} successfuly set up ' + '-'*25)
+    print('\n')
 
 def load_test(node_name: str, data_type: str,
               node_path: str,
               load: int, load_duration: int):
+    start_time = time.time()
+    print('-'*25 + f' starting load test ' + '-'*25)
+    print('\n')
     # load sample data
     if data_type == 'audio':
         input_sample_path = os.path.join(
@@ -250,10 +269,13 @@ def load_test(node_name: str, data_type: str,
         data_type=data_type)
     load_tester.start()
     responses = load_tester.get_responses()
-    return responses
+    end_time = time.time()
+    return start_time, end_time, responses
 
 def remove_node(node_name):
     os.system(f"kubectl delete seldondeployment {node_name} -n default")
+    print('-'*50 + f' model pod {timeout} successfuly set up ' + '-'*50)
+    print('\n')
 
 
 def save_report(experiment_id: int,
@@ -267,14 +289,15 @@ def save_report(experiment_id: int,
         'memory_usage': [],
         'time_memory': [],
         'responses': responses,
+        'start_time': start_time,
+        'end_time': end_time,
         'latency': [],
         'throughput': []
     }
     save_path = os.path.join(
         NODE_PROFILING_RESULTS_STATIC_PATH, f"{experiment_id}.json") # TODO experiments id system
-    end_time = time.time()
     duration = (end_time - start_time)//60 + 1
-    print(duration)
+    # print(duration)
     # TODO add list of pods in case of replicas
     pod_name = get_pod_name(node_name)[0]
     cpu_usage, time_cpu = get_cpu_usage(
