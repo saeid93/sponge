@@ -1,3 +1,5 @@
+series: 1
+series_meta: testing twitter trace
 pipeline_name: paper-audio-sent
 node_name: audio
 data_type: audio
@@ -12,7 +14,7 @@ max_batch_time:
 cpu_request:
   - '4'
 memory_request:
-  - 4Gi
+  - 8Gi
 replicas:
   - 1
 workload_type: twitter

@@ -1,3 +1,5 @@
+series: 1
+series_meta: testing twitter trace
 pipeline_name: paper-audio-qa
 node_name: audio
 data_type: audio 
@@ -8,11 +10,10 @@ max_batch_size:
   - '10'
 max_batch_time:
   - '1'
-  - '10'
 cpu_request:
   - '4'
 memory_request:
-  - 4Gi
+  - 8Gi
 replicas:
   - 1
 workload_type: static
@@ -20,5 +21,4 @@ repetition: 3
 workload_config:
   loads_to_test:
   - 1
-  - 4
-  load_duration: 10
+  load_duration: 120
