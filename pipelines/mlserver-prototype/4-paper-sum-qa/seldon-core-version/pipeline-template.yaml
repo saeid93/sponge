@@ -11,8 +11,8 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/audio-qa-pipelines-mlserver:audio
-          name: audio
+        - image: sdghafouri/sum-qa-pipelines-mlserver:nlpsum
+          name: nlp-sum 
           imagePullPolicy: Always
           resources:
             requests:
@@ -27,7 +27,7 @@ spec:
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TASK
-              value: automatic-speech-recognition
+              value: summarization
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
@@ -35,16 +35,9 @@ spec:
       replicas: {{ replicas }}
     - spec:
         containers:
-        - image: sdghafouri/audio-qa-pipelines-mlserver:nlpqa
-          name: nlp-qa 
+        - image: gcr.io/hale-ivy-335012/sum-qa-pipelines-mlserver:nlpqa
+          name: nlp-qa
           imagePullPolicy: Always
-          resources:
-            requests:
-              cpu: '{{ cpu_request }}'
-              memory: '{{ memory_request }}'
-            limits:
-              cpu: '{{ cpu_limit }}'
-              memory: '{{ memory_limit }}'
           env:
             - name: MODEL_VARIANT
               value: {{ model_vairant }}
@@ -60,7 +53,7 @@ spec:
               value: '{{ max_batch_time }}'
       replicas: {{ replicas }}
     graph:
-      name: audio
+      name: nlp-sum
       type: MODEL
       children:
       - name: nlp-qa

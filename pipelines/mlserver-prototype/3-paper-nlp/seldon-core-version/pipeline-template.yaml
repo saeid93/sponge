@@ -11,8 +11,8 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/audio-qa-pipelines-mlserver:audio
-          name: audio
+        - image: sdghafouri/nlp-pipelines-mlserver:nlpli
+          name: nlp-li
           imagePullPolicy: Always
           resources:
             requests:
@@ -23,11 +23,11 @@ spec:
               memory: '{{ memory_limit }}'
           env:
             - name: MODEL_VARIANT
-              value: {{ model_vairant }}
+              value: dinalzein/xlm-roberta-base-finetuned-language-identification
+            - name: TASK
+              value: text-classification
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
-            - name: TASK
-              value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
@@ -35,8 +35,8 @@ spec:
       replicas: {{ replicas }}
     - spec:
         containers:
-        - image: sdghafouri/audio-qa-pipelines-mlserver:nlpqa
-          name: nlp-qa 
+        - image: sdghafouri/nlp-pipelines-mlserver:nlptrans
+          name: nlp-trans
           imagePullPolicy: Always
           resources:
             requests:
@@ -48,33 +48,58 @@ spec:
           env:
             - name: MODEL_VARIANT
               value: {{ model_vairant }}
+            - name: TASK
+              value: translation_fr_to_en
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
+            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+              value: '{{ max_batch_size }}'
+            - name: MLSERVER_MODEL_MAX_BATCH_TIME
+              value: '{{ max_batch_time }}'
+      replicas: {{ replicas }}
+    - spec:
+        containers:
+        - image: sdghafouri/nlp-pipelines-mlserver:nlpsum
+          name: nlp-sum
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: '{{ cpu_request }}'
+              memory: '{{ memory_request }}'
+            limits:
+              cpu: '{{ cpu_limit }}'
+              memory: '{{ memory_limit }}'
+          env:
+            - name: MODEL_VARIANT
+              value: {{ model_vairant }}
             - name: TASK
-              value: question-answering
-            - name: CONTEXT
-              value: default
+              value: summarization
+            - name: TRANSFORMERS_CACHE
+              value: /opt/mlserver/.cache
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: '{{ max_batch_time }}'
       replicas: {{ replicas }}
     graph:
-      name: audio
+      name: nlp-li
       type: MODEL
       children:
-      - name: nlp-qa
+      - name: nlp-trans
         type: MODEL
-        children: []
+        children:
+        - name: nlp-sum
+          type: MODEL
+          children: []
     svcOrchSpec:
       resources:
         requests:
-          cpu: '4'
+          cpu: '8'
           memory: 4Gi
         limits:
-          cpu: '4'
+          cpu: '8'
           memory: 4Gi
     name: example
-    labels:
-      sidecar.istio.io/inject: "true"
+    # labels:
+    #   sidecar.istio.io/inject: "true"
     replicas: 1
