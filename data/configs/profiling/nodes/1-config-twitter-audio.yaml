@@ -1,13 +1,14 @@
 series: 1
 series_meta: testing static trace
 pipeline_name: 1-paper-audio-qa
-node_name: audio 
+node_name: audio
 data_type: audio
 model_vairants:
-  - deepset/roberta-base-squad2
-  - deepset/xlm-roberta-large-squad2
-  - distilbert-base-cased-distilled-squad
-  - deepset/xlm-roberta-base-squad2
+  - facebook/s2t-small-librispeech-asr
+  - facebook/s2t-medium-librispeech-asr
+  - facebook/s2t-large-librispeech-asr
+  - facebook/wav2vec2-base-960h
+  - facebook/wav2vec2-large-960h
 max_batch_size:
   - '1'
   - '4'
