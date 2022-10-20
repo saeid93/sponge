@@ -1,3 +1,4 @@
+
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
@@ -11,10 +12,9 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/audio-qa-pipelines-mlserver:audio
+        - image: sdghafouri/audio-sent-pipelines-mlserver:audio
           name: audio
           imagePullPolicy: Always
-          resources:
             requests:
               cpu: '{{ cpu_request }}'
               memory: '{{ memory_request }}'
@@ -35,8 +35,8 @@ spec:
       replicas: {{ replicas }}
     - spec:
         containers:
-        - image: sdghafouri/audio-qa-pipelines-mlserver:nlpqa
-          name: nlp-qa 
+        - image: sdghafouri/audio-sent-pipelines-mlserver:nlpsent
+          name: nlp-sent
           imagePullPolicy: Always
           resources:
             requests:
@@ -51,9 +51,7 @@ spec:
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TASK
-              value: question-answering
-            - name: CONTEXT
-              value: default
+              value: sentiment-analysis
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
@@ -63,7 +61,7 @@ spec:
       name: audio
       type: MODEL
       children:
-      - name: nlp-qa
+      - name: nlp-sent
         type: MODEL
         children: []
     svcOrchSpec:

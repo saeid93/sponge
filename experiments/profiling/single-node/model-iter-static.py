@@ -135,16 +135,16 @@ def experiments(pipeline_name: str, node_name: str,
                         for replica in replica:
                             for load in loads_to_test:
 
-                                setup_node(
-                                    node_name=node_name,
-                                    cpu_request=cpu_request,
-                                    memory_request=memory_request,
-                                    model_variant=model_variant,
-                                    max_batch_size=max_batch_size,
-                                    max_batch_time=max_batch_time,
-                                    replica=replica,
-                                    node_path=node_path
-                                )
+                                # setup_node(
+                                #     node_name=node_name,
+                                #     cpu_request=cpu_request,
+                                #     memory_request=memory_request,
+                                #     model_variant=model_variant,
+                                #     max_batch_size=max_batch_size,
+                                #     max_batch_time=max_batch_time,
+                                #     replica=replica,
+                                #     node_path=node_path
+                                # )
 
                                 for rep in range(repetition):
                                     print('-'*25 + f' starting repetition {rep} ' + '-'*25)
