@@ -17,10 +17,8 @@ import re
 
 from typing import List
 from jinja2 import Environment, FileSystemLoader
-from prom import (
-    get_cpu_usage,
-    get_cpu_usage_rate,
-    get_memory_usage)
+import subprocess
+from prom import get_cpu_usage, get_memory_usage
 from datasets import load_dataset
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
@@ -56,8 +54,7 @@ def get_pod_name(node_name: str, namespace='default'):
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
-sys.path.append(os.path.normpath(os.path.join(
-    project_dir, '..', '..', '..')))
+sys.path.append(os.path.normpath(os.path.join(project_dir, '..', '..', '..')))
 
 # import experiments.utils.constants import
 from experiments.utils.constants import (
@@ -138,21 +135,21 @@ def experiments(pipeline_name: str, node_name: str,
                         for replica in replica:
                             for load in loads_to_test:
 
-                                setup_node(
-                                    node_name=node_name,
-                                    cpu_request=cpu_request,
-                                    memory_request=memory_request,
-                                    model_variant=model_variant,
-                                    max_batch_size=max_batch_size,
-                                    max_batch_time=max_batch_time,
-                                    replica=replica,
-                                    node_path=node_path
-                                )
+                                # setup_node(
+                                #     node_name=node_name,
+                                #     cpu_request=cpu_request,
+                                #     memory_request=memory_request,
+                                #     model_variant=model_variant,
+                                #     max_batch_size=max_batch_size,
+                                #     max_batch_time=max_batch_time,
+                                #     replica=replica,
+                                #     node_path=node_path
+                                # )
 
                                 for rep in range(repetition):
                                     print('-'*25 + f' starting repetition {rep} ' + '-'*25)
                                     print('\n')
-                                    if rep != 0: time.sleep(60) # TODO timeout var
+                                    if rep != 0: time.sleep(120) # TODO timeout var
                                     experiment_id = key_config_mapper(
                                         pipeline_name=pipeline_name,
                                         node_name=node_name,
@@ -172,10 +169,7 @@ def experiments(pipeline_name: str, node_name: str,
                                         data_type=data_type,
                                         node_path=node_path,
                                         load=load,
-                                        namespace='default',
                                         load_duration=load_duration)
-                                    
-                                    print("--------HERE----------")
 
                                     save_report(
                                         experiment_id=experiment_id,
@@ -183,9 +177,6 @@ def experiments(pipeline_name: str, node_name: str,
                                         node_name=node_name,
                                         start_time=start_time,
                                         end_time=end_time) # TODO id system for the experiments
-
-                                    print("--------THERE----------")
-
                                 time.sleep(timeout) # TODO better validation -> some request
                                 remove_node(node_name=node_name)
 
@@ -222,8 +213,7 @@ def setup_node(node_name: str, cpu_request: str,
 
 def load_test(node_name: str, data_type: str,
               node_path: str,
-              load: int, load_duration: int,
-              namespace: str='default',):
+              load: int, load_duration: int):
     start_time = time.time()
     print('-'*25 + f' starting load test ' + '-'*25)
     print('\n')
@@ -267,6 +257,7 @@ def load_test(node_name: str, data_type: str,
         raise ValueError(f"Invalid data_type: {data_type}")
     # load test on the server
     gateway_endpoint = "localhost:32000"
+    namespace = "default"
     endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/infer"
     workload = [load] * load_duration
     load_tester = MLServerBarAzmoon(
@@ -277,13 +268,7 @@ def load_test(node_name: str, data_type: str,
         data_shape=data_shape,
         data_type=data_type)
     load_tester.start()
-
-    print("--------KOSE DONYA----------")
-
     responses = load_tester.get_responses()
-
-    print("--------SOMEWHERE----------")
-
     end_time = time.time()
     return start_time, end_time, responses
 
@@ -297,8 +282,7 @@ def save_report(experiment_id: int,
                 responses: str,
                 node_name: str,
                 start_time: float,
-                end_time: float,
-                namespace: str = 'default'):
+                end_time: float):
     results = {
         'cpu_usage': [],
         'time_cpu': [],
@@ -315,15 +299,12 @@ def save_report(experiment_id: int,
     duration = (end_time - start_time)//60 + 1
     # print(duration)
     # TODO add list of pods in case of replicas
-    pod_name = get_pod_name(node_name=node_name, namespace=namespace)[0]
+    pod_name = get_pod_name(node_name)[0]
     cpu_usage, time_cpu = get_cpu_usage(
-            pod_name=pod_name, namespace="default",
-            duration=int(duration), container=node_name)
-    cpu_usage, time_cpu = get_cpu_usage_rate(
-            pod_name=pod_name, namespace="default",
+            pod_name=pod_name, name_space="default",
             duration=int(duration), container=node_name)
     memory_usage, time_memory = get_memory_usage(
-        pod_name=pod_name, namespace="default",
+        pod_name=pod_name, name_space="default",
         container=node_name, duration=int(duration), need_max=False)
     results['cpu_usage'] = cpu_usage
     results['memory_usage'] = memory_usage

@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import psutil
 from mlserver import MLModel
 import numpy as np
 from mlserver.codecs import NumpyCodec
@@ -58,7 +59,17 @@ class GeneralAudio(MLModel):
             model=self.MODEL_VARIANT,
             batch_size=self._settings.max_batch_size)
         self.loaded = True
-        logger.info('model loading complete!')
+        # logger.info('model loading complete!')
+        # container_total_memory = psutil.virtual_memory()[1]/ (10**6)
+        # logger.error(f"container_total_memory: {container_total_memory}")
+        # container_total_cpu = psutil.cpu_count()
+        # logger.error(f"container_total_cpu: {container_total_cpu}")
+        # cpu_usage_percentage = psutil.cpu_percent(1)
+        # logger.error(f'CPU % used: {cpu_usage_percentage}')
+        # total_memory, used_memory, _ = map(
+        #     int, os.popen('free -t -m').readlines()[-1].split()[1:])
+        # memory_usage_percentage = round((used_memory/total_memory) * 100, 2)
+        # logger.error(f"RAM % used: {memory_usage_percentage}")
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
@@ -87,6 +98,15 @@ class GeneralAudio(MLModel):
             f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
             f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
         }
+
+        # cpu_usage_percentage = psutil.cpu_percent(1)
+        # logger.error(f'CPU usage is: {cpu_usage_percentage}')
+        # total_memory, used_memory, _ = map(
+        #     int, os.popen('free -t -m').readlines()[-1].split()[1:])
+        # memory_usage_percentage = round((used_memory/total_memory) * 100, 2)
+        # logger.error(f"RAM memory % used: {memory_usage_percentage}")
+
+
         output_with_time = list()
         for pred in output:
             output_with_time.append(
