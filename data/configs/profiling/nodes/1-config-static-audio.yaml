@@ -10,25 +10,27 @@ model_vairants:
   # - facebook/wav2vec2-base-960h
   # - facebook/wav2vec2-large-960h
 max_batch_size:
-  # - '1'
-  # - '5'
-  - '5'
+  - '1'
+  # - '2'
+  # - '4'
+  # - '8'
 max_batch_time:
   - '1'
 
 cpu_request:
-  - '3'
-  # - '2'
+  # - '4'
   # - '8'
-  # - '8'
-  # - '16'
+  - '16'
 memory_request:
-  - 8Gi
+  - 40Gi
 replicas:
   - 1
 workload_type: static
 repetition: 3
 workload_config:
   loads_to_test:
-  - 5
-  load_duration: 120
+  # - 1
+  # - 10
+  # - 20
+  - 10
+  load_duration: 180

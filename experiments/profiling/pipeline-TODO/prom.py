@@ -1,26 +1,20 @@
+from prometheus_api_client import PrometheusConnect
+from prometheus_api_client.utils import parse_datetime, parse_timedelta
+from matplotlib import pyplot as plt
 import pandas as pd
 import numpy as np
 import requests
-from matplotlib import pyplot as plt
-
-from prometheus_api_client import PrometheusConnect
-from prometheus_api_client.utils import parse_datetime, parse_timedelta
-
-
 PROMETHEUS = "http://localhost:30090"
-prom = PrometheusConnect(
-    url ="http://localhost:30090", disable_ssl=True)
+prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
 
-def get_memory_usage(pod_name: str, namespace: str,
-                     container: str, duration: int,
-                     need_max: bool = False):
-    # PROMETHEUS = "http://localhost:30090"
-    # prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
+def get_memory_usage(pod_name, name_space, container, duration, need_max = False):
+    PROMETHEUS = "http://localhost:30090"
+    prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
-    query = f"container_memory_usage_bytes{{pod=~'{pod_name}.*', container='{container}', namespace='{namespace}'}}[{duration}m:1s]"
+    query = f"container_memory_usage_bytes{{pod=~'{pod_name}.*', container='{container}', namespace='{name_space}'}}[{duration}m:1s]"
     if need_max:
-        query = f"max_over_time(container_memory_usage_bytes{{pod=~'{pod_name}.*', container='{container}', namespace='{namespace}'}}[{duration}m])"
+        query = f"max_over_time(container_memory_usage_bytes{{pod=~'{pod_name}.*', container='{container}', namespace='{name_space}'}}[{duration}m])"
     
     response_memory_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
     values = response_memory_usage.json()['data']['result']
@@ -33,11 +27,11 @@ def get_memory_usage(pod_name: str, namespace: str,
             times[val].append(float(d[0]))
     return plot_values[0], times[0]
 
-def get_cpu_usage(pod_name, namespace, container, duration):
-    # PROMETHEUS = "http://localhost:30090"
-    # prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
+def get_cpu_usage(pod_name, name_space,container, duration):
+    PROMETHEUS = "http://localhost:30090"
+    prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
-    query = f"container_cpu_usage_seconds_total{{pod=~'{pod_name}.*', namespace='{namespace}', container='{container}'}}[{duration}m:1s]"
+    query = f"container_cpu_usage_seconds_total{{pod=~'{pod_name}.*', namespace='{name_space}', container='{container}'}}[{duration}m:1s]"
     response_cpu_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
     try:
         values = response_cpu_usage.json()['data']['result']
@@ -56,11 +50,11 @@ def get_cpu_usage(pod_name, namespace, container, duration):
     return plot_values[0] , times[0]
 
 
-def get_cpu_usage_rate(pod_name, namespace,container, duration, rate=120):
-    # PROMETHEUS = "http://localhost:30090"
-    # prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
+def get_cpu_usage_rate(pod_name, name_space,container, duration, rate=16):
+    PROMETHEUS = "http://localhost:30090"
+    prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
-    query = f"rate(container_cpu_usage_seconds_total{{pod=~'{pod_name}.*', namespace='{namespace}', container='{container}'}}[{rate}s])[{duration}m:1s]"
+    query = f"rate(container_cpu_usage_seconds_total{{pod=~'{pod_name}.*', namespace='{name_space}', container='{container}'}}[{rate}s])[{duration}m:1s]"
     response_cpu_usage = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
     try:
         values = response_cpu_usage.json()['data']['result']
