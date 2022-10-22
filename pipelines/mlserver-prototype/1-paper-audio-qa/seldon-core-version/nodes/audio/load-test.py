@@ -1,6 +1,8 @@
 from dataclasses import dataclass
-from barazmoon import MLServerBarAzmoon
+from urllib import response
+from barazmoon import MLServerAsync
 from datasets import load_dataset
+import asyncio
 
 # single node inference
 gateway_endpoint = "localhost:32000"
@@ -25,7 +27,7 @@ workload = [10, 7, 4, 12]
 data_shape = [1, len(data)]
 data_type = 'audio'
 
-load_tester = MLServerBarAzmoon(
+load_tester = MLServerAsync(
     endpoint=endpoint,
     http_method=http_method,
     workload=workload,
@@ -33,6 +35,6 @@ load_tester = MLServerBarAzmoon(
     data_shape=data_shape,
     data_type=data_type)
 
-load_tester.start()
+responses = asyncio.run(load_tester.start())
 
-print(load_tester.get_responses())
+print(responses)

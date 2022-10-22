@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from barazmoon import MLServerBarAzmoon
-from datasets import load_dataset
+from barazmoon import MLServerAsync
+import asyncio
 
 gateway_endpoint = "localhost:32000"
 deployment_name = 'nlp-li'
@@ -28,7 +28,7 @@ workload = [10, 32, 12]
 data_shape = [1]
 data_type = 'text'
 
-load_tester = MLServerBarAzmoon(
+load_tester = MLServerAsync(
     endpoint=endpoint,
     http_method=http_method,
     workload=workload,
@@ -36,6 +36,6 @@ load_tester = MLServerBarAzmoon(
     data_shape=data_shape,
     data_type=data_type)
 
-load_tester.start()
+responses = asyncio.run(load_tester.start())
 
-print(load_tester.get_responses())
+print(responses)
