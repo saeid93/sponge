@@ -3,7 +3,8 @@ from PIL import Image
 import numpy as np
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
-from barazmoon import MLServerBarAzmoon
+from barazmoon import MLServerAsync
+import asyncio
 
 gateway_endpoint="localhost:32000"
 deployment_name = 'sum-qa'
@@ -49,7 +50,7 @@ data = np.array(data).tolist()
 http_method = 'post'
 data_type = 'image'
 
-load_tester = MLServerBarAzmoon(
+load_tester = MLServerAsync(
     endpoint=endpoint,
     http_method=http_method,
     workload=workload,
@@ -57,4 +58,6 @@ load_tester = MLServerBarAzmoon(
     data_shape=data_shape,
     data_type=data_type)
 
-load_tester.start()
+responses = asyncio.run(load_tester.start())
+
+print(responses)
