@@ -3,6 +3,7 @@ from urllib import response
 from barazmoon import MLServerAsync
 from datasets import load_dataset
 import asyncio
+import time
 
 # single node inference
 gateway_endpoint = "localhost:32000"
@@ -14,7 +15,7 @@ endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/m
 # gateway_endpoint = "localhost:8080"
 # model = 'audio'
 # endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
-
+# endpoint = 'http://localhost:5000'
 # load data
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
@@ -23,9 +24,11 @@ ds = load_dataset(
 data = ds[0]["audio"]["array"].tolist()
 
 http_method = 'post'
-workload = [10, 7, 4, 12]
+workload = [10, 10, 10, 10, 10, 10, 10, 10]
 data_shape = [1, len(data)]
 data_type = 'audio'
+
+start_time = time.time()
 
 load_tester = MLServerAsync(
     endpoint=endpoint,
@@ -37,4 +40,6 @@ load_tester = MLServerAsync(
 
 responses = asyncio.run(load_tester.start())
 
-print(responses)
+print(f'{(time.time() - start_time):2.2}s spent in total')
+# print(responses)
+a = 1
