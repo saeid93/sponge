@@ -6,34 +6,46 @@ of models and servers
 import os
 import time
 import json
-from urllib import response
 import yaml
 import click
 import sys
-from PIL import Image
 import numpy as np
 import csv
 import re
-
-from typing import List
+import asyncio
 from jinja2 import Environment, FileSystemLoader
-from prom import (
-    get_cpu_usage,
-    get_cpu_usage_rate,
-    get_memory_usage)
-from datasets import load_dataset
-from pprint import PrettyPrinter
-pp = PrettyPrinter(indent=4)
-from kubernetes import config , client
+
+from PIL import Image
+from kubernetes import config
 from kubernetes.client import Configuration
 from kubernetes.client.api import core_v1_api
-from kubernetes.client.rest import ApiException
-from kubernetes.stream import stream
+from pprint import PrettyPrinter
+pp = PrettyPrinter(indent=4)
 
-from barazmoon import MLServerBarAzmoon
-from barazmoon.twitter import twitter_workload_generator
+from prom import (
+    get_cpu_usage_count,
+    get_cpu_usage_rate,
+    get_cpu_throttled_count,
+    get_cpu_throttled_rate,
+    get_memory_usage,
+    get_request_per_second)
+from barazmoon import MLServerAsync
 
-timeout = 30
+# get an absolute path to the directory that contains parent files
+project_dir = os.path.dirname(__file__)
+sys.path.append(os.path.normpath(os.path.join(
+    project_dir, '..', '..', '..')))
+
+# import experiments.utils.constants import
+from experiments.utils.constants import (
+    PIPLINES_PATH,
+    NODE_PROFILING_CONFIGS_PATH,
+    NODE_PROFILING_RESULTS_STATIC_PATH
+)
+
+KEY_CONFIG_FILENAME = 'key_config_mapper.csv'
+
+timeout = 180
 
 def get_pod_name(node_name: str, namespace='default'):
     pod_regex = f"{node_name}.*"
@@ -54,27 +66,16 @@ def get_pod_name(node_name: str, namespace='default'):
             return pod_names
     return []
 
-# get an absolute path to the directory that contains parent files
-project_dir = os.path.dirname(__file__)
-sys.path.append(os.path.normpath(os.path.join(
-    project_dir, '..', '..', '..')))
-
-# import experiments.utils.constants import
-from experiments.utils.constants import (
-    PIPLINES_PATH,
-    NODE_PROFILING_CONFIGS_PATH,
-    NODE_PROFILING_RESULTS_STATIC_PATH
-)
-
-KEY_CONFIG_FILENAME = 'key_config_mapper.csv'
 
 def key_config_mapper(
     pipeline_name: str, node_name: str, cpu_request: str,
     memory_request: str, model_variant: str, max_batch_size: str,
     max_batch_time: str, load: int,
     load_duration: int, series: int, series_meta: str, replica: int):
-    file_path = os.path.join(
-        NODE_PROFILING_RESULTS_STATIC_PATH, KEY_CONFIG_FILENAME)
+    dir_path = os.path.join(
+        NODE_PROFILING_RESULTS_STATIC_PATH,
+        'series', str(series))
+    file_path =  os.path.join(dir_path, KEY_CONFIG_FILENAME)
     header = [
         'experiment_id','pipeline_name', 'node_name',
         'model_variant', 'cpu_request',
@@ -82,6 +83,7 @@ def key_config_mapper(
         'max_batch_time', 'load', 'load_duration',
         'series', 'series_meta', 'replicas']
     if not os.path.exists(file_path):
+        os.makedirs(dir_path)
         with open(file_path, 'w', newline="") as file:
             csvwriter = csv.writer(file)
             csvwriter.writerow(header)
@@ -137,7 +139,6 @@ def experiments(pipeline_name: str, node_name: str,
                     for memory_request in memory_requests:
                         for replica in replica:
                             for load in loads_to_test:
-
                                 setup_node(
                                     node_name=node_name,
                                     cpu_request=cpu_request,
@@ -148,11 +149,13 @@ def experiments(pipeline_name: str, node_name: str,
                                     replica=replica,
                                     node_path=node_path
                                 )
-
                                 for rep in range(repetition):
-                                    print('-'*25 + f' starting repetition {rep} ' + '-'*25)
+                                    print('-'*25\
+                                        + f' starting repetition {rep} ' +\
+                                            '-'*25)
                                     print('\n')
-                                    if rep != 0: time.sleep(60) # TODO timeout var
+                                    # TODO timeout var
+                                    if rep != 0: time.sleep(timeout)
                                     experiment_id = key_config_mapper(
                                         pipeline_name=pipeline_name,
                                         node_name=node_name,
@@ -167,26 +170,26 @@ def experiments(pipeline_name: str, node_name: str,
                                         series_meta=series_meta,
                                         replica=replica)
 
-                                    start_time, end_time, responses = load_test(
-                                        node_name=node_name,
-                                        data_type=data_type,
-                                        node_path=node_path,
-                                        load=load,
-                                        namespace='default',
-                                        load_duration=load_duration)
+                                    start_time_experiment,\
+                                        end_time_experiment, responses = load_test(
+                                            node_name=node_name,
+                                            data_type=data_type,
+                                            node_path=node_path,
+                                            load=load,
+                                            namespace='default',
+                                            load_duration=load_duration)
                                     
-                                    print("--------HERE----------")
-
+                                    # TODO id system for the experiments
                                     save_report(
                                         experiment_id=experiment_id,
                                         responses = responses,
                                         node_name=node_name,
-                                        start_time=start_time,
-                                        end_time=end_time) # TODO id system for the experiments
+                                        start_time_experiment=start_time_experiment,
+                                        end_time_experiment=end_time_experiment,
+                                        series=series)
 
-                                    print("--------THERE----------")
-
-                                time.sleep(timeout) # TODO better validation -> some request
+                                # TODO better validation -> some request
+                                time.sleep(timeout)
                                 remove_node(node_name=node_name)
 
 def setup_node(node_name: str, cpu_request: str,
@@ -269,7 +272,7 @@ def load_test(node_name: str, data_type: str,
     gateway_endpoint = "localhost:32000"
     endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/infer"
     workload = [load] * load_duration
-    load_tester = MLServerBarAzmoon(
+    load_tester = MLServerAsync(
         endpoint=endpoint,
         http_method='post',
         workload=workload,
@@ -278,11 +281,7 @@ def load_test(node_name: str, data_type: str,
         data_type=data_type)
     load_tester.start()
 
-    print("--------KOSE DONYA----------")
-
-    responses = load_tester.get_responses()
-
-    print("--------SOMEWHERE----------")
+    responses = asyncio.run(load_tester.start())
 
     end_time = time.time()
     return start_time, end_time, responses
@@ -296,39 +295,74 @@ def remove_node(node_name):
 def save_report(experiment_id: int,
                 responses: str,
                 node_name: str,
-                start_time: float,
-                end_time: float,
-                namespace: str = 'default'):
+                start_time_experiment: float,
+                end_time_experiment: float,
+                namespace: str = 'default',
+                series: int = 0):
     results = {
-        'cpu_usage': [],
-        'time_cpu': [],
+        'cpu_usage_count': [],
+        'time_cpu_usage_count': [],
+        'cpu_usage_rate': [],
+        'time_cpu_usage_rate': [],
+        'cpu_throttled_count': [],
+        'time_cpu_throttled_count': [],
+        'cpu_throttled_rate': [],
+        'time_cpu_throttled_rate': [],
         'memory_usage': [],
-        'time_memory': [],
+        'time_memory_usage': [],
+        'throughputs': [],
+        'time_throughput': [],
         'responses': responses,
-        'start_time': start_time,
-        'end_time': end_time,
-        'latency': [],
-        'throughput': []
+        'start_time_experiment': start_time_experiment,
+        'end_time_experiment': end_time_experiment,
     }
+    # TODO experiments id system
     save_path = os.path.join(
-        NODE_PROFILING_RESULTS_STATIC_PATH, f"{experiment_id}.json") # TODO experiments id system
-    duration = (end_time - start_time)//60 + 1
-    # print(duration)
+        NODE_PROFILING_RESULTS_STATIC_PATH,
+        'series', str(series), f"{experiment_id}.json")
+    duration = (end_time_experiment - start_time_experiment)//60 + 1
+
     # TODO add list of pods in case of replicas
+
     pod_name = get_pod_name(node_name=node_name, namespace=namespace)[0]
-    cpu_usage, time_cpu = get_cpu_usage(
+    cpu_usage_count, time_cpu_usage_count = get_cpu_usage_count(
             pod_name=pod_name, namespace="default",
             duration=int(duration), container=node_name)
-    cpu_usage, time_cpu = get_cpu_usage_rate(
+    cpu_usage_rate, time_cpu_usage_rate = get_cpu_usage_rate(
+            pod_name=pod_name, namespace="default",
+            duration=int(duration), container=node_name, rate=120)
+
+    cpu_throttled_count, time_cpu_throttled_count = get_cpu_throttled_count(
             pod_name=pod_name, namespace="default",
             duration=int(duration), container=node_name)
-    memory_usage, time_memory = get_memory_usage(
+    cpu_throttled_rate, time_cpu_throttled_rate = get_cpu_throttled_rate(
+            pod_name=pod_name, namespace="default",
+            duration=int(duration), container=node_name, rate=120)
+
+    memory_usage, time_memory_usage = get_memory_usage(
         pod_name=pod_name, namespace="default",
         container=node_name, duration=int(duration), need_max=False)
-    results['cpu_usage'] = cpu_usage
+
+    throughput, time_throughput = get_request_per_second(
+            pod_name=pod_name, namespace="default",
+            duration=int(duration), container=node_name, rate=120)
+
+    results['cpu_usage_count'] = cpu_usage_count
+    results['time_cpu_usage_count'] = time_cpu_usage_count
+    results['cpu_usage_rate'] = cpu_usage_rate
+    results['time_cpu_usage_rate'] = time_cpu_usage_rate
+
+    results['cpu_throttled_count'] = cpu_throttled_count
+    results['time_cpu_throttled_count'] = time_cpu_throttled_count
+    results['cpu_throttled_rate'] = cpu_throttled_rate
+    results['time_cpu_throttled_rate'] = time_cpu_throttled_rate
+
     results['memory_usage'] = memory_usage
-    results['time_cpu'] = time_cpu
-    results['time_memory'] = time_memory
+    results['time_memory_usage'] = time_memory_usage
+
+    results['throughput'] = throughput
+    results['time_throughput'] = time_throughput
+
     with open(save_path, "w") as outfile:
         outfile.write(json.dumps(results))
     print(f'results have been sucessfully saved in:\n{save_path}')

@@ -1,4 +1,4 @@
-series: 1
+series: 2
 series_meta: testing static trace
 pipeline_name: 1-paper-audio-qa
 node_name: audio
@@ -7,30 +7,30 @@ model_vairants:
   - facebook/s2t-small-librispeech-asr
   # - facebook/s2t-medium-librispeech-asr
   # - facebook/s2t-large-librispeech-asr
-  # - facebook/wav2vec2-base-960h
-  # - facebook/wav2vec2-large-960h
+  - facebook/wav2vec2-base-960h
+  - facebook/wav2vec2-large-960h
 max_batch_size:
   - '1'
-  # - '2'
-  # - '4'
-  # - '8'
+  - '2'
+  - '4'
+  - '8'
 max_batch_time:
   - '1'
-
 cpu_request:
-  # - '4'
-  # - '8'
+  - '4'
+  - '8'
   - '16'
+  - '32'
 memory_request:
-  - 40Gi
+  - 80Gi
 replicas:
   - 1
 workload_type: static
 repetition: 3
 workload_config:
   loads_to_test:
-  # - 1
-  # - 10
-  # - 20
+  - 1
   - 10
+  - 20
+  - 40
   load_duration: 180

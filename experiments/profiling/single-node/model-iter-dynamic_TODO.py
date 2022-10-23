@@ -18,7 +18,7 @@ import re
 from typing import Any, Dict
 from jinja2 import Environment, FileSystemLoader
 import subprocess
-from prom import get_cpu_usage, get_memory_usage
+from prom import get_cpu_usage_count, get_memory_usage
 from datasets import load_dataset
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
@@ -279,7 +279,7 @@ def save_report(experiment_id: int,
     print(duration)
     # TODO add list of pods in case of replicas
     pod_name = get_pod_name(node_name)[0]
-    cpu_usage, time_cpu = get_cpu_usage(
+    cpu_usage, time_cpu = get_cpu_usage_count(
             pod_name=pod_name, namespace="default",
             duration=int(duration), container=node_name)
     memory_usage, time_memory = get_memory_usage(
