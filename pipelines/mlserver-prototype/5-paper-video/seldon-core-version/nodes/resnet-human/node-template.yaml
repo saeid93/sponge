@@ -13,7 +13,7 @@ spec:
     - spec:
         containers:
         - image: sdghafouri/video-pipelines-mlserver:resnet-human
-          name: resnet
+          name: resnet-human
           imagePullPolicy: Always
           resources:
             requests:
@@ -35,7 +35,7 @@ spec:
               value: '{{ max_batch_time }}'
       replicas: {{ replicas }}
     graph:
-      name: resnet
+      name: resnet-human
       type: MODEL
       children: []
     svcOrchSpec:

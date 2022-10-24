@@ -8,13 +8,13 @@ import asyncio
 # endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 gateway_endpoint = "localhost:32000"
-deployment_name = 'resnet'
+deployment_name = 'resnet-human'
 namespace = "default"
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
-with open(os.path.join(PATH, 'input-sample-multiple.txt'), 'r') as openfile:
+with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
     data = openfile.read()
 
 http_method = 'post'
