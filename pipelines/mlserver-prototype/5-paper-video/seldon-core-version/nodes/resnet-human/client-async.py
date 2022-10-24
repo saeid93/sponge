@@ -13,15 +13,15 @@ import numpy as np
 pp = PrettyPrinter(indent=1)
 
 # single node inference
-# model = 'resnet'
-# gateway_endpoint = "localhost:8080"
-# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+model = 'resnet'
+gateway_endpoint = "localhost:8080"
+endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 # single node inference
-gateway_endpoint="localhost:32000"
-deployment_name='resnet-human'
-namespace = "default"
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+# gateway_endpoint="localhost:32000"
+# deployment_name='resnet'
+# namespace = "default"
+# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 
 batch_test = 13
@@ -30,7 +30,7 @@ responses = []
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
-with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
+with open(os.path.join(PATH, 'input-sample-multiple.txt'), 'r') as openfile:
     data = openfile.read()
 
 def send_requests():

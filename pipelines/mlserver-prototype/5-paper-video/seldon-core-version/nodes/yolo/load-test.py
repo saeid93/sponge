@@ -7,7 +7,7 @@ from barazmoon import MLServerAsync
 import asyncio
 
 gateway_endpoint="localhost:32000"
-deployment_name = 'video'
+deployment_name = 'yolo'
 namespace = "default"
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
