@@ -62,7 +62,6 @@ def get_cpu_throttled_rate(pod_name: str, namespace: str,
     response = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})
     return prom_response_postprocess(response)
 
-
 def get_request_per_second(pod_name, namespace, container, duration, rate=120):
     query = f"rate(model_infer_request_duration_count{{pod=~'{pod_name}.*', namespace='{namespace}', container='{container}'}}[{rate}s])[{duration}m:1s]"
     response = requests.get(PROMETHEUS + '/api/v1/query', params={'query' : query})

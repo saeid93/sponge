@@ -123,21 +123,22 @@ def experiments(pipeline_name: str, node_name: str,
     max_batch_times = config['max_batch_time']
     cpu_requests = config['cpu_request']
     memory_requests = config["memory_request"]
-    replica = config['replicas']
+    replicas = config['replicas']
     workload_config = config['workload_config']
     repetition = config['repetition']
     series = config['series']
     series_meta = config['series_meta']
     loads_to_test = workload_config['loads_to_test']
     load_duration = workload_config['load_duration']
+    # TOOD Add cpu type, gpu type
     # TODO Better solution instead of nested for loops
-    # TODO also add the random - maybe just use Tune
+    # TODO Also add the random - maybe just use Tune
     for model_variant in model_vairants:
         for max_batch_size in max_batch_sizes:
             for max_batch_time in max_batch_times:
                 for cpu_request in cpu_requests:
                     for memory_request in memory_requests:
-                        for replica in replica:
+                        for replica in replicas:
                             for load in loads_to_test:
                                 setup_node(
                                     node_name=node_name,
@@ -178,7 +179,6 @@ def experiments(pipeline_name: str, node_name: str,
                                             load=load,
                                             namespace='default',
                                             load_duration=load_duration)
-                                    
                                     # TODO id system for the experiments
                                     save_report(
                                         experiment_id=experiment_id,
@@ -251,7 +251,7 @@ def load_test(node_name: str, data_type: str,
             node_path, 'input-sample-shape.json'
         )
         with open(input_sample_path, 'r') as openfile:
-            data = [openfile.read()]
+            data = openfile.read()
         with open(input_sample_shape_path, 'r') as openfile:
             data_shape = json.load(openfile)
             data_shape = data_shape['data_shape']
@@ -310,7 +310,7 @@ def save_report(experiment_id: int,
         'time_cpu_throttled_rate': [],
         'memory_usage': [],
         'time_memory_usage': [],
-        'throughputs': [],
+        'throughput': [],
         'time_throughput': [],
         'responses': responses,
         'start_time_experiment': start_time_experiment,
@@ -369,7 +369,7 @@ def save_report(experiment_id: int,
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='1-config-static-audio')
+    '--config-name', required=True, type=str, default='5-config-static-resnet-human')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")

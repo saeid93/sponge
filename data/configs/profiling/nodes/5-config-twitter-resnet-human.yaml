@@ -1,6 +1,6 @@
-series: 1
+series: 3
 series_meta: testing static trace
-pipeline_name: 4-paper-video
+pipeline_name: 5-paper-video
 node_name: resnet-human
 data_type: text
 model_vairants:
