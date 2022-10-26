@@ -20,6 +20,7 @@ from kubernetes import config
 from kubernetes.client import Configuration
 from kubernetes.client.api import core_v1_api
 from pprint import PrettyPrinter
+from tqdm import tqdm
 pp = PrettyPrinter(indent=4)
 
 from prom import (
@@ -156,7 +157,10 @@ def experiments(pipeline_name: str, node_name: str,
                                             '-'*25)
                                     print('\n')
                                     # TODO timeout var
-                                    if rep != 0: time.sleep(timeout)
+                                    if rep != 0:
+                                        print(f'waiting for {timeout} seconds')
+                                        for _ in tqdm(range(20)):
+                                            time.sleep(timeout/20)
                                     experiment_id = key_config_mapper(
                                         pipeline_name=pipeline_name,
                                         node_name=node_name,
@@ -189,7 +193,9 @@ def experiments(pipeline_name: str, node_name: str,
                                         series=series)
 
                                 # TODO better validation -> some request
-                                time.sleep(timeout)
+                                print(f'waiting for {timeout} seconds')
+                                for _ in tqdm(range(20)):
+                                    time.sleep(timeout/20)
                                 remove_node(node_name=node_name)
 
 def setup_node(node_name: str, cpu_request: str,
@@ -217,11 +223,12 @@ def setup_node(node_name: str, cpu_request: str,
 {content}
         """
     os.system(command)
-    time.sleep(timeout) # TODO better validation -> some request
     print('-'*25 + f' waiting {timeout} to make sure the node is up ' + '-'*25)
     print('\n')
     print('-'*25 + f' model pod {timeout} successfuly set up ' + '-'*25)
     print('\n')
+    for _ in tqdm(range(20)):
+        time.sleep(timeout/20)
 
 def load_test(node_name: str, data_type: str,
               node_path: str,
@@ -284,6 +291,17 @@ def load_test(node_name: str, data_type: str,
     responses = asyncio.run(load_tester.start())
 
     end_time = time.time()
+
+    # remove ouput for image inputs/outpus (yolo)
+    # as they make logs very heavy
+    for second_response in responses:
+        for response in second_response:
+            if 'outputs' in response.keys():
+                raw_response = json.loads(
+                    response['outputs'][0]['data'][0])
+                raw_response['output'] = []
+                summerized_response = json.dumps(raw_response)
+                response['outputs'][0]['data'][0] = summerized_response
     return start_time, end_time, responses
 
 def remove_node(node_name):
@@ -369,7 +387,7 @@ def save_report(experiment_id: int,
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='5-config-static-resnet-human')
+    '--config-name', required=True, type=str, default='5-config-static-yolo')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
