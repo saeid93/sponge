@@ -3,6 +3,7 @@ Iterate through all possible combination
 of models and servers
 """
 
+import configparser
 import os
 import time
 import json
@@ -21,6 +22,7 @@ from kubernetes.client import Configuration
 from kubernetes.client.api import core_v1_api
 from pprint import PrettyPrinter
 from tqdm import tqdm
+import shutil
 pp = PrettyPrinter(indent=4)
 
 from prom import (
@@ -46,7 +48,7 @@ from experiments.utils.constants import (
 
 KEY_CONFIG_FILENAME = 'key_config_mapper.csv'
 
-timeout = 180
+# timeout = 180
 
 def get_pod_name(node_name: str, namespace='default'):
     pod_regex = f"{node_name}.*"
@@ -84,7 +86,7 @@ def key_config_mapper(
         'max_batch_time', 'load', 'load_duration',
         'series', 'series_meta', 'replicas']
     if not os.path.exists(file_path):
-        os.makedirs(dir_path)
+        # os.makedirs(dir_path)
         with open(file_path, 'w', newline="") as file:
             csvwriter = csv.writer(file)
             csvwriter.writerow(header)
@@ -131,6 +133,7 @@ def experiments(pipeline_name: str, node_name: str,
     series_meta = config['series_meta']
     loads_to_test = workload_config['loads_to_test']
     load_duration = workload_config['load_duration']
+    timeout = config['timeout']
     # TOOD Add cpu type, gpu type
     # TODO Better solution instead of nested for loops
     # TODO Also add the random - maybe just use Tune
@@ -149,7 +152,8 @@ def experiments(pipeline_name: str, node_name: str,
                                     max_batch_size=max_batch_size,
                                     max_batch_time=max_batch_time,
                                     replica=replica,
-                                    node_path=node_path
+                                    node_path=node_path,
+                                    timeout=timeout
                                 )
                                 for rep in range(repetition):
                                     print('-'*25\
@@ -200,7 +204,7 @@ def experiments(pipeline_name: str, node_name: str,
 
 def setup_node(node_name: str, cpu_request: str,
                memory_request: str, model_variant: str, max_batch_size: str,
-               max_batch_time: str, replica: int, node_path: str):
+               max_batch_time: str, replica: int, node_path: str, timeout: int):
     print('-'*25 + ' setting up the node with following config' + '-'*25)
     print('\n')
     svc_vars = {
@@ -396,6 +400,7 @@ def main(config_name: str):
     pipeline_name = config['pipeline_name']
     node_name = config['node_name']
     data_type = config['data_type']
+    series = config['series']
     node_path = os.path.join(
         PIPLINES_PATH,
         pipeline_name,
@@ -403,6 +408,30 @@ def main(config_name: str):
         'nodes',
         node_name
     )
+
+    dir_path = os.path.join(
+        NODE_PROFILING_RESULTS_STATIC_PATH,
+        'series', str(series))
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+        dest_config_path = os.path.join(
+            dir_path,
+            '0.yaml'
+        )
+        shutil.copy(config_path, dest_config_path)
+    else:
+        num_configs = 0
+        # Iterate directory
+        for file in os.listdir(dir_path):
+            # check only text files
+            if file.endswith('.yaml'):
+                num_configs += 1
+        dest_config_path = os.path.join(
+            dir_path,
+            f'{num_configs}.yaml'
+        )
+        shutil.copy(config_path, dest_config_path)
+
     experiments(
         pipeline_name=pipeline_name,
         node_name=node_name,

@@ -3,6 +3,7 @@ series_meta: testing static trace
 pipeline_name: 3-paper-nlp
 node_name: nlp-trans
 data_type: text
+timeout: 120
 model_vairants:
   - dinalzein/xlm-roberta-base-finetuned-language-identification
   - sshleifer/distilbart-cnn-12-6
