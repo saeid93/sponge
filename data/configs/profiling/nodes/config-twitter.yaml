@@ -3,6 +3,7 @@ series_meta: testing twitter trace
 pipeline_name: paper-audio-sent
 node_name: audio
 data_type: audio
+timeout: 120
 model_vairants:
   - facebook/s2t-small-librispeech-asr
 max_batch_size:

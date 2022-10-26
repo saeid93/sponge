@@ -3,6 +3,7 @@ series_meta: testing static trace
 pipeline_name: 3-paper-nlp
 node_name: nlp-sum
 data_type: text
+timeout: 120
 model_vairants:
   - Helsinki-NLP/opus-mt-fr-en
   - Helsinki-NLP/opus-mt-tc-big-fr-en

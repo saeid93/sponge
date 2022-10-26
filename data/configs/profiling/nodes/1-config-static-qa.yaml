@@ -3,6 +3,7 @@ series_meta: testing static trace
 pipeline_name: 1-paper-audio-qa
 node_name: nlp-qa 
 data_type: text
+timeout: 120
 model_vairants:
   - deepset/roberta-base-squad2
   # - deepset/xlm-roberta-large-squad2
