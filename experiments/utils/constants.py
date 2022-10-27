@@ -7,19 +7,24 @@ PROJECT_PATH = "/home/cc/infernece-pipeline-joint-optimization"
 DATA_PATH = os.path.join(PROJECT_PATH, "data")
 
 # configs path
-PIPLINES_PATH = os.path.join(PROJECT_PATH, "pipelines", "mlserver-prototype")
+PIPLINES_PATH = os.path.join(
+    PROJECT_PATH, "pipelines", "mlserver-prototype")
 CONFIGS_PATH = os.path.join(DATA_PATH, "configs")
 PROFILING_CONFIGS_PATH = os.path.join(CONFIGS_PATH, "profiling")
 NODE_PROFILING_CONFIGS_PATH = os.path.join(PROFILING_CONFIGS_PATH, "nodes")
-PIPELINE_PROFILING_CONFIGS_PATH = os.path.join(PROFILING_CONFIGS_PATH, "pipelines")
+PIPELINE_PROFILING_CONFIGS_PATH = os.path.join(
+    PROFILING_CONFIGS_PATH, "pipelines")
 
 # results path
 RESULTS_PATH = os.path.join(DATA_PATH, "results")
 PROFILING_RESULTS_PATH = os.path.join(RESULTS_PATH, "profiling")
 NODE_PROFILING_RESULTS_PATH = os.path.join(PROFILING_RESULTS_PATH, "nodes")
-NODE_PROFILING_RESULTS_STATIC_PATH = os.path.join(NODE_PROFILING_RESULTS_PATH, "static")
-NODE_PROFILING_RESULTS_DYNAMIC_PATH = os.path.join(NODE_PROFILING_RESULTS_PATH, "dynamic")
-PIPELINE_PROFILING_RESULTS_PATH = os.path.join(PROFILING_RESULTS_PATH, "pipelines")
+NODE_PROFILING_RESULTS_STATIC_PATH = os.path.join(
+    NODE_PROFILING_RESULTS_PATH, "static")
+NODE_PROFILING_RESULTS_DYNAMIC_PATH = os.path.join(
+    NODE_PROFILING_RESULTS_PATH, "dynamic")
+PIPELINE_PROFILING_RESULTS_PATH = os.path.join(
+    PROFILING_RESULTS_PATH, "pipelines")
 
 # generated baesd on the users' path
 # TODO completely polish and remove unecessary ones
