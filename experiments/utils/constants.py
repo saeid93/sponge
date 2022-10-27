@@ -64,5 +64,7 @@ def _create_dirs():
         os.makedirs(NODE_PROFILING_RESULTS_STATIC_PATH)
     if not os.path.exists(NODE_PROFILING_RESULTS_DYNAMIC_PATH):
         os.makedirs(NODE_PROFILING_RESULTS_DYNAMIC_PATH)
-
 _create_dirs()
+
+# prometheus client
+PROMETHEUS = "http://localhost:30090"

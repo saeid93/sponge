@@ -25,14 +25,10 @@ from tqdm import tqdm
 import shutil
 pp = PrettyPrinter(indent=4)
 
-from prom import (
-    get_cpu_usage_count,
-    get_cpu_usage_rate,
-    get_cpu_throttled_count,
-    get_cpu_throttled_rate,
-    get_memory_usage,
-    get_request_per_second)
+from experiments.utils.prometheus import SingleNodePromClient
 from barazmoon import MLServerAsync
+
+prom_client = SingleNodePromClient()
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -347,25 +343,29 @@ def save_report(experiment_id: int,
     # TODO add list of pods in case of replicas
 
     pod_name = get_pod_name(node_name=node_name, namespace=namespace)[0]
-    cpu_usage_count, time_cpu_usage_count = get_cpu_usage_count(
+    cpu_usage_count, time_cpu_usage_count =\
+        prom_client.get_cpu_usage_count(
             pod_name=pod_name, namespace="default",
             duration=int(duration), container=node_name)
-    cpu_usage_rate, time_cpu_usage_rate = get_cpu_usage_rate(
+    cpu_usage_rate, time_cpu_usage_rate =\
+        prom_client.get_cpu_usage_rate(
             pod_name=pod_name, namespace="default",
             duration=int(duration), container=node_name, rate=120)
 
-    cpu_throttled_count, time_cpu_throttled_count = get_cpu_throttled_count(
+    cpu_throttled_count, time_cpu_throttled_count =\
+        prom_client.get_cpu_throttled_count(
             pod_name=pod_name, namespace="default",
             duration=int(duration), container=node_name)
-    cpu_throttled_rate, time_cpu_throttled_rate = get_cpu_throttled_rate(
+    cpu_throttled_rate, time_cpu_throttled_rate =\
+        prom_client.get_cpu_throttled_rate(
             pod_name=pod_name, namespace="default",
             duration=int(duration), container=node_name, rate=120)
 
-    memory_usage, time_memory_usage = get_memory_usage(
+    memory_usage, time_memory_usage = prom_client.get_memory_usage(
         pod_name=pod_name, namespace="default",
         container=node_name, duration=int(duration), need_max=False)
 
-    throughput, time_throughput = get_request_per_second(
+    throughput, time_throughput = prom_client.get_request_per_second(
             pod_name=pod_name, namespace="default",
             duration=int(duration), container=node_name, rate=120)
 
