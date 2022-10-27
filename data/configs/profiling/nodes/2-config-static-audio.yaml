@@ -27,7 +27,7 @@ memory_request:
 replicas:
   - 1
 workload_type: static
-repetition: 3
+repetition: 2
 workload_config:
   loads_to_test:
   - 1

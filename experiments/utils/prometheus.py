@@ -13,13 +13,15 @@ class SingleNodePromClient:
             exit()
         plot_values = [[] for _ in range(len(response))]
         times = [[] for _ in range(len(response))]
-
-        for val in range(len(response)):
-            data = response[val]['values']
-            for d in data:
-                plot_values[val].append((float(d[1])))
-                times[val].append(float(d[0]))
-
+        try:
+            for val in range(len(response)):
+                data = response[val]['values']
+                for d in data:
+                    plot_values[val].append((float(d[1])))
+                    times[val].append(float(d[0]))
+        except IndexError:
+            plot_values = [[None]]
+            times = [[None]]
         return plot_values[0] , times[0]
 
 

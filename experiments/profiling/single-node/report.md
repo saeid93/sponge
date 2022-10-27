@@ -24,20 +24,28 @@
 1. yolo
 2. check cpu variations
 ### Outcome
-1. CPU allocation has a linear trend on the model latency
-2. Some heavy models are not working at all under some CPU allocation
-3. Second run of the experiments has slightly better latency than the first one 
+1. batch size has a linear trend on the model latency
+TODO see it's effect on throughtput
+TODO find a way to measere queueing latency
 
 ## Series 5
+1. resnet
+2. check batch variations
+### Outcome
+1. batch size has a linear trend on the model latency
+TODO see it's effect on throughtpu
+TODO find a way to measere queueing latency
+
 ## Series 6
-## Series 7
-## Series 8
-## Series 9
-## Series 10
-## Series 11
-## Series 12
+1. resnet
+2. check batch variations
 
 ## Notes
 1. what should I do for models that are not working at all in some experiments?
 2. why second run is better?
 3. for memory we need to find the "just enough memory" and no optimization after that makes real sense
+
+## TODO
+1. Draw Morphling figures on my experiments
+2. Draw RIM figures on my experiments
+3. Do effect of changing model_variant/batch/#cpu/hardware/
