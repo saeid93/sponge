@@ -32,3 +32,4 @@ mlserver==1.1.0
 mlserver-huggingface==1.2.0.dev6
 opencv-python==4.6.0.66
 kubernetes==24.2.0
+"datasets[audio]"

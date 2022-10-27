@@ -35,5 +35,5 @@ workload_config:
   # - 1
   # - 10
   - 20
-  - 40
+  # - 40
   load_duration: 60

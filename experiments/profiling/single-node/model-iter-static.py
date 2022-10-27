@@ -200,7 +200,7 @@ def experiments(pipeline_name: str, node_name: str,
                                 print(f'waiting for {timeout} seconds')
                                 for _ in tqdm(range(20)):
                                     time.sleep(timeout/20)
-                                remove_node(node_name=node_name)
+                                remove_node(node_name=node_name, timeout=timeout)
 
 def setup_node(node_name: str, cpu_request: str,
                memory_request: str, model_variant: str, max_batch_size: str,
@@ -308,7 +308,7 @@ def load_test(node_name: str, data_type: str,
                 response['outputs'][0]['data'][0] = summerized_response
     return start_time, end_time, responses
 
-def remove_node(node_name):
+def remove_node(node_name, timeout):
     os.system(f"kubectl delete seldondeployment {node_name} -n default")
     print('-'*50 + f' model pod {timeout} successfuly set up ' + '-'*50)
     print('\n')
