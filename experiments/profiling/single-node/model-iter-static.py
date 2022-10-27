@@ -25,22 +25,20 @@ from tqdm import tqdm
 import shutil
 pp = PrettyPrinter(indent=4)
 
-from experiments.utils.prometheus import SingleNodePromClient
 from barazmoon import MLServerAsync
-
-prom_client = SingleNodePromClient()
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
     project_dir, '..', '..', '..')))
-
+from experiments.utils.prometheus import SingleNodePromClient
 # import experiments.utils.constants import
 from experiments.utils.constants import (
     PIPLINES_PATH,
     NODE_PROFILING_CONFIGS_PATH,
     NODE_PROFILING_RESULTS_STATIC_PATH
 )
+prom_client = SingleNodePromClient()
 
 KEY_CONFIG_FILENAME = 'key_config_mapper.csv'
 
