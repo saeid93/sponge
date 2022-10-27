@@ -19,10 +19,10 @@ class SingleNodePromClient:
                 for d in data:
                     plot_values[val].append((float(d[1])))
                     times[val].append(float(d[0]))
+            output = plot_values[0], times[0]
         except IndexError:
-            plot_values = [[None]]
-            times = [[None]]
-        return plot_values[0] , times[0]
+            output = None, None
+        return output
 
 
     def get_memory_usage(self, pod_name: str, namespace: str,
