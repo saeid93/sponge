@@ -2,8 +2,6 @@
 Iterate through all possible combination
 of models and servers
 """
-
-import configparser
 import os
 import time
 import json

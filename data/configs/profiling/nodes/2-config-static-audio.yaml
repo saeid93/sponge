@@ -1,5 +1,5 @@
 series: 1
-series_meta: testing static trace
+series_meta: 'checking effect of CPU allocation change,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 pipeline_name: 2-paper-audio-sent
 node_name: audio 
 data_type: audio
