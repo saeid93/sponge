@@ -4,12 +4,25 @@ import pandas as pd
 import numpy as np
 import time
 import json
+import yaml
 
 class Loader:
-    def __init__(self, series_path, config_key_mapper, second_node=False) -> None:
+    def __init__(self, series_path,
+                 config_key_mapper, second_node=False) -> None:
         self.series_path = series_path
         self.config_path = os.path.join(series_path, config_key_mapper)
         self.second_node = second_node
+
+    def load_configs(self) -> Dict[str, Dict[str, Any]]:
+        config_files = {}
+        for file in os.listdir(self.series_path):
+            # check only text files
+            if file.endswith('.yaml'):
+                config_path = os.path.join(self.series_path, file)
+                with open(config_path, 'r') as cf:
+                    config = yaml.safe_load(cf)
+                config_files[file] = config
+        return config_files
 
     def key_config_mapper(self):
         key_config_mapper = pd.read_csv(self.config_path)
@@ -85,11 +98,16 @@ class Loader:
                 # TEMP to be fixed with a consistent time format
                 if self.second_node:
                     inner_times = inner_times[model_name + '_times'][0]
-
-                arrival_key = "arrival_" + model_name
-                serve_key   = "serving_" + model_name
-                model_arrival_time = inner_times[arrival_key]
-                model_serving_time = inner_times[serve_key]
+                try:
+                    arrival_key = "arrival_" + model_name
+                    serve_key   = "serving_" + model_name
+                    model_arrival_time = inner_times[arrival_key]
+                    model_serving_time = inner_times[serve_key]
+                except KeyError:
+                    arrival_key = "arrival_" + model_name.replace('-', '_')
+                    serve_key   = "serving_" + model_name.replace('-', '_')
+                    model_arrival_time = inner_times[arrival_key]
+                    model_serving_time = inner_times[serve_key]
                 # all three latencies
                 client_to_server_latency =\
                     model_arrival_time - sending_time
@@ -111,8 +129,11 @@ class Loader:
 
     def metric_summary(self, metric, values):
         summary = {}
-        if values != []:
-            summary[f'{metric}_avg'] = np.average(values)
+        if values != [] and values != None:
+            try:
+                summary[f'{metric}_avg'] = np.average(values)
+            except TypeError:
+                print('excepted!')
             summary[f'{metric}_p99'] = np.percentile(values, 99)
             summary[f'{metric}_p50'] = np.percentile(values, 50)
             summary[f'{metric}_var'] = np.var(values)
