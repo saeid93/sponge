@@ -18,9 +18,9 @@ from PIL import Image
 from kubernetes import config
 from kubernetes.client import Configuration
 from kubernetes.client.api import core_v1_api
-from pprint import PrettyPrinter
 from tqdm import tqdm
 import shutil
+from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
 from barazmoon import MLServerAsync

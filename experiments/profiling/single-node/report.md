@@ -1,3 +1,11 @@
+
+
+# Check the effect of CPU allocation on nodes of different pipelines
+## Outcome
+
+
+## Done experiments
+
 ## Series 1
 1. audio models
 2. check cpu variations with fixing arrival rate to 1 and high memory usage
@@ -49,3 +57,7 @@ TODO find a way to measere queueing latency
 1. Draw Morphling figures on my experiments
 2. Draw RIM figures on my experiments
 3. Do effect of changing model_variant/batch/#cpu/hardware/
+
+
+# Check the effect of batch size on differnt nodes of the pipelines
+## Outcome
