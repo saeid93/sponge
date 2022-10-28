@@ -1,5 +1,5 @@
 series: 11
-series_meta: testing static trace
+series_meta: 'checking effect of batch size,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 pipeline_name: 3-paper-nlp
 node_name: nlp-trans
 data_type: text
