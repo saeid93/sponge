@@ -1,24 +1,26 @@
 series: 1
 series_meta: testing static trace
-pipeline_name: 3-paper-nlp
-node_name: nlp-trans
+pipeline_name: 1-paper-audio-qa
+node_name: nlp-qa 
 data_type: text
 timeout: 120
 model_vairants:
-  - Helsinki-NLP/opus-mt-fr-en
-  - Helsinki-NLP/opus-mt-tc-big-fr-en
+  - deepset/roberta-base-squad2
+  # - deepset/xlm-roberta-large-squad2
+  # - distilbert-base-cased-distilled-squad
+  # - deepset/xlm-roberta-base-squad2
 max_batch_size:
-  - '1'
+  # - '1'
   - '4'
-  - '18'
+  # - '18'
 max_batch_time:
   - '1'
 cpu_request:
-  - '1'
-  - '2'
+  # - '1'
+  # - '2'
   - '4'
-  - '8'
-  - '16'
+  # - '8'
+  # - '16'
 memory_request:
   - 8Gi
 replicas:

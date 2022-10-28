@@ -25,23 +25,29 @@ model_vairants:
   - google/pegasus-large
 max_batch_size:
   - '1'
-  - '4'
-  - '18'
-max_batch_time:
-  - '1'
-cpu_request:
-  - '1'
   - '2'
   - '4'
   - '8'
   - '16'
+max_batch_time:
+  - '1'
+cpu_request:
+  # - '1'
+  # - '2'
+  # - '4'
+  # - '8'
+  - '16'
+  # - '32'
 memory_request:
-  - 8Gi
+  - 40Gi
 replicas:
   - 1
 workload_type: static
-repetition: 3
+repetition: 2
 workload_config:
   loads_to_test:
-  - 1
-  load_duration: 120
+  # - 1
+  # - 10
+  - 20
+  # - 40
+  load_duration: 60
