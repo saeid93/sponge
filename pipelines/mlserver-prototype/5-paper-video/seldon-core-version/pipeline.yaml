@@ -29,7 +29,7 @@ spec:
     - spec:
         containers:
         - image: sdghafouri/video-pipelines-mlserver:resnet-human
-          name: resnet
+          name: resnet-human
           imagePullPolicy: Always
           env:
             - name: MODEL_VARIANT
@@ -46,7 +46,7 @@ spec:
       name: yolo
       type: MODEL
       children:
-      - name: resnet
+      - name: resnet-human
         type: MODEL
         children: []
     svcOrchSpec:

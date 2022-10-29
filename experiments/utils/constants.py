@@ -18,13 +18,18 @@ PIPELINE_PROFILING_CONFIGS_PATH = os.path.join(
 # results path
 RESULTS_PATH = os.path.join(DATA_PATH, "results")
 PROFILING_RESULTS_PATH = os.path.join(RESULTS_PATH, "profiling")
-NODE_PROFILING_RESULTS_PATH = os.path.join(PROFILING_RESULTS_PATH, "nodes")
+NODE_PROFILING_RESULTS_PATH = os.path.join(
+    PROFILING_RESULTS_PATH, "nodes")
 NODE_PROFILING_RESULTS_STATIC_PATH = os.path.join(
     NODE_PROFILING_RESULTS_PATH, "static")
 NODE_PROFILING_RESULTS_DYNAMIC_PATH = os.path.join(
     NODE_PROFILING_RESULTS_PATH, "dynamic")
 PIPELINE_PROFILING_RESULTS_PATH = os.path.join(
     PROFILING_RESULTS_PATH, "pipelines")
+PIPELINE_PROFILING_RESULTS_STATIC_PATH = os.path.join(
+    PIPELINE_PROFILING_RESULTS_PATH, "static")
+PIPELINE_PROFILING_RESULTS_DYNAMIC_PATH = os.path.join(
+    PIPELINE_PROFILING_RESULTS_PATH, "dynamic")
 
 # generated baesd on the users' path
 # TODO completely polish and remove unecessary ones
@@ -58,12 +63,15 @@ def _create_dirs():
         os.makedirs(PROFILING_RESULTS_PATH)
     if not os.path.exists(NODE_PROFILING_RESULTS_PATH):
         os.makedirs(NODE_PROFILING_RESULTS_PATH)
-    if not os.path.exists(PIPELINE_PROFILING_RESULTS_PATH):
-        os.makedirs(PIPELINE_PROFILING_RESULTS_PATH)
     if not os.path.exists(NODE_PROFILING_RESULTS_STATIC_PATH):
         os.makedirs(NODE_PROFILING_RESULTS_STATIC_PATH)
     if not os.path.exists(NODE_PROFILING_RESULTS_DYNAMIC_PATH):
         os.makedirs(NODE_PROFILING_RESULTS_DYNAMIC_PATH)
+    if not os.path.exists(PIPELINE_PROFILING_RESULTS_DYNAMIC_PATH):
+        os.makedirs(PIPELINE_PROFILING_RESULTS_DYNAMIC_PATH)
+    if not os.path.exists(PIPELINE_PROFILING_RESULTS_STATIC_PATH):
+        os.makedirs(PIPELINE_PROFILING_RESULTS_STATIC_PATH)
+        
 _create_dirs()
 
 # prometheus client
