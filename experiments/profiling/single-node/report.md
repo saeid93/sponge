@@ -9,6 +9,7 @@
 ## Series 1
 1. audio models
 2. check cpu variations with fixing arrival rate to 1 and high memory usage
+
 ### Outcome
 1. CPU allocation has a linear trend on the model latency
 2. Some heavy models are not working at all under some CPU allocation
@@ -47,11 +48,29 @@ TODO find a way to measere queueing latency
 ## Series 6
 1. resnet
 2. check batch variations
+3. needs to be repeated as the time of the experiment in previous case was 15s
+
+## Series 7
+1. Repeat of the 6 with duration of 60s
+2. Should be repeated as there are some Nans
+
+## Series 8
+1. Sentiment analysis
+2. Should be repeated as there are some Nans
+
+## Series 9
+1. sentiment analysis
+2. check batch variations
+
+## Series 10
+1. audio
+2. check batch size variations
 
 ## Notes
 1. what should I do for models that are not working at all in some experiments?
 2. why second run is better?
 3. for memory we need to find the "just enough memory" and no optimization after that makes real sense
+4. There isn't much change in interesting trend  model 1 in series 8, average latency is almost the same across all batch sizes
 
 ## TODO
 1. Draw Morphling figures on my experiments
