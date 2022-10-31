@@ -53,12 +53,15 @@ class Loader:
         files = self.get_result_file_names()
         results = {}
         for file in files:
-            name = file.split(".")[0].split("/")[-1]
-            full_path = os.path.join(
-                self.series_path, file
-            )
-            json_file = open(full_path)
-            results[name] = json.load(json_file)
+            try:
+                name = file.split(".")[0].split("/")[-1]
+                full_path = os.path.join(
+                    self.series_path, file
+                )
+                json_file = open(full_path)
+                results[name] = json.load(json_file)
+            except:
+                print('excepted!')
         return results
 
     def flatten_results(self, per_second_latencies):
