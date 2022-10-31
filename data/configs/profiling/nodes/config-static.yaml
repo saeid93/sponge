@@ -4,7 +4,7 @@ pipeline_name: paper-audio-qa
 node_name: audio
 data_type: audio
 timeout: 120 
-model_vairants:
+model_variants:
   - facebook/s2t-small-librispeech-asr
 max_batch_size:
   - '5'

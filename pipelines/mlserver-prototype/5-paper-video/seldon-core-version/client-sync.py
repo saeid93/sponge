@@ -43,7 +43,7 @@ images = {
             :num_loaded_images]}
 
 gateway_endpoint="localhost:32000"
-deployment_name = 'video'
+deployment_name = 'paper-video'
 namespace = "default"
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 

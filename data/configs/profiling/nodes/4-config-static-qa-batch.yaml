@@ -4,7 +4,7 @@ pipeline_name: 4-paper-sum-qa
 node_name: nlp-qa
 data_type: text
 timeout: 180
-model_vairants:
+model_variants:
   - deepset/roberta-base-squad2
   - deepset/xlm-roberta-large-squad2
   - distilbert-base-cased-distilled-squad

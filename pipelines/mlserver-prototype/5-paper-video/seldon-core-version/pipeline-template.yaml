@@ -24,7 +24,7 @@ spec:
               memory: '{{ memory_limit_1 }}'
           env:
             - name: MODEL_VARIANT
-              value: {{ model_vairant_1 }}
+              value: {{ model_variant_1 }}
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TORCH_HOME
@@ -48,7 +48,7 @@ spec:
               memory: '{{ memory_limit_2 }}'
           env:
             - name: MODEL_VARIANT
-              value: {{ model_vairant_2 }}
+              value: {{ model_variant_2 }}
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TORCH_HOME

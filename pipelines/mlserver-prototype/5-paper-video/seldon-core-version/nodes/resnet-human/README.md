@@ -9,7 +9,7 @@ mlserver start .
 then use the following `model-settings.json` (include batching variable):
 ```json
 {
-    "name": "resnet",
+    "name": "resnet-human",
     "implementation": "models.ResnetHuman",
     "max_batch_size": 5,
     "max_batch_time": 1,
@@ -21,7 +21,7 @@ then use the following `model-settings.json` (include batching variable):
 if you are are compling the mlserver then use the follwoing (remove batching variables):
 ```json
 {
-    "name": "resnet",
+    "name": "resnet-human",
     "implementation": "models.ResnetHuman",
     "parameters": {
         "uri": "./fakeuri"

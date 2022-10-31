@@ -1,4 +1,5 @@
 import os
+from re import T
 from typing import List, Dict, Any
 import pandas as pd
 import numpy as np
@@ -8,10 +9,11 @@ import yaml
 
 class Loader:
     def __init__(self, series_path,
-                 config_key_mapper, second_node=False) -> None:
+                 config_key_mapper, second_node=False, type_of='node') -> None:
         self.series_path = series_path
         self.config_path = os.path.join(series_path, config_key_mapper)
         self.second_node = second_node
+        self.type_of = type_of
 
     def load_configs(self) -> Dict[str, Dict[str, Any]]:
         config_files = {}
@@ -72,7 +74,7 @@ class Loader:
                 flattend_results.append(request_result)
         return flattend_results
 
-    def latency_calculator(self, results: Dict[Dict, Any]):
+    def _node_latency_calculator(self, results: Dict[Dict, Any]):
         client_to_server_latencies = []
         model_latencies = []
         model_to_server_latencies = []
@@ -126,6 +128,127 @@ class Loader:
             except KeyError:
                 timeout_count += 1
         return latencies, timeout_count
+
+    def _pipeline_latency_calculator(
+        self, results: Dict[Dict, Any]):
+        sample_time_entry = json.loads(
+            results[0]['outputs'][0]['data'][0])['time']
+        model_name_raws = list(
+            sample_time_entry.keys())
+        model_time_types = list(
+            map(lambda l: type(l), list(
+                json.loads(results[0][
+                    'outputs'][0]['data'][0])[
+                        'time'].values())))
+        time_variables = []
+        for model_name_raw, model_time_type in zip(
+            model_name_raws, model_time_types):
+            if model_time_type == list:
+                time_variables.append(
+                    list(sample_time_entry[
+                        model_name_raw][0].keys()))
+            else:
+                time_variables.append(model_name_raw)
+        flattened_time_variables = []
+        for time_variable in time_variables:
+            if type(time_variable) == str:
+                flattened_time_variables.append(time_variable)
+            elif type(time_variable) == list:
+                for sub_time_var in time_variable:
+                    flattened_time_variables.append(sub_time_var)
+        
+        raw_latencies = {
+            time_var: [] for time_var in flattened_time_variables}
+        raw_latencies.update({
+            'sending_time': [],
+            'arrival_time': []
+        })
+        # for time_variable in time_variables:
+        timeout_count = 0
+        for result in results:
+            try:
+                # outer times
+                outter_times = result[
+                    'timing'] if 'timing' in result.keys() else result['time']
+                raw_latencies['sending_time'].append(
+                    outter_times["sending_time"])
+                raw_latencies['arrival_time'].append(
+                    outter_times["arrival_time"])
+                times = json.loads(
+                    result['outputs'][0]['data'][0])['time']
+                for time_var, value in times.items():
+                    if type(value) == list:
+                        reversed = {key: [] for key in list(value[0].keys())}
+                        for item in value:
+                            for entry, val in item.items():
+                                reversed[entry].append(val)
+                        reversed_to_add = {
+                            k: max(v) for k, v in reversed.items()}
+                        for latency_var, value in reversed_to_add.items():
+                            raw_latencies[latency_var].append(value)
+                    else:
+                        raw_latencies[time_var].append(value)
+            except KeyError:
+                timeout_count += 1
+        latencies = raw_latencies
+        nodes_order = self._find_node_orders()
+        latencies = {
+            'client_to_server': []
+        }
+        for node_index in range(len(nodes_order)):
+            latencies.update({
+                f'{nodes_order[node_index]}': [],
+            })
+            if node_index + 1 != len(nodes_order):
+                latencies.update({
+                    f'{nodes_order[node_index]}_to_{nodes_order[node_index+1]}': [],
+                })
+            else: break
+        latencies.update({
+            f'server_to_client': []
+        })
+        for key, value in latencies.items():
+            if 'client_to_server' == key:
+                length = min(
+                    len(raw_latencies['sending_time']),
+                    len(raw_latencies[
+                        f"arrival_{nodes_order[0]}"]))
+                # TODO might be buggy
+                latencies[key] = np.array(
+                    raw_latencies[
+                        f"arrival_{nodes_order[0]}"][:length]) - np.array(
+                    raw_latencies['sending_time'][:length])
+            elif 'server_to_client' == key:
+                latencies[key] = np.array(
+                    raw_latencies[
+                        'arrival_time'][:length]) - np.array(
+                    raw_latencies[
+                        f"serving_{nodes_order[len(nodes_order)-1]}"][:length])
+                break
+            elif key in nodes_order:
+                latencies[key] = np.array(
+                    raw_latencies[
+                        f"serving_{key}"] - np.array(
+                            raw_latencies[f"arrival_{key}"]))
+            elif '_to_' in key and 'client' not in key:
+                nodes = key.split('_to_')
+                latencies[key] = np.array(
+                    raw_latencies[f'arrival_{nodes[1]}']) - np.array(
+                        raw_latencies[f"serving_{nodes[0]}"]
+                    )
+        latencies = {k: v.tolist() for k, v in latencies.items()}
+        return latencies, timeout_count
+
+    def latency_calculator(self, results: Dict[Dict, Any]):
+        """symmetric input meaning:
+            per each input at the first node of the pipeline
+            we only have one output going to the second node of the
+            pipeline
+        """
+        if self.type_of == 'node':
+            return self._node_latency_calculator(results)
+        elif self.type_of == 'pipeline':
+            return self._pipeline_latency_calculator(results)
 
     def metric_summary(self, metric, values):
         summary = {}
@@ -185,12 +308,26 @@ class Loader:
                 'start_time_experiment',
                 'end_time_experiment'   
             ]
-            for metric, values in result.items():
-                if metric in skipped_metrics:
-                    continue
-                processed_exp.update(self.metric_summary(
-                    metric=metric, values=values))
-            final_dataframe.append(processed_exp)
+            if self.type_of=='node':
+                for metric, values in result.items():
+                    if metric in skipped_metrics:
+                        continue
+                    processed_exp.update(self.metric_summary(
+                        metric=metric, values=values))
+                final_dataframe.append(processed_exp)
+            elif self.type_of=='pipeline':
+                nodes_order = self._find_node_orders()
+                for model in nodes_order:
+                    for pod_name, pod_values in result[model].items():
+                        pod_index = 1
+                        for metric, values in pod_values.items():
+                            if metric in skipped_metrics:
+                                continue
+                            processed_exp.update(self.metric_summary(
+                                metric=f'{model}_pod{pod_index}_{metric}',
+                                values=values))
+                        pod_index += 1
+                final_dataframe.append(processed_exp)
         return pd.DataFrame(final_dataframe)
 
     def table_maker(
@@ -209,3 +346,11 @@ class Loader:
         columns = metadata_columns + results_columns
         output = merged_results[columns]
         return output
+
+    def _find_node_orders(self):
+        config = self.load_configs()
+        sample_config_key = list(config.keys())[0]
+        node_order = list(
+            map(lambda l: l['node_name'],
+            config[sample_config_key]['nodes']))
+        return node_order
