@@ -4,7 +4,7 @@ pipeline_name: 5-paper-video
 node_name: yolo
 data_type: image
 timeout: 120
-model_vairants:
+model_variants:
   - yolov5n
   - yolov5s
   - yolov5m

@@ -47,7 +47,7 @@ input_data = images["ILSVRC2017_test_00000009.JPEG"]
 input_data_shape = [1] + list(np.shape(input_data))
 
 gateway_endpoint="localhost:32000"
-deployment_name = 'video'
+deployment_name = 'paper-video'
 namespace = "default"
 
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"

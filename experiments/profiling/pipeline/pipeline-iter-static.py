@@ -113,21 +113,21 @@ def experiments(pipeline_name: str, node_names: str,
     timeout = config['timeout']
 
 
-    model_vairants = []
+    model_variants = []
     max_batch_sizes = []
     max_batch_times = []
     cpu_requests = []
     memory_requests = []
     replicas = []
     for node_config in config['nodes']:
-        model_vairants.append(node_config['model_vairants'])
+        model_variants.append(node_config['model_variants'])
         max_batch_sizes.append(node_config['max_batch_size'])
         max_batch_times.append(node_config['max_batch_time'])
         cpu_requests.append(node_config['cpu_request'])
         memory_requests.append(node_config["memory_request"])
         replicas.append(node_config['replicas'])
 
-    model_vairants = list(itertools.product(*model_vairants))
+    model_variants = list(itertools.product(*model_variants))
     max_batch_sizes = list(itertools.product(*max_batch_sizes))
     max_batch_times = list(itertools.product(*max_batch_times))
     cpu_requests = list(itertools.product(*cpu_requests))
@@ -136,7 +136,7 @@ def experiments(pipeline_name: str, node_names: str,
     # TOOD Add cpu type, gpu type
     # TODO Better solution instead of nested for loops
     # TODO Also add the random - maybe just use Tune
-    for model_variant in model_vairants:
+    for model_variant in model_variants:
         for max_batch_size in max_batch_sizes:
             for max_batch_time in max_batch_times:
                 for cpu_request in cpu_requests:
@@ -216,7 +216,7 @@ def setup_pipeline(pipeline_name: str,
                 f"memory_request_{node_index}": memory_request[node_id],
                 f"cpu_limit_{node_index}": cpu_request[node_id],
                 f"memory_limit_{node_index}": memory_request[node_id],
-                f"model_vairant_{node_index}": model_variant[node_id],
+                f"model_variant_{node_index}": model_variant[node_id],
                 f"max_batch_size_{node_index}": max_batch_size[node_id],
                 f"max_batch_time_{node_index}": max_batch_time[node_id],
                 f"replicas_{node_index}": replica[node_id]
@@ -336,7 +336,7 @@ def save_report(experiment_id: int,
         PIPELINE_PROFILING_RESULTS_STATIC_PATH,
         'series', str(series), f"{experiment_id}.json")
     duration = (end_time_experiment - start_time_experiment)//60 + 1
-    for node_name, replica in zip(node_names, replicas):
+    for node_name in node_names:
         pod_names = get_pod_name(node_name=node_name, namespace=namespace)
         node_results = {}
         for pod_name in pod_names:

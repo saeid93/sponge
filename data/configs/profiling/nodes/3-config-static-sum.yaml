@@ -4,7 +4,7 @@ pipeline_name: 3-paper-nlp
 node_name: nlp-sum
 data_type: text
 timeout: 120
-model_vairants:
+model_variants:
   - sshleifer/distilbart-cnn-12-6
   - sshleifer/distilbart-xsum-1-1
   - sshleifer/distill-pegasus-cnn-16-4

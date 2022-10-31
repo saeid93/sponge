@@ -66,7 +66,6 @@ endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/m
 # gateway_endpoint="localhost:8080"
 # endpoint = f"http://{gateway_endpoint}/v2/models/yolo/infer"
 
-from copy import deepcopy
 batch_test = 6
 responses = []
 

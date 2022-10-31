@@ -4,7 +4,7 @@ pipeline_name: 3-paper-nlp
 node_name: nlp-li
 data_type: text
 timeout: 120
-model_vairants:
+model_variants:
   - dinalzein/xlm-roberta-base-finetuned-language-identification
 max_batch_size:
   - '1'

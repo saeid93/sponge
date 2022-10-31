@@ -111,7 +111,7 @@ def key_config_mapper(
 
 def experiments(pipeline_name: str, node_name: str,
                 config: dict, node_path: str, data_type: str):
-    model_vairants = config['model_vairants']
+    model_variants = config['model_variants']
     max_batch_sizes = config['max_batch_size']
     max_batch_times = config['max_batch_time']
     cpu_requests = config['cpu_request']
@@ -123,7 +123,7 @@ def experiments(pipeline_name: str, node_name: str,
     repetition = config['repetition']
     # Better solution instead of nested for loops
     # TODO also add the random - maybe just use Tune
-    for model_variant in model_vairants:
+    for model_variant in model_variants:
         for max_batch_size in max_batch_sizes:
             for max_batch_time in max_batch_times:
                 for cpu_request in cpu_requests:
@@ -178,7 +178,7 @@ def setup_node(node_name: str, cpu_request: str,
         "memory_request": memory_request,
         "cpu_limit": cpu_request,
         "memory_limit": memory_request,
-        "model_vairant": model_variant,
+        "model_variant": model_variant,
         "max_batch_size": max_batch_size,
         "max_batch_time": max_batch_time,
         "replicas": replica
