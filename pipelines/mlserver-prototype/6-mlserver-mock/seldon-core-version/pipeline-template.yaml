@@ -11,8 +11,8 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/audio-qa-pipelines-mlserver:audio
-          name: audio
+        - image: sdghafouri/mlserver-mock:mock-one
+          name: mock-one
           imagePullPolicy: Always
           resources:
             requests:
@@ -26,8 +26,6 @@ spec:
               value: {{ model_variant_1 }}
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
-            - name: TASK
-              value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: '{{ max_batch_size_1 }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
@@ -35,8 +33,8 @@ spec:
       replicas: {{ replicas_1 }}
     - spec:
         containers:
-        - image: sdghafouri/audio-qa-pipelines-mlserver:nlpqa
-          name: nlp-qa 
+        - image: sdghafouri/mlserver-mock:mock-two
+          name: mock-two
           imagePullPolicy: Always
           resources:
             requests:
@@ -50,20 +48,16 @@ spec:
               value: {{ model_variant_2 }}
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
-            - name: TASK
-              value: question-answering
-            - name: CONTEXT
-              value: default
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: '{{ max_batch_size_2 }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: '{{ max_batch_time_2 }}'
       replicas: {{ replicas_2 }}
     graph:
-      name: audio
+      name: mock-one
       type: MODEL
       children:
-      - name: nlp-qa
+      - name: mock-two
         type: MODEL
         children: []
     svcOrchSpec:
