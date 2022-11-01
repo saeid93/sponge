@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 series: 20
 series_meta: 'checking the effect of changing all variables,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
+=======
+series: 19
+series_meta: 'checking the effect of changing all variables under arrival rate of 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
+>>>>>>> 650c2ca29d7613691b6d743befe83be8c10795af
 pipeline_name: 5-paper-video
 node_name: resnet-human
 data_type: text
@@ -27,7 +32,7 @@ cpu_request:
   - '16'
   # - '32'
 memory_request:
-  - 60Gi
+  - 20Gi
 replicas:
   - 1
 workload_type: static
