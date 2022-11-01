@@ -66,6 +66,9 @@ spec:
         type: MODEL
         children: []
     svcOrchSpec:
+      env:
+      - name: SELDON_LOG_LEVEL
+        value: DEBUG
       resources:
         requests:
           cpu: '8'
