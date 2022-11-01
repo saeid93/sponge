@@ -24,13 +24,9 @@ spec:
               memory: '{{ memory_limit }}'
           env:
             - name: MODEL_VARIANT
-              value: {{ model_variant }}
+              value: '{{ model_variant }}'
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
-            - name: TASK
-              value: question-answering
-            - name: CONTEXT
-              value: default
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
@@ -41,6 +37,9 @@ spec:
       type: MODEL
       children: []
     svcOrchSpec:
+      env:
+      - name: SELDON_LOG_LEVEL
+        value: DEBUG
       resources:
         requests:
           cpu: '4'

@@ -1,0 +1,27 @@
+series: 30
+series_meta: testing static trace
+pipeline_name: 6-mlserver-mock
+node_name: mock-one
+data_type: audio
+timeout: 60
+model_variants:
+  - '0'
+max_batch_size:
+  - '1'
+max_batch_time:
+  - '1'
+cpu_request:
+  - '1'
+memory_request:
+  - 8Gi
+replicas:
+  - 1
+workload_type: static
+repetition: 2
+workload_config:
+  loads_to_test:
+  # - 1
+  # - 10
+  - 20
+  # - 40
+  load_duration: 60

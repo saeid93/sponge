@@ -13,7 +13,7 @@ spec:
     - spec:
         containers:
         - image: sdghafouri/mlserver-mock:mock-one
-          name: nlp-qa 
+          name: mock-one
           imagePullPolicy: Always
           resources:
             requests:
@@ -24,7 +24,7 @@ spec:
               memory: '{{ memory_limit }}'
           env:
             - name: MODEL_VARIANT
-              value: {{ model_variant }}
+              value: '{{ model_variant }}'
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -37,6 +37,9 @@ spec:
       type: MODEL
       children: []
     svcOrchSpec:
+      env:
+      - name: SELDON_LOG_LEVEL
+        value: DEBUG
       resources:
         requests:
           cpu: '4'
