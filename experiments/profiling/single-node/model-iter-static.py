@@ -387,7 +387,7 @@ def save_report(experiment_id: int,
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='5-config-static-yolo')
+    '--config-name', required=True, type=str, default='6-mlserver-mock-static')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
