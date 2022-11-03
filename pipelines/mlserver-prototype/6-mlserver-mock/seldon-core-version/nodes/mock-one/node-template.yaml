@@ -47,3 +47,6 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
+    labels:
+      sidecar.istio.io/inject: "true"
+    replicas: 1

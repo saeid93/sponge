@@ -20,7 +20,7 @@ endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/m
 # model = 'mock-one'
 # endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
-batch_test = 6
+batch_test = 30
 responses = []
 
 ds = load_dataset(
