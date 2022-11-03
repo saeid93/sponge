@@ -42,8 +42,8 @@ class MockTwo(MLModel):
         self.request_counter = 0
         self.batch_counter = 0
         try:
-            self.MODEL_VARIANT = int(os.environ['MODEL_VARIANT'])
-            logger.error(f'MODEL_VARIANT set to: {int(self.MODEL_VARIANT)}')
+            self.MODEL_VARIANT = float(os.environ['MODEL_VARIANT'])
+            logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
             self.MODEL_VARIANT = 0
             logger.error(
