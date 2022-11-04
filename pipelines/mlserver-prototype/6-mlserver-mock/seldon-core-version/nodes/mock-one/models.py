@@ -27,7 +27,7 @@ try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
     logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
-    PREDICTIVE_UNIT_ID = 'predictive_unit'
+    PREDICTIVE_UNIT_ID = 'mock_one'
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
