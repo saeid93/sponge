@@ -8,7 +8,9 @@ spec:
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: default 
+  - name: default
+    annotations:
+      seldon.io/no-engine: "False"
     componentSpecs:
     - spec:
         containers:
