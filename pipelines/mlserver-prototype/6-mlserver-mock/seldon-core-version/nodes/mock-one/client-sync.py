@@ -20,7 +20,7 @@ endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/m
 # model = 'mock-one'
 # endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
-batch_test = 7
+batch_test = 1
 
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
