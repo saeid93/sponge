@@ -91,18 +91,18 @@ def experiments(pipeline_name: str, node_name: str,
                     for memory_request in memory_requests:
                         for replica in replicas:
                             for load in loads_to_test:
-                                setup_node(
-                                    node_name=node_name,
-                                    cpu_request=cpu_request,
-                                    memory_request=memory_request,
-                                    model_variant=model_variant,
-                                    max_batch_size=max_batch_size,
-                                    max_batch_time=max_batch_time,
-                                    replica=replica,
-                                    node_path=node_path,
-                                    timeout=timeout,
-                                    no_engine=no_engine
-                                )
+                                # setup_node(
+                                #     node_name=node_name,
+                                #     cpu_request=cpu_request,
+                                #     memory_request=memory_request,
+                                #     model_variant=model_variant,
+                                #     max_batch_size=max_batch_size,
+                                #     max_batch_time=max_batch_time,
+                                #     replica=replica,
+                                #     node_path=node_path,
+                                #     timeout=timeout,
+                                #     no_engine=no_engine
+                                # )
                                 for rep in range(repetition):
                                     print('-'*25\
                                         + f' starting repetition {rep} ' +\
@@ -151,7 +151,7 @@ def experiments(pipeline_name: str, node_name: str,
                                 print(f'waiting for {timeout} seconds')
                                 for _ in tqdm(range(20)):
                                     time.sleep(timeout/20)
-                                remove_node(node_name=node_name, timeout=timeout)
+                                # remove_node(node_name=node_name, timeout=timeout)
 
 def key_config_mapper(
     pipeline_name: str, node_name: str, cpu_request: str,
@@ -204,39 +204,39 @@ def key_config_mapper(
         row_writer.close()
     return experiment_id
 
-def setup_node(node_name: str, cpu_request: str,
-               memory_request: str, model_variant: str, max_batch_size: str,
-               max_batch_time: str, replica: int, node_path: str, timeout: int,
-               no_engine=False):
-    print('-'*25 + ' setting up the node with following config' + '-'*25)
-    print('\n')
-    svc_vars = {
-        "name": node_name,
-        "cpu_request": cpu_request,
-        "memory_request": memory_request,
-        "cpu_limit": cpu_request,
-        "memory_limit": memory_request,
-        "model_variant": model_variant,
-        "max_batch_size": max_batch_size,
-        "max_batch_time": max_batch_time,
-        "replicas": replica,
-        "no_engine": str(no_engine)
-        }
-    environment = Environment(
-        loader=FileSystemLoader(node_path))
-    svc_template = environment.get_template('node-template.yaml')
-    content = svc_template.render(svc_vars)
-    pp.pprint(content)
-    command = f"""cat <<EOF | kubectl apply -f -
-{content}
-        """
-    os.system(command)
-    print('-'*25 + f' waiting {timeout} to make sure the node is up ' + '-'*25)
-    print('\n')
-    print('-'*25 + f' model pod {timeout} successfuly set up ' + '-'*25)
-    print('\n')
-    for _ in tqdm(range(20)):
-        time.sleep(timeout/20)
+# def setup_node(node_name: str, cpu_request: str,
+#                memory_request: str, model_variant: str, max_batch_size: str,
+#                max_batch_time: str, replica: int, node_path: str, timeout: int,
+#                no_engine=False):
+#     print('-'*25 + ' setting up the node with following config' + '-'*25)
+#     print('\n')
+#     svc_vars = {
+#         "name": node_name,
+#         "cpu_request": cpu_request,
+#         "memory_request": memory_request,
+#         "cpu_limit": cpu_request,
+#         "memory_limit": memory_request,
+#         "model_variant": model_variant,
+#         "max_batch_size": max_batch_size,
+#         "max_batch_time": max_batch_time,
+#         "replicas": replica,
+#         "no_engine": str(no_engine)
+#         }
+#     environment = Environment(
+#         loader=FileSystemLoader(node_path))
+#     svc_template = environment.get_template('node-template.yaml')
+#     content = svc_template.render(svc_vars)
+#     pp.pprint(content)
+#     command = f"""cat <<EOF | kubectl apply -f -
+# {content}
+#         """
+#     os.system(command)
+#     print('-'*25 + f' waiting {timeout} to make sure the node is up ' + '-'*25)
+#     print('\n')
+#     print('-'*25 + f' model pod {timeout} successfuly set up ' + '-'*25)
+#     print('\n')
+#     for _ in tqdm(range(20)):
+#         time.sleep(timeout/20)
 
 def load_test(node_name: str, data_type: str,
               node_path: str,
@@ -285,11 +285,9 @@ def load_test(node_name: str, data_type: str,
     else:
         raise ValueError(f"Invalid data_type: {data_type}")
     # load test on the server
-    gateway_endpoint = "localhost:32000"
-    if not no_engine:
-        endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/infer"
-    else:
-        endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/{node_name}/infer" 
+    gateway_endpoint = "localhost:8080"
+    # endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/{node_name}/infer"
+    endpoint = f"http://{gateway_endpoint}/v2/models/{node_name}/infer"
     workload = [load] * load_duration
     load_tester = MLServerAsync(
         endpoint=endpoint,
@@ -347,70 +345,70 @@ def save_report(experiment_id: int,
         'start_time_experiment': start_time_experiment,
         'end_time_experiment': end_time_experiment,
     }
-    # TODO experiments id system
-    duration = (end_time_experiment - start_time_experiment)//60 + 1
+    # # TODO experiments id system
+    # duration = (end_time_experiment - start_time_experiment)//60 + 1
 
     save_path = os.path.join(
         NODE_PROFILING_RESULTS_STATIC_PATH,
         'series', str(series), f"{experiment_id}.json")
-    # TODO add list of pods in case of replicas
-    pod_name = get_pod_name(node_name=node_name, namespace=namespace)[0]
+    # # TODO add list of pods in case of replicas
+    # pod_name = get_pod_name(node_name=node_name, namespace=namespace)[0]
 
-    if not no_engine:
-        svc_path = os.path.join(
-            NODE_PROFILING_RESULTS_STATIC_PATH,
-            'series', str(series), f"{experiment_id}.txt")
-        svc_pod_name = get_pod_name(
-            node_name=node_name, namespace=namespace, orchestrator=True)
-    cpu_usage_count, time_cpu_usage_count =\
-        prom_client.get_cpu_usage_count(
-            pod_name=pod_name, namespace="default",
-            duration=int(duration), container=node_name)
-    cpu_usage_rate, time_cpu_usage_rate =\
-        prom_client.get_cpu_usage_rate(
-            pod_name=pod_name, namespace="default",
-            duration=int(duration), container=node_name, rate=120)
+    # if not no_engine:
+    #     svc_path = os.path.join(
+    #         NODE_PROFILING_RESULTS_STATIC_PATH,
+    #         'series', str(series), f"{experiment_id}.txt")
+    #     svc_pod_name = get_pod_name(
+    #         node_name=node_name, namespace=namespace, orchestrator=True)
+    # cpu_usage_count, time_cpu_usage_count =\
+    #     prom_client.get_cpu_usage_count(
+    #         pod_name=pod_name, namespace="default",
+    #         duration=int(duration), container=node_name)
+    # cpu_usage_rate, time_cpu_usage_rate =\
+    #     prom_client.get_cpu_usage_rate(
+    #         pod_name=pod_name, namespace="default",
+    #         duration=int(duration), container=node_name, rate=120)
 
-    cpu_throttled_count, time_cpu_throttled_count =\
-        prom_client.get_cpu_throttled_count(
-            pod_name=pod_name, namespace="default",
-            duration=int(duration), container=node_name)
-    cpu_throttled_rate, time_cpu_throttled_rate =\
-        prom_client.get_cpu_throttled_rate(
-            pod_name=pod_name, namespace="default",
-            duration=int(duration), container=node_name, rate=120)
+    # cpu_throttled_count, time_cpu_throttled_count =\
+    #     prom_client.get_cpu_throttled_count(
+    #         pod_name=pod_name, namespace="default",
+    #         duration=int(duration), container=node_name)
+    # cpu_throttled_rate, time_cpu_throttled_rate =\
+    #     prom_client.get_cpu_throttled_rate(
+    #         pod_name=pod_name, namespace="default",
+    #         duration=int(duration), container=node_name, rate=120)
 
-    memory_usage, time_memory_usage = prom_client.get_memory_usage(
-        pod_name=pod_name, namespace="default",
-        container=node_name, duration=int(duration), need_max=False)
+    # memory_usage, time_memory_usage = prom_client.get_memory_usage(
+    #     pod_name=pod_name, namespace="default",
+    #     container=node_name, duration=int(duration), need_max=False)
 
-    throughput, time_throughput = prom_client.get_request_per_second(
-            pod_name=pod_name, namespace="default",
-            duration=int(duration), container=node_name, rate=120)
+    # throughput, time_throughput = prom_client.get_request_per_second(
+    #         pod_name=pod_name, namespace="default",
+    #         duration=int(duration), container=node_name, rate=120)
 
-    results['cpu_usage_count'] = cpu_usage_count
-    results['time_cpu_usage_count'] = time_cpu_usage_count
-    results['cpu_usage_rate'] = cpu_usage_rate
-    results['time_cpu_usage_rate'] = time_cpu_usage_rate
+    # results['cpu_usage_count'] = cpu_usage_count
+    # results['time_cpu_usage_count'] = time_cpu_usage_count
+    # results['cpu_usage_rate'] = cpu_usage_rate
+    # results['time_cpu_usage_rate'] = time_cpu_usage_rate
 
-    results['cpu_throttled_count'] = cpu_throttled_count
-    results['time_cpu_throttled_count'] = time_cpu_throttled_count
-    results['cpu_throttled_rate'] = cpu_throttled_rate
-    results['time_cpu_throttled_rate'] = time_cpu_throttled_rate
+    # results['cpu_throttled_count'] = cpu_throttled_count
+    # results['time_cpu_throttled_count'] = time_cpu_throttled_count
+    # results['cpu_throttled_rate'] = cpu_throttled_rate
+    # results['time_cpu_throttled_rate'] = time_cpu_throttled_rate
 
-    results['memory_usage'] = memory_usage
-    results['time_memory_usage'] = time_memory_usage
+    # results['memory_usage'] = memory_usage
+    # results['time_memory_usage'] = time_memory_usage
 
-    results['throughput'] = throughput
-    results['time_throughput'] = time_throughput
+    # results['throughput'] = throughput
+    # results['time_throughput'] = time_throughput
 
     with open(save_path, "w") as outfile:
         outfile.write(json.dumps(results))
 
-    if not no_engine:
-        os.system(
-            f'kubectl logs -n {namespace} {svc_pod_name} > {svc_path}'
-        )
+    # if not no_engine:
+    #     os.system(
+    #         f'kubectl logs -n {namespace} {svc_pod_name} > {svc_path}'
+    #     )
     print(f'results have been sucessfully saved in:\n{save_path}')
 
 

@@ -9,6 +9,8 @@ spec:
     seldon.io/engine-separate-pod: "true"
   predictors:
   - name: default
+    annotations:
+      seldon.io/no-engine: '{{ no_engine }}'
     componentSpecs:
     - spec:
         containers:
@@ -37,9 +39,9 @@ spec:
       type: MODEL
       children: []
     svcOrchSpec:
-      # env:
-      # - name: SELDON_LOG_LEVEL
-      #   value: DEBUG
+      env:
+      - name: SELDON_LOG_LEVEL
+        value: DEBUG
       resources:
         requests:
           cpu: '4'
