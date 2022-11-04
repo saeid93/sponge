@@ -11,11 +11,11 @@ import json
 
 # single node inferline
 gateway_endpoint = "localhost:32000"
-deployment_name = 'mock-pipeline'
+deployment_name = 'mlserver-mock'
 namespace = "default"
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
-batch_test = 5
+batch_test = 1
 
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",

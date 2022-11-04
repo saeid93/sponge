@@ -23,13 +23,13 @@ spec:
               memory: 4Gi
           env:
             - name: MODEL_VARIANT
-              value: '1'
+              value: '0'
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TASK
               value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: "1"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
       replicas: 1
@@ -47,11 +47,11 @@ spec:
               memory: 4Gi
           env:
             - name: MODEL_VARIANT
-              value: '2'
+              value: '0'
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: "1"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
       replicas: 1

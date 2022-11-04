@@ -13,14 +13,14 @@ import json
 gateway_endpoint = "localhost:32000"
 deployment_name = 'mock-one'
 namespace = "default"
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/mock-one/infer"
 
 # single node inference
 # gateway_endpoint = "localhost:8080"
 # model = 'mock-one'
 # endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
-batch_test = 7
+batch_test = 1
 
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
