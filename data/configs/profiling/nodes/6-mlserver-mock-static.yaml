@@ -1,4 +1,4 @@
-series: 30
+series: 33
 series_meta: none-containerized
 pipeline_name: 6-mlserver-mock
 node_name: mock-one
@@ -7,9 +7,8 @@ no_engine: false
 timeout: 150
 model_variants:
   - '0'
+  - '1'
 max_batch_size:
-  - '1'
-  - '1'
   - '1'
 max_batch_time:
   - '1'
@@ -23,5 +22,8 @@ workload_type: static
 repetition: 1
 workload_config:
   loads_to_test:
+  - 1
   - 40
+  - 100
+  - 1000
   load_duration: 60
