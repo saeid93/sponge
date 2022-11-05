@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import asyncio
 import psutil
 from mlserver import MLModel
 import numpy as np
@@ -31,8 +32,8 @@ except KeyError as e:
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
-def model(input, sleep):
-    time.sleep(sleep)
+async def model(input, sleep):
+    await asyncio.sleep(sleep)
     _ = input
     output = ["mock one output"] * len(input)
     return output
@@ -75,7 +76,7 @@ class MockOne(MLModel):
         logger.error(f"to the model:\n{type(X)}")
         logger.error(f"type of the to the model:\n{type(X)}")
         logger.error(f"len of the to the model:\n{len(X)}")
-        output: List[Dict] = self.model(X, self.MODEL_VARIANT)
+        output: List[Dict] = await self.model(X, self.MODEL_VARIANT)
         logger.error(f"model output:\n{output}")
         serving_time = time.time()
         timing = {
