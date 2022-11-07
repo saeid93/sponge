@@ -6,16 +6,16 @@ import asyncio
 import time
 
 # single node inference
-gateway_endpoint = "localhost:32000"
-deployment_name = 'mock-one'
-namespace = "default"
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+# gateway_endpoint = "localhost:32000"
+# deployment_name = 'mock-one'
+# namespace = "default"
+# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 # single node inference
-# gateway_endpoint = "localhost:8080"
-# model = 'audio'
-# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
-# endpoint = 'http://localhost:5000'
+gateway_endpoint = "localhost:8080"
+model = 'mock-one'
+endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+
 # load data
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
@@ -24,7 +24,7 @@ ds = load_dataset(
 data = ds[0]["audio"]["array"].tolist()
 
 http_method = 'post'
-workload = 120 * [10]
+workload = [100]
 data_shape = [1, len(data)]
 data_type = 'audio'
 
