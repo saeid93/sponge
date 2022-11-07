@@ -317,7 +317,6 @@ def remove_pipeline(pipeline_name, timeout):
     print('-'*50 + f' model pod {timeout} successfuly set up ' + '-'*50)
     print('\n')
 
-
 def save_report(experiment_id: int,
                 responses: str,
                 node_names: Tuple[str],
