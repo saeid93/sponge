@@ -1,7 +1,8 @@
+#!/bin/bash
+
 REPOS=(
-    sdghafouri
-    gcr.io/hale-ivy-335012)
-IMAGE_NAME=audio-sent-pipelines-mlserver:nlpsent
+    sdghafouri)
+IMAGE_NAME=audio-sent-pipelines-mlserver-gpu-1:nlpsent
 PYTHON_ENV=central
 mlserver build . -t $IMAGE_NAME
 for REPO in ${REPOS[@]}

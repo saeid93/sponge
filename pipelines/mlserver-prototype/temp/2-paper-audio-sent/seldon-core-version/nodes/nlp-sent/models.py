@@ -52,10 +52,11 @@ class GeneralNLP(MLModel):
         # TODO add batching like the runtime
         logger.error(f'max_batch_size: {self._settings.max_batch_size}')
         logger.error(f'max_batch_time: {self._settings.max_batch_time}')
+        
         self.model  = pipeline(
             task=self.TASK,
             model=self.MODEL_VARIANT,
-            device=1,
+            device=0, # set device equal to 0 if you wantto inference on gpu
             batch_size=self._settings.max_batch_size)
         logger.error("Loaded on gpu")
         self.loaded = True
