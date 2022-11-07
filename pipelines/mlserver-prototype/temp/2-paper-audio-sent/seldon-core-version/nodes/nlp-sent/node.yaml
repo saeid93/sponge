@@ -5,6 +5,7 @@ metadata:
 spec:
   protocol: v2
   name: nlp-sent
+ 
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
@@ -12,16 +13,18 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/audio-sent-pipelines-mlserver:nlpsent
+        - image: sdghafouri/audio-sent-pipelines-mlserver-gpu-1:nlpsent
           name: nlp-sent
           imagePullPolicy: Always
           resources:
             requests:
               cpu: '4'
               memory: 4Gi
+              nvidia.com/gpu: 1
             limits:
               cpu: '4'
               memory: 4Gi
+              nvidia.com/gpu: 1
           env:
             - name: MODEL_VARIANT
               value: distilbert-base-uncased-finetuned-sst-2-english
@@ -46,3 +49,6 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
+      
+
+

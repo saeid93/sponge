@@ -16,7 +16,7 @@ with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
     data = openfile.read()
 
 http_method = 'post'
-workload = [3, 4, 2]
+workload = [300] * 100
 data_shape = [1]
 data_type = 'text'
 
