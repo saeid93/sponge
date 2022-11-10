@@ -243,5 +243,5 @@ profile-exp*
 cache
 Quantizer
 infass
-!pipelines/mlserver-prototype/paper-video/seldon-core-version/nodes/yolo/cache
+!pipelines/mlserver-prototype/5-paper-video/seldon-core-version/nodes/yolo/cache
 !data/configs
