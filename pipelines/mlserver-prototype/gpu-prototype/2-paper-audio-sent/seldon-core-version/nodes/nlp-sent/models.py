@@ -20,6 +20,16 @@ from mlserver.codecs import StringCodec
 from mlserver_huggingface.common import NumpyEncoder
 from typing import List, Dict
 
+def to_bool(x):
+    return x in ("True", "true", True)
+
+try:
+    GPU = to_bool(os.environ['GPU'])
+    logger.error(f'PREDICTIVE_UNIT_ID set to: {GPU}')
+except KeyError as e:
+    GPU = False
+    logger.error(
+        f"GPU env variable not set, using default value: {GPU}")
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
@@ -52,12 +62,17 @@ class GeneralNLP(MLModel):
         # TODO add batching like the runtime
         logger.error(f'max_batch_size: {self._settings.max_batch_size}')
         logger.error(f'max_batch_time: {self._settings.max_batch_time}')
-        
-        self.model  = pipeline(
-            task=self.TASK,
-            model=self.MODEL_VARIANT,
-            device=0, # set device equal to 0 if you wantto inference on gpu
-            batch_size=self._settings.max_batch_size)
+        if GPU:
+            self.model  = pipeline(
+                task=self.TASK,
+                model=self.MODEL_VARIANT,
+                device=0, # set device equal to 0 if you want inference on gpu
+                batch_size=self._settings.max_batch_size)
+        else:
+            self.model  = pipeline(
+                task=self.TASK,
+                model=self.MODEL_VARIANT,
+                batch_size=self._settings.max_batch_size)
         logger.error("Loaded on gpu")
         self.loaded = True
         logger.error('model loading complete!')

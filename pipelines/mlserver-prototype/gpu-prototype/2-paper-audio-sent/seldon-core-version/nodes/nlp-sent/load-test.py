@@ -5,10 +5,15 @@ import asyncio
 # from barazmoon import responses
 
 
-gateway_endpoint = "localhost:32000"
-deployment_name = 'nlp-sent'
-namespace = "default"
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+# gateway_endpoint = "localhost:32000"
+# deployment_name = 'nlp-sent'
+# namespace = "default"
+# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+
+# single node inferline
+gateway_endpoint="localhost:8080"
+model='nlp-sent'
+endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 PATH = pathlib.Path(__file__).parent.resolve()
 

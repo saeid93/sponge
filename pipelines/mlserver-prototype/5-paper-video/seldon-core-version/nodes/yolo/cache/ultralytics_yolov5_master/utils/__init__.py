@@ -23,7 +23,7 @@ class TryExcept(contextlib.ContextDecorator):
 
     def __exit__(self, exc_type, value, traceback):
         if value:
-            print(emojis(f'{self.msg}{value}'))
+            print(emojis(f"{self.msg}{': ' if self.msg else ''}{value}"))
         return True
 
 
@@ -47,7 +47,6 @@ def notebook_init(verbose=True):
     from utils.general import check_font, check_requirements, is_colab
     from utils.torch_utils import select_device  # imports
 
-    check_requirements(('psutil', 'IPython'))
     check_font()
 
     import psutil
