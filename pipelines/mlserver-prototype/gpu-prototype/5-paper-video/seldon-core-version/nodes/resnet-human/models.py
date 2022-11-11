@@ -21,16 +21,24 @@ from mlserver_huggingface.common import NumpyEncoder
 from copy import deepcopy
 import json
 
+def to_bool(x):
+    return x in ("True", "true", True)
+
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
     logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
-    PREDICTIVE_UNIT_ID = 'resnet'
+    PREDICTIVE_UNIT_ID = 'resnet-human'
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
-
-# PREDICTIVE_UNIT_ID = 'name' #os.environ['PREDICTIVE_UNIT_ID']
+try:
+    GPU = to_bool(os.environ['GPU'])
+    logger.error(f'PREDICTIVE_UNIT_ID set to: {GPU}')
+except KeyError as e:
+    GPU = False 
+    logger.error(
+        f"GPU env variable not set, using default value: {GPU}")
 
 class ResnetHuman(MLModel):
     async def load(self) -> bool:
@@ -65,15 +73,15 @@ class ResnetHuman(MLModel):
             'resnet152': models.resnet152,
         }
         logger.error('Loading the ML models')
-        # TODO cpu and gpu from env variable
         if torch.cuda.is_available():
-            print("model will be load on gpu")
+            print("cuda available")
         print(torch.cuda.is_available(), " model loading...")
         self.device = torch.device(
-            "cuda:0" if torch.cuda.is_available() else "cpu")
-        self.resnet = model[self.MODEL_VARIANT](pretrained=True)
-        self.resnet = self.resnet.to(self.device)
-        self.resnet.eval()
+            "cuda:0" if GPU and torch.cuda.is_available() else "cpu")
+        logger.error(f'loading model to {self.device}')
+        self.model = model[self.MODEL_VARIANT](pretrained=True)
+        self.model = self.model.to(self.device)
+        self.model.eval()
         self.loaded = True
         logger.error('model loading complete!')
         return self.loaded
@@ -135,12 +143,12 @@ class ResnetHuman(MLModel):
         predictions = []
         # complete batch: batch all the X_flatten and then
         # read them one by one
-        complete_batch = torch.stack(X_trans, axis=0)
+        complete_batch = torch.stack(X_trans, axis=0).to(self.device)
         timings = []
         for i in range(0, len(complete_batch), self.batch_size):
-            out = self.resnet(complete_batch[i: i + self.batch_size])
+            out = self.model(complete_batch[i: i + self.batch_size])
             percentages = torch.nn.functional.softmax(out, dim=1) * 100
-            percentages = percentages.detach().numpy()
+            percentages = percentages.detach().cpu().numpy()
             image_net_class = np.argmax(percentages, axis=1)
             predictions += image_net_class.tolist()
             logger.error(f"{image_net_class=}")

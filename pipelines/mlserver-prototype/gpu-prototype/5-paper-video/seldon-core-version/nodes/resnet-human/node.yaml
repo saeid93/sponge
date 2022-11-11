@@ -12,14 +12,14 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/video-pipelines-mlserver-gpu-1:resnet-human
+        - image: sdghafouri/video-pipelines-mlserver-gpu:resnet-human
           name: resnet-human
           imagePullPolicy: Always
           resources:
             requests:
               cpu: '4'
               memory: 4Gi
-              nvidia.com/gpu: 1
+              # nvidia.com/gpu: 1
             limits:
               cpu: '4'
               memory: 4Gi

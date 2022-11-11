@@ -22,6 +22,9 @@ from copy import deepcopy
 import sys
 sys.path.insert(0, './cache/ultralytics_yolov5_master')
 
+def to_bool(x):
+    return x in ("True", "true", True)
+
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
     logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
@@ -29,6 +32,15 @@ except KeyError as e:
     PREDICTIVE_UNIT_ID = 'predictive_unit'
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
+
+try:
+    GPU = to_bool(os.environ['GPU'])
+    logger.error(f'PREDICTIVE_UNIT_ID set to: {GPU}')
+except KeyError as e:
+    GPU = True
+    logger.error(
+        f"GPU env variable not set, using default value: {GPU}")
+
 
 class Yolo(MLModel):
     async def load(self):
@@ -45,13 +57,12 @@ class Yolo(MLModel):
         try:
             logger.error('Loading the ML models')
             self.device = torch.device(
-                "cuda:0" if torch.cuda.is_available() else "cpu")
+                "cuda:0" if GPU and torch.cuda.is_available() else "cpu")
             torch.hub.set_dir('./cache')
             print(torch.__version__)
             logger.error(f'max_batch_size: {self._settings.max_batch_size}')
             logger.error(f'max_batch_time: {self._settings.max_batch_time}')
             logger.error('model is loading on gpu...')
-
             self.model = torch.hub.load('ultralytics/yolov5', self.MODEL_VARIANT)
             logger.error('model loaded!')
             self.loaded = True

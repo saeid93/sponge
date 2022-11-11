@@ -2,7 +2,7 @@
 
 REPOS=(
     sdghafouri)
-IMAGE_NAME=audio-sent-pipelines-mlserver-gpu-1:nlpsent
+IMAGE_NAME=audio-sent-pipelines-mlserver-gpu:nlpsent
 PYTHON_ENV=central
 mlserver build . -t $IMAGE_NAME
 for REPO in ${REPOS[@]}

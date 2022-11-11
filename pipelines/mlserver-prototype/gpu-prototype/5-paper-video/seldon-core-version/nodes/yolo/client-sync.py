@@ -43,13 +43,13 @@ def image_loader(folder_path, image_name):
 #         dataset_folder_path, image_name) for image_name in image_names[
 #             :num_loaded_images]}
 
-gateway_endpoint="localhost:32000"
-deployment_name = 'yolo'
-namespace = "default"
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+# gateway_endpoint="localhost:32000"
+# deployment_name = 'yolo'
+# namespace = "default"
+# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
-# gateway_endpoint="localhost:8080"
-# endpoint = f"http://{gateway_endpoint}/v2/models/yolo/infer"
+gateway_endpoint="localhost:8080"
+endpoint = f"http://{gateway_endpoint}/v2/models/yolo/infer"
 
 PATH = pathlib.Path(__file__).parent.resolve()
 

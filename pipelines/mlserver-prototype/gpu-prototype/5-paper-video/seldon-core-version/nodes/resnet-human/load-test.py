@@ -3,7 +3,7 @@ import pathlib
 from barazmoon import MLServerAsync
 import asyncio
 
-# model = 'resnet'
+# model = 'resnet-human'
 # gateway_endpoint = "localhost:8080"
 # endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
@@ -18,7 +18,7 @@ with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
     data = openfile.read()
 
 http_method = 'post'
-workload = [10, 20 ,5]
+workload = [10] * 100
 data_shape = [1]
 data_type = 'text'
 
