@@ -10,15 +10,15 @@ import threading
 import json
 
 # single node inference
-gateway_endpoint = "localhost:32000"
-deployment_name = 'mock-one'
-namespace = "default"
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/mock-one/infer"
+# gateway_endpoint = "localhost:32000"
+# deployment_name = 'mock-one'
+# namespace = "default"
+# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/mock-one/infer"
 
 # single node inference
-# gateway_endpoint = "localhost:8080"
-# model = 'mock-one'
-# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+gateway_endpoint = "localhost:8080"
+model = 'mock-one'
+endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 batch_test = 1
 

@@ -16,6 +16,8 @@ gateway_endpoint = "localhost:8080"
 model = 'mock-one'
 endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
+# endpoint = 'http://127.0.0.1:8000'
+
 # load data
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
