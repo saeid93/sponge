@@ -34,13 +34,13 @@ from experiments.utils.prometheus import SingleNodePromClient
 from experiments.utils.constants import (
     PIPLINES_PATH,
     NODE_PROFILING_CONFIGS_PATH,
-    NODE_PROFILING_RESULTS_STATIC_PATH
+    NODE_PROFILING_RESULTS_STATIC_PATH,
+    OBJ_NODE_PROFILING_RESULTS_STATIC_PATH
 )
+from experiments.utils.obj import setup_obj_store
 prom_client = SingleNodePromClient()
 
 KEY_CONFIG_FILENAME = 'key_config_mapper.csv'
-
-# timeout = 180
 
 def get_pod_name(node_name: str, namespace='default', orchestrator=False):
     pod_regex = f"{node_name}.*"
@@ -146,6 +146,8 @@ def experiments(pipeline_name: str, node_name: str,
                                         end_time_experiment=end_time_experiment,
                                         series=series,
                                         no_engine=no_engine)
+                                    
+                                    backup(series=series)
 
                                 # TODO better validation -> some request
                                 print(f'waiting for {timeout} seconds')
@@ -413,11 +415,19 @@ def save_report(experiment_id: int,
         )
     print(f'results have been sucessfully saved in:\n{save_path}')
 
-
+def backup(series):
+    data_path = os.path.join(
+        NODE_PROFILING_RESULTS_STATIC_PATH,
+        'series', str(series))
+    backup_path = os.path.join(
+        OBJ_NODE_PROFILING_RESULTS_STATIC_PATH,
+        'series', str(series))
+    setup_obj_store()
+    shutil.copytree(data_path, backup_path)
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='5-config-static-yolo')
+    '--config-name', required=True, type=str, default='6-mlserver-mock-static')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")

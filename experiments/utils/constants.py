@@ -1,10 +1,13 @@
 import os
+from .obj import setup_obj_store
 
 # defined by the user
 PROJECT_PATH = "/home/cc/infernece-pipeline-joint-optimization"
+OBJ_PATH = "/home/cc/my_mounting_point/" # object store path
 
-# base DATA folder path
+# base DATA folder path and object sore path
 DATA_PATH = os.path.join(PROJECT_PATH, "data")
+OBJ_DATA_PATH = os.path.join(OBJ_PATH, "data")
 
 # configs path
 PIPLINES_PATH = os.path.join(
@@ -15,7 +18,7 @@ NODE_PROFILING_CONFIGS_PATH = os.path.join(PROFILING_CONFIGS_PATH, "nodes")
 PIPELINE_PROFILING_CONFIGS_PATH = os.path.join(
     PROFILING_CONFIGS_PATH, "pipelines")
 
-# results path
+# results noraml path
 RESULTS_PATH = os.path.join(DATA_PATH, "results")
 PROFILING_RESULTS_PATH = os.path.join(RESULTS_PATH, "profiling")
 NODE_PROFILING_RESULTS_PATH = os.path.join(
@@ -30,6 +33,24 @@ PIPELINE_PROFILING_RESULTS_STATIC_PATH = os.path.join(
     PIPELINE_PROFILING_RESULTS_PATH, "static")
 PIPELINE_PROFILING_RESULTS_DYNAMIC_PATH = os.path.join(
     PIPELINE_PROFILING_RESULTS_PATH, "dynamic")
+
+# results object storage path
+OBJ_RESULTS_PATH = os.path.join(OBJ_DATA_PATH, "results")
+OBJ_PROFILING_RESULTS_PATH = os.path.join(
+    OBJ_RESULTS_PATH, "profiling")
+OBJ_NODE_PROFILING_RESULTS_PATH = os.path.join(
+    OBJ_PROFILING_RESULTS_PATH, "nodes")
+OBJ_NODE_PROFILING_RESULTS_STATIC_PATH = os.path.join(
+    OBJ_NODE_PROFILING_RESULTS_PATH, "static")
+OBJ_NODE_PROFILING_RESULTS_DYNAMIC_PATH = os.path.join(
+    OBJ_NODE_PROFILING_RESULTS_PATH, "dynamic")
+OBJ_PIPELINE_PROFILING_RESULTS_PATH = os.path.join(
+    OBJ_PROFILING_RESULTS_PATH, "pipelines")
+OBJ_PIPELINE_PROFILING_RESULTS_STATIC_PATH = os.path.join(
+    OBJ_PIPELINE_PROFILING_RESULTS_PATH, "static")
+OBJ_PIPELINE_PROFILING_RESULTS_DYNAMIC_PATH = os.path.join(
+    OBJ_PIPELINE_PROFILING_RESULTS_PATH, "dynamic")
+
 
 # generated baesd on the users' path
 # TODO completely polish and remove unecessary ones
@@ -71,6 +92,27 @@ def _create_dirs():
         os.makedirs(PIPELINE_PROFILING_RESULTS_DYNAMIC_PATH)
     if not os.path.exists(PIPELINE_PROFILING_RESULTS_STATIC_PATH):
         os.makedirs(PIPELINE_PROFILING_RESULTS_STATIC_PATH)
+    if not os.path.exists(OBJ_RESULTS_PATH):
+        setup_obj_store()
+        os.makedirs(OBJ_RESULTS_PATH)
+    if not os.path.exists(OBJ_PROFILING_RESULTS_PATH):
+        setup_obj_store()
+        os.makedirs(OBJ_PROFILING_RESULTS_PATH)
+    if not os.path.exists(OBJ_NODE_PROFILING_RESULTS_PATH):
+        setup_obj_store()
+        os.makedirs(OBJ_NODE_PROFILING_RESULTS_PATH)
+    if not os.path.exists(OBJ_NODE_PROFILING_RESULTS_STATIC_PATH):
+        setup_obj_store()
+        os.makedirs(OBJ_NODE_PROFILING_RESULTS_STATIC_PATH)
+    if not os.path.exists(OBJ_NODE_PROFILING_RESULTS_DYNAMIC_PATH):
+        setup_obj_store()
+        os.makedirs(OBJ_NODE_PROFILING_RESULTS_DYNAMIC_PATH)
+    if not os.path.exists(OBJ_PIPELINE_PROFILING_RESULTS_DYNAMIC_PATH):
+        setup_obj_store()
+        os.makedirs(OBJ_PIPELINE_PROFILING_RESULTS_DYNAMIC_PATH)
+    if not os.path.exists(OBJ_PIPELINE_PROFILING_RESULTS_STATIC_PATH):
+        setup_obj_store()
+        os.makedirs(OBJ_PIPELINE_PROFILING_RESULTS_STATIC_PATH)
         
 _create_dirs()
 
