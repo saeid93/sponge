@@ -30,6 +30,7 @@ ds = load_dataset(
 
 input_data = ds[0]["audio"]["array"]
 
+print(input_data)
 # # Serializing json
 # json_object = json.dumps(input_data, indent=4)
  
@@ -38,7 +39,7 @@ input_data = ds[0]["audio"]["array"]
 #     outfile.write(json_object)
 
 message_bytes = input_data.tobytes()
-base64_bytes = str(base64.b64encode(message_bytes))
+base64_bytes = base64.b64encode(message_bytes).decode()
 
 
 def send_requests(endpoint):
@@ -46,11 +47,11 @@ def send_requests(endpoint):
         "inputs": [
             {
             "name": "array_inputs",
-            "shape": [1, len(input_data)],
+            "shape": [1],
             "datatype": "BYTES",
             "data": base64_bytes,
             "parameters": {
-                "content_type": "base64"
+                "content_type": "str"
             }
             }
         ]

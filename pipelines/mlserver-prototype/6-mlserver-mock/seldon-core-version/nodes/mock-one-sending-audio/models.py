@@ -22,7 +22,7 @@ from mlserver.codecs import StringCodec
 from mlserver_huggingface.common import NumpyEncoder
 from typing import List, Dict
 import time
-
+import base64
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
@@ -66,9 +66,15 @@ class MockOne(MLModel):
             logger.error('request input shape:\n')
             logger.error(f"{request_input.shape}\n")
             decoded_input = self.decode(request_input)
+            decoded_input = decoded_input[0].rsplit('=')[:request_input.shape[0]]
+            decoded_input = list(
+                map(lambda l: np.frombuffer(bytes(
+                    base64.b64decode(
+                        (l+'=').encode())), dtype=np.float32),
+                        decoded_input))
             logger.error(decoded_input)
             X = decoded_input
-        X = list(map(lambda l: np.array(l), X))
+        # X = list(map(lambda l: np.array(l), X))
         received_batch_len = len(X)
         logger.error(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += received_batch_len
