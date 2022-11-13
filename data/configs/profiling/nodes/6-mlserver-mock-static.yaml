@@ -1,18 +1,18 @@
-series: 37
+series: 38
 series_meta: test of async sleep
 pipeline_name: 6-mlserver-mock
 node_name: mock-one
 data_type: audio
 no_engine: false
-timeout: 150
+timeout: 5
 model_variants:
   - '0'
-  - '1'
-  - '2'
+  # - '1'
+  # - '2'
 max_batch_size:
   - '1'
-  - '5'
-  - '10'
+  # - '5'
+  # - '10'
 max_batch_time:
   - '1'
 cpu_request:
@@ -26,7 +26,7 @@ repetition: 1
 workload_config:
   loads_to_test:
   - 1
-  - 40
-  - 100
-  - 1000
+  # - 40
+  # - 100
+  # - 1000
   load_duration: 60
