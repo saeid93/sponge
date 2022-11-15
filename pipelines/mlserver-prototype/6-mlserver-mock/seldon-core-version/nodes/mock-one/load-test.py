@@ -43,4 +43,22 @@ load_tester = MLServerAsync(
 responses = asyncio.run(load_tester.start())
 
 print(f'{(time.time() - start_time):2.2}s spent in total')
+
+# import matplotlib.pyplot as plt
+# import numpy as np
+
+# requests = []
+# for sec_resps in responses:
+#     for resp in sec_resps:
+#         times = resp['timing']
+#         sending_time = times['sending_time']
+#         arrival_time = times['arrival_time']
+#         duration = arrival_time - sending_time
+#         requests.append(duration)
+# fig, ax = plt.subplots()
+# ax.plot(np.arange(len(requests)), requests)
+# ax.set(xlabel='request id', ylabel='arrival time - sending time')
+# ax.grid()
+# fig.savefig("test.png")
+# plt.show()
 # print(responses)
