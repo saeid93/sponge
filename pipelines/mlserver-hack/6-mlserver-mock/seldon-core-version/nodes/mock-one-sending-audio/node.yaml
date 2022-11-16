@@ -14,7 +14,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/mlserver-mock:mock-one
+        - image: sdghafouri/mlserver-mock-hack:mock-one
           name: mock-one
           imagePullPolicy: Always
           resources:
@@ -33,6 +33,8 @@ spec:
               value: "1"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+            - name: MLSERVER_PARALLEL_WORKERS
+              value: "0"
       replicas: 1
     graph: 
       name: mock-one

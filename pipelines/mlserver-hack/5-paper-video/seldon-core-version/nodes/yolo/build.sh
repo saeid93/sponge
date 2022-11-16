@@ -3,7 +3,7 @@ rm *.pt
 REPOS=(
     sdghafouri
     gcr.io/hale-ivy-335012)
-IMAGE_NAME=video-pipelines-mlserver:yolo
+IMAGE_NAME=video-pipelines-mlserver-hack:yolo
 mlserver build --tag=$IMAGE_NAME .
 for REPO in ${REPOS[@]}
 do

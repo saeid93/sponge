@@ -1,7 +1,7 @@
 REPOS=(
     sdghafouri
     gcr.io/hale-ivy-335012)
-IMAGE_NAME=mlserver-mock:mock-two
+IMAGE_NAME=mlserver-mock-hack:mock-two
 mlserver build . -t $IMAGE_NAME
 for REPO in ${REPOS[@]}
 do

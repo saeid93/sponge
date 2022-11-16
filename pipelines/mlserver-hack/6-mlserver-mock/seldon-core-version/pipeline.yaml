@@ -11,7 +11,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/mlserver-mock:mock-one
+        - image: sdghafouri/mlserver-mock-hack:mock-one
           name: mock-one
           imagePullPolicy: Always
           resources:
@@ -37,7 +37,7 @@ spec:
       replicas: 1
     - spec:
         containers:
-        - image: sdghafouri/mlserver-mock:mock-two
+        - image: sdghafouri/mlserver-mock-hack:mock-two
           name: mock-two 
           imagePullPolicy: Always
           resources:
