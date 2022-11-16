@@ -204,6 +204,7 @@ def key_config_mapper(
         row_writer.close()
     return experiment_id
 
+# TODO make starting of mlserver automatic
 # def setup_node(node_name: str, cpu_request: str,
 #                memory_request: str, model_variant: str, max_batch_size: str,
 #                max_batch_time: str, replica: int, node_path: str, timeout: int,
