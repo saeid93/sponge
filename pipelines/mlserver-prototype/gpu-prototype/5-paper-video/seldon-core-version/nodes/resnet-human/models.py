@@ -36,7 +36,7 @@ try:
     GPU = to_bool(os.environ['GPU'])
     logger.error(f'PREDICTIVE_UNIT_ID set to: {GPU}')
 except KeyError as e:
-    GPU = False 
+    GPU = True 
     logger.error(
         f"GPU env variable not set, using default value: {GPU}")
 
@@ -74,10 +74,8 @@ class ResnetHuman(MLModel):
         }
         logger.error('Loading the ML models')
         if torch.cuda.is_available():
-            print("cuda available")
-        print(torch.cuda.is_available(), " model loading...")
-        self.device = torch.device(
-            "cuda:0" if GPU and torch.cuda.is_available() else "cpu")
+            print("cuda available, loading model to GPU")
+        self.device = torch.device("cuda:0" if (GPU and torch.cuda.is_available()) else "cpu")
         logger.error(f'loading model to {self.device}')
         self.model = model[self.MODEL_VARIANT](pretrained=True)
         self.model = self.model.to(self.device)
