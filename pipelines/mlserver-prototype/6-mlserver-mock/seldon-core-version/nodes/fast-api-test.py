@@ -1,5 +1,6 @@
-import time
-import random
+# start commnad:
+# python -m uvicorn fast-api-test:app
+
 from fastapi import FastAPI
 import asyncio
 
