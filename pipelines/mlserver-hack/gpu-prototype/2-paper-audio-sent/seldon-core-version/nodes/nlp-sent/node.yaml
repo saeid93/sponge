@@ -13,7 +13,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/audio-sent-pipelines-mlserver-gpu-1:nlpsent
+        - image: sdghafouri/audio-sent-pipelines-mlserver-gpu-hack:nlpsent
           name: nlp-sent
           imagePullPolicy: Always
           resources:

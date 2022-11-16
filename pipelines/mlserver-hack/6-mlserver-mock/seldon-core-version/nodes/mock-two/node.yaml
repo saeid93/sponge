@@ -12,7 +12,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/mlserver-mock:mock-two
+        - image: sdghafouri/mlserver-mock-hack:mock-two
           name: mock-two
           imagePullPolicy: Always
           resources:

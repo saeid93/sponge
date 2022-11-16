@@ -12,7 +12,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/video-pipelines-mlserver:yolo
+        - image: sdghafouri/video-pipelines-mlserver-gpu-hack:yolo
           name: yolo
           imagePullPolicy: Always
           resources:
@@ -38,7 +38,7 @@ spec:
       replicas: {{ replicas_1 }}
     - spec:
         containers:
-        - image: sdghafouri/video-pipelines-mlserver:resnet-human
+        - image: sdghafouri/video-pipelines-mlserver-gpu-hack:resnet-human
           name: resnet-human
           imagePullPolicy: Always
           resources:
