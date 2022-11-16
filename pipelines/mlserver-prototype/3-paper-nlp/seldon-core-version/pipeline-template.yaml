@@ -56,6 +56,8 @@ spec:
               value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: '{{ max_batch_time }}'
+            - name: MLSERVER_PARALLEL_WORKERS
+              value: "0"
       replicas: {{ replicas }}
     - spec:
         containers:
@@ -80,6 +82,8 @@ spec:
               value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: '{{ max_batch_time }}'
+            - name: MLSERVER_PARALLEL_WORKERS
+              value: "0"
       replicas: {{ replicas }}
     graph:
       name: nlp-li
