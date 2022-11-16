@@ -26,6 +26,8 @@ spec:
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+            - name: MLSERVER_PARALLEL_WORKERS
+              value: "0"
     - spec:
         containers:
         - image: sdghafouri/video-pipelines-mlserver:resnet-human
@@ -42,6 +44,8 @@ spec:
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+            - name: MLSERVER_PARALLEL_WORKERS
+              value: "0"
     graph:
       name: yolo
       type: MODEL
