@@ -1,5 +1,5 @@
-series: 38
-series_meta: test of async sleep
+series: 36
+series_meta: mlserver-big
 pipeline_name: 6-mlserver-mock
 node_name: mock-one
 data_type: audio
@@ -25,8 +25,8 @@ workload_type: static
 repetition: 1
 workload_config:
   loads_to_test:
-  - 1
+  # - 1
   # - 40
-  # - 100
+  - 100
   # - 1000
   load_duration: 60
