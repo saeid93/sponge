@@ -147,7 +147,7 @@ def experiments(pipeline_name: str, node_name: str,
                                         series=series,
                                         no_engine=no_engine)
                                     
-                                    backup(series=series)
+                                    # backup(series=series)
 
                                 # TODO better validation -> some request
                                 print(f'waiting for {timeout} seconds')
