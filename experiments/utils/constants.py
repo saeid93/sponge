@@ -114,7 +114,7 @@ def _create_dirs():
         setup_obj_store()
         os.makedirs(OBJ_PIPELINE_PROFILING_RESULTS_STATIC_PATH)
         
-_create_dirs()
+# _create_dirs()
 
 # prometheus client
 PROMETHEUS = "http://localhost:30090"

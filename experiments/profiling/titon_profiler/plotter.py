@@ -1,13 +1,10 @@
 from matplotlib import pyplot as plt
 import pandas as pd
 import numpy as np
-import matplotlib.cm as cm
 import matplotlib.patches as mpatches
 import glob
-import click
 import sys
 import yaml
-import matplotlib.lines as mlines
 import matplotlib.lines as mlines
 
 
@@ -15,10 +12,7 @@ import os
 project_dir = os.path.dirname(os.path.join(os.getcwd(), __file__))
 sys.path.append(os.path.normpath(os.path.join(project_dir, '../..')))
 
-from utilspr.constants import (
-    TEMP_MODELS_PATH,
-    KUBE_YAMLS_PATH
-    )
+from utils.constants import KUBE_YAMLS_PATH
 
 memory_dictionary = {}
 cpu_dictionary = {}

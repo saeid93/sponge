@@ -73,7 +73,8 @@ class Loader:
                     try:
                         results[name] = json.load(json_file)
                     except JSONDecodeError:
-                        print('excepted-1!')
+                        pass
+                        # print('excepted-1!')
             else:
                 full_path = os.path.join(
                     self.series_path, file
@@ -82,7 +83,8 @@ class Loader:
                 try:
                     results[name] = json.load(json_file)
                 except JSONDecodeError:
-                    print('excepted-1!')                
+                    pass
+                    # print('excepted-1!')                
         return results
 
     def flatten_results(self, per_second_latencies):
@@ -350,7 +352,8 @@ class Loader:
             try:
                 summary[f'{metric}_avg'] = np.average(values)
             except TypeError:
-                print('excepted-2!')
+                pass
+                # print('excepted-2!')
             summary[f'{metric}_p99'] = np.percentile(values, 99)
             summary[f'{metric}_p50'] = np.percentile(values, 50)
             summary[f'{metric}_var'] = np.var(values)
