@@ -51,7 +51,6 @@ OBJ_PIPELINE_PROFILING_RESULTS_STATIC_PATH = os.path.join(
 OBJ_PIPELINE_PROFILING_RESULTS_DYNAMIC_PATH = os.path.join(
     OBJ_PIPELINE_PROFILING_RESULTS_PATH, "dynamic")
 
-
 # generated baesd on the users' path
 # TODO completely polish and remove unecessary ones
 TEMP_MODELS_PATH = os.path.join(DATA_PATH, "model-temp")
