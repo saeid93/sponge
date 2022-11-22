@@ -1,13 +1,13 @@
-series: 37
-series_meta: seldon-big
+series: 38
+series_meta: fastapi-small
 pipeline_name: 6-mlserver-mock
 node_name: mock-one
 data_type: audio
 no_engine: false
 timeout: 240
 model_variants:
-  - '0'
-  # - '1'
+  # - '0'
+  - '1'
   # - '2'
 max_batch_size:
   - '1'
