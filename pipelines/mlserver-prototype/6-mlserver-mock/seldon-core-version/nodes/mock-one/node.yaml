@@ -10,7 +10,7 @@ spec:
   predictors:
   - name: default
     annotations:
-      seldon.io/no-engine: "False"
+      seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
         containers:
