@@ -8,7 +8,6 @@ from transformers import pipeline
 from datasets import load_dataset
 import threading
 import json
-import base64
 
 # single node inference
 # gateway_endpoint = "localhost:32000"
@@ -30,7 +29,6 @@ ds = load_dataset(
 
 input_data = ds[0]["audio"]["array"]
 
-print(input_data)
 # # Serializing json
 # json_object = json.dumps(input_data, indent=4)
  
@@ -38,20 +36,16 @@ print(input_data)
 # with open("input-sample.json", "w") as outfile:
 #     outfile.write(json_object)
 
-message_bytes = input_data.tobytes()
-base64_bytes = base64.b64encode(message_bytes).decode()
-
-
 def send_requests(endpoint):
     payload = {
         "inputs": [
             {
             "name": "array_inputs",
-            "shape": [1],
-            "datatype": "BYTES",
-            "data": base64_bytes,
+            "shape": [1, len(input_data)],
+            "datatype": "FP32",
+            "data": input_data.tolist(),
             "parameters": {
-                "content_type": "str"
+                "content_type": "np"
             }
             }
         ]

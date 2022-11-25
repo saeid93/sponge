@@ -6,15 +6,15 @@ import asyncio
 import time
 
 # single node inference
-# gateway_endpoint = "localhost:32000"
-# deployment_name = 'mock-one'
-# namespace = "default"
-# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+gateway_endpoint = "localhost:32000"
+deployment_name = 'mock-one'
+namespace = "default"
+endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/mock-one/infer"
 
 # single node inference
-gateway_endpoint = "localhost:8080"
-model = 'mock-one'
-endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+# gateway_endpoint = "localhost:8080"
+# model = 'mock-one'
+# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 # endpoint = 'http://127.0.0.1:8000'
 
@@ -26,7 +26,7 @@ ds = load_dataset(
 data = ds[0]["audio"]["array"].tolist()
 
 http_method = 'post'
-workload = [100] * 10
+workload = [1000] * 10
 data_shape = [1, len(data)]
 data_type = 'audio'
 
@@ -43,4 +43,22 @@ load_tester = MLServerAsync(
 responses = asyncio.run(load_tester.start())
 
 print(f'{(time.time() - start_time):2.2}s spent in total')
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+requests = []
+for sec_resps in responses:
+    for resp in sec_resps:
+        times = resp['timing']
+        sending_time = times['sending_time']
+        arrival_time = times['arrival_time']
+        duration = arrival_time - sending_time
+        requests.append(duration)
+fig, ax = plt.subplots()
+ax.plot(np.arange(len(requests)), requests)
+ax.set(xlabel='request id', ylabel='arrival time - sending time (s)', title=f'Seldon without svc, total time={round((time.time() - start_time))}')
+ax.grid()
+fig.savefig("seldon-without-svc.png")
+plt.show()
 # print(responses)

@@ -8,18 +8,17 @@ from transformers import pipeline
 from datasets import load_dataset
 import threading
 import json
-import base64
 
 # single node inferline
-# gateway_endpoint = "localhost:32000"
-# deployment_name = 'mock-one'
-# namespace = "default"
-# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+gateway_endpoint = "localhost:32000"
+deployment_name = 'mock-one'
+namespace = "default"
+endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 # single node inferline
-gateway_endpoint = "localhost:8080"
-model = 'mock-one'
-endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+# gateway_endpoint = "localhost:8080"
+# model = 'mock-one'
+# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 batch_test = 30
 responses = []
@@ -30,22 +29,17 @@ ds = load_dataset(
     split="validation")
 
 input_data = ds[0]["audio"]["array"]
-print(len(input_data))
-
-message_bytes = input_data.tobytes()
-base64_bytes = base64.b64encode(message_bytes).decode()
-
 
 def send_requests():
     payload = {
         "inputs": [
             {
             "name": "array_inputs",
-            "shape": [1],
-            "datatype": "BYTES",
-            "data": base64_bytes,
+            "shape": [1, len(input_data)],
+            "datatype": "FP32",
+            "data": input_data.tolist(),
             "parameters": {
-                "content_type": "str"
+                "content_type": "np"
             }
             }
         ]
@@ -53,24 +47,6 @@ def send_requests():
     response = requests.post(endpoint, json=payload)
     responses.append(response)
     return response
-
-# def send_requests():
-#     payload = {
-#         "inputs": [
-#             {
-#             "name": "array_inputs",
-#             "shape": [1, len(input_data)],
-#             "datatype": "FP32",
-#             "data": input_data.tolist(),
-#             "parameters": {
-#                 "content_type": "np"
-#             }
-#             }
-#         ]
-#     }
-#     response = requests.post(endpoint, json=payload)
-#     responses.append(response)
-#     return response
 
 thread_pool = []
 
