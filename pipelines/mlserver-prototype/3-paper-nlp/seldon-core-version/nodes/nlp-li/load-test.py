@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from barazmoon import MLServerAsync
+from barazmoon import MLServerAsyncRest
 import asyncio
 
 gateway_endpoint = "localhost:32000"
@@ -28,7 +28,7 @@ workload = [10, 32, 12]
 data_shape = [1]
 data_type = 'text'
 
-load_tester = MLServerAsync(
+load_tester = MLServerAsyncRest(
     endpoint=endpoint,
     http_method=http_method,
     workload=workload,

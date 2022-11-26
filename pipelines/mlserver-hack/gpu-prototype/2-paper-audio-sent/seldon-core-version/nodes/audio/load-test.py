@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from barazmoon import MLServerAsync
+from barazmoon import MLServerAsyncRest
 import asyncio
 from datasets import load_dataset
 
@@ -26,7 +26,7 @@ workload = [10, 7, 4, 12]
 data_shape = [1, len(data)]
 data_type = 'audio'
 
-load_tester = MLServerAsync(
+load_tester = MLServerAsyncRest(
     endpoint=endpoint,
     http_method=http_method,
     workload=workload,

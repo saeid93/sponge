@@ -1,6 +1,6 @@
 import os
 import pathlib
-from barazmoon import MLServerAsync
+from barazmoon import MLServerAsyncRest
 import asyncio
 
 
@@ -19,7 +19,7 @@ workload = [6]
 data_shape = [1]
 data_type = 'text'
 
-load_tester = MLServerAsync(
+load_tester = MLServerAsyncRest(
     endpoint=endpoint,
     http_method=http_method,
     workload=workload,

@@ -23,7 +23,7 @@ import shutil
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
-from barazmoon import MLServerAsync
+from barazmoon import MLServerAsyncRest
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -289,7 +289,7 @@ def load_test(node_name: str, data_type: str,
     # endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/{node_name}/infer"
     endpoint = 'http://127.0.0.1:8000'
     workload = [load] * load_duration
-    load_tester = MLServerAsync(
+    load_tester = MLServerAsyncRest(
         endpoint=endpoint,
         http_method='post',
         workload=workload,

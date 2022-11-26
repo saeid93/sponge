@@ -45,4 +45,15 @@ spec:
     name: example
     labels:
       sidecar.istio.io/inject: "true"
+    svcOrchSpec:
+      env:
+      - name: SELDON_LOG_LEVEL
+        value: DEBUG
+      resources:
+        requests:
+          cpu: '8'
+          memory: 4Gi
+        limits:
+          cpu: '8'
+          memory: 4Gi
     replicas: 1

@@ -3,7 +3,7 @@ from PIL import Image
 import numpy as np
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
-from barazmoon import MLServerAsync
+from barazmoon import MLServerAsyncRest
 import asyncio
 
 gateway_endpoint="localhost:32000"
@@ -50,7 +50,7 @@ data = np.array(data).tolist()
 http_method = 'post'
 data_type = 'image'
 
-load_tester = MLServerAsync(
+load_tester = MLServerAsyncRest(
     endpoint=endpoint,
     http_method=http_method,
     workload=workload,
