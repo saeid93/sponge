@@ -28,7 +28,7 @@ from kubernetes.client.api import core_v1_api
 from kubernetes.client.rest import ApiException
 from kubernetes.stream import stream
 
-from barazmoon import MLServerAsync 
+from barazmoon import MLServerAsyncRest 
 from barazmoon.twitter import twitter_workload_generator
 twitter_workload_generator('1-4')
 

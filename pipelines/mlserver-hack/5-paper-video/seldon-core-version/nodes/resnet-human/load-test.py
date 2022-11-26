@@ -1,6 +1,6 @@
 import os
 import pathlib
-from barazmoon import MLServerAsync
+from barazmoon import MLServerAsyncRest
 import asyncio
 
 # model = 'resnet'
@@ -22,7 +22,7 @@ workload = [10, 20 ,5]
 data_shape = [1]
 data_type = 'text'
 
-load_tester = MLServerAsync(
+load_tester = MLServerAsyncRest(
     endpoint=endpoint,
     http_method=http_method,
     workload=workload,

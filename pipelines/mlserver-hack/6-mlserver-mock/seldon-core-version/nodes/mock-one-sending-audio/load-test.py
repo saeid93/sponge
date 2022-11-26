@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from urllib import response
-from barazmoon import MLServerAsync
+from barazmoon import MLServerAsyncRest
 from datasets import load_dataset
 import asyncio
 import time
@@ -32,7 +32,7 @@ data_type = 'audio'
 
 start_time = time.time()
 
-load_tester = MLServerAsync(
+load_tester = MLServerAsyncRest(
     endpoint=endpoint,
     http_method=http_method,
     workload=workload,

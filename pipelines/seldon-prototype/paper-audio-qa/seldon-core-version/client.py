@@ -15,7 +15,7 @@ namespace = "default"
 sc = SeldonClient(
     gateway_endpoint=gateway_endpoint,
     gateway="istio",
-    transport="rest",
+    transport="grpc",
     deployment_name=deployment_name,
     namespace=namespace)
 

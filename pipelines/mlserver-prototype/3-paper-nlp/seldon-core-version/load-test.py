@@ -1,4 +1,4 @@
-from barazmoon import MLServerAsync
+from barazmoon import MLServerAsyncRest
 import asyncio
 
 gateway_endpoint="localhost:32000"
@@ -27,7 +27,7 @@ data_shape = [1]
 http_method = 'post'
 data_type = 'text'
 
-load_tester = MLServerAsync(
+load_tester = MLServerAsyncRest(
     endpoint=endpoint,
     http_method=http_method,
     workload=workload,
