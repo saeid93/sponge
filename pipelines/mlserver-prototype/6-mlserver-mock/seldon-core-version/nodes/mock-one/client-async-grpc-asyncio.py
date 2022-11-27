@@ -8,11 +8,10 @@ import mlserver.grpc.converters as converters
 from mlserver.codecs.string import StringRequestCodec
 from mlserver.codecs.string import StringRequestCodec
 pp = PrettyPrinter(indent=4)
-from transformers import pipeline
 from datasets import load_dataset
 import mlserver.types as types
-import threading
 import json
+import asyncio
 
 # single node inference
 # endpoint = "localhost:32000"
@@ -20,19 +19,13 @@ import json
 # model = 'mock-one'
 # namespace = "default"
 # metadata = [("seldon", deployment_name), ("namespace", namespace)]
-# grpc_channel = grpc.insecure_channel(endpoint)
-# grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
 # single node inference
 endpoint = "localhost:8081"
 model = 'mock-one'
 metadata = []
-grpc_channel = grpc.insecure_channel(endpoint)
-grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
 batch_test = 30
-responses = []
-
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
     "clean",
@@ -40,7 +33,8 @@ ds = load_dataset(
 
 input_data = ds[0]["audio"]["array"]
 
-def send_requests():
+async def send_requests(ch):
+    grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
     inference_request = types.InferenceRequest(
         inputs=[
             types.RequestInput(
@@ -55,28 +49,24 @@ def send_requests():
     inference_request_g = converters.ModelInferRequestConverter.from_types(
         inference_request, model_name=model, model_version=None
     )
-    response = grpc_stub.ModelInfer(
+    response = await grpc_stub.ModelInfer(
         request=inference_request_g,
         metadata=metadata)
-    responses.append(response)
     return response
 
-thread_pool = []
 
-for i in range(batch_test):
-    t = threading.Thread(target=send_requests)
-    t.start()
-    thread_pool.append(t)
+async def main():
+    async with grpc.aio.insecure_channel(endpoint) as ch:
+        responses = await asyncio.gather(*[send_requests(ch) for _ in range(10)])
 
-for t in thread_pool:
-    t.join()
+    inference_responses = list(map(
+        lambda response: ModelInferResponseConverter.to_types(response), responses))
+    raw_jsons = list(map(
+        lambda inference_response: StringRequestCodec.decode_response(
+            inference_response), inference_responses))
+    outputs = list(map(
+        lambda raw_json: json.loads(raw_json[0]), raw_jsons))
 
-inference_responses = list(map(
-    lambda response: ModelInferResponseConverter.to_types(response), responses))
-raw_jsons = list(map(
-    lambda inference_response: StringRequestCodec.decode_response(
-        inference_response), inference_responses))
-outputs = list(map(
-    lambda raw_json: json.loads(raw_json[0]), raw_jsons))
+    pp.pprint(outputs)
 
-pp.pprint(outputs)
+asyncio.run(main())

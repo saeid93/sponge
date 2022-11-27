@@ -1,14 +1,14 @@
 from pprint import PrettyPrinter
-from mlserver.types import InferenceResponse
 from mlserver.grpc.converters import ModelInferResponseConverter
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
 from mlserver.codecs.string import StringRequestCodec
-pp = PrettyPrinter(indent=4)
 from datasets import load_dataset
 import mlserver.types as types
 import json
 import grpc
+
+pp = PrettyPrinter(indent=4)
 
 
 # single node inference
@@ -35,7 +35,6 @@ ds = load_dataset(
     split="validation")
 
 input_data = ds[0]["audio"]["array"]
-
 
 def send_requests():
     inference_request = types.InferenceRequest(

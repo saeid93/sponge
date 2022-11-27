@@ -6,7 +6,6 @@ from mlserver.codecs.string import StringRequestCodec
 pp = PrettyPrinter(indent=4)
 from transformers import pipeline
 from datasets import load_dataset
-import threading
 import json
 
 # single node inference

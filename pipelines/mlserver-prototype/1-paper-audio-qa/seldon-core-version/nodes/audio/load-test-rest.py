@@ -6,17 +6,15 @@ import asyncio
 import time
 
 # single node inference
-gateway_endpoint = "localhost:32000"
-deployment_name = 'mock-one'
-namespace = "default"
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/mock-one/infer"
+# gateway_endpoint = "localhost:32000"
+# deployment_name = 'audio'
+# namespace = "default"
+# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 # single node inference
-# gateway_endpoint = "localhost:8080"
-# model = 'mock-one'
-# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
-
-# endpoint = 'http://127.0.0.1:8000'
+gateway_endpoint = "localhost:8080"
+model = 'audio'
+endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 # load data
 ds = load_dataset(
@@ -26,7 +24,7 @@ ds = load_dataset(
 data = ds[0]["audio"]["array"].tolist()
 
 http_method = 'post'
-workload = [100] * 10
+workload = 10 * [10]
 data_shape = [1, len(data)]
 data_type = 'audio'
 
@@ -57,8 +55,8 @@ for sec_resps in responses:
         requests.append(duration)
 fig, ax = plt.subplots()
 ax.plot(np.arange(len(requests)), requests)
-ax.set(xlabel='request id', ylabel='arrival time - sending time (s)', title=f'Seldon without svc, total time={round((time.time() - start_time))}')
+ax.set(xlabel='request id', ylabel='arrival time - sending time (s)', title=f'MLServer rest, total time={round((time.time() - start_time))}')
 ax.grid()
-fig.savefig("seldon-without-svc.png")
+fig.savefig("mlserver-audio-rest.png")
 plt.show()
 # print(responses)
