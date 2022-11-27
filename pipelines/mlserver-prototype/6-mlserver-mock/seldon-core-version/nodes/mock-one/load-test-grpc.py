@@ -1,22 +1,21 @@
 from dataclasses import dataclass
 from urllib import response
-from barazmoon import MLServerAsyncRest
+from barazmoon import MLServerAsyncGrpc
 from datasets import load_dataset
 import asyncio
 import time
 
 # single node inference
-gateway_endpoint = "localhost:32000"
+endpoint = "localhost:32000"
 deployment_name = 'mock-one'
+model = 'mock-one'
 namespace = "default"
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/mock-one/infer"
+metadata = [("seldon", deployment_name), ("namespace", namespace)]
 
 # single node inference
-# gateway_endpoint = "localhost:8080"
+# endpoint = "localhost:8081"
 # model = 'mock-one'
-# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
-
-# endpoint = 'http://127.0.0.1:8000'
+# metadata = []
 
 # load data
 ds = load_dataset(
@@ -32,10 +31,11 @@ data_type = 'audio'
 
 start_time = time.time()
 
-load_tester = MLServerAsyncRest(
+load_tester = MLServerAsyncGrpc(
     endpoint=endpoint,
-    http_method=http_method,
+    metadata=metadata,
     workload=workload,
+    model=model,
     data=data,
     data_shape=data_shape,
     data_type=data_type)
@@ -57,8 +57,8 @@ for sec_resps in responses:
         requests.append(duration)
 fig, ax = plt.subplots()
 ax.plot(np.arange(len(requests)), requests)
-ax.set(xlabel='request id', ylabel='arrival time - sending time (s)', title=f'Seldon without svc, total time={round((time.time() - start_time))}')
+ax.set(xlabel='request id', ylabel='arrival time - sending time (s)', title=f'Seldon grpc, total time={round((time.time() - start_time))}')
 ax.grid()
-fig.savefig("seldon-without-svc.png")
+fig.savefig("seldon-grpc.png")
 plt.show()
 # print(responses)
