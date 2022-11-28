@@ -13,15 +13,15 @@ pp = PrettyPrinter(indent=4)
 
 # single node mlserver
 endpoint = "localhost:8081"
-model = 'nlp-sum'
+model = 'resnet-human'
 metadata = []
 grpc_channel = grpc.insecure_channel(endpoint)
 grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
 # single node seldon+mlserver
 # endpoint = "localhost:32000"
-# deployment_name = 'nlp-sum'
-# model = 'nlp-sum'
+# deployment_name = 'resnet-human'
+# model = 'resnet-human'
 # namespace = "default"
 # metadata = [("seldon", deployment_name), ("namespace", namespace)]
 # grpc_channel = grpc.insecure_channel(endpoint)

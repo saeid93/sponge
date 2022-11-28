@@ -13,13 +13,13 @@ import numpy as np
 pp = PrettyPrinter(indent=1)
 
 # single node inference
-model = 'resnet'
+model = 'resnet-human'
 gateway_endpoint = "localhost:8080"
 endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 # single node inference
 # gateway_endpoint="localhost:32000"
-# deployment_name='resnet'
+# deployment_name='resnet-human'
 # namespace = "default"
 # endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 

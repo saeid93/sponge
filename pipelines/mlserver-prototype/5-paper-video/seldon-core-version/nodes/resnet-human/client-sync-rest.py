@@ -8,15 +8,15 @@ from mlserver.codecs.string import StringRequestCodec
 import pathlib
 
 # single node inference
-gateway_endpoint="localhost:32000"
-deployment_name = 'resnet-human'
-namespace = "default"
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+# gateway_endpoint="localhost:32000"
+# deployment_name = 'resnet-human'
+# namespace = "default"
+# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 # single node inference
-# gateway_endpoint="localhost:8080"
-# model='resnet'
-# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+gateway_endpoint="localhost:8080"
+model='resnet-human'
+endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 def send_requests(endpoint, data):
     payload = {
@@ -36,10 +36,8 @@ def send_requests(endpoint, data):
     return response
 
 PATH = pathlib.Path(__file__).parent.resolve()
-
 with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
     data = json.load(openfile)
-
 data = [data]
 
 # sync version

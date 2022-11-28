@@ -52,14 +52,11 @@ endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/m
 # endpoint = f"http://{gateway_endpoint}/v2/models/yolo/infer"
 
 PATH = pathlib.Path(__file__).parent.resolve()
-
 input_data = image_loader(PATH, 'input-sample.JPEG')
-
 with open(os.path.join(
     PATH, 'input-sample-shape.json'), 'r') as openfile:
     input_data_shape = json.load(openfile)
     input_data_shape = input_data_shape['data_shape']
-
 images = {}
 images['inpue-sample'] = input_data
 

@@ -7,44 +7,41 @@ import mlserver.grpc.converters as converters
 from mlserver.codecs.string import StringRequestCodec
 import mlserver.types as types
 import json
-import threading
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
 # single node mlserver
 endpoint = "localhost:8081"
-model = 'nlp-sum'
+model = 'resnet-human'
 metadata = []
 grpc_channel = grpc.insecure_channel(endpoint)
 grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
 # single node seldon+mlserver
 # endpoint = "localhost:32000"
-# deployment_name = 'nlp-sum'
-# model = 'nlp-sum'
+# deployment_name = 'resnet-human'
+# model = 'resnet-human'
 # namespace = "default"
 # metadata = [("seldon", deployment_name), ("namespace", namespace)]
 # grpc_channel = grpc.insecure_channel(endpoint)
 # grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
-batch_test = 5
-
-responses = []
-
 PATH = pathlib.Path(__file__).parent.resolve()
+
 with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
     input_data = openfile.read()
+
 input_data = [input_data]
 
 
-def send_requests():
+def send_requests(input_data):
     inference_request = types.InferenceRequest(
         inputs=[
             types.RequestInput(
                 name="text_inputs",
                 shape=[1],
                 datatype="BYTES",
-                data=[input_data[0].encode('utf8')],
+                data=[input_data.encode('utf8')],
                 parameters=types.Parameters(content_type="str"),
             )
         ]
@@ -55,26 +52,17 @@ def send_requests():
     response = grpc_stub.ModelInfer(
         request=inference_request_g,
         metadata=metadata)
-    responses.append(response)
     return response
 
-thread_pool = []
 
-for i in range(batch_test):
-    t = threading.Thread(target=send_requests)
-    t.start()
-    thread_pool.append(t)
+# sync version
+results = []
+for data_ins in input_data:
+    response = send_requests(data_ins)
+    results.append(response)
 
-for t in thread_pool:
-    t.join()
-
-
-inference_responses = list(map(
-    lambda response: ModelInferResponseConverter.to_types(response), responses))
-raw_jsons = list(map(
-    lambda inference_response: StringRequestCodec.decode_response(
-        inference_response), inference_responses))
-outputs = list(map(
-    lambda raw_json: json.loads(raw_json[0]), raw_jsons))
-
-pp.pprint(outputs)
+# Note that here we just convert from the gRPC types to the MLServer types
+inference_response = ModelInferResponseConverter.to_types(response)
+raw_json = StringRequestCodec.decode_response(inference_response)
+output = json.loads(raw_json[0])
+pp.pprint(output)
