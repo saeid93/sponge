@@ -3,14 +3,14 @@ import pathlib
 from barazmoon import MLServerAsyncRest
 import asyncio
 
-# model = 'resnet'
-# gateway_endpoint = "localhost:8080"
-# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+model = 'resnet-human'
+gateway_endpoint = "localhost:8080"
+endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
-gateway_endpoint = "localhost:32000"
-deployment_name = 'resnet-human'
-namespace = "default"
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+# gateway_endpoint = "localhost:32000"
+# deployment_name = 'resnet-human'
+# namespace = "default"
+# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 PATH = pathlib.Path(__file__).parent.resolve()
 

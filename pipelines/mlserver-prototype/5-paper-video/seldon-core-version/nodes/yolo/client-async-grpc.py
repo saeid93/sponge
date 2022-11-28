@@ -53,27 +53,25 @@ def image_loader(folder_path, image_name):
 #             :num_loaded_images]}
 
 # single node mlserver
-# endpoint = "localhost:8081"
-# model = 'yolo'
-# metadata = []
-# grpc_channel = grpc.insecure_channel(endpoint)
-# grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
-
-# single node seldon+mlserver
-endpoint = "localhost:32000"
-deployment_name = 'yolo'
+endpoint = "localhost:8081"
 model = 'yolo'
-namespace = "default"
-metadata = [("seldon", deployment_name), ("namespace", namespace)]
+metadata = []
 grpc_channel = grpc.insecure_channel(endpoint)
 grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
+# single node seldon+mlserver
+# endpoint = "localhost:32000"
+# deployment_name = 'yolo'
+# model = 'yolo'
+# namespace = "default"
+# metadata = [("seldon", deployment_name), ("namespace", namespace)]
+# grpc_channel = grpc.insecure_channel(endpoint)
+# grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
+
 
 PATH = pathlib.Path(__file__).parent.resolve()
-
 input_data = image_loader(PATH, 'input-sample.JPEG')
 input_data = np.array(input_data).flatten()
-
 with open(os.path.join(
     PATH, 'input-sample-shape.json'), 'r') as openfile:
     input_data_shape = json.load(openfile)
@@ -82,7 +80,7 @@ with open(os.path.join(
 # images = {}
 # images['inpue-sample'] = input_data
 
-batch_test = 1
+batch_test = 5
 responses = []
 
 def send_requests():

@@ -2,19 +2,32 @@ import os
 import pathlib
 from PIL import Image
 import numpy as np
+import mlserver.types as types
+import grpc
+import json
+from barazmoon import MLServerAsyncGrpc
+import mlserver.grpc.dataplane_pb2_grpc as dataplane
+import asyncio
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
-from barazmoon import MLServerAsyncRest
-import asyncio
-import json
 
-# gateway_endpoint="localhost:32000"
+# single node mlserver
+endpoint = "localhost:8081"
+model = 'yolo'
+metadata = []
+grpc_channel = grpc.insecure_channel(endpoint)
+grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
+data_type = 'image'
+
+# single node seldon+mlserver
+# endpoint = "localhost:32000"
 # deployment_name = 'yolo'
+# model = 'yolo'
 # namespace = "default"
-# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
-
-gateway_endpoint="localhost:8080"
-endpoint = f"http://{gateway_endpoint}/v2/models/yolo/infer"
+# metadata = [("seldon", deployment_name), ("namespace", namespace)]
+# grpc_channel = grpc.insecure_channel(endpoint)
+# grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
+# data_type = 'image'
 
 workload = [10, 7, 4, 12, 15]
 
@@ -64,15 +77,11 @@ with open(os.path.join(
     input_data_shape = input_data_shape['data_shape']
 input_data = np.array(input_data).flatten().tolist()
 
-
-http_method = 'post'
-data_type = 'image'
-
-
-load_tester = MLServerAsyncRest(
+load_tester = MLServerAsyncGrpc(
     endpoint=endpoint,
-    http_method=http_method,
+    metadata=metadata,
     workload=workload,
+    model=model,
     data=input_data,
     data_shape=input_data_shape,
     data_type=data_type)
