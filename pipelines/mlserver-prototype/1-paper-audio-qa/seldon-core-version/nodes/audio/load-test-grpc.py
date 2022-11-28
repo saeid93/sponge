@@ -1,21 +1,19 @@
-from dataclasses import dataclass
-from urllib import response
 from barazmoon import MLServerAsyncGrpc
 from datasets import load_dataset
 import asyncio
 import time
 
-# single node inference
-# endpoint = "localhost:32000"
-# deployment_name = 'audio'
+# single node mlserver
+# endpoint = "localhost:8081"
 # model = 'audio'
-# namespace = "default"
-# metadata = [("seldon", deployment_name), ("namespace", namespace)]
+# metadata = []
 
-# single node inference
-endpoint = "localhost:8081"
+# single node seldon+mlserver
+endpoint = "localhost:32000"
+deployment_name = 'audio'
 model = 'audio'
-metadata = []
+namespace = "default"
+metadata = [("seldon", deployment_name), ("namespace", namespace)]
 
 # load data
 ds = load_dataset(
@@ -24,7 +22,6 @@ ds = load_dataset(
     split="validation")
 data = ds[0]["audio"]["array"].tolist()
 
-http_method = 'post'
 workload = [10] * 10
 data_shape = [1, len(data)]
 data_type = 'audio'

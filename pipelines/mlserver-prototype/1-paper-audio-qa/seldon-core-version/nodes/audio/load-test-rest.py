@@ -5,16 +5,16 @@ from datasets import load_dataset
 import asyncio
 import time
 
-# single node inference
+# single node mlserver
+gateway_endpoint = "localhost:8080"
+model = 'audio'
+endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+
+# single node seldon+mlserver
 # gateway_endpoint = "localhost:32000"
 # deployment_name = 'audio'
 # namespace = "default"
 # endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
-
-# single node inference
-gateway_endpoint = "localhost:8080"
-model = 'audio'
-endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 # load data
 ds = load_dataset(

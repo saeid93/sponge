@@ -54,7 +54,6 @@ def send_requests():
     response = grpc_stub.ModelInfer(
         request=inference_request_g,
         metadata=metadata)
-
     return response
 
 # sync version

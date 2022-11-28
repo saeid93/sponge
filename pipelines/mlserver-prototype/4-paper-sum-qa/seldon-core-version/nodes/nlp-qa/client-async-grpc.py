@@ -1,50 +1,53 @@
-from pprint import PrettyPrinter
+import os
+import pathlib
+import grpc
 from mlserver.grpc.converters import ModelInferResponseConverter
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
 from mlserver.codecs.string import StringRequestCodec
-from datasets import load_dataset
 import mlserver.types as types
-import grpc
 import json
-
+import threading
+from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
-# single node inference
+# single node mlserver
+endpoint = "localhost:8081"
+model = 'nlp-qa'
+metadata = []
+grpc_channel = grpc.insecure_channel(endpoint)
+grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
+
+# single node seldon+mlserver
 # endpoint = "localhost:32000"
-# deployment_name = 'audio-qa'
-# model = 'audio-qa'
+# deployment_name = 'nlp-qa'
+# model = 'nlp-qa'
 # namespace = "default"
 # metadata = [("seldon", deployment_name), ("namespace", namespace)]
 # grpc_channel = grpc.insecure_channel(endpoint)
 # grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
-# single node inference
-endpoint = "localhost:8081"
-model = 'audio-qa'
-metadata = []
-grpc_channel = grpc.insecure_channel(endpoint)
-grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
+batch_test = 5
 
-batch_test = 100
 responses = []
 
-ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
+PATH = pathlib.Path(__file__).parent.resolve()
 
-input_data = ds[0]["audio"]["array"]
+with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
+    input_data = openfile.read()
+
+input_data = [input_data]
+
 
 def send_requests():
     inference_request = types.InferenceRequest(
         inputs=[
             types.RequestInput(
-                name="echo_request",
-                shape=[1, len(input_data)],
-                datatype="FP32",
-                data=input_data.tolist(),
-                parameters=types.Parameters(content_type="np"),
+                name="text_inputs",
+                shape=[1],
+                datatype="BYTES",
+                data=[input_data[0].encode('utf8')],
+                parameters=types.Parameters(content_type="str"),
             )
         ]
     )
@@ -54,7 +57,7 @@ def send_requests():
     response = grpc_stub.ModelInfer(
         request=inference_request_g,
         metadata=metadata)
-
+    responses.append(response)
     return response
 
 thread_pool = []
@@ -67,8 +70,9 @@ for i in range(batch_test):
 for t in thread_pool:
     t.join()
 
+
 inference_responses = list(map(
-    lambda response: InferenceResponse.parse_raw(response.text), responses))
+    lambda response: ModelInferResponseConverter.to_types(response), responses))
 raw_jsons = list(map(
     lambda inference_response: StringRequestCodec.decode_response(
         inference_response), inference_responses))

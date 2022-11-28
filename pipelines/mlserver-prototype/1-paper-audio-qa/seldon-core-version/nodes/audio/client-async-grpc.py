@@ -13,17 +13,17 @@ import mlserver.types as types
 import json
 import asyncio
 
-# single node inference
-# endpoint = "localhost:32000"
-# deployment_name = 'audio'
+# single node mlserver
+# endpoint = "localhost:8081"
 # model = 'audio'
-# namespace = "default"
-# metadata = [("seldon", deployment_name), ("namespace", namespace)]
+# metadata = []
 
-# single node inference
-endpoint = "localhost:8081"
+# single node seldon+mlserver
+endpoint = "localhost:32000"
+deployment_name = 'audio'
 model = 'audio'
-metadata = []
+namespace = "default"
+metadata = [("seldon", deployment_name), ("namespace", namespace)]
 
 batch_test = 30
 ds = load_dataset(

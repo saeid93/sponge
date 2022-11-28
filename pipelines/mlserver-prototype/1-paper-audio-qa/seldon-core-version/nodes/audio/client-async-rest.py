@@ -9,16 +9,16 @@ from datasets import load_dataset
 import threading
 import json
 
-# single node inferline
+# single node mlserver
+gateway_endpoint = "localhost:8080"
+model = 'audio'
+endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+
+# single node seldon+mlserver
 # gateway_endpoint = "localhost:32000"
 # deployment_name = 'audio'
 # namespace = "default"
 # endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
-
-# single node inferline
-gateway_endpoint = "localhost:8080"
-model = 'audio'
-endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 batch_test = 6
 responses = []

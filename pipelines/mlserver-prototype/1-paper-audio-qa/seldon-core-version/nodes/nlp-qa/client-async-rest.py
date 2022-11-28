@@ -1,25 +1,22 @@
 import json
 import requests
 import threading
-from pprint import PrettyPrinter
-pp = PrettyPrinter(indent=4)
 from mlserver.types import InferenceResponse
 from mlserver.codecs.string import StringRequestCodec
-from pprint import PrettyPrinter
 
+from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=1)
 
+# single node mlserver
 model = 'nlp-qa'
 gateway_endpoint = "localhost:8080"
 endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
-# single node inferline
+# single node seldon+mlserver
 # gateway_endpoint="localhost:32000"
 # deployment_name = 'nlp-qa'
 # namespace = "default"
-
 # endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
-
 
 batch_test = 11
 
