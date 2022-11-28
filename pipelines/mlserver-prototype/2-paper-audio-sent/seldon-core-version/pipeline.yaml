@@ -61,7 +61,7 @@ spec:
             limits:
               cpu: '4'
               memory: 4Gi
-      replicas: 2
+      replicas: 1
     graph:
       name: audio
       type: MODEL

@@ -1,19 +1,24 @@
-from urllib import response
 import grpc
-from pprint import PrettyPrinter
-from mlserver.types import InferenceResponse
 from mlserver.grpc.converters import ModelInferResponseConverter
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
 from mlserver.codecs.string import StringRequestCodec
 from mlserver.codecs.string import StringRequestCodec
-pp = PrettyPrinter(indent=4)
 from datasets import load_dataset
 import mlserver.types as types
 import threading
 import json
+from pprint import PrettyPrinter
+pp = PrettyPrinter(indent=4)
 
-# single node inference
+# single node mlserver
+# endpoint = "localhost:8081"
+# model = 'mock-one'
+# metadata = []
+# grpc_channel = grpc.insecure_channel(endpoint)
+# grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
+
+# single node seldon+mlserver
 endpoint = "localhost:32000"
 deployment_name = 'mock-one'
 model = 'mock-one'
@@ -21,13 +26,6 @@ namespace = "default"
 metadata = [("seldon", deployment_name), ("namespace", namespace)]
 grpc_channel = grpc.insecure_channel(endpoint)
 grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
-
-# single node inference
-# endpoint = "localhost:8081"
-# model = 'mock-one'
-# metadata = []
-# grpc_channel = grpc.insecure_channel(endpoint)
-# grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
 batch_test = 30
 responses = []

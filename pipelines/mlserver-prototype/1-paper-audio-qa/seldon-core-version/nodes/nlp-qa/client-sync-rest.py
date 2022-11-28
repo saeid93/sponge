@@ -1,21 +1,20 @@
 import requests
-from pprint import PrettyPrinter
-pp = PrettyPrinter(indent=4)
 import json
 from mlserver.types import InferenceResponse
 from mlserver.codecs.string import StringRequestCodec
+from pprint import PrettyPrinter
+pp = PrettyPrinter(indent=4)
 
-# single node inference
-gateway_endpoint="localhost:32000"
-deployment_name = 'nlp-qa'
-namespace = "default"
+# single node mlserver
+# gateway_endpoint="localhost:32000"
+# deployment_name = 'nlp-qa'
+# namespace = "default"
+# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
-
-# single node inference
-# gateway_endpoint="localhost:8080"
-# model='nlp-qa'
-# endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
+# single node seldon+mlserver
+gateway_endpoint="localhost:8080"
+model='nlp-qa'
+endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 def send_requests(endpoint, data):
     payload = {

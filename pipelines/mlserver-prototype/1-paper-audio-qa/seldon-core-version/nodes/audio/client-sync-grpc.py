@@ -10,21 +10,22 @@ import grpc
 
 pp = PrettyPrinter(indent=4)
 
-# single node inference
-# endpoint = "localhost:32000"
-# deployment_name = 'audio'
+# single node mlserver
+# endpoint = "localhost:8081"
 # model = 'audio'
-# namespace = "default"
-# metadata = [("seldon", deployment_name), ("namespace", namespace)]
+# metadata = []
 # grpc_channel = grpc.insecure_channel(endpoint)
 # grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
-# single node inference
-endpoint = "localhost:8081"
+# single node seldon+mlserver
+endpoint = "localhost:32000"
+deployment_name = 'audio'
 model = 'audio'
-metadata = []
+namespace = "default"
+metadata = [("seldon", deployment_name), ("namespace", namespace)]
 grpc_channel = grpc.insecure_channel(endpoint)
 grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
+
 
 batch_test = 6
 

@@ -50,7 +50,14 @@ def image_loader(folder_path, image_name):
 #         dataset_folder_path, image_name) for image_name in image_names[
 #             :num_loaded_images]}
 
-# single node inference
+# single node mlserver
+# endpoint = "localhost:8081"
+# model = 'yolo'
+# metadata = []
+# grpc_channel = grpc.insecure_channel(endpoint)
+# grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
+
+# single node seldon+mlserver
 endpoint = "localhost:32000"
 deployment_name = 'yolo'
 model = 'yolo'
@@ -59,12 +66,6 @@ metadata = [("seldon", deployment_name), ("namespace", namespace)]
 grpc_channel = grpc.insecure_channel(endpoint)
 grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
-# single node inference
-# endpoint = "localhost:8081"
-# model = 'mock-one'
-# metadata = []
-# grpc_channel = grpc.insecure_channel(endpoint)
-# grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
@@ -77,22 +78,6 @@ with open(os.path.join(
 
 images = {}
 images['inpue-sample'] = input_data
-
-# def send_requests(endpoint, image):
-#     input_ins = {
-#         "name": "parameters-np",
-#         "datatype": "INT32",
-#         "shape": list(np.shape(image)),
-#         "data": np.array(image).tolist(),
-#         "parameters": {
-#             "content_type": "np"
-#             }
-#         }
-#     payload = {
-#     "inputs": [input_ins]
-#     }
-#     response = requests.post(endpoint, json=payload)
-#     return response
 
 def send_requests(image):
     inference_request = types.InferenceRequest(
@@ -112,7 +97,6 @@ def send_requests(image):
     response = grpc_stub.ModelInfer(
         request=inference_request_g,
         metadata=metadata)
-
     return response
 
 

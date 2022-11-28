@@ -1,15 +1,20 @@
 import os
 import pathlib
-from barazmoon import MLServerAsyncRest
 import asyncio
-# from barazmoon import queue
-# from barazmoon import responses
+from barazmoon import MLServerAsyncGrpc
+import asyncio
 
+# single node mlserver
+endpoint = "localhost:8081"
+model = 'nlp-qa'
+metadata = []
 
-gateway_endpoint = "localhost:32000"
-deployment_name = 'nlp-qa'
-namespace = "default"
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+# single node seldon+mlserver
+# endpoint = "localhost:32000"
+# deployment_name = 'nlp-qa'
+# model = 'nlp-qa'
+# namespace = "default"
+# metadata = [("seldon", deployment_name), ("namespace", namespace)]
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
@@ -21,10 +26,11 @@ workload = [3, 4, 2]
 data_shape = [1]
 data_type = 'text'
 
-load_tester = MLServerAsyncRest(
+load_tester = MLServerAsyncGrpc(
     endpoint=endpoint,
-    http_method=http_method,
+    metadata=metadata,
     workload=workload,
+    model=model,
     data=data,
     data_shape=data_shape,
     data_type=data_type)

@@ -1,48 +1,43 @@
-from pprint import PrettyPrinter
+import grpc
 from mlserver.grpc.converters import ModelInferResponseConverter
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
 from mlserver.codecs.string import StringRequestCodec
-from datasets import load_dataset
 import mlserver.types as types
 import json
-import grpc
-
+from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
-# single node inference
+# single node mlserver
+endpoint = "localhost:8081"
+model = 'nlp-sent'
+metadata = []
+grpc_channel = grpc.insecure_channel(endpoint)
+grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
+
+# single node seldon+mlserver
 # endpoint = "localhost:32000"
-# deployment_name = 'audio-qa'
-# model = 'audio-qa'
+# deployment_name = 'nlp-sent'
+# model = 'nlp-sent'
 # namespace = "default"
 # metadata = [("seldon", deployment_name), ("namespace", namespace)]
 # grpc_channel = grpc.insecure_channel(endpoint)
 # grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
-# single node inference
-endpoint = "localhost:8081"
-model = 'audio-qa'
-metadata = []
-grpc_channel = grpc.insecure_channel(endpoint)
-grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
-batch_test = 5
+input_data=['{"time": {"arrival_audio": 1664649974.6980114,'
+      ' "serving_audio": 1664649974.9401753}, "output":'
+      ' {"text": "mister quilter is the apostle of the middle'
+      ' classes and we are glad to welcome his gospel"}}']
 
-ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
-
-input_data = ds[0]["audio"]["array"]
-
-def send_requests():
+def send_requests(input_data):
     inference_request = types.InferenceRequest(
         inputs=[
             types.RequestInput(
-                name="echo_request",
-                shape=[1, len(input_data)],
-                datatype="FP32",
-                data=input_data.tolist(),
-                parameters=types.Parameters(content_type="np"),
+                name="text_inputs",
+                shape=[1],
+                datatype="BYTES",
+                data=[input_data.encode('utf8')],
+                parameters=types.Parameters(content_type="str"),
             )
         ]
     )
@@ -52,15 +47,14 @@ def send_requests():
     response = grpc_stub.ModelInfer(
         request=inference_request_g,
         metadata=metadata)
-
     return response
+
 
 # sync version
 results = []
-for i in range(batch_test):
-    response = send_requests()
+for data_ins in input_data:
+    response = send_requests(data_ins)
     results.append(response)
-
 
 # Note that here we just convert from the gRPC types to the MLServer types
 inference_response = ModelInferResponseConverter.to_types(response)
