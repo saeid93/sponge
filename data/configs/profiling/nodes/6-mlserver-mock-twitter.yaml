@@ -4,6 +4,7 @@ pipeline_name: 6-mlserver-mock
 node_name: mock-one
 data_type: audio
 timeout: 120
+protocol: grpc
 model_variants:
   - '1'
 max_batch_size:

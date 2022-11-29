@@ -4,6 +4,7 @@ of models and servers
 """
 import os
 import time
+import grpc
 import json
 import yaml
 import click
@@ -23,7 +24,10 @@ import shutil
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
-from barazmoon import MLServerAsyncRest
+import mlserver.grpc.dataplane_pb2_grpc as dataplane
+from barazmoon import (
+    MLServerAsyncRest,
+    MLServerAsyncGrpc)
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -76,6 +80,7 @@ def experiments(pipeline_name: str, node_name: str,
     series_meta = config['series_meta']
     loads_to_test = workload_config['loads_to_test']
     load_duration = workload_config['load_duration']
+    protocol = config['protocol']
     if 'no_engine' in config.keys():
         no_engine = config['no_engine']
     else:
@@ -134,6 +139,7 @@ def experiments(pipeline_name: str, node_name: str,
                                             data_type=data_type,
                                             node_path=node_path,
                                             load=load,
+                                            protocol=protocol,
                                             namespace='default',
                                             load_duration=load_duration,
                                             no_engine=no_engine)
@@ -244,6 +250,7 @@ def load_test(node_name: str, data_type: str,
               node_path: str,
               load: int, load_duration: int,
               namespace: str='default',
+              protocol: str='rest',
               no_engine: bool = False):
     start_time = time.time()
     print('-'*25 + f' starting load test ' + '-'*25)
@@ -286,24 +293,37 @@ def load_test(node_name: str, data_type: str,
             data_shape = data_shape['data_shape']
     else:
         raise ValueError(f"Invalid data_type: {data_type}")
-    # load test on the server
-    gateway_endpoint = "localhost:32000"
-    if not no_engine:
-        endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/infer"
-    else:
-        endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/{node_name}/infer" 
     workload = [load] * load_duration
-    load_tester = MLServerAsyncRest(
-        endpoint=endpoint,
-        http_method='post',
-        workload=workload,
-        data=data,
-        data_shape=data_shape,
-        data_type=data_type)
-    load_tester.start()
-
-    responses = asyncio.run(load_tester.start())
-
+    if protocol == 'rest':
+        # load test on the server
+        gateway_endpoint = "localhost:32000"
+        if not no_engine:
+            endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/infer"
+        else:
+            endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/{node_name}/infer" 
+        load_tester = MLServerAsyncRest(
+            endpoint=endpoint,
+            http_method='post',
+            workload=workload,
+            data=data,
+            data_shape=data_shape,
+            data_type=data_type)
+        responses = asyncio.run(load_tester.start())
+    elif protocol == 'grpc':
+        endpoint = "localhost:32000"
+        deployment_name = node_name
+        model = node_name
+        namespace = "default"
+        metadata = [("seldon", deployment_name), ("namespace", namespace)]
+        load_tester = MLServerAsyncGrpc(
+            endpoint=endpoint,
+            metadata=metadata,
+            workload=workload,
+            model=model,
+            data=data,
+            data_shape=data_shape,
+            data_type=data_type)
+        responses = asyncio.run(load_tester.start())   
     end_time = time.time()
 
     # remove ouput for image inputs/outpus (yolo)
@@ -427,7 +447,7 @@ def backup(series):
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='6-mlserver-mock-static')
+    '--config-name', required=True, type=str, default='1-config-static-audio-all')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")

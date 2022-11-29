@@ -4,6 +4,7 @@ pipeline_name: 3-paper-nlp
 node_name: nlp-trans
 data_type: text
 timeout: 120
+protocol: grpc
 model_variants:
   - Helsinki-NLP/opus-mt-fr-en
   - Helsinki-NLP/opus-mt-tc-big-fr-en
