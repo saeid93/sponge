@@ -29,7 +29,7 @@ data_type = 'image'
 # grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 # data_type = 'image'
 
-workload = [10, 7, 4, 12, 15]
+workload = [1]
 
 def image_loader(folder_path, image_name):
     image = Image.open(

@@ -25,7 +25,7 @@ ds = load_dataset(
 data = ds[0]["audio"]["array"].tolist()
 
 http_method = 'post'
-workload = [100] * 10
+workload = [2] * 1
 data_shape = [1, len(data)]
 data_type = 'audio'
 

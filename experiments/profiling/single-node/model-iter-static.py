@@ -132,7 +132,8 @@ def experiments(pipeline_name: str, node_name: str,
                                         series_meta=series_meta,
                                         replica=replica,
                                         no_engine=no_engine,
-                                        protocol=protocol)
+                                        protocol=protocol,
+                                        data_type=data_type)
 
                                     start_time_experiment,\
                                         end_time_experiment, responses = load_test(
@@ -167,7 +168,7 @@ def key_config_mapper(
     memory_request: str, model_variant: str, max_batch_size: str,
     max_batch_time: str, load: int,
     load_duration: int, series: int, series_meta: str, replica: int,
-    no_engine: bool = True, protocol: str = 'rest'):
+    no_engine: bool = True, protocol: str = 'rest', data_type: str = 'audio'):
     dir_path = os.path.join(
         NODE_PROFILING_RESULTS_STATIC_PATH,
         'series', str(series))
@@ -178,7 +179,7 @@ def key_config_mapper(
         'memory_request', 'max_batch_size',
         'max_batch_time', 'load', 'load_duration',
         'series', 'series_meta', 'replicas', 'no_engine',
-        'protocol']
+        'protocol', 'data_type']
     if not os.path.exists(file_path):
         # os.makedirs(dir_path)
         with open(file_path, 'w', newline="") as file:
@@ -207,7 +208,8 @@ def key_config_mapper(
         'series_meta': series_meta,
         'replicas': replica,
         'no_engine': no_engine,
-        'protocol': protocol
+        'protocol': protocol,
+        'data_type': data_type
         }
     with open(file_path, 'a') as row_writer:
         dictwriter_object = csv.DictWriter(row_writer, fieldnames=header)
