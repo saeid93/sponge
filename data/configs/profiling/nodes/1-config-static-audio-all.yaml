@@ -1,4 +1,4 @@
-series: 38
+series: 40
 series_meta: 'checking effect of batch size,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 pipeline_name: 1-paper-audio-qa
 node_name: audio

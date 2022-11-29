@@ -25,7 +25,9 @@ import shutil
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
-from barazmoon import MLServerAsyncRest
+from barazmoon import (
+    MLServerAsyncRest,
+    MLServerAsyncGrpc)
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -65,14 +67,15 @@ def get_pod_name(node_name: str, namespace='default'):
 def key_config_mapper(
     experiment_info: dict, load: int,
     load_duration: int, series: int,
-    series_meta: str, replica: int):
+    series_meta: str, replica: int,
+    protocol: str):
     dir_path = os.path.join(
         PIPELINE_PROFILING_RESULTS_STATIC_PATH,
         'series', str(series))
     file_path =  os.path.join(dir_path, KEY_CONFIG_FILENAME)
     header = ['experiment_id']
     header += list(experiment_info.keys())
-    header += ['load', 'load_duration', 'series', 'series_meta']
+    header += ['load', 'load_duration', 'series', 'series_meta', 'protocol']
     if not os.path.exists(file_path):
         # os.makedirs(dir_path)
         with open(file_path, 'w', newline="") as file:
@@ -92,6 +95,7 @@ def key_config_mapper(
         'load_duration': load_duration,
         'series': series,
         'series_meta': series_meta,
+        'protocol': protocol
         }
     row.update(experiment_info)
     with open(file_path, 'a') as row_writer:
@@ -111,7 +115,7 @@ def experiments(pipeline_name: str, node_names: str,
     loads_to_test = workload_config['loads_to_test']
     load_duration = workload_config['load_duration']
     timeout = config['timeout']
-
+    protocol = config['protocol']
 
     model_variants = []
     max_batch_sizes = []
@@ -172,7 +176,8 @@ def experiments(pipeline_name: str, node_names: str,
                                         load_duration=load_duration,
                                         series=series,
                                         series_meta=series_meta,
-                                        replica=replica)
+                                        replica=replica,
+                                        protocol=protocol)
 
                                     start_time_experiment,\
                                         end_time_experiment, responses = load_test(
@@ -181,7 +186,8 @@ def experiments(pipeline_name: str, node_names: str,
                                             pipeline_path=pipeline_path,
                                             load=load,
                                             namespace='default',
-                                            load_duration=load_duration)
+                                            load_duration=load_duration,
+                                            protocol=protocol)
                                     # TODO id system for the experiments
                                     save_report(
                                         experiment_id=experiment_id,
@@ -241,7 +247,7 @@ def setup_pipeline(pipeline_name: str,
 def load_test(pipeline_name: str, data_type: str,
               pipeline_path: str,
               load: int, load_duration: int,
-              namespace: str='default',):
+              namespace: str='default', protocol = 'rest'):
     start_time = time.time()
     print('-'*25 + f' starting load test ' + '-'*25)
     print('\n')
@@ -281,22 +287,39 @@ def load_test(pipeline_name: str, data_type: str,
         with open(input_sample_shape_path, 'r') as openfile:
             data_shape = json.load(openfile)
             data_shape = data_shape['data_shape']
+        data = np.array(data).flatten().tolist()
     else:
         raise ValueError(f"Invalid data_type: {data_type}")
-    # load test on the server
-    gateway_endpoint = "localhost:32000"
-    endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{pipeline_name}/v2/models/infer"
     workload = [load] * load_duration
-    load_tester = MLServerAsyncRest(
-        endpoint=endpoint,
-        http_method='post',
-        workload=workload,
-        data=data,
-        data_shape=data_shape,
-        data_type=data_type)
-    load_tester.start()
-
-    responses = asyncio.run(load_tester.start())
+    if protocol == 'rest':
+        # load test on the server
+        gateway_endpoint = "localhost:32000"
+        endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{pipeline_name}/v2/models/infer"
+        load_tester = MLServerAsyncRest(
+            endpoint=endpoint,
+            http_method='post',
+            workload=workload,
+            data=data,
+            data_shape=data_shape,
+            data_type=data_type)
+        responses = asyncio.run(load_tester.start())
+    elif protocol == 'grpc':
+        endpoint = "localhost:32000"
+        deployment_name = pipeline_name
+        model = None
+        namespace = "default"
+        metadata = [("seldon", deployment_name), ("namespace", namespace)]
+        load_tester = MLServerAsyncGrpc(
+            endpoint=endpoint,
+            metadata=metadata,
+            workload=workload,
+            model=model,
+            data=data,
+            data_shape=data_shape,
+            data_type=data_type)
+        responses = asyncio.run(load_tester.start())
+    else:
+        raise ValueError(f'Invalid protocol: {protocol}, use either grpc or rest')
 
     end_time = time.time()
 
