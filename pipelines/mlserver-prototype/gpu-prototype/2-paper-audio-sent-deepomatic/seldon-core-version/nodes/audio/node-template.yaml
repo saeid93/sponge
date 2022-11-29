@@ -1,11 +1,10 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: nlp-sent
+  name: {{ name }}
 spec:
   protocol: v2
-  name: nlp-sent
- 
+  name: {{ name }}
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
@@ -13,34 +12,32 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/audio-sent-pipelines-mlserver-gpu-1:nlpsent
-          name: nlp-sent
+        - image: sdghafouri/audio-sent-pipelines-mlserver:audio
+          name: audio
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '4'
-              memory: 4Gi
-              nvidia.com/gpu: 1
+              cpu: '{{ cpu_request }}'
+              memory: '{{ memory_request }}'
             limits:
-              cpu: '4'
-              memory: 4Gi
-              nvidia.com/gpu: 1
+              cpu: '{{ cpu_limit }}'
+              memory: '{{ memory_limit }}'
           env:
             - name: MODEL_VARIANT
-              value: distilbert-base-uncased-finetuned-sst-2-english
+              value: {{ model_variant }}
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TASK
-              value: sentiment-analysis
+              value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: "1"
+              value: '{{ max_batch_time }}'
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
-      replicas: 1
+      replicas: {{ replicas }}
     graph:
-      name: nlp-sent
+      name: audio
       type: MODEL
       children: []
     svcOrchSpec:
@@ -51,6 +48,3 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
-      
-
-
