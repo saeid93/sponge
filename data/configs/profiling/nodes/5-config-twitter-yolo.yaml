@@ -4,6 +4,7 @@ pipeline_name: 4-paper-video
 node_name: yolo
 data_type: image
 timeout: 120
+protocol: grpc
 model_variants:
   - yolov5n
   - yolov5s

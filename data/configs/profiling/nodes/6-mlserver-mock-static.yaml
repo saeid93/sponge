@@ -5,6 +5,7 @@ node_name: mock-one
 data_type: audio
 no_engine: false
 timeout: 240
+protocol: grpc
 model_variants:
   # - '0'
   - '1'
