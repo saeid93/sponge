@@ -1,10 +1,10 @@
-series: 38
-series_meta: fastapi-small
+series: 39
+series_meta: rest vs grpc
 pipeline_name: 6-mlserver-mock
 node_name: mock-one
 data_type: audio
 no_engine: false
-timeout: 240
+timeout: 120
 protocol: grpc
 model_variants:
   # - '0'

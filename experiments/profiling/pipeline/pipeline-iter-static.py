@@ -68,7 +68,7 @@ def key_config_mapper(
     experiment_info: dict, load: int,
     load_duration: int, series: int,
     series_meta: str, replica: int,
-    protocol: str):
+    protocol: str, data_type: str):
     dir_path = os.path.join(
         PIPELINE_PROFILING_RESULTS_STATIC_PATH,
         'series', str(series))
@@ -95,7 +95,8 @@ def key_config_mapper(
         'load_duration': load_duration,
         'series': series,
         'series_meta': series_meta,
-        'protocol': protocol
+        'protocol': protocol,
+        'data_type': data_type
         }
     row.update(experiment_info)
     with open(file_path, 'a') as row_writer:
@@ -177,7 +178,8 @@ def experiments(pipeline_name: str, node_names: str,
                                         series=series,
                                         series_meta=series_meta,
                                         replica=replica,
-                                        protocol=protocol)
+                                        protocol=protocol,
+                                        data_type=data_type)
 
                                     start_time_experiment,\
                                         end_time_experiment, responses = load_test(
