@@ -4,6 +4,7 @@ pipeline_name: 5-paper-video
 node_name: resnet-human
 data_type: text
 timeout: 120
+protocol: grpc
 model_variants:
   - resnet18
   - resnet34

@@ -3,6 +3,7 @@ series_meta: 'sample for making the analysis notebook'
 timeout: 60
 pipeline_folder_name: 1-paper-audio-qa
 pipeline_name: paper-audio-qa
+prtocol: 'rest'
 nodes:
   - node_name: audio
     data_type: audio

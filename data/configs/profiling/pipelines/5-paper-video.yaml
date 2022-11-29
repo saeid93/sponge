@@ -1,8 +1,9 @@
-series: 10
+series: 40
 series_meta: 'sample for making the analysis notebook'
-timeout: 120
+timeout: 1
 pipeline_folder_name: 5-paper-video
 pipeline_name: paper-video
+protocol: grpc
 nodes:
   - node_name: yolo
     data_type: image
