@@ -1,4 +1,4 @@
-series: 39
+series: 40
 series_meta: rest vs grpc
 pipeline_name: 6-mlserver-mock
 node_name: mock-one
@@ -7,8 +7,8 @@ no_engine: false
 timeout: 120
 protocol: grpc
 model_variants:
-  # - '0'
-  - '1'
+  - '0'
+  # - '1'
   # - '2'
 max_batch_size:
   - '1'
