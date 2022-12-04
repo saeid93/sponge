@@ -10,11 +10,11 @@ from simulator import (
 task_a_model_1 = Model(
     name='yolo5n',
     resources=ResourceRequirement(cpu=1),
-    profiles=[
+    measured_profiles=[
         Profile(batch=1, latency=0.1),
         Profile(batch=2, latency=0.2),
         Profile(batch=4, latency=0.4),
-        Profile(batch=8, latency=0.8),
+        # Profile(batch=8, latency=0.8),
     ],
     accuracy=0.5
 )
@@ -22,11 +22,11 @@ task_a_model_1 = Model(
 task_a_model_2 = Model(
     name='yolo5s',
     resources=ResourceRequirement(cpu=2),
-    profiles=[
+    measured_profiles=[
         Profile(batch=1, latency=0.1),
         Profile(batch=2, latency=0.2),
         Profile(batch=4, latency=0.4),
-        Profile(batch=8, latency=0.8),
+        # Profile(batch=8, latency=0.8),
     ],
     accuracy=0.8
 )
@@ -47,11 +47,11 @@ task_a = Task(
 task_b_model_1 = Model(
     name='resnet18',
     resources=ResourceRequirement(cpu=1),
-    profiles=[
+    measured_profiles=[
         Profile(batch=1, latency=0.1),
         Profile(batch=2, latency=0.2),
         Profile(batch=4, latency=0.4),
-        Profile(batch=8, latency=0.8),
+        # Profile(batch=8, latency=0.8),
     ],
     accuracy=0.5
 )
@@ -59,11 +59,11 @@ task_b_model_1 = Model(
 task_b_model_2 = Model(
     name='resnet34',
     resources=ResourceRequirement(cpu=1),
-    profiles=[
+    measured_profiles=[
         Profile(batch=1, latency=0.1),
         Profile(batch=2, latency=0.2),
         Profile(batch=4, latency=0.4),
-        Profile(batch=8, latency=0.8),
+        # Profile(batch=8, latency=0.8),
     ],
     accuracy=0.8
 )
@@ -98,11 +98,14 @@ optimizer = Optimizer(
 print(f"{pipeline.stage_wise_throughput = }")
 print(f"{pipeline.stage_wise_latencies = }")
 print(f"{pipeline.stage_wise_replicas = }")
-print(f"{pipeline.stage_wise_cpu_usage = }")
-print(f"{pipeline.stage_wise_gpu_usage = }")
+print(f"{pipeline.stage_wise_cpu = }")
+print(f"{pipeline.stage_wise_gpu = }")
 print(f"{pipeline.cpu_usage = }")
 print(f"{pipeline.gpu_usage = }")
 print(f"{pipeline.pipeline_latency = }")
 print(f"{optimizer.can_sustain_load(arrival_rate=4) = }")
-print(f"{optimizer.find_load_bottlenecks(arrival_rate=6) = }")
+print(f"{optimizer.find_load_bottlenecks(arrival_rate=30) = }")
 print(f"{optimizer.objective(alpha=0.5, beta=0.5) = }")
+states = optimizer.all_states(scaling_cap=2)
+print(f"{states = }")
+states.to_markdown('file.csv')
