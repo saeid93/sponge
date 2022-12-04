@@ -7,7 +7,7 @@ namespace = "default"
 endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
 
 
-workload = [10, 7, 4, 12, 15]
+workload = [10] * 100
 data=["""
 Après des décennies en tant que pratiquant d'arts martiaux et coureur, Wes a "trouvé" le yoga en 2010.
 Il en est venu à apprécier que son ampleur et sa profondeur fournissent un merveilleux lest pour stabiliser

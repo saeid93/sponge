@@ -21,7 +21,7 @@ PATH = pathlib.Path(__file__).parent.resolve()
 with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
     data = openfile.read()
 
-workload = [2, 2, 2]
+workload = [10] * 100
 data_shape = [1]
 data_type = 'text'
 
