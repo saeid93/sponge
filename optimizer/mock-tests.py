@@ -86,7 +86,6 @@ inference_graph = [
 ]
 
 pipeline = Pipeline(
-    sla=7,
     inference_graph=inference_graph,
     gpu_mode=False
 )
@@ -112,11 +111,7 @@ states = optimizer.all_states(scaling_cap=2)
 print(f"{states = }")
 states.to_markdown('all-states.csv')
 
-all_states = optimizer.all_states(scaling_cap=2)
-print(f"{all_states = }")
-all_states.to_markdown('all-states.csv')
-
 arrival_rate = 3
-all_states = optimizer.all_states(scaling_cap=2, check_constraints=True, arrival_rate=5)
+all_states = optimizer.all_states(scaling_cap=2, check_constraints=True, arrival_rate=5, sla=3)
 print(f"{all_states = }")
 all_states.to_markdown(f'all_feasible_states_load_{arrival_rate}.csv')
