@@ -178,10 +178,9 @@ class Task:
 
 class Pipeline:
     def __init__(
-        self, sla: float,
+        self,
         inference_graph: List[Task], gpu_mode: bool) -> None:
         self.inference_graph = inference_graph
-        self.sla = sla
         self.gpu_mode = gpu_mode
         if not self.gpu_mode:
             for task in self.inference_graph:
@@ -307,11 +306,11 @@ class Optimizer:
             beta * 1/self.pipeline.cpu_usage
         return objective
 
-    def constraints(self, arrival_rate: int) -> bool:
+    def constraints(self, arrival_rate: int, sla: float) -> bool:
         """
         whether the constraints are met or not
         """
-        if self.sla_is_met() and self.can_sustain_load(
+        if self.sla_is_met(sla=sla) and self.can_sustain_load(
             arrival_rate=arrival_rate):
             return True
         return False
@@ -319,7 +318,8 @@ class Optimizer:
     def all_states(
         self, scaling_cap: int = 10,
         check_constraints: bool = False, 
-        arrival_rate: int = 3) -> pd.DataFrame:
+        arrival_rate: int = None,
+        sla: float = None) -> pd.DataFrame:
         """
         scaling_cap: maximum number of allowed replication
         returns all states of the pipeline
@@ -350,7 +350,7 @@ class Optimizer:
                     task_id_i].change_batch(batch=combination[2][task_id_i])
             ok_to_add = False
             if check_constraints:
-                if self.constraints(arrival_rate=arrival_rate):
+                if self.constraints(arrival_rate=arrival_rate, sla=sla):
                     ok_to_add = True
             else:
                 ok_to_add = True
@@ -410,8 +410,8 @@ class Optimizer:
                 return False
         return True
 
-    def sla_is_met(self) -> bool:
-        return self.pipeline.pipeline_latency < self.pipeline.sla
+    def sla_is_met(self, sla) -> bool:
+        return self.pipeline.pipeline_latency < sla
 
 
     def find_load_bottlenecks(
