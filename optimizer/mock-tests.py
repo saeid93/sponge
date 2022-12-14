@@ -103,9 +103,20 @@ print(f"{pipeline.stage_wise_gpu = }")
 print(f"{pipeline.cpu_usage = }")
 print(f"{pipeline.gpu_usage = }")
 print(f"{pipeline.pipeline_latency = }")
+
 print(f"{optimizer.can_sustain_load(arrival_rate=4) = }")
 print(f"{optimizer.find_load_bottlenecks(arrival_rate=30) = }")
 print(f"{optimizer.objective(alpha=0.5, beta=0.5) = }")
+
 states = optimizer.all_states(scaling_cap=2)
 print(f"{states = }")
-states.to_markdown('file.csv')
+states.to_markdown('all-states.csv')
+
+all_states = optimizer.all_states(scaling_cap=2)
+print(f"{all_states = }")
+all_states.to_markdown('all-states.csv')
+
+arrival_rate = 3
+all_states = optimizer.all_states(scaling_cap=2, check_constraints=True, arrival_rate=5)
+print(f"{all_states = }")
+all_states.to_markdown(f'all_feasible_states_load_{arrival_rate}.csv')
