@@ -27,12 +27,23 @@ except KeyError as e:
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
+try:
+    MODEL_SYNC = eval(os.environ['MODEL_SYNC'])
+    logger.info(f'MODEL_SYNC set to: {MODEL_SYNC}')
+except KeyError as e:
+    MODEL_SYNC = True
+    logger.error(
+        f"PREDICTIVE_UNIT_ID env variable not set, using default value: {MODEL_SYNC}")
+
 async def model(input, sleep):
-    await asyncio.sleep(sleep)
+    if MODEL_SYNC:
+        time.sleep(sleep)
+    else:
+        await asyncio.sleep(sleep)
     _ = input
     output = ["mock one output"] * len(input)
     return output
-    
+ 
 class MockOne(MLModel):
     async def load(self):
         self.loaded = False
@@ -42,7 +53,7 @@ class MockOne(MLModel):
             self.MODEL_VARIANT = float(os.environ['MODEL_VARIANT'])
             logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
-            self.MODEL_VARIANT = 0
+            self.MODEL_VARIANT = 0.3
             logger.error(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         logger.info('Loading the ML models')
@@ -61,6 +72,7 @@ class MockOne(MLModel):
             logger.error('request input shape:\n')
             logger.error(f"{request_input.shape}\n")
             decoded_input = self.decode(request_input)
+            # TODO decode time effect
             logger.error(decoded_input)
             X = decoded_input
         X = list(map(lambda l: np.array(l), X))

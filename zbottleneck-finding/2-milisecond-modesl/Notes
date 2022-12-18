@@ -1,0 +1,3 @@
+We still see the increasing curve for 100> load, therefore there should be a bottleneck somewhere, to find out bottleneck:
+- Curve of request sent time from the load-tester
+- Curve of requests model entrance time from the start of the experiments
