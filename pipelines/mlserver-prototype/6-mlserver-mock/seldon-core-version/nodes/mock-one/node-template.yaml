@@ -27,6 +27,8 @@ spec:
           env:
             - name: MODEL_VARIANT
               value: '{{ model_variant }}'
+            - name: MODEL_SYNC
+              value: "False"
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE

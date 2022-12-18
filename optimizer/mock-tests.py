@@ -112,6 +112,13 @@ print(f"{states = }")
 states.to_markdown('all-states.csv')
 
 arrival_rate = 3
-all_states = optimizer.all_states(scaling_cap=2, check_constraints=True, arrival_rate=5, sla=3)
+all_states = optimizer.all_states(check_constraints=True, scaling_cap=2, arrival_rate=5, sla=3)
 print(f"{all_states = }")
 all_states.to_markdown(f'all_feasible_states_load_{arrival_rate}.csv')
+
+scaling_cap = 2
+sla = 5
+arrival_rate = 10
+
+optimal = optimizer.greedy_optimizer(scaling_cap=2, sla=5, arrival_rate=10)
+all_states.to_markdown(f'optimal_scaling_cap_{scaling_cap}_sla_{sla}_load_{arrival_rate}.csv')

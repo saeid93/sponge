@@ -295,6 +295,20 @@ class Optimizer:
     def _generate_states(self) -> pd.DataFrame:
         return pd.DataFrame(columns=self.headers)
 
+    def accuracy_objective(self) -> float:
+        """
+        objective function of the pipeline
+        """
+        accuracy_objective = self.pipeline.pipeline_accuracy
+        return accuracy_objective
+
+    def resource_objective(self) -> float:
+        """
+        objective function of the pipeline
+        """
+        resource_objective = 1/self.pipeline.cpu_usage
+        return resource_objective
+
     def objective(
         self,
         alpha: float, beta: float) -> None:
@@ -302,8 +316,8 @@ class Optimizer:
         objective function of the pipeline
         """
         # TODO make it reconfigurable
-        objective = alpha * self.pipeline.pipeline_accuracy +\
-            beta * 1/self.pipeline.cpu_usage
+        objective = alpha * self.accuracy_objective() +\
+            beta * self.resource_objective()
         return objective
 
     def constraints(self, arrival_rate: int, sla: float) -> bool:
@@ -316,8 +330,11 @@ class Optimizer:
         return False
 
     def all_states(
-        self, scaling_cap: int = 10,
-        check_constraints: bool = False, 
+        self,
+        check_constraints: bool = False,
+        scaling_cap: int = 2,
+        alpha: float = 1,
+        beta: float = 1,
         arrival_rate: int = None,
         sla: float = None) -> pd.DataFrame:
         """
@@ -392,12 +409,21 @@ class Optimizer:
                         self.pipeline.pipeline_cpu
                     state['pipeline_gpu'] =\
                         self.pipeline.pipeline_gpu
+                    state['accuracy_objective'] =\
+                        self.accuracy_objective()
+                    state['resource_objective'] =\
+                        self.resource_objective()
+                    state['objective'] = self.objective(alpha=alpha, beta=beta)
+                    state['alpha'] = alpha
+                    state['beta'] = beta
                 states = states.append(state, ignore_index=True)
         return states
 
-    def greedy_optimizer(self):
-        # TODO
-        pass
+    def greedy_optimizer(self, scaling_cap: int, sla: float, arrival_rate: int):
+        states = self.all_states(
+            scaling_cap=scaling_cap, sla=sla, arrival_rate=arrival_rate)
+        optimal = states[states['objective'] == states['objective'].max()]
+        return optimal
 
     def can_sustain_load(
         self,

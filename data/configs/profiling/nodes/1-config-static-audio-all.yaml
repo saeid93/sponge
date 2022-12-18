@@ -21,12 +21,12 @@ max_batch_size:
 max_batch_time:
   - '1'
 cpu_request:
-  # - '1'
+  - '1'
   # - '2'
   # - '4'
   # - '8'
   # - '16'
-  - '32'
+  # - '32'
 memory_request:
   - 20Gi
 replicas:
