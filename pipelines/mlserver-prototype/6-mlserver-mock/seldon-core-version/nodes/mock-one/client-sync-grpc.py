@@ -7,25 +7,26 @@ from datasets import load_dataset
 import mlserver.types as types
 import json
 import grpc
+# from mlserver_huggingface.codecs import C
 
 pp = PrettyPrinter(indent=4)
 
 
 # single node inference
-# endpoint = "localhost:32000"
-# deployment_name = 'mock-one'
-# model = 'mock-one'
-# namespace = "default"
-# metadata = [("seldon", deployment_name), ("namespace", namespace)]
-# grpc_channel = grpc.insecure_channel(endpoint)
-# grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
-
-# single node inference
-endpoint = "localhost:8081"
+endpoint = "localhost:32000"
+deployment_name = 'mock-one'
 model = 'mock-one'
-metadata = []
+namespace = "default"
+metadata = [("seldon", deployment_name), ("namespace", namespace)]
 grpc_channel = grpc.insecure_channel(endpoint)
 grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
+
+# single node inference
+# endpoint = "localhost:8081"
+# model = 'mock-one'
+# metadata = []
+# grpc_channel = grpc.insecure_channel(endpoint)
+# grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
 batch_test = 1
 
@@ -35,16 +36,16 @@ ds = load_dataset(
     split="validation")
 
 input_data = ds[0]["audio"]["array"]
-
+import numpy as np
 def send_requests():
     inference_request = types.InferenceRequest(
         inputs=[
             types.RequestInput(
                 name="echo_request",
                 shape=[1, len(input_data)],
-                datatype="FP32",
-                data=input_data.tolist(),
-                parameters=types.Parameters(content_type="np"),
+                datatype="BYTES",
+                data=input_data.tobytes(),
+                parameters=types.Parameters(content_type="base64"),
             )
         ]
     )
@@ -55,6 +56,7 @@ def send_requests():
         request=inference_request_g,
         metadata=metadata)
     return response
+
 
 # sync version
 results = []

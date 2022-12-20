@@ -42,7 +42,7 @@ class ResnetHuman(MLModel):
             self.MODEL_VARIANT = os.environ['MODEL_VARIANT']
             logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
-            self.MODEL_VARIANT = 'resnet101'
+            self.MODEL_VARIANT = 'resnet18'
             logger.error(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         logger.error(f'max_batch_size: {self._settings.max_batch_size}')
@@ -114,6 +114,7 @@ class ResnetHuman(MLModel):
         X_flatten = []
         for output_index, output in enumerate(X):
             mask.append(0)
+            
             for image in output:
                 mask[output_index] += 1
                 X_flatten.append(image)
@@ -121,10 +122,14 @@ class ResnetHuman(MLModel):
         # preprocessing all images before sending to the model
         logger.error(f"len(X_flatten):\n{len(X_flatten)}\n")
         logger.error(f"mask:\n{mask}\n")
-        X_trans = [
-            self.transform(
-                Image.fromarray(
-                    np.array(image).astype(np.uint8))) for image in X_flatten]
+
+        converted_images = [Image.fromarray(
+            np.array(image, dtype=np.uint8)) for image in X_flatten]
+
+        before_model_time = time.time()
+
+        X_trans = [self.transform(
+            converted_image) for converted_image in converted_images]
 
         # batch images give all the images to the models
         # per defined batch size
@@ -142,12 +147,15 @@ class ResnetHuman(MLModel):
             logger.error(f"{image_net_class=}")
             serving_time = time.time()
             timing = {
+                f"before_model_{PREDICTIVE_UNIT_ID}": before_model_time,
                 f"arrival_{PREDICTIVE_UNIT_ID}": arrival_time,
                 f"serving_{PREDICTIVE_UNIT_ID}": serving_time,
             }
             timings += self.batch_size * [timing]
         logger.error(f"{timings=}")
         logger.error(f"{former_steps_timings=}")
+        logger.error(f"post: {timing[f'serving_{PREDICTIVE_UNIT_ID}'] - timing[f'arrival_{PREDICTIVE_UNIT_ID}']}")
+        logger.error(f"model: {timing[f'before_model_{PREDICTIVE_UNIT_ID}'] - timing[f'arrival_{PREDICTIVE_UNIT_ID}']}")
         # timing.update(former_steps_timings)
         preds_with_time = list()
         pred_index = 0
