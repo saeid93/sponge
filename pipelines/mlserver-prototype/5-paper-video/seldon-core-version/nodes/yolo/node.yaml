@@ -17,10 +17,10 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '4'
+              cpu: '1'
               memory: 4Gi
             limits:
-              cpu: '4'
+              cpu: '1'
               memory: 4Gi
           env:
             - name: MODEL_VARIANT
@@ -30,7 +30,7 @@ spec:
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: "2"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS

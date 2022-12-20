@@ -26,7 +26,7 @@ try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
     logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
-    PREDICTIVE_UNIT_ID = 'predictive_unit'
+    PREDICTIVE_UNIT_ID = 'yolo'
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
@@ -77,13 +77,17 @@ class Yolo(MLModel):
         logger.error(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += received_batch_len
         self.batch_counter += 1
+        before_model_time = time.time()
         objs = self.model(X)
         serving_time = time.time()
         output = self.get_cropped(objs)
         timing = {
+            f"before_model_{PREDICTIVE_UNIT_ID}".replace("-","_"): before_model_time,
             f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
             f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
         }
+        logger.error(f"pre: {timing[f'before_model_{PREDICTIVE_UNIT_ID}'] - timing[f'arrival_{PREDICTIVE_UNIT_ID}']}")
+        logger.error(f"model: {timing[f'serving_{PREDICTIVE_UNIT_ID}'] - timing[f'before_model_{PREDICTIVE_UNIT_ID}']}")
         output_with_time = list()
         for pred in output:
             output_with_time.append(

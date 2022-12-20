@@ -16,7 +16,7 @@ import json
 gateway_endpoint="localhost:8080"
 endpoint = f"http://{gateway_endpoint}/v2/models/yolo/infer"
 
-workload = [10, 7, 4, 12, 15]
+workload = [2]
 
 def image_loader(folder_path, image_name):
     image = Image.open(
@@ -67,6 +67,7 @@ input_data = np.array(input_data).flatten().tolist()
 
 http_method = 'post'
 data_type = 'image'
+mode = 'step'
 
 
 load_tester = MLServerAsyncRest(
@@ -74,6 +75,7 @@ load_tester = MLServerAsyncRest(
     http_method=http_method,
     workload=workload,
     data=input_data,
+    mode=mode,
     data_shape=input_data_shape,
     data_type=data_type)
 

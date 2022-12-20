@@ -59,6 +59,8 @@ with open(os.path.join(
     input_data_shape = input_data_shape['data_shape']
 images = {}
 images['inpue-sample'] = input_data
+input_data = images
+inputs = [input_data] * 10
 
 def send_requests(endpoint, image):
     input_ins = {
@@ -78,12 +80,13 @@ def send_requests(endpoint, image):
 
 # sync version
 results = {}
-for image_name, image in images.items():
-    response = send_requests(endpoint, image)
-    inference_response = InferenceResponse.parse_raw(response.text)
-    raw_json = StringRequestCodec.decode_response(inference_response)
-    output = json.loads(raw_json[0])
-    results[image_name] = output
+for image in inputs:
+    for image_name, image in image.items():
+        response = send_requests(endpoint, image)
+        inference_response = InferenceResponse.parse_raw(response.text)
+        raw_json = StringRequestCodec.decode_response(inference_response)
+        output = json.loads(raw_json[0])
+        results[image_name] = output
 
 for image_name, output in results.items():
     print("-"*50, f' {image_name} ', "-"*50)
