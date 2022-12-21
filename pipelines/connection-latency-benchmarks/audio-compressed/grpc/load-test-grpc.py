@@ -5,7 +5,7 @@ from datasets import load_dataset
 import asyncio
 import json
 import time
-
+import numpy as np
 
 # load data
 ds = load_dataset(
@@ -14,12 +14,13 @@ ds = load_dataset(
     split="validation")
 # data = ds[0]["audio"]["array"].tolist()
 data = ds[0]["audio"]["array"]
+# data = np.zeros([1000000], dtype=np.float32)
 
-load = 2
-test_duration = 30
+load = 10
+test_duration = 1
 variant = 0
-platform = 'seldon'
-mode = 'equal'
+platform = 'mlserver'
+mode = 'exponential'
 
 # single node inference
 if platform == 'seldon':
@@ -35,7 +36,7 @@ elif platform == 'mlserver':
 
 
 workload = [load] * test_duration
-data_shape = [1, len(data)]
+data_shape = [len(data)]
 data_type = 'audio-bytes'
 
 start_time = time.time()
@@ -115,3 +116,5 @@ ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server 
 ax.grid()
 fig.savefig(f"grpc-compressed-audio-{platform}_variant_{variant}-server_recieving_latency-load-{load}-test_duration-{test_duration}.png")
 plt.show()
+
+print(f"{np.average(server_arrival_latency)}=")

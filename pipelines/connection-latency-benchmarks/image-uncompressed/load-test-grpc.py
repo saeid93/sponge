@@ -122,3 +122,5 @@ ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server 
 ax.grid()
 fig.savefig(f"grpc-uncompressed-image-{platform}_variant_{variant}-server_recieving_latency-load-{load}-test_duration-{test_duration}.png")
 plt.show()
+
+print(f"{np.average(server_arrival_latency)}=")

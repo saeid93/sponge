@@ -18,14 +18,14 @@ data = ds[0]["audio"]["array"].tolist()
 # data = ds[0]["audio"]["array"]
 
 http_method = 'post'
-load = 2
-test_duration = 30
+load = 5
+test_duration = 1
 variant = 0
-platform = 'seldon'
+platform = 'mlserver'
 workload = [load] * test_duration
 data_shape = [1, len(data)]
 data_type = 'audio-base64'
-mode = 'equal' # options - step, equal, exponential
+mode = 'exponential' # options - step, equal, exponential
 
 # single node inference
 if platform == 'seldon':
@@ -47,7 +47,7 @@ load_tester = MLServerAsyncRest(
     endpoint=endpoint,
     http_method=http_method,
     workload=workload,
-    data=data,
+    data=[data],
     mode=mode,
     data_shape=data_shape,
     data_type=data_type)
@@ -117,3 +117,5 @@ ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server 
 ax.grid()
 fig.savefig(f"rest-compressed-audio-{platform}_variant_{variant}-server_recieving_latency-load-{load}-test_duration-{test_duration}.png")
 plt.show()
+
+print(f"{np.average(server_arrival_latency)}=")
