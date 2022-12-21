@@ -37,11 +37,22 @@ except KeyError as e:
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {MODEL_SYNC}")
 
-def decode_from_bin(inp, shape, dtype):
-    t = base64.b64decode(inp.encode())
-    buff = memoryview(t)
-    im_array = np.frombuffer(buff, dtype=dtype).reshape(shape)
-    return im_array
+# def decode_from_bin(inp, shape, dtype):
+#     t = base64.b64decode(inp.encode())
+#     buff = memoryview(t)
+#     im_array = np.frombuffer(buff, dtype=dtype).reshape(shape)
+#     return im_array
+
+def decode_from_bin(
+    inputs: List[bytes], shape: List[int], dtype: str) -> List[np.array]:
+    batch = []
+    for input in inputs:
+        input_base64 = base64.b64decode(input.encode())
+        buff = memoryview(input_base64)
+        array = np.frombuffer(buff, dtype=dtype).reshape(shape)
+        batch.append(array)
+    return batch
+
 
 async def model(input, sleep):
     if MODEL_SYNC:
@@ -80,7 +91,7 @@ class MockOne(MLModel):
             dtype = request_input.parameters.dtype
             shape = request_input.shape
             data = request_input.data.__root__
-            X = decode_from_bin(inp=data, shape=shape, dtype=dtype)
+            X = decode_from_bin(inputs=data, shape=shape, dtype=dtype)
         X = list(map(lambda l: np.array(l), X))
         received_batch_len = len(X)
         logger.error(f"recieved batch len:\n{received_batch_len}")

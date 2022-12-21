@@ -30,9 +30,9 @@ data = np.array(data).flatten()
 
 http_method = 'post'
 load = 2
-test_duration = 2
+test_duration = 30
 variant = 0
-platform = 'mlserver'
+platform = 'seldon'
 workload = [load] * test_duration
 data_type = 'image'
 mode = 'equal' # options - step, equal, exponential
@@ -127,3 +127,5 @@ ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server 
 ax.grid()
 fig.savefig(f"rest-uncompressed-image-{platform}_variant_{variant}-server_recieving_latency-load-{load}-test_duration-{test_duration}.png")
 plt.show()
+
+print(f"{np.average(server_arrival_latency)}=")

@@ -27,15 +27,15 @@ with open(os.path.join(
 data = np.array(data).flatten()
 
 http_method = 'post'
-load = 2
-test_duration = 30
+load = 5
+test_duration = 1
 variant = 0
-platform = 'seldon'
+platform = 'mlserver'
 workload = [load] * test_duration
 data_type = 'image-bytes'
 mode = 'equal' # options - step, equal, exponential
-image = 'kamran-example.jpg'
-image_size = 'kamran-shape.json'
+image = 'input-sample.JPEG'
+image_size = 'input-sample-shape.json'
 
 # single node inference
 if platform == 'seldon':
@@ -133,3 +133,5 @@ ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server 
 ax.grid()
 fig.savefig(f"grpc-compressed-image-{platform}_variant_{variant}-server_recieving_latency-load-{load}-test_duration-{test_duration}.png")
 plt.show()
+
+print(f"{np.average(server_arrival_latency)}=")
