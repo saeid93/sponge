@@ -18,39 +18,9 @@ def image_loader(folder_path, image_name):
     #     pass
     return image
 
-# PIPELINES_MODELS_PATH = "/home/cc/infernece-pipeline-joint-optimization/data/sample-image/"
-# dataset_folder_path = PIPELINES_MODELS_PATH
-
-# os.system('sudo umount -l ~/my_mounting_point')
-# os.system('cc-cloudfuse mount ~/my_mounting_point')
-
-# data_folder_path = '/home/cc/my_mounting_point/datasets'
-# dataset_folder_path = os.path.join(
-#     data_folder_path, 'ILSVRC/Data/DET/test'
-# )
-# classes_file_path = os.path.join(
-#     data_folder_path, 'imagenet_classes.txt'
-# )
-# with open(classes_file_path) as f:
-#     classes = [line.strip() for line in f.readlines()]
-
-# image_names = os.listdir(dataset_folder_path)
-# image_names.sort()
-
-# num_loaded_images = 3
-
-# images = {
-#     image_name: image_loader(
-#         dataset_folder_path, image_name) for image_name in image_names[
-#             :num_loaded_images]}
-
-# gateway_endpoint="localhost:32000"
-# deployment_name = 'yolo'
-# namespace = "default"
-# endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
-
+model_name = 'mock-one'
 gateway_endpoint="localhost:8080"
-endpoint = f"http://{gateway_endpoint}/v2/models/yolo/infer"
+endpoint = f"http://{gateway_endpoint}/v2/models/{model_name}/infer"
 
 PATH = pathlib.Path(__file__).parent.resolve()
 input_data = image_loader(PATH, 'input-sample.JPEG')
@@ -98,5 +68,4 @@ for image in inputs:
 
 for image_name, output in results.items():
     print("-"*50, f' {image_name} ', "-"*50)
-    output = list(map(lambda l: np.array(l), output['output']['person']))
-    pp.pprint(len(output))
+    pp.pprint(output)

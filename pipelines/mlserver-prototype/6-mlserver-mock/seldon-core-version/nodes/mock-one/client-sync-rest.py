@@ -6,11 +6,14 @@ from mlserver.codecs.string import StringRequestCodec
 pp = PrettyPrinter(indent=4)
 from transformers import pipeline
 from datasets import load_dataset
+import numpy as np
 import json
+import base64
+from mlserver import types
 
 # single node inference
 # gateway_endpoint = "localhost:32000"
-# deployment_name = 'mock-one'
+# deployment_name = 'mock-one-base64'
 # namespace = "default"
 # endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/mock-one/infer"
 
@@ -28,6 +31,12 @@ ds = load_dataset(
 
 input_data = ds[0]["audio"]["array"]
 
+def encode_to_bin(im_arr):
+    im_bytes = im_arr.tobytes()
+    im_base64 = base64.b64encode(im_bytes)
+    input_dict = im_base64.decode()
+    return input_dict
+
 # # Serializing json
 # json_object = json.dumps(input_data, indent=4)
  
@@ -39,16 +48,18 @@ def send_requests(endpoint):
     payload = {
         "inputs": [
             {
-            "name": "array_inputs",
+            "name": "parameters-np",
+            "datatype": "BYTES",
             "shape": [1, len(input_data)],
-            "datatype": "FP32",
-            "data": input_data.tolist(),
+            "data": encode_to_bin(input_data),
             "parameters": {
-                "content_type": "np"
-            }
+                "content_type": "np",
+                "dtype": "f4"
+                }
             }
         ]
     }
+
     response = requests.post(endpoint, json=payload)
     return response
 
