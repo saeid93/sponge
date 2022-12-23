@@ -1,43 +1,68 @@
 from dataclasses import dataclass
 from urllib import response
 from barazmoon import MLServerAsyncGrpc
+from barazmoon import Data
 from datasets import load_dataset
 import asyncio
 import json
 import time
 import numpy as np
 
-# load data
-ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
-# data = ds[0]["audio"]["array"].tolist()
-data = ds[0]["audio"]["array"]
-# data = np.zeros([1000000], dtype=np.float32)
 
-load = 10
-test_duration = 1
+load = 1
+test_duration = 5
 variant = 0
 platform = 'mlserver'
-mode = 'exponential'
+mode = 'equal'
 
 # single node inference
 if platform == 'seldon':
     endpoint = "localhost:32000"
-    deployment_name = 'latency-connection-grpc-audio-bytes'
-    model = 'mock-one'
+    deployment_name = 'node-one'
+    model = 'node-one'
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == 'mlserver':
     endpoint = "localhost:8081"
-    model = 'mock-one'
+    model = 'node-one'
     metadata = []
 
+data_type = 'audio-bytes'
 
 workload = [load] * test_duration
+
+# Data 1
+ds = load_dataset(
+    "hf-internal-testing/librispeech_asr_demo",
+    "clean",
+    split="validation")
+data = ds[0]["audio"]["array"][0:4]
 data_shape = [len(data)]
-data_type = 'audio-bytes'
+parameters = {'test_1': 'test_1'}
+data_1 = Data(
+    data=data,
+    data_shape=data_shape,
+    parameters=parameters
+)
+
+# Data 2
+ds = load_dataset(
+    "hf-internal-testing/librispeech_asr_demo",
+    "clean",
+    split="validation")
+data = ds[0]["audio"]["array"][0:4]
+data_shape = [len(data)]
+parameters = {'test_1': 'test_2'}
+data_2 = Data(
+    data=data,
+    data_shape=data_shape,
+    parameters=parameters
+)
+
+# Data list
+data = []
+data.append(data_1)
+data.append(data_2)
 
 start_time = time.time()
 
@@ -48,7 +73,6 @@ load_tester = MLServerAsyncGrpc(
     model=model,
     data=data,
     mode=mode, # options - step, equal, exponential
-    data_shape=data_shape,
     data_type=data_type)
 
 responses = asyncio.run(load_tester.start())
