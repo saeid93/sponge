@@ -2,11 +2,9 @@ import os
 import time
 import json
 import asyncio
-import psutil
 from mlserver import MLModel
 import numpy as np
 from mlserver.logging import logger
-from mlserver.utils import get_model_uri
 from mlserver.types import (
     InferenceRequest,
     InferenceResponse,
