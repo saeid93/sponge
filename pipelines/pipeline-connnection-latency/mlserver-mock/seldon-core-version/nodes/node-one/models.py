@@ -19,10 +19,10 @@ import time
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
-    logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
+    logger.info(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
     PREDICTIVE_UNIT_ID = 'node-one'
-    logger.error(
+    logger.info(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
 try:
@@ -30,7 +30,7 @@ try:
     logger.info(f'MODEL_SYNC set to: {MODEL_SYNC}')
 except KeyError as e:
     MODEL_SYNC = True
-    logger.error(
+    logger.info(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {MODEL_SYNC}")
 
 def decode_from_bin(
@@ -58,15 +58,15 @@ class NodeOne(MLModel):
         self.batch_counter = 0
         try:
             self.MODEL_VARIANT = float(os.environ['MODEL_VARIANT'])
-            logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
+            logger.info(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
             self.MODEL_VARIANT = 0.01
-            logger.error(
+            logger.info(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         logger.info('Loading the ML models')
         # TODO add batching like the runtime
-        logger.error(f'max_batch_size: {self._settings.max_batch_size}')
-        logger.error(f'max_batch_time: {self._settings.max_batch_time}')
+        logger.info(f'max_batch_size: {self._settings.max_batch_size}')
+        logger.info(f'max_batch_time: {self._settings.max_batch_time}')
         self.model  = model
         return self.loaded
 
@@ -81,14 +81,14 @@ class NodeOne(MLModel):
             X = decode_from_bin(inputs=data, shapes=shapes, dtypes=dtypes)
         arrival_time = time.time()
         received_batch_len = len(X)
-        logger.error(f"recieved batch len:\n{received_batch_len}")
+        logger.info(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += received_batch_len
         self.batch_counter += 1
-        logger.error(f"to the model:\n{type(X)}")
-        logger.error(f"type of the to the model:\n{type(X)}")
-        logger.error(f"len of the to the model:\n{len(X)}")
+        logger.info(f"to the model:\n{type(X)}")
+        logger.info(f"type of the to the model:\n{type(X)}")
+        logger.info(f"len of the to the model:\n{len(X)}")
         output: List[Dict] = await self.model(X, self.MODEL_VARIANT)
-        logger.error(f"model output:\n{output}")
+        logger.info(f"model output:\n{output}")
         serving_time = time.time()
         times = {
             PREDICTIVE_UNIT_ID: {
@@ -100,9 +100,9 @@ class NodeOne(MLModel):
             pred, cls=NumpyEncoder) for pred in output]
         prediction_encoded = StringCodec.encode_output(
             payload=str_out, name="output")
-        logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
-        logger.error(f"request counter:\n{self.request_counter}\n")
-        logger.error(f"batch counter:\n{self.batch_counter}\n")
+        logger.info(f"Output:\n{prediction_encoded}\nwas sent!")
+        logger.info(f"request counter:\n{self.request_counter}\n")
+        logger.info(f"batch counter:\n{self.batch_counter}\n")
         return InferenceResponse(
             id=payload.id,
             model_name=self.name,

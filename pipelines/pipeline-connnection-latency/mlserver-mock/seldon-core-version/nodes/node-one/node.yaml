@@ -15,7 +15,7 @@ spec:
     - spec:
         containers:
         - image: sdghafouri/grpc-pipeline:node-one
-          name: mock-one
+          name: node-one
           imagePullPolicy: Always
           resources:
             requests:
