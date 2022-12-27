@@ -27,9 +27,9 @@ opencv-python==4.6.0.66
 prometheus-api-client==0.5.1
 geventhttpclient==2.0
 transformers==4.21.1
-mlserver==1.1.0
-mlserver-huggingface==1.2.0.dev6
+# mlserver==1.1.0
+# mlserver-huggingface==1.2.0.dev6
 opencv-python==4.6.0.66
 plotly==5.11.0
 kubernetes==24.2.0
-
+soundfile==0.11.0
