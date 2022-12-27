@@ -76,8 +76,12 @@ class NodeOne(MLModel):
         for request_input in payload.inputs:
             dtypes = request_input.parameters.dtype
             shapes = request_input.parameters.datashape
-            shapes = list(map(lambda l: eval(l), shapes))
+            # batch one edge case
+            if type(shapes) != list:
+                shapes = [shapes]
             data = request_input.data.__root__
+            logger.info(f"shapes:\n{shapes}")
+            shapes = list(map(lambda l: eval(l), shapes))
             X = decode_from_bin(inputs=data, shapes=shapes, dtypes=dtypes)
         arrival_time = time.time()
         received_batch_len = len(X)

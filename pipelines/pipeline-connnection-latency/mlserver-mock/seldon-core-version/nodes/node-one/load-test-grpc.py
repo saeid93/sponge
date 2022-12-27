@@ -9,8 +9,8 @@ import time
 import numpy as np
 
 
-load = 1
-test_duration = 5
+load = 10
+test_duration = 10
 variant = 0
 platform = 'mlserver'
 mode = 'equal'
@@ -38,11 +38,11 @@ ds = load_dataset(
     split="validation")
 data = ds[0]["audio"]["array"][0:4]
 data_shape = [len(data)]
-parameters = {'test_1': 'test_1'}
+custom_parameters = {'custom_1': 'test_1'}
 data_1 = Data(
     data=data,
     data_shape=data_shape,
-    parameters=parameters
+    custom_parameters=custom_parameters
 )
 
 # Data 2
@@ -52,11 +52,11 @@ ds = load_dataset(
     split="validation")
 data = ds[0]["audio"]["array"][0:4]
 data_shape = [len(data)]
-parameters = {'test_1': 'test_2'}
+custom_parameters = {'custom_2': 'test_2'}
 data_2 = Data(
     data=data,
     data_shape=data_shape,
-    parameters=parameters
+    custom_parameters=custom_parameters
 )
 
 # Data list
