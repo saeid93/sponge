@@ -90,3 +90,6 @@ Lang. Mod.
 BERT (2), ALBERT (4), ELMo (1), NNLM (2),
 Small BERT (4), Word2vec (2), ELECTRA (2),
 Universal Sentence Encoder (4)
+
+# Note
+1. To test theses sereies change the `mlserver` repo to `master` and the `load_tester` to `old-version`

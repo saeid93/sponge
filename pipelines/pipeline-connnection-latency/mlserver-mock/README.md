@@ -22,3 +22,6 @@ deepset/roberta-base-squad2
 deepset/xlm-roberta-large-squad2
 distilbert-base-cased-distilled-squad
 deepset/xlm-roberta-base-squad2
+
+# Note
+1. To test theses sereies change the `mlserver` repo to `configure-custom` and the `load_tester` to `master`

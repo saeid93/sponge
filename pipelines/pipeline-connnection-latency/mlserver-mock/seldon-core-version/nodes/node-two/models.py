@@ -21,7 +21,7 @@ try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
     logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
-    PREDICTIVE_UNIT_ID = 'node-one'
+    PREDICTIVE_UNIT_ID = 'node-two'
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
@@ -32,15 +32,6 @@ except KeyError as e:
     MODEL_SYNC = True
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {MODEL_SYNC}")
-
-def decode_from_bin(
-    inputs: List[bytes], shape: List[int], dtype: str) -> List[np.array]:
-    batch = []
-    for input in inputs:
-        buff = memoryview(input)
-        array = np.frombuffer(buff, dtype=dtype).reshape(shape)
-        batch.append(array)
-    return batch
 
 async def model(input, sleep):
     if MODEL_SYNC:
@@ -76,8 +67,7 @@ class NodeOne(MLModel):
         for request_input in payload.inputs:
             dtype = request_input.parameters.dtype
             shape = eval(request_input.parameters.datashape)
-            data = request_input.data.__root__
-            X = decode_from_bin(inputs=data, shape=shape, dtype=dtype)
+            X = request_input.data.__root__
         arrival_time = time.time()
         received_batch_len = len(X)
         logger.error(f"recieved batch len:\n{received_batch_len}")

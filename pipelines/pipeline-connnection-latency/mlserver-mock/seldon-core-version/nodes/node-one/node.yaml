@@ -19,22 +19,22 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '4'
+              cpu: '2'
               memory: 4Gi
             limits:
-              cpu: '4'
+              cpu: '2'
               memory: 4Gi
           env:
             - name: MODEL_VARIANT
-              value: "0.3"
+              value: "0"
             - name: MODEL_SYNC
               value: "True"
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "2"
+              value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: "0"
+              value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
       replicas: 1
