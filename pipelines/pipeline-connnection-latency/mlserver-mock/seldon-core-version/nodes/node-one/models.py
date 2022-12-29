@@ -60,7 +60,7 @@ class NodeOne(MLModel):
             self.MODEL_VARIANT = float(os.environ['MODEL_VARIANT'])
             logger.info(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
-            self.MODEL_VARIANT = 0.01
+            self.MODEL_VARIANT = 0
             logger.info(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         logger.info('Loading the ML models')
@@ -68,11 +68,12 @@ class NodeOne(MLModel):
         logger.info(f'max_batch_size: {self._settings.max_batch_size}')
         logger.info(f'max_batch_time: {self._settings.max_batch_time}')
         self.model  = model
+        self.loaded = True
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
-        if self.loaded == False:
-            self.load()
+        # if self.loaded == False:
+        #     await self.load()
         for request_input in payload.inputs:
             dtypes = request_input.parameters.dtype
             shapes = request_input.parameters.datashape

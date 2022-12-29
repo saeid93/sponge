@@ -14,18 +14,18 @@ ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
     "clean",
     split="validation")
-data = ds[0]["audio"]["array"].tolist()
+data = ds[0]["audio"]["array"].tolist()[0:2]
 # data = ds[0]["audio"]["array"]
 
 http_method = 'post'
-load = 1
-test_duration = 30
+load = 6
+test_duration = 5
 variant = 0
-platform = 'seldon'
+platform = 'mlserver'
 workload = [load] * test_duration
 data_shape = [1, len(data)]
 data_type = 'audio'
-mode = 'step' # options - step, equal, exponential
+mode = 'equal' # options - step, equal, exponential
 
 # single node inference
 if platform == 'seldon':

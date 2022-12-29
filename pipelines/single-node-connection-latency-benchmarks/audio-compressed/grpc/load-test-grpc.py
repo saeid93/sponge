@@ -13,12 +13,12 @@ ds = load_dataset(
     "clean",
     split="validation")
 # data = ds[0]["audio"]["array"].tolist()
-data = ds[0]["audio"]["array"]
+data = ds[0]["audio"]["array"][0:4]
 
-load = 10
-test_duration = 1
+load = 5
+test_duration = 30
 variant = 0
-platform = 'mlserver'
+platform = 'seldon'
 mode = 'exponential'
 
 # single node inference
@@ -113,7 +113,7 @@ fig, ax = plt.subplots()
 ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
 ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
 ax.grid()
-fig.savefig(f"grpc-compressed-audio-{platform}_variant_{variant}-server_recieving_latency-load-{load}-test_duration-{test_duration}.png")
+fig.savefig(f"master-{platform}-load-{load}-test_duration-{test_duration}.png")
 plt.show()
 
 print(f"{np.average(server_arrival_latency)}=")

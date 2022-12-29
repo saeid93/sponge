@@ -21,6 +21,20 @@ variant = 0
 platform = 'mlserver'
 mode = 'equal'
 
+request = {'times': {
+    'request': {
+        'sending': 1672276156.4014273, 'arrival': 1672276157.3008754},
+        'models': {
+            'node-one': {
+                'arrival': 1672276157.286681,
+                'serving': 1672276157.2869108}
+                }
+        },
+'model_name': 'node-one',
+'outputs': [{'data': ['"node one output"']}]
+}
+
+
 # single node inference
 if platform == 'seldon':
     endpoint = "localhost:32000"
@@ -32,7 +46,6 @@ elif platform == 'mlserver':
     endpoint = "localhost:8081"
     model = 'node-two'
     metadata = []
-
 
 workload = [load] * test_duration
 data_shape = [len(data)]

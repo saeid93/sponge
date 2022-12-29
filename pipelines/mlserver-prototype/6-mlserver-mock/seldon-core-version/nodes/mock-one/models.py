@@ -53,7 +53,7 @@ class MockOne(MLModel):
             self.MODEL_VARIANT = float(os.environ['MODEL_VARIANT'])
             logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
-            self.MODEL_VARIANT = 0.3
+            self.MODEL_VARIANT = 0
             logger.error(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         logger.info('Loading the ML models')
