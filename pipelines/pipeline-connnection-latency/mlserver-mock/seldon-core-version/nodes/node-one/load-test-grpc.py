@@ -9,10 +9,10 @@ import time
 import numpy as np
 
 
-load = 2
-test_duration = 2
+load = 5
+test_duration = 5
 variant = 0
-platform = 'seldon'
+platform = 'mlserver'
 mode = 'exponential'
 
 # single node inference
@@ -28,7 +28,6 @@ elif platform == 'mlserver':
     metadata = []
 
 data_type = 'audio-bytes'
-
 workload = [load] * test_duration
 
 # Data 1
@@ -128,18 +127,18 @@ import numpy as np
 # plt.show()
 
 # server arrival latency
-# server_arrival_latency = []
-# for sec_resps in responses:
-#     for resp in sec_resps:
-#         times = resp['times']
-#         server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
-#         server_arrival_latency.append(server_recieving_time)
-# fig, ax = plt.subplots()
-# ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
-# ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
-# ax.grid()
-# fig.savefig(f"custom-{platform}-load-{load}-test_duration-{test_duration}.png")
-# plt.show()
+server_arrival_latency = []
+for sec_resps in responses:
+    for resp in sec_resps:
+        times = resp['times']
+        server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
+        server_arrival_latency.append(server_recieving_time)
+fig, ax = plt.subplots()
+ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
+ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
+ax.grid()
+fig.savefig(f"custom-{platform}-load-{load}-test_duration-{test_duration}.png")
+plt.show()
 
-# print(f"{np.average(server_arrival_latency)}=")
+print(f"{np.average(server_arrival_latency)}=")
 print(responses[0][0])

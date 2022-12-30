@@ -13,7 +13,7 @@ from mlserver.types import (
 from mlserver import MLModel
 from mlserver.codecs import StringCodec
 from mlserver_huggingface.common import NumpyEncoder
-from typing import List, Dict
+from typing import List, Any
 from mlserver import types
 import time
 
@@ -47,7 +47,6 @@ async def model(input, sleep):
         time.sleep(sleep)
     else:
         await asyncio.sleep(sleep)
-    _ = input
     output = ["node one output"] * len(input)
     return output
  
@@ -72,18 +71,17 @@ class NodeOne(MLModel):
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
-        # if self.loaded == False:
-        #     await self.load()
         for request_input in payload.inputs:
             dtypes = request_input.parameters.dtype
             shapes = request_input.parameters.datashape
+            batch_shape = request_input.shape
             # batch one edge case
             if type(shapes) != list:
                 shapes = [shapes]
-            data = request_input.data.__root__
+            input_data = request_input.data.__root__
             logger.info(f"shapes:\n{shapes}")
             shapes = list(map(lambda l: eval(l), shapes))
-            X = decode_from_bin(inputs=data, shapes=shapes, dtypes=dtypes)
+            X = decode_from_bin(inputs=input_data, shapes=shapes, dtypes=dtypes)
         arrival_time = time.time()
         received_batch_len = len(X)
         logger.info(f"recieved batch len:\n{received_batch_len}")
@@ -92,8 +90,9 @@ class NodeOne(MLModel):
         logger.info(f"to the model:\n{type(X)}")
         logger.info(f"type of the to the model:\n{type(X)}")
         logger.info(f"len of the to the model:\n{len(X)}")
-        output: List[Dict] = await self.model(X, self.MODEL_VARIANT)
+        output: List[Any] = await self.model(X, self.MODEL_VARIANT)
         logger.info(f"model output:\n{output}")
+
         serving_time = time.time()
         times = {
             PREDICTIVE_UNIT_ID: {
@@ -101,17 +100,26 @@ class NodeOne(MLModel):
             "serving": serving_time
             }
         }
-        str_out = [json.dumps(
-            pred, cls=NumpyEncoder) for pred in output]
-        prediction_encoded = StringCodec.encode_output(
-            payload=str_out, name="output")
-        logger.info(f"Output:\n{prediction_encoded}\nwas sent!")
+
+        output_data = list(map(lambda l: l.encode('utf8'), output))
+        payload = types.InferenceResponse(
+            outputs=[
+                types.ResponseOutput(
+                    name="text",
+                    shape=batch_shape,
+                    datatype="BYTES",
+                    data=output_data,
+                    parameters=types.Parameters(
+                        test="test")
+                    ),
+                ],
+            model_name=self.name,
+            parameters=types.Parameters(
+                content_type="str",
+                times=str(times)),
+        )
+
+        # logger.info(f"Output:\n{prediction_encoded}\nwas sent!")
         logger.info(f"request counter:\n{self.request_counter}\n")
         logger.info(f"batch counter:\n{self.batch_counter}\n")
-        return InferenceResponse(
-            id=payload.id,
-            model_name=self.name,
-            model_version=self.version,
-            outputs = [prediction_encoded],
-            parameters=types.Parameters(times=str(times))
-        )
+        return payload
