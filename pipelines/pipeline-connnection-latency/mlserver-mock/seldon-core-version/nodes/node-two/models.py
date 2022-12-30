@@ -38,11 +38,10 @@ async def model(input, sleep):
         time.sleep(sleep)
     else:
         await asyncio.sleep(sleep)
-    _ = input
-    output = ["node one output"] * len(input)
+    output = ["node two output"] * len(input)
     return output
  
-class NodeOne(MLModel):
+class NodeTwo(MLModel):
     async def load(self):
         self.loaded = False
         self.request_counter = 0
@@ -65,11 +64,13 @@ class NodeOne(MLModel):
         if self.loaded == False:
             self.load()
         for request_input in payload.inputs:
-            dtype = request_input.parameters.dtype
-            shape = eval(request_input.parameters.datashape)
+            prev_times = request_input.parameters.times
+            prev_times = list(map(lambda l: eval(l), prev_times))
+            batch_shape = request_input.shape
             X = request_input.data.__root__
         arrival_time = time.time()
         received_batch_len = len(X)
+        X = list(map(lambda l: l.decode(), X))
         logger.error(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += received_batch_len
         self.batch_counter += 1
@@ -85,17 +86,27 @@ class NodeOne(MLModel):
             "serving": serving_time
             }
         }
-        str_out = [json.dumps(
-            pred, cls=NumpyEncoder) for pred in output]
-        prediction_encoded = StringCodec.encode_output(
-            payload=str_out, name="output")
-        logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
-        logger.error(f"request counter:\n{self.request_counter}\n")
-        logger.error(f"batch counter:\n{self.batch_counter}\n")
-        return InferenceResponse(
-            id=payload.id,
+        times = [times] * batch_shape
+        times = list(map(lambda l: l.update(prev_times)))
+        times.update(prev_times)
+
+        output_data = list(map(lambda l: l.encode('utf8'), output))
+        payload = types.InferenceResponse(
+            outputs=[
+                types.ResponseOutput(
+                    name="text",
+                    shape=batch_shape,
+                    datatype="BYTES",
+                    data=output_data,
+                    )
+                ],
             model_name=self.name,
-            model_version=self.version,
-            outputs = [prediction_encoded],
-            parameters=types.Parameters(times=str(times))
+            parameters=types.Parameters(
+                content_type="str",
+                times=str(times)),
         )
+
+        # logger.info(f"Output:\n{prediction_encoded}\nwas sent!")
+        logger.info(f"request counter:\n{self.request_counter}\n")
+        logger.info(f"batch counter:\n{self.batch_counter}\n")
+        return payload

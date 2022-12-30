@@ -1,19 +1,13 @@
 from dataclasses import dataclass
 from urllib import response
 from barazmoon import MLServerAsyncGrpc
+from barazmoon import Data
 from datasets import load_dataset
 import asyncio
 import json
 import time
 import numpy as np
 
-# load data
-ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
-# data = ds[0]["audio"]["array"].tolist()
-data = ds[0]["audio"]["array"]
 
 load = 8
 test_duration = 10
@@ -21,19 +15,30 @@ variant = 0
 platform = 'mlserver'
 mode = 'equal'
 
-request = {'times': {
-    'request': {
-        'sending': 1672276156.4014273, 'arrival': 1672276157.3008754},
+request = {
+    'times': {
         'models': {
             'node-one': {
                 'arrival': 1672276157.286681,
-                'serving': 1672276157.2869108}
+                'serving': 1672276157.2869108
                 }
+            }
         },
-'model_name': 'node-one',
-'outputs': [{'data': ['"node one output"']}]
+    'model_name': 'node-one',
+    'outputs': [{'data': '"node one output"'}]
 }
 
+
+times = request['times']['models']
+data = request['outputs'][0]['data']
+
+data_shape = [1]
+custom_parameters = {'custom_1': 'test_1', 'times': str(times)}
+data_1 = Data(
+    data=data,
+    data_shape=data_shape,
+    custom_parameters=custom_parameters
+)
 
 # single node inference
 if platform == 'seldon':
@@ -49,7 +54,7 @@ elif platform == 'mlserver':
 
 workload = [load] * test_duration
 data_shape = [len(data)]
-data_type = 'audio-bytes'
+data_type = 'text'
 
 start_time = time.time()
 
@@ -58,7 +63,7 @@ load_tester = MLServerAsyncGrpc(
     metadata=metadata,
     workload=workload,
     model=model,
-    data=data,
+    data=[data_1],
     mode=mode, # options - step, equal, exponential
     data_shape=data_shape,
     data_type=data_type)
