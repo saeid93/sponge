@@ -1,6 +1,5 @@
 import os
 import time
-import json
 import asyncio
 from mlserver import MLModel
 import numpy as np
@@ -11,9 +10,7 @@ from mlserver.types import (
     ResponseOutput,
     Parameters)
 from mlserver import MLModel
-from mlserver.codecs import StringCodec
-from mlserver_huggingface.common import NumpyEncoder
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from mlserver import types
 import time
 
@@ -50,35 +47,42 @@ class NodeTwo(MLModel):
             self.MODEL_VARIANT = float(os.environ['MODEL_VARIANT'])
             logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
-            self.MODEL_VARIANT = 0.01
+            self.MODEL_VARIANT = 0
             logger.error(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         logger.info('Loading the ML models')
-        # TODO add batching like the runtime
         logger.error(f'max_batch_size: {self._settings.max_batch_size}')
         logger.error(f'max_batch_time: {self._settings.max_batch_time}')
         self.model  = model
+        self.loaded = True
+        self.batch_counter = 0
         return self.loaded
+
+    async def request_process(self, payload: InferenceRequest) -> Tuple[
+        List[str], list[int], List[str]]:
+        for request_input in payload.inputs:
+            prev_times = request_input.parameters.times
+            prev_times = list(map(lambda l: eval(l)[0], prev_times))
+            batch_shape = request_input.shape[0]
+            X = request_input.data.__root__
+            X = list(map(lambda l: l.decode(), X))
+        return X, batch_shape, prev_times
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         if self.loaded == False:
             self.load()
-        for request_input in payload.inputs:
-            prev_times = request_input.parameters.times
-            prev_times = list(map(lambda l: eval(l), prev_times))
-            batch_shape = request_input.shape
-            X = request_input.data.__root__
         arrival_time = time.time()
-        received_batch_len = len(X)
-        X = list(map(lambda l: l.decode(), X))
-        logger.error(f"recieved batch len:\n{received_batch_len}")
-        self.request_counter += received_batch_len
+        X, batch_shape, prev_nodes_times = await self.request_process(payload)
+        logger.error(f"recieved batch len:\n{batch_shape}")
+        self.request_counter += batch_shape
         self.batch_counter += 1
         logger.error(f"to the model:\n{type(X)}")
         logger.error(f"type of the to the model:\n{type(X)}")
         logger.error(f"len of the to the model:\n{len(X)}")
         output: List[Dict] = await self.model(X, self.MODEL_VARIANT)
         logger.error(f"model output:\n{output}")
+
+        # times processing
         serving_time = time.time()
         times = {
             PREDICTIVE_UNIT_ID: {
@@ -86,27 +90,31 @@ class NodeTwo(MLModel):
             "serving": serving_time
             }
         }
-        times = [times] * batch_shape
-        times = list(map(lambda l: l.update(prev_times)))
-        times.update(prev_times)
+        this_node_times = [times] * batch_shape
+        times = []
+        for this_node_time, prev_nodes_time in zip(
+            this_node_times, prev_nodes_times):
+            this_node_time.update(prev_nodes_time)
+            times.append(this_node_time)
+        batch_times = list(map(lambda l: str(l), times))
+        if batch_shape == 1:
+            batch_times = str(batch_times)
 
+        # processing inference response
         output_data = list(map(lambda l: l.encode('utf8'), output))
-        payload = types.InferenceResponse(
+        payload = InferenceResponse(
             outputs=[
-                types.ResponseOutput(
+                ResponseOutput(
                     name="text",
-                    shape=batch_shape,
+                    shape=[batch_shape],
                     datatype="BYTES",
                     data=output_data,
-                    )
-                ],
+                    parameters=Parameters(
+                        times=batch_times
+                    ),
+            )],
             model_name=self.name,
-            parameters=types.Parameters(
-                content_type="str",
-                times=str(times)),
         )
-
-        # logger.info(f"Output:\n{prediction_encoded}\nwas sent!")
         logger.info(f"request counter:\n{self.request_counter}\n")
         logger.info(f"batch counter:\n{self.batch_counter}\n")
         return payload

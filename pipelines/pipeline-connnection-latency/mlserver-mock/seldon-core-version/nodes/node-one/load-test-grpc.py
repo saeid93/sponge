@@ -4,15 +4,14 @@ from barazmoon import MLServerAsyncGrpc
 from barazmoon import Data
 from datasets import load_dataset
 import asyncio
-import json
 import time
 import numpy as np
 
 
-load = 5
-test_duration = 5
+load = 10
+test_duration = 30
 variant = 0
-platform = 'mlserver'
+platform = 'seldon'
 mode = 'exponential'
 
 # single node inference
@@ -35,7 +34,7 @@ ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
     "clean",
     split="validation")
-data = ds[0]["audio"]["array"][0:4]
+data = ds[0]["audio"]["array"]
 data_shape = [len(data)]
 custom_parameters = {'custom_1': 'test_1'}
 data_1 = Data(
@@ -49,7 +48,7 @@ ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
     "clean",
     split="validation")
-data = ds[0]["audio"]["array"][0:4]
+data = ds[0]["audio"]["array"]
 data_shape = [len(data)]
 custom_parameters = {'custom_2': 'test_2'}
 data_2 = Data(

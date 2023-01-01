@@ -1,6 +1,5 @@
 import os
 import time
-import json
 import asyncio
 from mlserver import MLModel
 import numpy as np
@@ -11,10 +10,7 @@ from mlserver.types import (
     ResponseOutput,
     Parameters)
 from mlserver import MLModel
-from mlserver.codecs import StringCodec
-from mlserver_huggingface.common import NumpyEncoder
-from typing import List, Any
-from mlserver import types
+from typing import List, Any, Tuple
 import time
 
 try:
@@ -49,7 +45,7 @@ async def model(input, sleep):
         await asyncio.sleep(sleep)
     output = ["node one output"] * len(input)
     return output
- 
+
 class NodeOne(MLModel):
     async def load(self):
         self.loaded = False
@@ -63,7 +59,6 @@ class NodeOne(MLModel):
             logger.info(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         logger.info('Loading the ML models')
-        # TODO add batching like the runtime
         logger.info(f'max_batch_size: {self._settings.max_batch_size}')
         logger.info(f'max_batch_time: {self._settings.max_batch_time}')
         self.model  = model
@@ -71,18 +66,19 @@ class NodeOne(MLModel):
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
+        arrival_time = time.time()
         for request_input in payload.inputs:
             dtypes = request_input.parameters.dtype
             shapes = request_input.parameters.datashape
-            batch_shape = request_input.shape
+            batch_shape = request_input.shape[0]
             # batch one edge case
             if type(shapes) != list:
                 shapes = [shapes]
             input_data = request_input.data.__root__
             logger.info(f"shapes:\n{shapes}")
             shapes = list(map(lambda l: eval(l), shapes))
-            X = decode_from_bin(inputs=input_data, shapes=shapes, dtypes=dtypes)
-        arrival_time = time.time()
+            X = decode_from_bin(
+                inputs=input_data, shapes=shapes, dtypes=dtypes)
         received_batch_len = len(X)
         logger.info(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += received_batch_len
@@ -93,6 +89,7 @@ class NodeOne(MLModel):
         output: List[Any] = await self.model(X, self.MODEL_VARIANT)
         logger.info(f"model output:\n{output}")
 
+        # times processing
         serving_time = time.time()
         times = {
             PREDICTIVE_UNIT_ID: {
@@ -100,26 +97,25 @@ class NodeOne(MLModel):
             "serving": serving_time
             }
         }
+        batch_times = [str(times)] * batch_shape
+        if batch_shape == 1:
+            batch_times = str(batch_times)
 
+        # processing inference response
         output_data = list(map(lambda l: l.encode('utf8'), output))
-        payload = types.InferenceResponse(
+        payload = InferenceResponse(
             outputs=[
-                types.ResponseOutput(
+                ResponseOutput(
                     name="text",
-                    shape=batch_shape,
+                    shape=[batch_shape],
                     datatype="BYTES",
                     data=output_data,
-                    parameters=types.Parameters(
-                        test="test")
+                    parameters=Parameters(
+                        times=batch_times
                     ),
-                ],
+            )],
             model_name=self.name,
-            parameters=types.Parameters(
-                content_type="str",
-                times=str(times)),
         )
-
-        # logger.info(f"Output:\n{prediction_encoded}\nwas sent!")
         logger.info(f"request counter:\n{self.request_counter}\n")
         logger.info(f"batch counter:\n{self.batch_counter}\n")
         return payload

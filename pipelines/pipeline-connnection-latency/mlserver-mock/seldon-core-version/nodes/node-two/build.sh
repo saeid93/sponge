@@ -1,9 +1,10 @@
 REPOS=(
-    sdghafouri
-    gcr.io/hale-ivy-335012)
-IMAGE_NAME=grpc-pipeline:node-one
-mlserver build . -t $IMAGE_NAME
-# docker build . --tag=$IMAGE_NAME
+    sdghafouri)
+IMAGE_NAME=grpc-pipeline:node-two
+mlserver dockerfile --include-dockerignore .
+sed -i 's/seldonio/sdghafouri/g' Dockerfile
+sed -i 's/1.2.0.dev14-slim/custom-slim/g' Dockerfile
+DOCKER_BUILDKIT=1 docker build . --tag=$IMAGE_NAME
 for REPO in ${REPOS[@]}
 do
     docker tag $IMAGE_NAME $REPO/$IMAGE_NAME

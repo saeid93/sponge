@@ -12,8 +12,8 @@ import numpy as np
 load = 8
 test_duration = 10
 variant = 0
-platform = 'mlserver'
-mode = 'equal'
+platform = 'seldon'
+mode = 'exponential'
 
 request = {
     'times': {
@@ -29,11 +29,11 @@ request = {
 }
 
 
-times = request['times']['models']
+times = str([request['times']['models']])
 data = request['outputs'][0]['data']
 
 data_shape = [1]
-custom_parameters = {'custom_1': 'test_1', 'times': str(times)}
+custom_parameters = {'times': str(times)}
 data_1 = Data(
     data=data,
     data_shape=data_shape,
@@ -77,6 +77,9 @@ import numpy as np
 
 # Through away initial seconds results
 responses = responses[3:]
+
+# Through away initial seconds results
+# responses = responses[3:]
 
 # # roundtrip latency
 # roundtrip_lat = []
@@ -131,7 +134,8 @@ fig, ax = plt.subplots()
 ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
 ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
 ax.grid()
-fig.savefig(f"grpc-compressed-audio-{platform}_variant_{variant}-server_recieving_latency-load-{load}-test_duration-{test_duration}.png")
+fig.savefig(f"custom-{platform}-load-{load}-test_duration-{test_duration}.png")
 plt.show()
 
 print(f"{np.average(server_arrival_latency)}=")
+print(responses[0][0])
