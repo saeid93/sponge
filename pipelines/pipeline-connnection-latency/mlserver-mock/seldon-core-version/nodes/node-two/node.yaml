@@ -1,10 +1,10 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: node-one
+  name: node-two
 spec:
   protocol: v2
-  name: node-one
+  name: node-two
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
@@ -14,8 +14,8 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/grpc-pipeline:node-one
-          name: mock-one
+        - image: sdghafouri/grpc-pipeline:node-two
+          name: node-two
           imagePullPolicy: Always
           resources:
             requests:
@@ -26,7 +26,7 @@ spec:
               memory: 4Gi
           env:
             - name: MODEL_VARIANT
-              value: "0.3"
+              value: "0"
             - name: MODEL_SYNC
               value: "True"
             - name: TRANSFORMERS_CACHE
@@ -39,7 +39,7 @@ spec:
               value: "0"
       replicas: 1
     graph: 
-      name: node-one
+      name: node-two
       type: MODEL
       children: []
     svcOrchSpec:
