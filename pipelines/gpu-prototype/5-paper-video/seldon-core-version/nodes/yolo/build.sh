@@ -2,7 +2,7 @@ rm -r __pycache__
 rm *.pt
 REPOS=(
     sdghafouri)
-IMAGE_NAME=video-pipelines-mlserver-gpu-hack:yolo
+IMAGE_NAME=video-pipelines-mlserver-gpu:yolo
 mlserver build --tag=$IMAGE_NAME .
 for REPO in ${REPOS[@]}
 do
