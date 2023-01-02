@@ -45,42 +45,45 @@ class NodeTwo(MLModel):
         self.batch_counter = 0
         try:
             self.MODEL_VARIANT = float(os.environ['MODEL_VARIANT'])
-            logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
+            logger.info(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
             self.MODEL_VARIANT = 0
-            logger.error(
+            logger.info(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         logger.info('Loading the ML models')
-        logger.error(f'max_batch_size: {self._settings.max_batch_size}')
-        logger.error(f'max_batch_time: {self._settings.max_batch_time}')
+        logger.info(f'max_batch_size: {self._settings.max_batch_size}')
+        logger.info(f'max_batch_time: {self._settings.max_batch_time}')
         self.model  = model
         self.loaded = True
         self.batch_counter = 0
         return self.loaded
 
-    async def request_process(self, payload: InferenceRequest) -> Tuple[
-        List[str], list[int], List[str]]:
-        for request_input in payload.inputs:
-            prev_times = request_input.parameters.times
-            prev_times = list(map(lambda l: eval(l)[0], prev_times))
-            batch_shape = request_input.shape[0]
-            X = request_input.data.__root__
-            X = list(map(lambda l: l.decode(), X))
-        return X, batch_shape, prev_times
-
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
-        X, batch_shape, prev_nodes_times = await self.request_process(payload)
-        logger.error(f"recieved batch len:\n{batch_shape}")
+        for request_input in payload.inputs:
+            prev_nodes_times = request_input.parameters.times
+            if type(prev_nodes_times) == str:
+                # logger.info(f"prev_nodes_time-1: {prev_nodes_times}")
+                # logger.info(f"prev_nodes_time-1: {type(prev_nodes_times)}")
+                prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
+            else:
+                logger.info(f"prev_nodes_time-1: {prev_nodes_times}")
+                logger.info(f"prev_nodes_time-1: {type(prev_nodes_times)}")
+                prev_nodes_times = list(
+                    map(lambda l: eval(eval(l)[0]), prev_nodes_times))
+            batch_shape = request_input.shape[0]
+            X = request_input.data.__root__
+            X = list(map(lambda l: l.decode(), X))
+        logger.info(f"recieved batch len:\n{batch_shape}")
         self.request_counter += batch_shape
         self.batch_counter += 1
-        logger.error(f"to the model:\n{type(X)}")
-        logger.error(f"type of the to the model:\n{type(X)}")
-        logger.error(f"len of the to the model:\n{len(X)}")
+        logger.info(f"to the model:\n{type(X)}")
+        logger.info(f"type of the to the model:\n{type(X)}")
+        logger.info(f"len of the to the model:\n{len(X)}")
         output: List[Dict] = await self.model(X, self.MODEL_VARIANT)
-        logger.error(f"model output:\n{output}")
+        logger.info(f"model output:\n{output}")
 
         # times processing
         serving_time = time.time()

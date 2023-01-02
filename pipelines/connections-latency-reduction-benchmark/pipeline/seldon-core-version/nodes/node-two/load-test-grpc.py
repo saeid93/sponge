@@ -9,11 +9,11 @@ import time
 import numpy as np
 
 
-load = 8
+load = 1
 test_duration = 10
 variant = 0
-platform = 'seldon'
-mode = 'exponential'
+platform = 'mlserver'
+mode = 'equal'
 
 request = {
     'times': {
@@ -29,7 +29,7 @@ request = {
 }
 
 
-times = str([request['times']['models']])
+times = str([str(request['times']['models'])])
 data = request['outputs'][0]['data']
 
 data_shape = [1]

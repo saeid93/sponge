@@ -16,22 +16,24 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '4'
-              memory: 4Gi
+              cpu: '2'
+              memory: 2Gi
             limits:
-              cpu: '4'
-              memory: 4Gi
+              cpu: '2'
+              memory: 2Gi
           env:
             - name: MODEL_VARIANT
-              value: '0'
+              value: "0"
+            - name: MODEL_SYNC
+              value: "True"
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
-            - name: TASK
-              value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: "1"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+            - name: MLSERVER_PARALLEL_WORKERS
+              value: "0"
       replicas: 1
     - spec:
         containers:
@@ -40,20 +42,24 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '4'
-              memory: 4Gi
+              cpu: '2'
+              memory: 2Gi
             limits:
-              cpu: '4'
-              memory: 4Gi
+              cpu: '2'
+              memory: 2Gi
           env:
             - name: MODEL_VARIANT
-              value: '0'
+              value: "0"
+            - name: MODEL_SYNC
+              value: "True"
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: "1"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
+            - name: MLSERVER_PARALLEL_WORKERS
+              value: "0"
       replicas: 1
     graph:
       name: node-one
@@ -68,11 +74,11 @@ spec:
         value: DEBUG
       resources:
         requests:
-          cpu: '4'
-          memory: 4Gi
+          cpu: '2'
+          memory: 2Gi
         limits:
-          cpu: '4'
-          memory: 4Gi
+          cpu: '2'
+          memory: 2Gi
     name: example
     labels:
       sidecar.istio.io/inject: "true"
