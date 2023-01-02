@@ -10,7 +10,7 @@ from mlserver.types import (
     ResponseOutput,
     Parameters)
 from mlserver import MLModel
-from typing import List, Any, Tuple
+from typing import List, Any
 import time
 
 try:
@@ -30,7 +30,8 @@ except KeyError as e:
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {MODEL_SYNC}")
 
 def decode_from_bin(
-    inputs: List[bytes], shapes: List[List[int]], dtypes: List[str]) -> List[np.array]:
+    inputs: List[bytes], shapes: List[
+        List[int]], dtypes: List[str]) -> List[np.array]:
     batch = []
     for input, shape, dtype in zip(inputs, shapes, dtypes):
         buff = memoryview(input)

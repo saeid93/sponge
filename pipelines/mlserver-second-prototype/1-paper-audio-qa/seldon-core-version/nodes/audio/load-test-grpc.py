@@ -8,22 +8,23 @@ import time
 import numpy as np
 
 
-load = 5
+load = 1
 test_duration = 4
 variant = 0
 platform = 'seldon'
 mode = 'exponential'
 
+
 # single node inference
 if platform == 'seldon':
     endpoint = "localhost:32000"
-    deployment_name = 'node-one'
-    model = 'node-one'
+    deployment_name = 'audio'
+    model = 'audio'
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == 'mlserver':
     endpoint = "localhost:8081"
-    model = 'node-one'
+    model = 'audio'
     metadata = []
 
 data_type = 'audio-bytes'
