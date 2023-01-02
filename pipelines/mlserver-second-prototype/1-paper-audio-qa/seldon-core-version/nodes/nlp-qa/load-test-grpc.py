@@ -4,63 +4,57 @@ from barazmoon import MLServerAsyncGrpc
 from barazmoon import Data
 from datasets import load_dataset
 import asyncio
+import json
 import time
 import numpy as np
 
 
 load = 5
-test_duration = 4
+test_duration = 10
 variant = 0
 platform = 'seldon'
-mode = 'exponential'
+mode = 'equal'
 
-# single node inference
-if platform == 'seldon':
-    endpoint = "localhost:32000"
-    deployment_name = 'node-one'
-    model = 'node-one'
-    namespace = "default"
-    metadata = [("seldon", deployment_name), ("namespace", namespace)]
-elif platform == 'mlserver':
-    endpoint = "localhost:8081"
-    model = 'node-one'
-    metadata = []
+request = {
+    'times': {
+        'models': {
+            'node-one': {
+                'arrival': 1672276157.286681,
+                'serving': 1672276157.2869108
+                }
+            }
+        },
+    'model_name': 'nlp-qa',
+    'outputs': [{'data': 'mister quilter is the apostle of the middle classes and we are glad to welcome his gospel'}]
+}
 
-data_type = 'audio-bytes'
-workload = [load] * test_duration
 
-# Data 1
-ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
-data = ds[0]["audio"]["array"]
-data_shape = [len(data)]
-custom_parameters = {'custom_1': 'test_1'}
+times = str([str(request['times']['models'])])
+data = request['outputs'][0]['data']
+
+data_shape = [1]
+custom_parameters = {'times': str(times)}
 data_1 = Data(
     data=data,
     data_shape=data_shape,
     custom_parameters=custom_parameters
 )
 
-# Data 2
-ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
-data = ds[0]["audio"]["array"]
-data_shape = [len(data)]
-custom_parameters = {'custom_2': 'test_2'}
-data_2 = Data(
-    data=data,
-    data_shape=data_shape,
-    custom_parameters=custom_parameters
-)
+# single node inference
+if platform == 'seldon':
+    endpoint = "localhost:32000"
+    deployment_name = 'nlp-qa'
+    model = 'nlp-qa'
+    namespace = "default"
+    metadata = [("seldon", deployment_name), ("namespace", namespace)]
+elif platform == 'mlserver':
+    endpoint = "localhost:8081"
+    model = 'nlp-qa'
+    metadata = []
 
-# Data list
-data = []
-data.append(data_1)
-data.append(data_2)
+workload = [load] * test_duration
+data_shape = [len(data)]
+data_type = 'text'
 
 start_time = time.time()
 
@@ -69,8 +63,9 @@ load_tester = MLServerAsyncGrpc(
     metadata=metadata,
     workload=workload,
     model=model,
-    data=data,
+    data=[data_1],
     mode=mode, # options - step, equal, exponential
+    data_shape=data_shape,
     data_type=data_type)
 
 responses = asyncio.run(load_tester.start())
@@ -79,6 +74,9 @@ print(f'{(time.time() - start_time):2.2}s spent in total')
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+# Through away initial seconds results
+responses = responses[3:]
 
 # Through away initial seconds results
 # responses = responses[3:]
@@ -125,6 +123,7 @@ import numpy as np
 # fig.savefig(f"grpc-compressed-audio-{platform}_variant_{variant}-server_arrival_time_from_start-load-{load}-test_duration-{test_duration}.png")
 # plt.show()
 
+model = 'nlp-qa'
 # server arrival latency
 server_arrival_latency = []
 for sec_resps in responses:

@@ -1,7 +1,8 @@
 import os
 import time
-import asyncio
+import json
 from mlserver import MLModel
+import numpy as np
 from mlserver.logging import logger
 from mlserver.types import (
     InferenceRequest,
@@ -9,80 +10,82 @@ from mlserver.types import (
     ResponseOutput,
     Parameters)
 from mlserver import MLModel
-from typing import List, Dict
-import time
+from typing import List
+from transformers import pipeline
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
     logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
-    PREDICTIVE_UNIT_ID = 'node-two'
+    PREDICTIVE_UNIT_ID = 'audio'
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
-try:
-    MODEL_SYNC = eval(os.environ['MODEL_SYNC'])
-    logger.info(f'MODEL_SYNC set to: {MODEL_SYNC}')
-except KeyError as e:
-    MODEL_SYNC = True
-    logger.error(
-        f"PREDICTIVE_UNIT_ID env variable not set, using default value: {MODEL_SYNC}")
+def decode_from_bin(
+    inputs: List[bytes], shapes: List[
+        List[int]], dtypes: List[str]) -> List[np.array]:
+    batch = []
+    for input, shape, dtype in zip(inputs, shapes, dtypes):
+        buff = memoryview(input)
+        array = np.frombuffer(buff, dtype=dtype).reshape(shape)
+        batch.append(array)
+    return batch
 
-async def model(input, sleep):
-    if MODEL_SYNC:
-        time.sleep(sleep)
-    else:
-        await asyncio.sleep(sleep)
-    output = ["node two output"] * len(input)
-    return output
- 
-class NodeTwo(MLModel):
+class GeneralAudio(MLModel):
     async def load(self):
         self.loaded = False
         self.request_counter = 0
         self.batch_counter = 0
         try:
-            self.MODEL_VARIANT = float(os.environ['MODEL_VARIANT'])
-            logger.info(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
+            self.MODEL_VARIANT = os.environ['MODEL_VARIANT']
+            logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
-            self.MODEL_VARIANT = 0
-            logger.info(
+            self.MODEL_VARIANT = 'facebook/s2t-small-librispeech-asr'
+            logger.error(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
+        try:
+            self.TASK = os.environ['TASK']
+            logger.error(f'TASK set to: {self.TASK}')
+        except KeyError as e:
+            self.TASK = 'automatic-speech-recognition' 
+            logger.error(
+                f"TASK env variable not set, using default value: {self.TASK}")
         logger.info('Loading the ML models')
-        logger.info(f'max_batch_size: {self._settings.max_batch_size}')
-        logger.info(f'max_batch_time: {self._settings.max_batch_time}')
-        self.model  = model
+        logger.error(f'max_batch_size: {self._settings.max_batch_size}')
+        logger.error(f'max_batch_time: {self._settings.max_batch_time}')
+        self.model = pipeline(
+            task=self.TASK,
+            model=self.MODEL_VARIANT,
+            batch_size=self._settings.max_batch_size)
         self.loaded = True
-        self.batch_counter = 0
         return self.loaded
 
+
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
-        if self.loaded == False:
-            self.load()
         arrival_time = time.time()
         for request_input in payload.inputs:
-            prev_nodes_times = request_input.parameters.times
-            if type(prev_nodes_times) == str:
-                # logger.info(f"prev_nodes_time-1: {prev_nodes_times}")
-                # logger.info(f"prev_nodes_time-1: {type(prev_nodes_times)}")
-                prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
-            else:
-                logger.info(f"prev_nodes_time-1: {prev_nodes_times}")
-                logger.info(f"prev_nodes_time-1: {type(prev_nodes_times)}")
-                prev_nodes_times = list(
-                    map(lambda l: eval(eval(l)[0]), prev_nodes_times))
+            dtypes = request_input.parameters.dtype
+            shapes = request_input.parameters.datashape
             batch_shape = request_input.shape[0]
-            X = request_input.data.__root__
-            X = list(map(lambda l: l.decode(), X))
-        logger.info(f"recieved batch len:\n{batch_shape}")
-        self.request_counter += batch_shape
+            # batch one edge case
+            if type(shapes) != list:
+                shapes = [shapes]
+            input_data = request_input.data.__root__
+            logger.info(f"shapes:\n{shapes}")
+            shapes = list(map(lambda l: eval(l), shapes))
+            X = decode_from_bin(
+                inputs=input_data, shapes=shapes, dtypes=dtypes)
+        received_batch_len = len(X)
+        logger.info(f"recieved batch len:\n{received_batch_len}")
+        self.request_counter += received_batch_len
         self.batch_counter += 1
         logger.info(f"to the model:\n{type(X)}")
         logger.info(f"type of the to the model:\n{type(X)}")
         logger.info(f"len of the to the model:\n{len(X)}")
 
-
-        output: List[Dict] = await self.model(X, self.MODEL_VARIANT)
+        # model part
+        output = self.model(X)
+        output = list(map(lambda l:l['text'], output))
         logger.info(f"model output:\n{output}")
 
         # times processing
@@ -93,13 +96,7 @@ class NodeTwo(MLModel):
             "serving": serving_time
             }
         }
-        this_node_times = [times] * batch_shape
-        times = []
-        for this_node_time, prev_nodes_time in zip(
-            this_node_times, prev_nodes_times):
-            this_node_time.update(prev_nodes_time)
-            times.append(this_node_time)
-        batch_times = list(map(lambda l: str(l), times))
+        batch_times = [str(times)] * batch_shape
         if batch_shape == 1:
             batch_times = str(batch_times)
 
