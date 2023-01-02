@@ -12,7 +12,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/video-pipelines-mlserver-hack:yolo
+        - image: sdghafouri/video-pipelines-mlserver:yolo
           name: yolo
           imagePullPolicy: Always
           resources:
