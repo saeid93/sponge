@@ -49,15 +49,6 @@ elif platform == 'mlserver':
     model = 'mock-one'
     metadata = []
 
-
-PATH = pathlib.Path(__file__).parent.resolve()
-data = image_loader(PATH, image)
-with open(os.path.join(
-    PATH, image_size), 'r') as openfile:
-    data_shape = json.load(openfile)
-    data_shape = data_shape['data_shape']
-data = np.array(data).flatten()
-
 start_time = time.time()
 
 load_tester = MLServerAsyncGrpc(

@@ -1,5 +1,4 @@
 import os
-import torch
 import time
 import json
 from mlserver import MLModel
@@ -13,13 +12,10 @@ from mlserver.types import (
     ResponseOutput,
     Parameters)
 from mlserver import MLModel
-from mlserver.codecs import DecodedParameterName
-from mlserver.cli.serve import load_settings
 from mlserver.codecs import StringCodec
 from mlserver_huggingface.common import NumpyEncoder
 from typing import List, Dict
 from mlserver import types
-import base64
 import asyncio
 
 try:
