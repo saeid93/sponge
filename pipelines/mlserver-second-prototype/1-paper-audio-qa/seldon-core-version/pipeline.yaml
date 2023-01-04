@@ -17,10 +17,10 @@ spec:
           resources:
             requests:
               cpu: '4'
-              memory: 4Gi
+              memory: 6Gi
             limits:
               cpu: '4'
-              memory: 4Gi
+              memory: 6Gi
           env:
             - name: MODEL_VARIANT
               value: facebook/s2t-small-librispeech-asr
@@ -43,10 +43,10 @@ spec:
           resources:
             requests:
               cpu: '4'
-              memory: 4Gi
+              memory: 6Gi
             limits:
               cpu: '4'
-              memory: 4Gi
+              memory: 6Gi
           env:
             - name: MODEL_VARIANT
               value: distilbert-base-uncased

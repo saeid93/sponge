@@ -51,20 +51,20 @@ def image_loader(folder_path, image_name):
 #             :num_loaded_images]}
 
 # single node mlserver
-endpoint = "localhost:8081"
-model = 'yolo'
-metadata = []
-grpc_channel = grpc.insecure_channel(endpoint)
-grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
-
-# single node seldon+mlserver
-# endpoint = "localhost:32000"
-# deployment_name = 'yolo'
+# endpoint = "localhost:8081"
 # model = 'yolo'
-# namespace = "default"
-# metadata = [("seldon", deployment_name), ("namespace", namespace)]
+# metadata = []
 # grpc_channel = grpc.insecure_channel(endpoint)
 # grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
+
+# single node seldon+mlserver
+endpoint = "localhost:32000"
+deployment_name = 'yolo'
+model = 'yolo'
+namespace = "default"
+metadata = [("seldon", deployment_name), ("namespace", namespace)]
+grpc_channel = grpc.insecure_channel(endpoint)
+grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 
 
 PATH = pathlib.Path(__file__).parent.resolve()

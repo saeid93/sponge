@@ -11,7 +11,7 @@ import numpy as np
 load = 1
 test_duration = 4
 variant = 0
-platform = 'seldon'
+platform = 'mlserver'
 mode = 'exponential'
 
 

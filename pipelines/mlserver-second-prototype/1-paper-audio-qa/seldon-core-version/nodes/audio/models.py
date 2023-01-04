@@ -1,6 +1,5 @@
 import os
 import time
-import json
 from mlserver import MLModel
 import numpy as np
 from mlserver.logging import logger
