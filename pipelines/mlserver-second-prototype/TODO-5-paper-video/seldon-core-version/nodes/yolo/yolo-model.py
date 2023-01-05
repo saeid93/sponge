@@ -11,11 +11,8 @@ from mlserver.types import (
     ResponseOutput,
     Parameters)
 from mlserver import MLModel
-from mlserver.codecs import StringCodec
-from mlserver_huggingface.common import NumpyEncoder
-from mlserver import types
 from copy import deepcopy
-from typing import List, Dict
+from typing import List
 # import torchvision
 # import sys
 # sys.path.insert(0, './cache/ultralytics_yolov5_master')
@@ -106,14 +103,14 @@ class Yolo(MLModel):
         }
         batch_times = [str(times)] * batch_shape
         dtypes = ['u1'] * batch_shape
-        # if batch_shape == 1:
-        #     batch_times = str(batch_times)
-            # dtypes = str(dtypes)
-
         # TEMP Currently considering only one person per pic, zero index
         person_pics = list(map(lambda l: l['person'][0], output))
         datashape = list(map(lambda l: list(l.shape), person_pics))
         output_data = list(map(lambda l: l.tobytes(), person_pics)) # TODO
+        if batch_shape == 1:
+            batch_times = str(batch_times)
+            dtypes = str(dtypes)
+            datashape = str(datashape)
         payload = InferenceResponse(
             outputs=[
                 ResponseOutput(
@@ -127,7 +124,10 @@ class Yolo(MLModel):
                         datashape=datashape
                 )
             )],
-            model_name=self.name,
+            model_name=self.name
+            # parameters=Parameters(
+            #     type_of='image'
+            # )
         )
         logger.info(f"request counter:\n{self.request_counter}\n")
         logger.info(f"batch counter:\n{self.batch_counter}\n")
