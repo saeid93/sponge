@@ -19,7 +19,7 @@ try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
     logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
-    PREDICTIVE_UNIT_ID = 'predictive_unit'
+    PREDICTIVE_UNIT_ID = 'nlp-qa'
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
@@ -123,6 +123,9 @@ class GeneralNLP(MLModel):
                     ),
             )],
             model_name=self.name,
+            parameters=Parameters(
+                type_of='text'
+            )
         )
         logger.info(f"request counter:\n{self.request_counter}\n")
         logger.info(f"batch counter:\n{self.batch_counter}\n")

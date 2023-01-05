@@ -6,19 +6,14 @@ from PIL import Image
 import time
 from mlserver import MLModel
 import numpy as np
-from mlserver.codecs import NumpyCodec
 from mlserver.logging import logger
-from mlserver.utils import get_model_uri
 from mlserver.types import (
     InferenceRequest,
-    InferenceResponse,
-    ResponseOutput)
+    InferenceResponse)
 from mlserver import MLModel
-from mlserver.codecs import DecodedParameterName
-from mlserver.cli.serve import load_settings
 from mlserver.codecs import StringCodec
 from mlserver_huggingface.common import NumpyEncoder
-from copy import deepcopy
+from typing import List
 import json
 
 try:
@@ -29,6 +24,15 @@ except KeyError as e:
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
+def decode_from_bin(
+    inputs: List[bytes], shapes: List[
+        List[int]], dtypes: List[str]) -> List[np.array]:
+    batch = []
+    for input, shape, dtype in zip(inputs, shapes, dtypes):
+        buff = memoryview(input)
+        array = np.frombuffer(buff, dtype=dtype).reshape(shape)
+        batch.append(array)
+    return batch
 
 # PREDICTIVE_UNIT_ID = 'name' #os.environ['PREDICTIVE_UNIT_ID']
 
@@ -78,6 +82,20 @@ class ResnetHuman(MLModel):
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
+        # for request_input in payload.inputs:
+        #     dtypes = request_input.parameters.dtype
+        #     shapes = request_input.parameters.datashape
+        #     batch_shape = request_input.shape[0]
+        #     # batch one edge case
+        #     if type(shapes) != list:
+        #         shapes = [shapes]
+        #         dtypes = [dtypes]
+        #     input_data = request_input.data.__root__
+        #     logger.info(f"shapes:\n{shapes}")
+        #     shapes = list(map(lambda l: eval(l), shapes))
+        #     X = decode_from_bin(
+        #         inputs=input_data, shapes=shapes, dtypes=dtypes)
+
         for request_input in payload.inputs:
             logger.error('request input:\n')
             decoded_inputs = self.decode(request_input)

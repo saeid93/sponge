@@ -1,8 +1,5 @@
-from dataclasses import dataclass
-from urllib import response
 from barazmoon import MLServerAsyncGrpc
 from barazmoon import Data
-from datasets import load_dataset
 import asyncio
 import time
 import json
@@ -29,8 +26,8 @@ data = np.array(data).flatten()
 
 http_method = 'post'
 
-load = 2
-test_duration = 1
+load = 1
+test_duration = 4
 variant = 0
 platform = 'mlserver'
 workload = [load] * test_duration

@@ -1,5 +1,5 @@
 Make sure the yolo cache is in the folder
-
+The name of the model file is not `models.py` beacuse yolov5 library foler has the same name.
 if you are using the mlser server throught command line like:
 ```
 mlserver start .

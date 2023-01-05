@@ -9,10 +9,10 @@ import time
 import numpy as np
 
 
-load = 5
+load = 1
 test_duration = 10
 variant = 0
-platform = 'seldon'
+platform = 'mlserver'
 mode = 'equal'
 
 request = {
