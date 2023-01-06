@@ -27,11 +27,16 @@ except KeyError as e:
 
 def decode_from_bin(
     inputs: List[bytes], shapes: List[
-        List[int]], dtypes: List[str]) -> List[np.array]:
+        List[int]], dtypes: List[str], default_shape: List[int]) -> List[np.array]:
     batch = []
     for input, shape, dtype in zip(inputs, shapes, dtypes):
         buff = memoryview(input)
-        array = np.frombuffer(buff, dtype=dtype).reshape(shape)
+        try:
+            array = np.frombuffer(buff, dtype=dtype).reshape(shape)
+        except TypeError: # HACK temp workaround
+            logger.info('missing shape, used default shape')
+            logger.info(default_shape)
+            array = np.frombuffer(buff, dtype=dtype).reshape(default_shape)
         # array = [array] # TEMP workaround
         batch.append(array)
     return batch
@@ -72,6 +77,7 @@ class ResnetHuman(MLModel):
         # TODO cpu and gpu from env variable
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
+        self.default_shape = [253, 294, 3]
         self.resnet = model[self.MODEL_VARIANT](pretrained=True)
         self.resnet.eval()
         self.loaded = True
@@ -84,31 +90,46 @@ class ResnetHuman(MLModel):
         arrival_time = time.time()
         for request_input in payload.inputs:
             prev_nodes_times = request_input.parameters.times
-            if type(prev_nodes_times) == str:
-                logger.info(f"prev_nodes_times:\n{prev_nodes_times}")
-                prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
-            else:
-                prev_nodes_times = list(
-                    map(lambda l: eval(eval(l)[0]), prev_nodes_times))
+            batch_shape = request_input.shape[0]
+            try:
+                if type(prev_nodes_times) == str:
+                    logger.info(f"prev_nodes_times:\n{prev_nodes_times}")
+                    prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
+                else:
+                    prev_nodes_times = list(
+                        map(lambda l: eval(eval(l)[0]), prev_nodes_times))
+            except SyntaxError:
+                # HACK temp workaroud
+                prev_nodes_times = [{'missing':'missing'}] * batch_shape
+                logger.info('former node missing times')
             # dtypes = request_input.parameters.dtype
             shapes = request_input.parameters.datashape
-            batch_shape = request_input.shape[0]
-            dtypes = batch_shape * ['u1']
+
+            # HACK
+            dtypes = batch_shape * ['u1'] # TEMP HACK
+            # shapes = [[253, 294, 3]] * batch_shape # TEMP HACK
+
             # batch one edge case
-            logger.info(shapes)
-            logger.info(type(shapes))
-            logger.info(dtypes)
-            logger.info(type(dtypes))
+            # logger.info(shapes)
+            # logger.info(type(shapes))
+            # logger.info(dtypes)
+            # logger.info(type(dtypes))
             if type(shapes) != list:
                 shapes = eval(shapes)
-                # dtypes = eval(dtypes)
+                # self.default_shape = shapes # HACK temp workaround
             else:
-                logger.info(f"shapes:\n{shapes}")
-                shapes = [[253, 294, 3]] * 5 # TEMP hack
-                # shapes = list(map(lambda l: eval(l), shapes))
+                shapes = list(map(lambda l: eval(l), shapes))
+                # HACK temp workaround for edge case
+                if type(shapes[0][0] == list):
+                    shapes = list(map(lambda l: l[0], shapes))
+                # self.default_shape = shapes[0] # HACK temp workaround
+            logger.info(f"shapes:\n{shapes}")
             input_data = request_input.data.__root__
             X = decode_from_bin(
-                inputs=input_data, shapes=shapes, dtypes=dtypes)
+                inputs=input_data, shapes=shapes, dtypes=dtypes,
+                default_shape=self.default_shape)
+        received_batch_len = len(X)
+        logger.info(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += batch_shape
         self.batch_counter += 1
 
