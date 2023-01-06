@@ -124,10 +124,10 @@ class Yolo(MLModel):
                         datashape=datashape
                 )
             )],
-            model_name=self.name
-            # parameters=Parameters(
-            #     type_of='image'
-            # )
+            model_name=self.name,
+            parameters=Parameters(
+                type_of='image'
+            )
         )
         logger.info(f"request counter:\n{self.request_counter}\n")
         logger.info(f"batch counter:\n{self.batch_counter}\n")

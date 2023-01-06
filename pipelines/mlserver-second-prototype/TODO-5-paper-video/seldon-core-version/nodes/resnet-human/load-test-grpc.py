@@ -1,59 +1,56 @@
 from barazmoon import MLServerAsyncGrpc
+from barazmoon import Data
 import asyncio
 import time
-import json
 import os
 import pathlib
-from PIL import Image
 import numpy as np
 
 def image_loader(folder_path, image_name):
-    image = Image.open(
-        os.path.join(folder_path, image_name))
-    # if there was a need to filter out only color images
-    # if image.mode == 'RGB':
-    #     pass
+    PATH = os.path.join(folder_path, image_name)
+    image = np.squeeze(np.load(PATH))
     return image
 
-PATH = pathlib.Path(__file__).parent.resolve()
-data = image_loader(PATH, 'input-sample.JPEG')
-with open(os.path.join(
-    PATH, 'input-sample-shape.json'), 'r') as openfile:
-    data_shape = json.load(openfile)
-    data_shape = data_shape['data_shape']
-data = np.array(data).flatten()
 
 http_method = 'post'
-load = 5
-test_duration = 1
+load = 1
+test_duration = 5
 variant = 0
 platform = 'mlserver'
+image_name = 'input-sample.npy'
 workload = [load] * test_duration
 data_type = 'image-bytes'
 mode = 'equal' # options - step, equal, exponential
-image = 'input-sample.JPEG'
-image_size = 'input-sample-shape.json'
+
+PATH = pathlib.Path(__file__).parent.resolve()
+data = image_loader(PATH, image_name)
+data_shape = list(data.shape)
+data = data.flatten()
 
 # single node inference
 if platform == 'seldon':
     endpoint = "localhost:32000"
-    deployment_name = 'latency-connection-grpc-image-bytes'
-    model = 'mock-one'
+    deployment_name = 'resnet-human'
+    model = 'resnet-human'
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == 'mlserver':
     endpoint = "localhost:8081"
-    model = 'mock-one'
+    model = 'resnet-human'
     metadata = []
 
+times = '["{\'node-one\': {\'arrival\': 1672276157.286681, \'serving\': 1672276157.2869108}}"]'
 
-PATH = pathlib.Path(__file__).parent.resolve()
-data = image_loader(PATH, image)
-with open(os.path.join(
-    PATH, image_size), 'r') as openfile:
-    data_shape = json.load(openfile)
-    data_shape = data_shape['data_shape']
-data = np.array(data).flatten()
+custom_parameters = {'times': str(times)}
+data_1 = Data(
+    data=data,
+    data_shape=data_shape,
+    custom_parameters=custom_parameters
+)
+
+# Data list
+data = []
+data.append(data_1)
 
 start_time = time.time()
 
@@ -69,11 +66,12 @@ load_tester = MLServerAsyncGrpc(
 
 responses = asyncio.run(load_tester.start())
 
+print(f'{(time.time() - start_time):2.2}s spent in total')
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 # Through away initial seconds results
-responses = responses[3:]
 
 # # roundtrip latency
 # roundtrip_lat = []

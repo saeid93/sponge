@@ -12,7 +12,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/video-pipelines-mlserver:yolo
+        - image: sdghafouri/video-pipelines-mlserver-bytes:yolo
           name: yolo
           imagePullPolicy: Always
           env:
@@ -23,14 +23,14 @@ spec:
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: "3"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
     - spec:
         containers:
-        - image: sdghafouri/video-pipelines-mlserver:resnet-human
+        - image: sdghafouri/video-pipelines-mlserver-bytes:resnet-human
           name: resnet-human
           imagePullPolicy: Always
           env:
@@ -41,7 +41,7 @@ spec:
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: "3"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
