@@ -9,19 +9,20 @@ import numpy as np
 from mlserver.logging import logger
 from mlserver.types import (
     InferenceRequest,
-    InferenceResponse)
+    InferenceResponse,
+    ResponseOutput,
+    Parameters)
 from mlserver import MLModel
-from mlserver.codecs import StringCodec
-from mlserver_huggingface.common import NumpyEncoder
 from typing import List
-import json
+
+# TODO balooning has not been implemented yet
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
-    logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
+    logger.info(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
-    PREDICTIVE_UNIT_ID = 'resnet'
-    logger.error(
+    PREDICTIVE_UNIT_ID = 'resnet-human'
+    logger.info(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
 def decode_from_bin(
@@ -31,10 +32,9 @@ def decode_from_bin(
     for input, shape, dtype in zip(inputs, shapes, dtypes):
         buff = memoryview(input)
         array = np.frombuffer(buff, dtype=dtype).reshape(shape)
+        # array = [array] # TEMP workaround
         batch.append(array)
     return batch
-
-# PREDICTIVE_UNIT_ID = 'name' #os.environ['PREDICTIVE_UNIT_ID']
 
 class ResnetHuman(MLModel):
     async def load(self) -> bool:
@@ -44,13 +44,13 @@ class ResnetHuman(MLModel):
         # standard resnet image transformation
         try:
             self.MODEL_VARIANT = os.environ['MODEL_VARIANT']
-            logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
+            logger.info(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
             self.MODEL_VARIANT = 'resnet18'
-            logger.error(
+            logger.info(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
-        logger.error(f'max_batch_size: {self._settings.max_batch_size}')
-        logger.error(f'max_batch_time: {self._settings.max_batch_time}')
+        logger.info(f'max_batch_size: {self._settings.max_batch_size}')
+        logger.info(f'max_batch_time: {self._settings.max_batch_time}')
         self.batch_size = self._settings.max_batch_size
         self.transform = transforms.Compose([
             transforms.Resize(256),
@@ -60,7 +60,7 @@ class ResnetHuman(MLModel):
             mean=[0.485, 0.456, 0.406],
             std=[0.229, 0.224, 0.225]
         )])
-        logger.error('Init function complete!')
+        logger.info('Init function complete!')
         model = {
             'resnet18': models.resnet18,
             'resnet34': models.resnet34,
@@ -75,135 +75,92 @@ class ResnetHuman(MLModel):
         self.resnet = model[self.MODEL_VARIANT](pretrained=True)
         self.resnet.eval()
         self.loaded = True
-        logger.error('model loading complete!')
+        logger.info('model loading complete!')
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceRequest:
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
-        # for request_input in payload.inputs:
-        #     dtypes = request_input.parameters.dtype
-        #     shapes = request_input.parameters.datashape
-        #     batch_shape = request_input.shape[0]
-        #     # batch one edge case
-        #     if type(shapes) != list:
-        #         shapes = [shapes]
-        #         dtypes = [dtypes]
-        #     input_data = request_input.data.__root__
-        #     logger.info(f"shapes:\n{shapes}")
-        #     shapes = list(map(lambda l: eval(l), shapes))
-        #     X = decode_from_bin(
-        #         inputs=input_data, shapes=shapes, dtypes=dtypes)
-
         for request_input in payload.inputs:
-            logger.error('request input:\n')
-            decoded_inputs = self.decode(request_input)
-            # X: all the inputs from the recived batch
-            # e.g. it len will be of len 5 if we have recived
-            # a batch of size 5 which each contains 4 image
-            # and each X[i] will be of size 4
-            X = []
-            # former step timing is an array
-            # containing timing from previous
-            # steps per each input X[i] 
-            former_steps_timings = []
-            for decoded_input in decoded_inputs:
-                json_inputs = json.loads(decoded_input)
-                former_steps_timings.append(json_inputs['time'])
-                X.append(json_inputs['output']['person'])
-        # TODO add handling of zero person in the iamge
-        if X == []:
-            return []
-        received_batch_len = len(X)
-        self.request_counter += received_batch_len
+            prev_nodes_times = request_input.parameters.times
+            if type(prev_nodes_times) == str:
+                logger.info(f"prev_nodes_times:\n{prev_nodes_times}")
+                prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
+            else:
+                prev_nodes_times = list(
+                    map(lambda l: eval(eval(l)[0]), prev_nodes_times))
+            # dtypes = request_input.parameters.dtype
+            shapes = request_input.parameters.datashape
+            batch_shape = request_input.shape[0]
+            dtypes = batch_shape * ['u1']
+            # batch one edge case
+            logger.info(shapes)
+            logger.info(type(shapes))
+            logger.info(dtypes)
+            logger.info(type(dtypes))
+            if type(shapes) != list:
+                shapes = eval(shapes)
+                # dtypes = eval(dtypes)
+            else:
+                logger.info(f"shapes:\n{shapes}")
+                shapes = [[253, 294, 3]] * 5 # TEMP hack
+                # shapes = list(map(lambda l: eval(l), shapes))
+            input_data = request_input.data.__root__
+            X = decode_from_bin(
+                inputs=input_data, shapes=shapes, dtypes=dtypes)
+        self.request_counter += batch_shape
         self.batch_counter += 1
 
-        # mask: make a mask to keep track of images recieved
-        # in the last step
-        # e.g. if we have recieved two input
-        # each containing three and four image
-        # will will have a mask of [3, 4]
-        mask = []
-        # X_flatten: is the number flattened list
-        # of inputs e.g. for a batch size of 2
-        # each containing four images we will have
-        # a X_flatten of size 8
-        X_flatten = []
-        for output_index, output in enumerate(X):
-            mask.append(0)
-            
-            for image in output:
-                mask[output_index] += 1
-                X_flatten.append(image)
-
-        # preprocessing all images before sending to the model
-        logger.error(f"len(X_flatten):\n{len(X_flatten)}\n")
-        logger.error(f"mask:\n{mask}\n")
-
+        # preprocessings
         converted_images = [Image.fromarray(
-            np.array(image, dtype=np.uint8)) for image in X_flatten]
-
-        before_model_time = time.time()
-
+            np.array(image, dtype=np.uint8)) for image in X]
         X_trans = [self.transform(
             converted_image) for converted_image in converted_images]
+        batch = torch.stack(X_trans, axis=0)
 
-        # batch images give all the images to the models
-        # per defined batch size
-        predictions = []
-        # complete batch: batch all the X_flatten and then
-        # read them one by one
-        complete_batch = torch.stack(X_trans, axis=0)
-        timings = []
-        for i in range(0, len(complete_batch), self.batch_size):
-            out = self.resnet(complete_batch[i: i + self.batch_size])
-            percentages = torch.nn.functional.softmax(out, dim=1) * 100
-            percentages = percentages.detach().numpy()
-            image_net_class = np.argmax(percentages, axis=1)
-            predictions += image_net_class.tolist()
-            logger.error(f"{image_net_class=}")
-            serving_time = time.time()
-            timing = {
-                f"before_model_{PREDICTIVE_UNIT_ID}": before_model_time,
-                f"arrival_{PREDICTIVE_UNIT_ID}": arrival_time,
-                f"serving_{PREDICTIVE_UNIT_ID}": serving_time,
+        out = self.resnet(batch)
+        percentages = torch.nn.functional.softmax(out, dim=1) * 100
+        percentages = percentages.detach().numpy()
+        image_net_class = np.argmax(percentages, axis=1)
+        output = image_net_class.tolist()
+        logger.info(f"{image_net_class=}")
+        serving_time = time.time()
+        times = {
+            PREDICTIVE_UNIT_ID: {
+            "arrival": arrival_time,
+            "serving": serving_time
             }
-            timings += self.batch_size * [timing]
-        logger.error(f"{timings=}")
-        logger.error(f"{former_steps_timings=}")
-        logger.error(f"post: {timing[f'serving_{PREDICTIVE_UNIT_ID}'] - timing[f'arrival_{PREDICTIVE_UNIT_ID}']}")
-        logger.error(f"model: {timing[f'before_model_{PREDICTIVE_UNIT_ID}'] - timing[f'arrival_{PREDICTIVE_UNIT_ID}']}")
-        # timing.update(former_steps_timings)
-        preds_with_time = list()
-        pred_index = 0
-        for pred_mask, former_step_timing in zip(mask, former_steps_timings):
-            this_node_times = []
-            this_input_predictions = []
-            while pred_mask != 0:
-                this_node_times.append(timings[pred_index])
-                this_input_predictions.append(predictions[pred_index])
-                pred_index += 1
-                pred_mask -= 1
-                logger.error(f"{pred_index=}")
-                logger.error(f"{pred_mask=}")
-            former_step_timing[f"{PREDICTIVE_UNIT_ID}_times"] = this_node_times
-            preds_with_time.append({
-                f"time": former_step_timing,
-                'output': this_input_predictions,
-                })
-        logger.error(f"output_with_time:\n")
-        logger.error(preds_with_time)
-        str_out = [json.dumps(
-            pred, cls=NumpyEncoder) for pred in preds_with_time]
-        prediction_encoded = StringCodec.encode_output(
-            payload=str_out, name="output")
-        logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
-        logger.error(f"request counter:\n{self.request_counter}\n")
-        logger.error(f"batch counter:\n{self.batch_counter}\n")
-        return InferenceResponse(
-            id=payload.id,
+        }
+        this_node_times = [times] * batch_shape
+        times = []
+        for this_node_time, prev_nodes_time in zip(
+            this_node_times, prev_nodes_times):
+            this_node_time.update(prev_nodes_time)
+            times.append(this_node_time)
+        batch_times = list(map(lambda l: str(l), times))
+        if self.batch_size == 1:
+            batch_times = str(batch_times)
+
+        # processing inference response
+        payload = InferenceResponse(
+            outputs=[
+                ResponseOutput(
+                    name="int",
+                    shape=[batch_shape],
+                    datatype="INT32",
+                    data=output,
+                    parameters=Parameters(
+                        times=batch_times,
+                        content_type='np'
+                    ),
+            )],
             model_name=self.name,
-            model_version=self.version,
-            outputs = [prediction_encoded]
+            parameters=Parameters(
+                type_of='int'
+            )
         )
+        logger.info(f"request counter:\n{self.request_counter}\n")
+        logger.info(f"batch counter:\n{self.batch_counter}\n")
+        return payload
+

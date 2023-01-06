@@ -1,35 +1,12 @@
+from barazmoon import MLServerAsyncGrpc
+from barazmoon import Data
+import asyncio
+import time
+import json
 import os
 import pathlib
 from PIL import Image
 import numpy as np
-import mlserver.types as types
-import grpc
-import json
-from barazmoon import MLServerAsyncGrpc
-import mlserver.grpc.dataplane_pb2_grpc as dataplane
-import asyncio
-from pprint import PrettyPrinter
-pp = PrettyPrinter(indent=4)
-
-# single node mlserver
-endpoint = "localhost:8081"
-model = 'paper-video'
-metadata = []
-grpc_channel = grpc.insecure_channel(endpoint)
-grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
-data_type = 'image'
-
-# single node seldon+mlserver
-# endpoint = "localhost:32000"
-# deployment_name = 'paper-video'
-# model = None
-# namespace = "default"
-# metadata = [("seldon", deployment_name), ("namespace", namespace)]
-# grpc_channel = grpc.insecure_channel(endpoint)
-# grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
-# data_type = 'image'
-
-workload = [10, 7, 4, 12, 15]
 
 def image_loader(folder_path, image_name):
     image = Image.open(
@@ -39,53 +16,122 @@ def image_loader(folder_path, image_name):
     #     pass
     return image
 
-# os.system('sudo umount -l ~/my_mounting_point')
-# os.system('cc-cloudfuse mount ~/my_mounting_point')
-
-# data_folder_path = '/home/cc/my_mounting_point/datasets'
-# dataset_folder_path = os.path.join(
-#     data_folder_path, 'ILSVRC/Data/DET/test'
-# )
-# classes_file_path = os.path.join(
-#     data_folder_path, 'imagenet_classes.txt'
-# )
-# with open(classes_file_path) as f:
-#     classes = [line.strip() for line in f.readlines()]
-
-# image_names = os.listdir(dataset_folder_path)
-# image_names.sort()
-
-# num_loaded_images = 20
-
-
-# images = {
-#     image_name: image_loader(
-#         dataset_folder_path, image_name) for image_name in image_names[
-#             :num_loaded_images]}
-
-# data = images["ILSVRC2017_test_00000009.JPEG"]
-# data_shape = [1] + list(np.shape(data))
-# data = np.array(data).tolist()
-# input_data_shape = [1] + list(np.shape(input_data))
-
-
 PATH = pathlib.Path(__file__).parent.resolve()
-input_data = image_loader(PATH, 'input-sample.JPEG')
+data = image_loader(PATH, 'input-sample.JPEG')
 with open(os.path.join(
     PATH, 'input-sample-shape.json'), 'r') as openfile:
-    input_data_shape = json.load(openfile)
-    input_data_shape = input_data_shape['data_shape']
-input_data = np.array(input_data).flatten().tolist()
+    data_shape = json.load(openfile)
+    data_shape = data_shape['data_shape']
+data = np.array(data).flatten()
+
+http_method = 'post'
+
+load = 1
+test_duration = 4
+variant = 0
+platform = 'seldon'
+workload = [load] * test_duration
+data_type = 'image-bytes'
+mode = 'equal' # options - step, equal, exponential
+image = 'input-sample.JPEG'
+image_size = 'input-sample-shape.json'
+
+# single node inference
+if platform == 'seldon':
+    endpoint = "localhost:32000"
+    deployment_name = 'video'
+    model = None
+    namespace = "default"
+    metadata = [("seldon", deployment_name), ("namespace", namespace)]
+elif platform == 'mlserver':
+    endpoint = "localhost:8081"
+    model = 'yolo'
+    metadata = []
+
+custom_parameters = {'custom_2': 'test_2'}
+data_1 = Data(
+    data=data,
+    data_shape=data_shape,
+    custom_parameters=custom_parameters
+)
+
+# Data list
+data = []
+data.append(data_1)
+
+start_time = time.time()
 
 load_tester = MLServerAsyncGrpc(
     endpoint=endpoint,
     metadata=metadata,
     workload=workload,
     model=model,
-    data=input_data,
-    data_shape=input_data_shape,
+    data=data,
+    mode=mode, # options - step, equal, exponential
     data_type=data_type)
 
 responses = asyncio.run(load_tester.start())
 
-# print(responses)
+print(f'{(time.time() - start_time):2.2}s spent in total')
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# # roundtrip latency
+# roundtrip_lat = []
+# for sec_resps in responses:
+#     for resp in sec_resps:
+#         request_times = resp['times']['request']
+#         sending_time = request_times['arrival'] - request_times['sending']
+#         roundtrip_lat.append(sending_time)
+# fig, ax = plt.subplots()
+# ax.plot(np.arange(len(roundtrip_lat)), roundtrip_lat)
+# ax.set(xlabel='request id', ylabel='roundtrip latency (s)', title=f'roundtrip latency, total time={round((time.time() - start_time))}')
+# ax.grid()
+# fig.savefig(f"grpc-compressed-image-{platform}_variant_{variant}-roundtrip_lat-load-{load}-test_duration-{test_duration}.png")
+# plt.show()
+
+# # sending time
+# start_times = []
+# for sec_resps in responses:
+#     for resp in sec_resps:
+#         times = resp['times']['request']
+#         sending_time = times['sending'] - start_time
+#         start_times.append(sending_time)
+# fig, ax = plt.subplots()
+# ax.plot(np.arange(len(start_times)), start_times)
+# ax.set(xlabel='request id', ylabel='sending time (s)', title=f'load tester sending time, total time={round((time.time() - start_time))}')
+# ax.grid()
+# fig.savefig(f"grpc-compressed-image-{platform}_variant_{variant}-sending_time-load-{load}-test_duration-{test_duration}.png")
+# plt.show()
+
+# # server arrival time
+# server_arrival_time = []
+# for sec_resps in responses:
+#     for resp in sec_resps:
+#         times = resp['times']
+#         server_recieving_time = times['models'][model]['arrival'] - start_time
+#         server_arrival_time.append(server_recieving_time)
+# fig, ax = plt.subplots()
+# ax.plot(np.arange(len(server_arrival_time)), server_arrival_time)
+# ax.set(xlabel='request id', ylabel='server arrival time (s)', title=f'Server recieving time of requests, total time={round((time.time() - start_time))}')
+# ax.grid()
+# fig.savefig(f"grpc-compressed-image-{platform}_variant_{variant}-server_arrival_time_from_start-load-{load}-test_duration-{test_duration}.png")
+# plt.show()
+
+# server arrival latency
+model = 'resnet-human'
+server_arrival_latency = []
+for sec_resps in responses:
+    for resp in sec_resps:
+        times = resp['times']
+        server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
+        server_arrival_latency.append(server_recieving_time)
+fig, ax = plt.subplots()
+ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
+ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
+ax.grid()
+fig.savefig(f"grpc-compressed-image-{platform}_variant_{variant}-server_recieving_latency-load-{load}-test_duration-{test_duration}.png")
+plt.show()
+
+print(f"{np.average(server_arrival_latency)}=")

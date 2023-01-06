@@ -18,7 +18,7 @@ mode = 'equal'
 request = {
     'times': {
         'models': {
-            'node-one': {
+            'audio': {
                 'arrival': 1672276157.286681,
                 'serving': 1672276157.2869108
                 }
@@ -74,12 +74,6 @@ print(f'{(time.time() - start_time):2.2}s spent in total')
 
 import matplotlib.pyplot as plt
 import numpy as np
-
-# Through away initial seconds results
-responses = responses[3:]
-
-# Through away initial seconds results
-# responses = responses[3:]
 
 # # roundtrip latency
 # roundtrip_lat = []
