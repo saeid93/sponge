@@ -84,16 +84,16 @@ class Yolo(MLModel):
             X = decode_from_bin(
                 inputs=input_data, shapes=shapes, dtypes=dtypes)
         received_batch_len = len(X)
-        logger.error(f"recieved batch len:\n{received_batch_len}")
+        logger.info(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += received_batch_len
         self.batch_counter += 1
-        logger.error(f"to the model:\n{type(X)}")
-        logger.error(f"type of the to the model:\n{type(X)}")
-        logger.error(f"len of the to the model:\n{len(X)}")
+        logger.info(f"to the model:\n{type(X)}")
+        logger.info(f"type of the to the model:\n{type(X)}")
+        logger.info(f"len of the to the model:\n{len(X)}")
         objs = self.model(X)
         output = self.get_cropped(objs)
         # output: List[Dict] = await self.model(X, self.MODEL_VARIANT)
-        logger.error(f"model output:\n{output}")
+        logger.info(f"model output:\n{output}")
         serving_time = time.time()
         times = {
             PREDICTIVE_UNIT_ID: {

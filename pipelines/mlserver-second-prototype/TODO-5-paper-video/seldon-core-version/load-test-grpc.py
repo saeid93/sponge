@@ -26,7 +26,7 @@ data = np.array(data).flatten()
 
 http_method = 'post'
 
-load = 1
+load = 5
 test_duration = 4
 variant = 0
 platform = 'seldon'
