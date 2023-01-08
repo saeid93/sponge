@@ -11,7 +11,7 @@ OBJ_DATA_PATH = os.path.join(OBJ_PATH, "data")
 
 # configs path
 PIPLINES_PATH = os.path.join(
-    PROJECT_PATH, "pipelines", "mlserver-prototype")
+    PROJECT_PATH, "pipelines", "mlserver-second-prototype")
 CONFIGS_PATH = os.path.join(DATA_PATH, "configs")
 PROFILING_CONFIGS_PATH = os.path.join(CONFIGS_PATH, "profiling")
 NODE_PROFILING_CONFIGS_PATH = os.path.join(PROFILING_CONFIGS_PATH, "nodes")

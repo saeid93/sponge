@@ -4,7 +4,7 @@ pipeline_name: 4-paper-sum-qa
 node_name: nlp-qa
 data_type: text
 timeout: 180
-protocol: grpc
+mode: step
 model_vairants:
   - deepset/roberta-base-squad2
   - deepset/xlm-roberta-large-squad2
