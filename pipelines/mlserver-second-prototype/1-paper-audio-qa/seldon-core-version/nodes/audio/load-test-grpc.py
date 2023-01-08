@@ -27,7 +27,7 @@ elif platform == 'mlserver':
     model = 'audio'
     metadata = []
 
-data_type = 'audio-bytes'
+data_type = 'audio'
 workload = [load] * test_duration
 
 # Data 1

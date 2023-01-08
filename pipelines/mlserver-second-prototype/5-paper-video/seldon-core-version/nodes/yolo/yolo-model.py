@@ -114,7 +114,7 @@ class Yolo(MLModel):
         payload = InferenceResponse(
             outputs=[
                 ResponseOutput(
-                    name="image-bytes",
+                    name="image",
                     shape=[batch_shape],
                     datatype="BYTES",
                     data=output_data,

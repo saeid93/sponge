@@ -2,9 +2,9 @@ series: 7
 series_meta: 'checking the effect of batch size under 20 arrival rate,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 pipeline_name: 5-paper-video
 node_name: resnet-human
-data_type: text
+data_type: image
 timeout: 120
-protocol: grpc
+mode: step
 model_variants:
   - resnet18
   # - resnet34

@@ -14,7 +14,7 @@ import csv
 import re
 import asyncio
 from jinja2 import Environment, FileSystemLoader
-
+from barazmoon import Data
 from PIL import Image
 from kubernetes import config
 from kubernetes.client import Configuration
@@ -80,7 +80,7 @@ def experiments(pipeline_name: str, node_name: str,
     series_meta = config['series_meta']
     loads_to_test = workload_config['loads_to_test']
     load_duration = workload_config['load_duration']
-    protocol = config['protocol']
+    mode = config['mode']
     if 'no_engine' in config.keys():
         no_engine = config['no_engine']
     else:
@@ -132,7 +132,7 @@ def experiments(pipeline_name: str, node_name: str,
                                         series_meta=series_meta,
                                         replica=replica,
                                         no_engine=no_engine,
-                                        protocol=protocol,
+                                        mode=mode,
                                         data_type=data_type)
 
                                     start_time_experiment,\
@@ -141,7 +141,7 @@ def experiments(pipeline_name: str, node_name: str,
                                             data_type=data_type,
                                             node_path=node_path,
                                             load=load,
-                                            protocol=protocol,
+                                            mode=mode,
                                             namespace='default',
                                             load_duration=load_duration,
                                             no_engine=no_engine)
@@ -168,7 +168,7 @@ def key_config_mapper(
     memory_request: str, model_variant: str, max_batch_size: str,
     max_batch_time: str, load: int,
     load_duration: int, series: int, series_meta: str, replica: int,
-    no_engine: bool = True, protocol: str = 'rest', data_type: str = 'audio'):
+    no_engine: bool = True, mode: str = 'step', data_type: str = 'audio'):
     dir_path = os.path.join(
         NODE_PROFILING_RESULTS_STATIC_PATH,
         'series', str(series))
@@ -179,7 +179,7 @@ def key_config_mapper(
         'memory_request', 'max_batch_size',
         'max_batch_time', 'load', 'load_duration',
         'series', 'series_meta', 'replicas', 'no_engine',
-        'protocol', 'data_type']
+        'mode', 'data_type']
     if not os.path.exists(file_path):
         # os.makedirs(dir_path)
         with open(file_path, 'w', newline="") as file:
@@ -208,7 +208,7 @@ def key_config_mapper(
         'series_meta': series_meta,
         'replicas': replica,
         'no_engine': no_engine,
-        'protocol': protocol,
+        'mode': mode,
         'data_type': data_type
         }
     with open(file_path, 'a') as row_writer:
@@ -255,12 +255,13 @@ def load_test(node_name: str, data_type: str,
               node_path: str,
               load: int, load_duration: int,
               namespace: str='default',
-              protocol: str='rest',
-              no_engine: bool = False):
+              no_engine: bool = False,
+              mode: str = 'step'):
     start_time = time.time()
     print('-'*25 + f' starting load test ' + '-'*25)
     print('\n')
     # load sample data
+    # TODO change here
     if data_type == 'audio':
         input_sample_path = os.path.join(
             node_path, 'input-sample.json'
@@ -289,61 +290,45 @@ def load_test(node_name: str, data_type: str,
         input_sample_path = os.path.join(
             node_path, 'input-sample.JPEG'
         )
-        input_sample_shape_path = os.path.join(
-            node_path, 'input-sample-shape.json'
-        )
-        data = np.array(Image.open(input_sample_path)).tolist()
-        with open(input_sample_shape_path, 'r') as openfile:
-            data_shape = json.load(openfile)
-            data_shape = data_shape['data_shape']
-        data = np.array(data).flatten().tolist()
-    else:
-        raise ValueError(f"Invalid data_type: {data_type}")
+        if node_name == 'resnet-human':
+            data = np.squeeze(np.load(input_sample_path))
+            data_shape = list(data.shape)
+            data = data.flatten()
+        elif node_name == 'yolo':
+            data = Image.open(input_sample_path)
+            data_shape = list(np.array(data).shape)
+            data = data.flatten()
+    data_1 = Data(
+        data=data,
+        data_shape=data_shape
+    )
+
+    # Data list
+    data = []
+    data.append(data_1)
     workload = [load] * load_duration
-    if protocol == 'rest':
-        # load test on the server
-        gateway_endpoint = "localhost:32000"
-        if not no_engine:
-            endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/infer"
-        else:
-            endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{node_name}/v2/models/{node_name}/infer" 
-        load_tester = MLServerAsyncRest(
-            endpoint=endpoint,
-            http_method='post',
-            workload=workload,
-            data=data,
-            data_shape=data_shape,
-            data_type=data_type)
-        responses = asyncio.run(load_tester.start())
-    elif protocol == 'grpc':
-        endpoint = "localhost:32000"
-        deployment_name = node_name
-        model = node_name
-        namespace = "default"
-        metadata = [("seldon", deployment_name), ("namespace", namespace)]
-        load_tester = MLServerAsyncGrpc(
-            endpoint=endpoint,
-            metadata=metadata,
-            workload=workload,
-            model=model,
-            data=data,
-            data_shape=data_shape,
-            data_type=data_type)
-        responses = asyncio.run(load_tester.start())
-    else:
-        raise ValueError(f'Invalid protocol: {protocol}, use either grpc or rest') 
+
+    endpoint = "localhost:32000"
+    deployment_name = node_name
+    model = node_name
+    namespace = "default"
+    metadata = [("seldon", deployment_name), ("namespace", namespace)]
+    load_tester = MLServerAsyncGrpc(
+        endpoint=endpoint,
+        metadata=metadata,
+        workload=workload,
+        model=model,
+        data=data,
+        mode=mode, # options - step, equal, exponential
+        data_type=data_type)
+    responses = asyncio.run(load_tester.start())
     end_time = time.time()
 
     # remove ouput for image inputs/outpus (yolo)
     # as they make logs very heavy
     for second_response in responses:
         for response in second_response:
-            if 'outputs' in response.keys():
-                raw_response = json.loads(
-                    response['outputs'][0]['data'][0])
-                raw_response['output'] = []
-                summerized_response = json.dumps(raw_response)
-                response['outputs'][0]['data'][0] = summerized_response
+            response['outputs'] = []
     return start_time, end_time, responses
 
 def remove_node(node_name, timeout):
@@ -455,7 +440,7 @@ def backup(series):
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='6-mlserver-mock-static')
+    '--config-name', required=True, type=str, default='5-config-static-resnet-human-all')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")

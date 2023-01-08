@@ -18,10 +18,7 @@ def image_loader(folder_path, image_name):
 
 PATH = pathlib.Path(__file__).parent.resolve()
 data = image_loader(PATH, 'input-sample.JPEG')
-with open(os.path.join(
-    PATH, 'input-sample-shape.json'), 'r') as openfile:
-    data_shape = json.load(openfile)
-    data_shape = data_shape['data_shape']
+data_shape = list(np.array(data).shape)
 data = np.array(data).flatten()
 
 http_method = 'post'
@@ -31,7 +28,7 @@ test_duration = 4
 variant = 0
 platform = 'seldon'
 workload = [load] * test_duration
-data_type = 'image-bytes'
+data_type = 'image'
 mode = 'equal' # options - step, equal, exponential
 image = 'input-sample.JPEG'
 image_size = 'input-sample-shape.json'

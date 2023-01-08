@@ -5,7 +5,7 @@ node_name: mock-one
 data_type: audio
 no_engine: false
 timeout: 120
-protocol: grpc
+mode: step
 model_variants:
   - '0'
   # - '1'

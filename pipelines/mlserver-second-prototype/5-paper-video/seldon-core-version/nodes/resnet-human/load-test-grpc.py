@@ -17,9 +17,9 @@ load = 3
 test_duration = 5
 variant = 0
 platform = 'seldon'
-image_name = 'input-sample.npy'
+image_name = 'input-sample.JPEG'
 workload = [load] * test_duration
-data_type = 'image-bytes'
+data_type = 'image'
 mode = 'equal' # options - step, equal, exponential
 
 PATH = pathlib.Path(__file__).parent.resolve()

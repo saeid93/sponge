@@ -1,10 +1,10 @@
-series: 41
+series: 42
 series_meta: 'testing mlserver performance with grpc against other servers 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 pipeline_name: 5-paper-video
 node_name: resnet-human
-data_type: text
-timeout: 180
-protocol: rest
+data_type: image
+timeout: 100
+mode: step
 model_variants:
   - resnet18
   # - resnet34
@@ -35,8 +35,8 @@ workload_type: static
 repetition: 1
 workload_config:
   loads_to_test:
-  - 1
-  # - 10
+  # - 1
+  - 10
   # - 20
   # - 40
   load_duration: 60
