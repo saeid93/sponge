@@ -81,6 +81,7 @@ def experiments(pipeline_name: str, node_name: str,
     loads_to_test = workload_config['loads_to_test']
     load_duration = workload_config['load_duration']
     mode = config['mode']
+    benchmark_duration = config['benchmark_duration']
     if 'no_engine' in config.keys():
         no_engine = config['no_engine']
     else:
@@ -133,7 +134,8 @@ def experiments(pipeline_name: str, node_name: str,
                                         replica=replica,
                                         no_engine=no_engine,
                                         mode=mode,
-                                        data_type=data_type)
+                                        data_type=data_type,
+                                        benchmark_duration=benchmark_duration)
 
                                     start_time_experiment,\
                                         end_time_experiment, responses = load_test(
@@ -144,7 +146,8 @@ def experiments(pipeline_name: str, node_name: str,
                                             mode=mode,
                                             namespace='default',
                                             load_duration=load_duration,
-                                            no_engine=no_engine)
+                                            no_engine=no_engine,
+                                            benchmark_duration=benchmark_duration)
                                     # TODO id system for the experiments
                                     save_report(
                                         experiment_id=experiment_id,
@@ -168,7 +171,8 @@ def key_config_mapper(
     memory_request: str, model_variant: str, max_batch_size: str,
     max_batch_time: str, load: int,
     load_duration: int, series: int, series_meta: str, replica: int,
-    no_engine: bool = True, mode: str = 'step', data_type: str = 'audio'):
+    no_engine: bool = True, mode: str = 'step', data_type: str = 'audio',
+    benchmark_duration=1):
     dir_path = os.path.join(
         NODE_PROFILING_RESULTS_STATIC_PATH,
         'series', str(series))
@@ -179,7 +183,7 @@ def key_config_mapper(
         'memory_request', 'max_batch_size',
         'max_batch_time', 'load', 'load_duration',
         'series', 'series_meta', 'replicas', 'no_engine',
-        'mode', 'data_type']
+        'mode', 'data_type', 'benchmark_duration']
     if not os.path.exists(file_path):
         # os.makedirs(dir_path)
         with open(file_path, 'w', newline="") as file:
@@ -209,7 +213,8 @@ def key_config_mapper(
         'replicas': replica,
         'no_engine': no_engine,
         'mode': mode,
-        'data_type': data_type
+        'data_type': data_type,
+        'benchmark_duration': benchmark_duration
         }
     with open(file_path, 'a') as row_writer:
         dictwriter_object = csv.DictWriter(row_writer, fieldnames=header)
@@ -256,7 +261,8 @@ def load_test(node_name: str, data_type: str,
               load: int, load_duration: int,
               namespace: str='default',
               no_engine: bool = False,
-              mode: str = 'step'):
+              mode: str = 'step',
+              benchmark_duration=1):
     start_time = time.time()
     print('-'*25 + f' starting load test ' + '-'*25)
     print('\n')
@@ -290,17 +296,13 @@ def load_test(node_name: str, data_type: str,
         input_sample_path = os.path.join(
             node_path, 'input-sample.JPEG'
         )
-        if node_name == 'resnet-human':
-            data = np.squeeze(np.load(input_sample_path))
-            data_shape = list(data.shape)
-            data = data.flatten()
-        elif node_name == 'yolo':
-            data = Image.open(input_sample_path)
-            data_shape = list(np.array(data).shape)
-            data = data.flatten()
+        data = Image.open(input_sample_path)
+        data_shape = list(np.array(data).shape)
+        data = np.array(data).flatten()
     data_1 = Data(
         data=data,
-        data_shape=data_shape
+        data_shape=data_shape,
+        custom_parameters={'custom': 'custom'},
     )
 
     # Data list
@@ -320,7 +322,8 @@ def load_test(node_name: str, data_type: str,
         model=model,
         data=data,
         mode=mode, # options - step, equal, exponential
-        data_type=data_type)
+        data_type=data_type,
+        benchmark_duration=benchmark_duration)
     responses = asyncio.run(load_tester.start())
     end_time = time.time()
 
@@ -344,7 +347,8 @@ def save_report(experiment_id: int,
                 end_time_experiment: float,
                 namespace: str = 'default',
                 series: int = 0,
-                no_engine: bool = False):
+                no_engine: bool = False,
+                ):
     results = {
         'cpu_usage_count': [],
         'time_cpu_usage_count': [],
