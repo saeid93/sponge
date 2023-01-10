@@ -33,6 +33,7 @@ memory_request:
 replicas:
   - 1
 workload_type: twitter
+benchmark_duration: 2
 repetition: 3
 workload_config:
   start_day: 3
