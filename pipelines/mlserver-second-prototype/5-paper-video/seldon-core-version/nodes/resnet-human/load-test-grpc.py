@@ -4,16 +4,19 @@ import asyncio
 import time
 import os
 import pathlib
+from PIL import Image
 import numpy as np
 
 def image_loader(folder_path, image_name):
-    PATH = os.path.join(folder_path, image_name)
-    image = np.squeeze(np.load(PATH))
+    image = Image.open(
+        os.path.join(folder_path, image_name))
+    # if there was a need to filter out only color images
+    # if image.mode == 'RGB':
+    #     pass
     return image
 
-
 http_method = 'post'
-load = 3
+load = 1
 test_duration = 5
 variant = 0
 platform = 'seldon'
@@ -23,9 +26,9 @@ data_type = 'image'
 mode = 'equal' # options - step, equal, exponential
 
 PATH = pathlib.Path(__file__).parent.resolve()
-data = image_loader(PATH, image_name)
-data_shape = list(data.shape)
-data = data.flatten()
+data = image_loader(PATH, 'input-sample.JPEG')
+data_shape = list(np.array(data).shape)
+data = np.array(data).flatten()
 
 # single node inference
 if platform == 'seldon':
@@ -62,7 +65,8 @@ load_tester = MLServerAsyncGrpc(
     mode=mode,
     data=data,
     data_shape=data_shape,
-    data_type=data_type)
+    data_type=data_type,
+    benchmark_duration=4)
 
 responses = asyncio.run(load_tester.start())
 
