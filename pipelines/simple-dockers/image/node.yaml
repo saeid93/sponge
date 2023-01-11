@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: renset-3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: renset-3
+  template:
+    metadata:
+      labels:
+        app: renset-3
+    spec:
+      containers:
+      - name: renset
+        image: sdghafouri/simple-image:image
+        imagePullPolicy: Always
+        env:
+          - name: ITERATIONS
+            value: '60'
+        resources:
+          limits:
+            cpu: 8
+          requests:
+            cpu: 8
+        ports:
+        - containerPort: 8080

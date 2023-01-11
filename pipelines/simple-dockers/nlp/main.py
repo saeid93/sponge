@@ -9,7 +9,7 @@ try:
     ITERATIONS = int(os.environ['ITERATIONS'])
     logging.warning(f'ITERATIONS set to: {ITERATIONS}')
 except KeyError as e:
-    ITERATIONS = 30
+    ITERATIONS = 60
     logging.warning(
         f"ITERATIONS env variable not set, using default value: {ITERATIONS}")
 
@@ -32,5 +32,8 @@ for i in range(ITERATIONS):
     logging.warning(f'iteration {i} time: {iter_time}')
     start = time.time()
 
-logging.warning('model times:')
-logging.warning(model_times)
+logging.warning('total times average:')
+logging.warning(np.average(model_times))
+
+logging.warning('total times p99:')
+logging.warning(np.percentile(model_times, 99))
