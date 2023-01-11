@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from urllib import response
 from barazmoon import MLServerAsyncGrpc
 from barazmoon import Data
-from datasets import load_dataset
 import asyncio
 import json
 import time

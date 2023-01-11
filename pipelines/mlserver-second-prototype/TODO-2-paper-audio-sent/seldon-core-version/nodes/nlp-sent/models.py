@@ -1,32 +1,25 @@
 import os
 import time
-import json
+from copy import deepcopy
 from mlserver import MLModel
-import numpy as np
-from mlserver.codecs import NumpyCodec
+import json
 from mlserver.logging import logger
-from mlserver.utils import get_model_uri
 from mlserver.types import (
     InferenceRequest,
     InferenceResponse,
     ResponseOutput,
     Parameters)
 from mlserver import MLModel
-from mlserver.codecs import DecodedParameterName
-from mlserver.cli.serve import load_settings
-from copy import deepcopy
 from transformers import pipeline
 from mlserver.codecs import StringCodec
-from mlserver_huggingface.common import NumpyEncoder
-from typing import List, Dict
 
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
-    logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
+    logger.info(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
-    PREDICTIVE_UNIT_ID = 'predictive_unit'
-    logger.error(
+    PREDICTIVE_UNIT_ID = 'nlp-sent'
+    logger.info(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
 class GeneralNLP(MLModel):
@@ -36,28 +29,28 @@ class GeneralNLP(MLModel):
         self.batch_counter = 0
         try:
             self.MODEL_VARIANT = os.environ['MODEL_VARIANT']
-            logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
+            logger.info(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
             self.MODEL_VARIANT = 'dinalzein/xlm-roberta-base-finetuned-language-identification'
-            logger.error(
+            logger.info(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         try:
             self.TASK = os.environ['TASK']
-            logger.error(f'TASK set to: {self.TASK}')
+            logger.info(f'TASK set to: {self.TASK}')
         except KeyError as e:
             self.TASK = 'sentiment-analysis' 
-            logger.error(
+            logger.info(
                 f"MODEL_VARIANT env variable not set, using default value: {self.TASK}")
-        logger.error('Loading the ML models')
+        logger.info('Loading the ML models')
         # TODO add batching like the runtime
-        logger.error(f'max_batch_size: {self._settings.max_batch_size}')
-        logger.error(f'max_batch_time: {self._settings.max_batch_time}')
+        logger.info(f'max_batch_size: {self._settings.max_batch_size}')
+        logger.info(f'max_batch_time: {self._settings.max_batch_time}')
         self.model  = pipeline(
             task=self.TASK,
             model=self.MODEL_VARIANT,
             batch_size=self._settings.max_batch_size)
         self.loaded = True
-        logger.error('model loading complete!')
+        logger.info('model loading complete!')
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
@@ -65,51 +58,68 @@ class GeneralNLP(MLModel):
             self.load()
         arrival_time = time.time()
         for request_input in payload.inputs:
-            logger.error('request input:\n')
-            logger.error(f"{request_input}\n")
-            decoded_inputs = self.decode(request_input)
-            logger.error('decoded_input:\n')
-            logger.error(f"{list(decoded_inputs)}\n")
-            X = []
-            former_steps_timings = []
-            for decoded_input in decoded_inputs:
-                json_inputs = json.loads(decoded_input)
-                former_steps_timings.append(json_inputs['time'])
-                X.append(json_inputs['output']['text'])
-        received_batch_len = len(X)
-        logger.error(f"recieved batch len:\n{received_batch_len}")
-        self.request_counter += received_batch_len
+            prev_nodes_times = request_input.parameters.times
+            if type(prev_nodes_times) == str:
+                logger.info(f"prev_nodes_times:\n{prev_nodes_times}")
+                prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
+            else:
+                prev_nodes_times = list(
+                    map(lambda l: eval(eval(l)[0]), prev_nodes_times))
+            batch_shape = request_input.shape[0]
+            X = request_input.data.__root__
+            X = list(map(lambda l: l.decode(), X))
+            # X = list(map(
+            #     lambda l: {'question': l, 'context': self.CONTEXT}, X))
+        logger.info(f"recieved batch len:\n{batch_shape}")
+        self.request_counter += batch_shape
         self.batch_counter += 1
+        logger.info(f"to the model:\n{type(X)}")
+        logger.info(f"type of the to the model:\n{type(X)}")
+        logger.info(f"len of the to the model:\n{len(X)}")
+
+        # model part
         output = self.model(X)
+        if type(output) == dict:
+            output = [output]
+        output = list(map(lambda l: str(l), output))
+        logger.info(f"model output:\n{output}")
+
+        # times processing
         serving_time = time.time()
-        timing = {
-            f"arrival_{PREDICTIVE_UNIT_ID}".replace("-","_"): arrival_time,
-            f"serving_{PREDICTIVE_UNIT_ID}".replace("-", "_"): serving_time
+        times = {
+            PREDICTIVE_UNIT_ID: {
+            "arrival": arrival_time,
+            "serving": serving_time
+            }
         }
-        output_with_time = list()
-        for pred, former_steps_timing in zip(output, former_steps_timings):
-            timing_2_send = deepcopy(timing)
-            timing_2_send.update(former_steps_timing)
-            print(timing_2_send)
-            output_with_time.append(
-                {
-                    # 'time': timing.update(former_steps_timing),
-                    'time': timing_2_send,
-                    'output': pred,
-                }
-            )
-        logger.error(f"output_with_time:\n")
-        logger.error(output_with_time)
-        str_out = [json.dumps(
-            pred, cls=NumpyEncoder) for pred in output_with_time]
-        prediction_encoded = StringCodec.encode_output(
-            payload=str_out, name="output")
-        logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
-        logger.error(f"request counter:\n{self.request_counter}\n")
-        logger.error(f"batch counter:\n{self.batch_counter}\n")
-        return InferenceResponse(
-            id=payload.id,
+        this_node_times = [times] * batch_shape
+        times = []
+        for this_node_time, prev_nodes_time in zip(
+            this_node_times, prev_nodes_times):
+            this_node_time.update(prev_nodes_time)
+            times.append(this_node_time)
+        batch_times = list(map(lambda l: str(l), times))
+        if batch_shape == 1:
+            batch_times = str(batch_times)
+
+        # processing inference response
+        output_data = list(map(lambda l: l.encode('utf8'), output))
+        payload = InferenceResponse(
+            outputs=[
+                ResponseOutput(
+                    name="text",
+                    shape=[batch_shape],
+                    datatype="BYTES",
+                    data=output_data,
+                    parameters=Parameters(
+                        times=batch_times
+                    ),
+            )],
             model_name=self.name,
-            model_version=self.version,
-            outputs = [prediction_encoded]
+            parameters=Parameters(
+                type_of='text'
+            )
         )
+        logger.info(f"request counter:\n{self.request_counter}\n")
+        logger.info(f"batch counter:\n{self.batch_counter}\n")
+        return payload

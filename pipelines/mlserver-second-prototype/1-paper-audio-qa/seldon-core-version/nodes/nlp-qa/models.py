@@ -12,15 +12,14 @@ from mlserver.types import (
 from mlserver import MLModel
 from transformers import pipeline
 from mlserver.codecs import StringCodec
-from mlserver_huggingface.common import NumpyEncoder
 
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
-    logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
+    logger.info(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
     PREDICTIVE_UNIT_ID = 'nlp-qa'
-    logger.error(
+    logger.info(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
 class GeneralNLP(MLModel):
@@ -30,34 +29,34 @@ class GeneralNLP(MLModel):
         self.batch_counter = 0
         try:
             self.MODEL_VARIANT = os.environ['MODEL_VARIANT']
-            logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
+            logger.info(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
             self.MODEL_VARIANT = "distilbert-base-uncased"
-            logger.error(
+            logger.info(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         try:
             self.TASK = os.environ['TASK']
-            logger.error(f'TASK set to: {self.TASK}')
+            logger.info(f'TASK set to: {self.TASK}')
         except KeyError as e:
             self.TASK = 'question-answering'
-            logger.error(
+            logger.info(
                 f"MODEL_VARIANT env variable not set, using default value: {self.TASK}")
         try:
             self.CONTEXT = os.environ['CONTEXT']
-            logger.error(f'CONTEXT set to: {self.CONTEXT}')
+            logger.info(f'CONTEXT set to: {self.CONTEXT}')
         except KeyError as e:
             self.CONTEXT = 'default context'
-            logger.error(
+            logger.info(
                 f"CONTEXT env variable not set, using default value: {self.CONTEXT}")
-        logger.error('Loading the ML models')
-        logger.error(f'max_batch_size: {self._settings.max_batch_size}')
-        logger.error(f'max_batch_time: {self._settings.max_batch_time}')
+        logger.info('Loading the ML models')
+        logger.info(f'max_batch_size: {self._settings.max_batch_size}')
+        logger.info(f'max_batch_time: {self._settings.max_batch_time}')
         self.model  = pipeline(
             task=self.TASK,
             model=self.MODEL_VARIANT,
             batch_size=self._settings.max_batch_size)
         self.loaded = True
-        logger.error('model loading complete!')
+        logger.info('model loading complete!')
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
