@@ -4,7 +4,7 @@ import torch
 from torchvision import models
 from torchvision import transforms
 from PIL import Image
-# import timm
+import timm
 import time
 import logging
 
@@ -38,7 +38,7 @@ postprocessing_time = time.time() - start
 logging.warning(f"preprocessing time: {postprocessing_time}")
 
 start = time.time()
-resnet =  models.resnet18(pretrained=True)
+resnet = timm.create_model('resnet18')
 resnet.eval()
 logging.warning(f"model loading time: {time.time() - start}")
 

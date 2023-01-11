@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nlp-3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nlp-3
+  template:
+    metadata:
+      labels:
+        app: nlp-3
+    spec:
+      containers:
+      - name: renset
+        image: sdghafouri/simple-image:nlp
+        imagePullPolicy: Always
+        env:
+          - name: ITERATIONS
+            value: '60'
+        resources:
+          limits:
+            cpu: 8
+          requests:
+            cpu: 8
+        ports:
+        - containerPort: 8080
