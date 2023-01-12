@@ -1,10 +1,10 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: {{ name }}
+  name: nlp-sent
 spec:
   protocol: v2
-  name: {{ name }}
+  name: nlp-sent
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
@@ -12,30 +12,30 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/audio-sent-pipelines-mlserver:nlpsent
+        - image: sdghafouri/audio-sent-pipelines-mlserver-bytes:nlpsent
           name: nlp-sent
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '{{ cpu_request }}'
-              memory: '{{ memory_request }}'
+              cpu: '4'
+              memory: 4Gi
             limits:
-              cpu: '{{ cpu_limit }}'
-              memory: '{{ memory_limit }}'
+              cpu: '4'
+              memory: 4Gi
           env:
             - name: MODEL_VARIANT
-              value: {{ model_variant }}
+              value: distilbert-base-uncased-finetuned-sst-2-english
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TASK
               value: sentiment-analysis
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: '{{ max_batch_size }}'
+              value: "1"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: '{{ max_batch_time }}'
+              value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
-      replicas: {{ replicas }}
+      replicas: 1
     graph:
       name: nlp-sent
       type: MODEL

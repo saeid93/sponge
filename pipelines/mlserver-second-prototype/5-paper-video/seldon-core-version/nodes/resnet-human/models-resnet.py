@@ -5,7 +5,6 @@ from torchvision import transforms
 from PIL import Image
 import time
 from mlserver import MLModel
-import timm
 import numpy as np
 from mlserver.logging import logger
 from mlserver.types import (
@@ -68,8 +67,7 @@ class ResnetHuman(MLModel):
         )])
         logger.info('Init function complete!')
         model = {
-            # 'resnet18': models.resnet18,
-            'resnet18': timm.create_model('resnet18'),
+            'resnet18': models.resnet18,
             'resnet34': models.resnet34,
             'resnet50': models.resnet50,
             'resnet101': models.resnet101,
@@ -80,16 +78,16 @@ class ResnetHuman(MLModel):
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
         self.default_shape = [253, 294, 3]
-        self.resnet = model[self.MODEL_VARIANT] # (pretrained=True)
+        self.resnet = model[self.MODEL_VARIANT](pretrained=True)
         self.resnet.eval()
         self.loaded = True
         logger.info('model loading complete!')
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceRequest:
+        arrival_time = time.time()
         if self.loaded == False:
             self.load()
-        arrival_time = time.time()
         for request_input in payload.inputs:
             batch_shape = request_input.shape[0]
             try:
@@ -115,13 +113,13 @@ class ResnetHuman(MLModel):
                 shapes = eval(shapes)
                 if type(shapes[0]) == int:
                     shapes = [shapes]
-                logger.info('type_1')
+                # logger.info('type_1')
             else:
                 shapes = list(map(lambda l: eval(l), shapes))
                 if shapes[0][0] == list and shapes[0][0][0] == int:
                     logger.info(shapes)
                     shapes = list(map(lambda l: l[0], shapes))
-                logger.info('type_2')
+                # logger.info('type_2')
             logger.info(f"shapes:\n{shapes}")
             input_data = request_input.data.__root__
             X = decode_from_bin(
@@ -131,6 +129,7 @@ class ResnetHuman(MLModel):
         logger.info(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += batch_shape
         self.batch_counter += 1
+        # arrival_time = time.time()
         # preprocessings
         converted_images = [Image.fromarray(
             np.array(image, dtype=np.uint8)) for image in X]
@@ -187,3 +186,4 @@ class ResnetHuman(MLModel):
         logger.info(f"request counter:\n{self.request_counter}\n")
         logger.info(f"batch counter:\n{self.batch_counter}\n")
         return payload
+

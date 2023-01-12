@@ -9,9 +9,9 @@ import numpy as np
 
 
 load = 1
-test_duration = 10
+test_duration = 3
 variant = 0
-platform = 'mlserver'
+platform = 'seldon'
 mode = 'equal'
 
 request = {
@@ -32,11 +32,11 @@ times = str([str(request['times']['models'])])
 data = request['outputs'][0]['data']
 
 data_shape = [1]
-custom_parameters = {'times': str(times)}
+# custom_parameters = {'times': str(times)}
 data_1 = Data(
     data=data,
-    data_shape=data_shape,
-    custom_parameters=custom_parameters
+    data_shape=data_shape
+    # custom_parameters=custom_parameters
 )
 
 # single node inference
@@ -65,7 +65,8 @@ load_tester = MLServerAsyncGrpc(
     data=[data_1],
     mode=mode, # options - step, equal, exponential
     data_shape=data_shape,
-    data_type=data_type)
+    data_type=data_type,
+    benchmark_duration=4)
 
 responses = asyncio.run(load_tester.start())
 

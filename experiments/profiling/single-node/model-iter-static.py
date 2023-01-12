@@ -289,9 +289,10 @@ def load_test(node_name: str, data_type: str,
         )
         with open(input_sample_path, 'r') as openfile:
             data = openfile.read()
-        with open(input_sample_shape_path, 'r') as openfile:
-            data_shape = json.load(openfile)
-            data_shape = data_shape['data_shape']
+        # with open(input_sample_shape_path, 'r') as openfile:
+        #     data_shape = json.load(openfile)
+        #     data_shape = data_shape['data_shape']
+            data_shape = [1]
     elif data_type == 'image':
         input_sample_path = os.path.join(
             node_path, 'input-sample.JPEG'
@@ -444,7 +445,7 @@ def backup(series):
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='5-config-static-resnet-human-all')
+    '--config-name', required=True, type=str, default='2-config-static-sent')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")

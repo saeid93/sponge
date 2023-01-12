@@ -58,3 +58,4 @@ thop>=0.1.1  # FLOPs computation
 transformers==4.21.1
 sentencepiece==0.1.97
 mlserver-huggingface==1.2.0.dev6
+timm
