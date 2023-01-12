@@ -23,7 +23,7 @@ from prom import (
     get_inference_count)
 
 project_dir = os.path.dirname(os.path.join(os.getcwd(), __file__))
-sys.path.append(os.path.normpath(os.path.join(project_dir, '..', "..")))
+sys.path.append(os.path.normpath(os.path.join(project_dir, '..', '..')))
 PATH = "/home/cc/infernece-pipeline-joint-optimization/profiling/titon_profiler"
 deploy = "deploy"
 service = "service"
