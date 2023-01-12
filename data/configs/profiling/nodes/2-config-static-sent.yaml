@@ -1,13 +1,13 @@
-series: 8
+series: 50
 series_meta: 'checking effect of CPU allocation change,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 pipeline_name: 2-paper-audio-sent
 node_name: nlp-sent
 data_type: text
-timeout: 120
+timeout: 180
 mode: step
 model_variants:
-  - huggingface/distilbert-base-uncased-finetuned-mnli
-  - huggingface/prunebert-base-uncased-6-finepruned-w-distil-mnli
+  # - huggingface/distilbert-base-uncased-finetuned-mnli
+  # - huggingface/prunebert-base-uncased-6-finepruned-w-distil-mnli
   - distilbert-base-uncased-finetuned-sst-2-english
 max_batch_size:
   - '1'
@@ -20,15 +20,15 @@ cpu_request:
   - '2'
   - '4'
   - '8'
-  - '16'
+  # - '16'
 memory_request:
-  - 60Gi
+  - 20Gi
 replicas:
   - 1
 workload_type: static
-benchmark_duration: 2
-repetition: 3
+benchmark_duration: 4
+repetition: 1
 workload_config:
   loads_to_test:
   - 1
-  load_duration: 60
+  load_duration: 10

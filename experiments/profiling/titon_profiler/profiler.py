@@ -10,9 +10,10 @@ import torch
 from PIL import Image
 import requests
 import tritonclient.http as httpclient
-from tritonclient.utils import InferenceServerException
+# from tritonclient.utils import InferenceServerException
 from torchvision import transforms
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+# from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoTokenizer
 
 from prom import (
     get_cpu_usage,
@@ -27,7 +28,7 @@ PATH = "/home/cc/infernece-pipeline-joint-optimization/profiling/titon_profiler"
 deploy = "deploy"
 service = "service"
 pod_monitor = "pod-monitor"
-from utilspr.constants import (
+from utils.constants import (
     TEMP_MODELS_PATH,
     KUBE_YAMLS_PATH
     )

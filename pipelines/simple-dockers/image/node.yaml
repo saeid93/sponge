@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: renset-3
+  name: renset
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: renset-3
+      app: renset
   template:
     metadata:
       labels:
-        app: renset-3
+        app: renset
     spec:
       containers:
       - name: renset
@@ -21,8 +21,8 @@ spec:
             value: '60'
         resources:
           limits:
-            cpu: 8
+            cpu: 1
           requests:
-            cpu: 8
+            cpu: 1
         ports:
         - containerPort: 8080

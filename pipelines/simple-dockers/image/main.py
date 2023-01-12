@@ -45,37 +45,57 @@ logging.warning(f"model loading time: {time.time() - start}")
 logging.warning('starting the experiments')
 model_times = []
 softmax_times = []
-for i in range(ITERATIONS):
-    start = time.time()
+
+for i in range(20):
     out = resnet(batch)
-    iter_time = time.time() - start
-    time.sleep(4)
-    model_times.append(iter_time)
-    logging.warning(f'iteration {i} time: {iter_time}')
-    start = time.time()
+
+    # time.sleep(4)
+
+    # logging.warning(f'iteration {i} time: {iter_time}')
+    # start = time.time()
     percentages = torch.nn.functional.softmax(out, dim=1)[0] * 100
     percentages = percentages.detach().numpy()
     image_net_class = np.argmax(percentages)
-    softmax_times.append(time.time() - start)
+    # softmax_times.append(time.time() - start)
 
-logging.warning('model times:')
-logging.warning(model_times)
 
-logging.warning('softmax times:')
-logging.warning(softmax_times)
+start = time.time()
 
-total_times = postprocessing_time + np.array(model_times) + np.array(softmax_times)
-logging.warning('total times:')
-logging.warning(total_times)
+for i in range(ITERATIONS):
+    out = resnet(batch)
 
-logging.warning('total times average:')
-logging.warning(np.average(total_times))
+    # time.sleep(4)
 
-logging.warning('total times p99:')
-logging.warning(np.percentile(total_times, 99))
+    # logging.warning(f'iteration {i} time: {iter_time}')
+    # start = time.time()
+    percentages = torch.nn.functional.softmax(out, dim=1)[0] * 100
+    percentages = percentages.detach().numpy()
+    image_net_class = np.argmax(percentages)
+    # softmax_times.append(time.time() - start)
+iter_time = time.time() - start
+# model_times.append(iter_time)
 
-logging.warning('model times average:')
-logging.warning(np.average(model_times))
+logging.warning('times:')
+logging.warning(iter_time/ITERATIONS)
 
-# logging.warning('softmax times average:')
-# logging.warning(np.average(softmax_times))
+# logging.warning('model times:')
+# logging.warning(model_times)
+
+# logging.warning('softmax times:')
+# logging.warning(softmax_times)
+
+# total_times = postprocessing_time + np.array(model_times) + np.array(softmax_times)
+# logging.warning('total times:')
+# logging.warning(total_times)
+
+# logging.warning('total times average:')
+# logging.warning(np.average(total_times))
+
+# logging.warning('total times p99:')
+# logging.warning(np.percentile(total_times, 99))
+
+# logging.warning('model times average:')
+# logging.warning(np.average(model_times))
+
+# # logging.warning('softmax times average:')
+# # logging.warning(np.average(softmax_times))
