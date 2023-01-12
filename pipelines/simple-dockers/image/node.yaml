@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: renset
+  name: image
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: renset
+      app: image
   template:
     metadata:
       labels:
-        app: renset
+        app: image
     spec:
       containers:
-      - name: renset
+      - name: iamge
         image: sdghafouri/simple-image:image
         imagePullPolicy: Always
         env:

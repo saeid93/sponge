@@ -24,13 +24,15 @@ from prom import (
 
 project_dir = os.path.dirname(os.path.join(os.getcwd(), __file__))
 sys.path.append(os.path.normpath(os.path.join(project_dir, '..', '..')))
-PATH = "/home/cc/infernece-pipeline-joint-optimization/profiling/titon_profiler"
+# PATH = "/home/cc/infernece-pipeline-joint-optimization/experiments/profiling/titon_profiler/templates"
 deploy = "deploy"
 service = "service"
 pod_monitor = "pod-monitor"
 from utils.constants import (
     TEMP_MODELS_PATH,
-    KUBE_YAMLS_PATH
+    TRITON_PROFILING_CONFIGS_PATH,
+    KUBE_YAMLS_PATH,
+    NODE_PROFILING_RESULTS_TRITON_PATH
     )
 
 os.system('sudo umount -l ~/my_mounting_point')
@@ -69,7 +71,9 @@ def create_batch_image(batch_size):
     std=[0.229, 0.224, 0.225]
 )])
  
-    return torch.stack(list(map(lambda a: transform(a), list(images.values()))))
+    return torch.stack(
+        list(map(
+            lambda a: transform(a), list(images.values()))))
 
 class Profiler:
     def __init__(self, type, port, yaml_file, database, name, mr, cpu_count):
@@ -112,8 +116,8 @@ class Profiler:
             "podmonitor_name": self.app_name + "-podmonitor"
         }
         enviroment = Environment(
-            loader=FileSystemLoader(os.path.join(
-                PATH, "templates/")))
+            loader=FileSystemLoader(
+                TRITON_PROFILING_CONFIGS_PATH))
         self.yaml_runner(enviroment, deploy, deploy_vars )
         self.yaml_runner(enviroment, service, service_vars)
         self.yaml_runner(enviroment, pod_monitor, pod_monitor_vars)
@@ -150,7 +154,9 @@ class Profiler:
 
             start_time = time.time()
             result = triton_client.infer(
-                        model_name=model_name,model_version=model_version, inputs=inputs, outputs=outputs)
+                        model_name=model_name,
+                        model_version=model_version,
+                        inputs=inputs, outputs=outputs)
             latency = time.time() - start_time
 
             triton_client.close()
@@ -317,7 +323,7 @@ class Profiler:
 
 
 if __name__ == "__main__":
-    experiment_root = "experiments"
+    experiment_root = NODE_PROFILING_RESULTS_TRITON_PATH
     profile_parser = argparse.ArgumentParser()
     profile_parser.add_argument('-t',
                        '--type',
@@ -325,14 +331,12 @@ if __name__ == "__main__":
                        default='text_classification')
 
     profile_parser.add_argument('-p',
-                       '--port',
-                       
+                       '--port', 
                        help='port name',
                        default='30600')
     
     profile_parser.add_argument('-y',
-                       '--yaml',
-                       
+                       '--yaml',                   
                        help='yaml file for models',
                        default='temp')
     profile_parser.add_argument('-r',

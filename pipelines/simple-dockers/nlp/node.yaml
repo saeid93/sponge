@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nlp-3
+  name: nlp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nlp-3
+      app: nlp
   template:
     metadata:
       labels:
-        app: nlp-3
+        app: nlp
     spec:
       containers:
-      - name: renset
+      - name: nlp
         image: sdghafouri/simple-image:nlp
         imagePullPolicy: Always
         env:
