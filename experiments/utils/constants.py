@@ -14,17 +14,23 @@ PIPLINES_PATH = os.path.join(
     PROJECT_PATH, "pipelines", "mlserver-second-prototype")
 CONFIGS_PATH = os.path.join(DATA_PATH, "configs")
 PROFILING_CONFIGS_PATH = os.path.join(CONFIGS_PATH, "profiling")
-NODE_PROFILING_CONFIGS_PATH = os.path.join(PROFILING_CONFIGS_PATH, "nodes")
+NODE_PROFILING_CONFIGS_PATH = os.path.join(
+    PROFILING_CONFIGS_PATH, "nodes")
 PIPELINE_PROFILING_CONFIGS_PATH = os.path.join(
     PROFILING_CONFIGS_PATH, "pipelines")
+TRITON_PROFILING_CONFIGS_PATH = os.path.join(
+    PROFILING_CONFIGS_PATH, "triton")
 
 # results noraml path
 RESULTS_PATH = os.path.join(DATA_PATH, "results")
-PROFILING_RESULTS_PATH = os.path.join(RESULTS_PATH, "profiling")
+PROFILING_RESULTS_PATH = os.path.join(
+    RESULTS_PATH, "profiling")
 NODE_PROFILING_RESULTS_PATH = os.path.join(
     PROFILING_RESULTS_PATH, "nodes")
 NODE_PROFILING_RESULTS_STATIC_PATH = os.path.join(
     NODE_PROFILING_RESULTS_PATH, "static")
+NODE_PROFILING_RESULTS_TRITON_PATH = os.path.join(
+    NODE_PROFILING_RESULTS_PATH, "triton")
 NODE_PROFILING_RESULTS_DYNAMIC_PATH = os.path.join(
     NODE_PROFILING_RESULTS_PATH, "dynamic")
 PIPELINE_PROFILING_RESULTS_PATH = os.path.join(
@@ -85,6 +91,8 @@ def _create_dirs():
         os.makedirs(NODE_PROFILING_RESULTS_PATH)
     if not os.path.exists(NODE_PROFILING_RESULTS_STATIC_PATH):
         os.makedirs(NODE_PROFILING_RESULTS_STATIC_PATH)
+    if not os.path.exists(NODE_PROFILING_RESULTS_TRITON_PATH):
+        os.makedirs(NODE_PROFILING_RESULTS_TRITON_PATH)
     if not os.path.exists(NODE_PROFILING_RESULTS_DYNAMIC_PATH):
         os.makedirs(NODE_PROFILING_RESULTS_DYNAMIC_PATH)
     if not os.path.exists(PIPELINE_PROFILING_RESULTS_DYNAMIC_PATH):
