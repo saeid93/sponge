@@ -1,5 +1,4 @@
 import os
-from time import sleep
 import time
 import argparse
 import yaml
@@ -10,10 +9,12 @@ import torch
 from PIL import Image
 import requests
 import tritonclient.http as httpclient
+import tritonclient.grpc as grpcclient
 # from tritonclient.utils import InferenceServerException
 from torchvision import transforms
 # from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from transformers import AutoTokenizer
+
 
 from prom import (
     get_cpu_usage,
@@ -29,11 +30,13 @@ deploy = "deploy"
 service = "service"
 pod_monitor = "pod-monitor"
 from utils.constants import (
-    TEMP_MODELS_PATH,
     TRITON_PROFILING_CONFIGS_PATH,
-    KUBE_YAMLS_PATH,
+    TRITON_PROFILING_TEMPLATES_PATH,
     NODE_PROFILING_RESULTS_TRITON_PATH
     )
+
+TIMEOUT = 1
+
 
 os.system('sudo umount -l ~/my_mounting_point')
 os.system('cc-cloudfuse mount ~/my_mounting_point')
@@ -76,26 +79,61 @@ def create_batch_image(batch_size):
             lambda a: transform(a), list(images.values()))))
 
 class Profiler:
-    def __init__(self, type, port, yaml_file, database, name, mr, cpu_count):
-        self.type = type
+    def __init__(
+        self, model_type, port, expriment_config,
+        database, name, model_repository, cpu_count,
+        batch_sizes, iterations, protocol):
+        self.model_type = model_type
         self.port = port
-        self.yaml_file = yaml_file
+        self.experiment_config = expriment_config
         self.database = database
         self.app_name = name
-        self.model_repository = mr
+        self.model_repository = model_repository
         self.cpu_count = cpu_count
+        self.batch_sizes = batch_sizes
+        self.iterations = iterations
+        self.protocol = protocol
+        if protocol == 'http':
+            self.client = httpclient
+        elif protocol == 'grpc':
+            self.client = grpcclient
 
         if not os.path.exists(database):
             os.makedirs(database)
 
-    def yaml_runner(self,enviroment, space, data):
-        template = enviroment.get_template(f"{space}.yaml")
-        content = template.render(data)
-        content =  yaml.safe_load(content)
-        with open(f'{space}.yaml', 'w') as yaml_file:
-            yaml.dump(content, yaml_file, default_flow_style=False)
+    def runner(self):
+        self.build_kuber()
+        print("sleep for one minute to heavy start")
+        time.sleep(TIMEOUT/5)
+        config_file_path = os.path.join(
+            TRITON_PROFILING_CONFIGS_PATH, f"{self.experiment_config}.yaml")
+        with open(config_file_path, 'r') as cf:
+            config = yaml.safe_load(cf)
 
-        os.system(f"kubectl apply -f {space}.yaml")
+        model_names = config['model_names']
+        versions = config['versions']
+        model_versions = [[] for _ in range(len(versions))]
+        for k, version in enumerate(versions):
+            for i in range(len(version)):
+                model_versions[k].append(str(i+1))
+
+        results = []
+        processes = []
+        for batch_size in batch_sizes:
+            print(f"start batch {batch_size}")
+            inputs, outputs, model_name = self.input_output_creator(batch_size)
+            for j, model_name in enumerate(model_names):
+                for version in model_versions[j]:
+                    if self.model_type != "text_classification":
+                        self.load_test(
+                            model_name, version, inputs,
+                            outputs, batch_size, iterations=self.iterations)
+                    else:
+                        inputs, outputs, model_name = self.input_output_creator(
+                            batch_size, model_name)
+                        self.load_test(
+                            model_name, version, inputs, outputs,
+                            batch_size, iterations=self.iterations)
 
     def build_kuber(self):
         deploy_vars = {
@@ -117,36 +155,99 @@ class Profiler:
         }
         enviroment = Environment(
             loader=FileSystemLoader(
-                TRITON_PROFILING_CONFIGS_PATH))
+                TRITON_PROFILING_TEMPLATES_PATH))
         self.yaml_runner(enviroment, deploy, deploy_vars )
         self.yaml_runner(enviroment, service, service_vars)
         self.yaml_runner(enviroment, pod_monitor, pod_monitor_vars)
-    
 
-    def send_request(self, model_name, model_version, inputs, outputs, batch_size, name_space="default"):
-        start_load = time.time()
-        res = requests.post(url=f'http://localhost:{self.port}/v2/repository/models/{model_name}/load')
-        load_time = time.time() - start_load
+    def yaml_runner(self,enviroment, space, data):
+        template = enviroment.get_template(f"{space}.yaml")
+        content = template.render(data)
+        # content =  yaml.safe_load(content)
+        # with open(f'{space}.yaml', 'w') as yaml_file:
+        #     yaml.dump(content, yaml_file, default_flow_style=False)
+
+        # os.system(f"kubectl apply -f {space}.yaml")
+        command = f"""cat <<EOF | kubectl apply -f -
+{content}
+        """
+        os.system(command)
+
+
+    def input_output_creator(self, bat, model_name = None):
+        if self.model_type == "image_classification":
+            os.system('sudo umount -l ~/my_mounting_point')
+            os.system('cc-cloudfuse mount ~/my_mounting_point')
+            inputs = []
+            batch =create_batch_image(bat)
+            inputs.append(self.client.InferInput(
+                name="input", shape=batch.shape, datatype="FP32"))
+            if self.protocol == 'grpc':
+                inputs[0].set_data_from_numpy(batch.numpy())
+            elif self.protocol == 'http':
+                inputs[0].set_data_from_numpy(batch.numpy(), binary_data=False)
+            outputs = []
+            outputs.append(self.client.InferRequestedOutput(name="output"))
+            return inputs, outputs, -1
         
+        if self.model_type == "object_detection":
+            batch =torch.rand(bat, 3, 640, 640).to('cpu')
+            inputs.append(self.client.InferInput(
+                name="images", shape=batch.shape, datatype="FP32"))
+            inputs[0].set_data_from_numpy(batch.numpy(), binary_data=False)
+
+            outputs = []
+            outputs.append(self.client.InferRequestedOutput(name="output"))
+            return inputs, outputs, -1
+        
+        if self.model_type == "text_classification":
+            tokenizer = AutoTokenizer.from_pretrained(model_name)
+            inp = tokenizer(["This is a sample" for _ in range(bat)], return_tensors="pt")
+            inputs = []
+            inputs.append(
+                self.client.InferInput(
+                    name="input_ids",shape=inp['input_ids'].shape, datatype="INT64"
+            )
+            )
+            inputs[0].set_data_from_numpy(inp['input_ids'].numpy(), binary_data=False)
+            
+            inputs.append(
+                self.client.InferInput(
+                    name="attention_mask", shape=inp['attention_mask'].shape, datatype="INT64")
+            )
+            inputs[1].set_data_from_numpy(inp['attention_mask'].numpy())
+            outputs = []
+            outputs.append(self.client.InferRequestedOutput(name="logits"))
+            model_name_s = model_name
+            if "/" in model_names:
+                model_name_s = model_names.replace("/","")
+            return inputs, outputs, model_name_s
+
+    def load_test(
+        self, model_name, model_version, inputs,
+        outputs, batch_size, iterations, name_space="default"):
+        start_load = time.time()
+        res = requests.post(
+            url=f'http://localhost:{self.port}/v2/repository/models/{model_name}/load')
+        load_time = time.time() - start_load
 
         with open(database + "/" + "load-time.txt", "a") as f:
             f.write(f"load time of {model_name} is {load_time} \n")
 
-        sleep(60)
+        time.sleep(TIMEOUT)
         cpu_usages = []
         memory_usages = []
         infer_times = []
         input_times = []
         output_times = []
+        roundtrip_latencies = []
         queue_times = []
         success_times = []
 
-    
-        
         print(model_name, model_version, "start")
-        for i in range(170):
+        for i in range(iterations):
             try:
-                triton_client = httpclient.InferenceServerClient(
+                triton_client = self.client.InferenceServerClient(
                     url=f'localhost:{self.port}'
                 )
             except Exception as e:
@@ -157,60 +258,49 @@ class Profiler:
                         model_name=model_name,
                         model_version=model_version,
                         inputs=inputs, outputs=outputs)
-            latency = time.time() - start_time
-
+            roundtrip_latency = time.time() - start_time
+            roundtrip_latencies.append(roundtrip_latency)
             triton_client.close()
             print(i)
 
-            
             minutes = 1
-            if i > 10:
-                cpu_usages.append(
-                    get_cpu_usage(
-                        self.app_name, name_space, minutes, minutes))
-                memory_usages.append(
-                    get_memory_usage(
-                        self.app_name, name_space, minutes, minutes, True))
-                infer_times.append(
-                    get_inference_duration(
-                        model_name, model_version, self.app_name))
-                queue_times.append(
-                    get_queue_duration(
-                        model_name, model_version, self.app_name))
-                success_times.append(
-                    get_inference_count(model_name, model_version, self.app_name))
-        
-        end_time = 5
-    
-        sleep(80)
+            # if i > 10:
+            cpu_usages.append(
+                get_cpu_usage(
+                    self.app_name, name_space, minutes, minutes))
+            memory_usages.append(
+                get_memory_usage(
+                    self.app_name, name_space, minutes, minutes, True))
+            infer_times.append(
+                get_inference_duration(
+                    model_name, model_version, self.app_name))
+            queue_times.append(
+                get_queue_duration(
+                    model_name, model_version, self.app_name))
+            success_times.append(
+                get_inference_count(
+                    model_name, model_version, self.app_name))
+            roundtrip_latencies.append(roundtrip_latency)
+
         total_time = time.time() - start_load
-        minutes = total_time // 60
-        minutes = int(minutes)
-        if minutes < 2:
-            minutes = 2
-        end_infer = 0
-        if minutes < 10:
-            end_infer = 10
-        
-        else:
-            end_infer = minutes + 5
+        minutes = int(total_time // 60)
 
-
-        cpu_usages.append(
-            get_cpu_usage(
-                self.app_name, name_space, minutes, minutes))
-        memory_usages.append(
-            get_memory_usage(
-                self.app_name, name_space, minutes, minutes))
-        infer_times.append(
-            get_inference_duration(
-                model_name, model_version, self.app_name))
-        success_times.append(
-            get_inference_count(
-                model_name, model_version, self.app_name))
-        queue_times.append(
-            get_queue_duration(
-                model_name, model_version, self.app_name))
+        # cpu_usages.append(
+        #     get_cpu_usage(
+        #         self.app_name, name_space, minutes, minutes))
+        # memory_usages.append(
+        #     get_memory_usage(
+        #         self.app_name, name_space, minutes, minutes))
+        # infer_times.append(
+        #     get_inference_duration(
+        #         model_name, model_version, self.app_name))
+        # success_times.append(
+        #     get_inference_count(
+        #         model_name, model_version, self.app_name))
+        # queue_times.append(
+        #     get_queue_duration(
+        #         model_name, model_version, self.app_name))
+        time.sleep(TIMEOUT/5)
 
         with open(self.database + "/" +"cpu.txt", "a") as cpu_file:
             cpu_file.write(
@@ -233,102 +323,17 @@ class Profiler:
                 f"success of {model_name} {model_version} on batch {batch_size} is {success_times} \n")
 
         requests.post(
-            url=f'http://localhost:{url}/v2/repository/models/{model_name}/unload')
-
-
-    def input_output_creator(self, bat, model_name = None):
-        if self.type == "image":
-            os.system('sudo umount -l ~/my_mounting_point')
-            os.system('cc-cloudfuse mount ~/my_mounting_point')
-            inputs = []
-            batch =create_batch_image(bat)
-            inputs.append(
-                            httpclient.InferInput(
-                                name="input", shape=batch.shape, datatype="FP32")
-                        )
-            inputs[0].set_data_from_numpy(batch.numpy(), binary_data=False)
-
-            outputs = []
-            outputs.append(httpclient.InferRequestedOutput(name="output"))
-            return inputs, outputs, -1
-        
-        if self.type == "object_detection":
-            batch =torch.rand(bat, 3, 640, 640).to('cpu')
-            inputs.append(
-                            httpclient.InferInput(
-                                name="images", shape=batch.shape, datatype="FP32")
-                        )
-            inputs[0].set_data_from_numpy(batch.numpy(), binary_data=False)
-
-            outputs = []
-            outputs.append(httpclient.InferRequestedOutput(name="output"))
-            return inputs, outputs, -1
-        
-        if self.type == "text_classification":
-            tokenizer = AutoTokenizer.from_pretrained(model_name)
-            inp = tokenizer(["This is a sample" for _ in range(bat)], return_tensors="pt")
-            inputs = []
-            inputs.append(
-                httpclient.InferInput(
-                    name="input_ids",shape=inp['input_ids'].shape, datatype="INT64"
-            )
-            )
-            inputs[0].set_data_from_numpy(inp['input_ids'].numpy(), binary_data=False)
-            
-            inputs.append(
-                httpclient.InferInput(
-                    name="attention_mask", shape=inp['attention_mask'].shape, datatype="INT64")
-            )
-            inputs[1].set_data_from_numpy(inp['attention_mask'].numpy())
-            
-            outputs = []
-            outputs.append(httpclient.InferRequestedOutput(name="logits"))
-
-
-            model_name_s = model_name
-            if "/" in model_names:
-                model_name_s = model_names.replace("/","")
-            
-            return inputs, outputs, model_name_s
-
-    def runner(self):
-        self.build_kuber()
-        print("sleep for one minute to heavy start")
-        sleep(50)
-        config_file_path = os.path.join(
-            KUBE_YAMLS_PATH, f"{self.yaml_file}.yaml")
-        with open(config_file_path, 'r') as cf:
-            config = yaml.safe_load(cf)
-
-        model_names = config['model_names']
-        versions = config['versions']
-        model_versions = [[] for _ in range(len(versions))]
-        for k, version in enumerate(versions):
-            for i in range(len(version)):
-                model_versions[k].append(str(i+1))
-
-        results = []
-        processes = []
-        for bat in [2]:
-            print(f"start batch {bat}")
-            inputs, outputs, m_name = self.input_output_creator(bat)
-            for j,model_name in enumerate(model_names):
-                for version in model_versions[j]:
-                    if self.type != "text_classification":
-                        self.send_request(model_name, version, inputs, outputs, bat)
-                    else:
-                        inputs, outputs, m_name = self.input_output_creator(bat, model_name)
-                        self.send_request(m_name, version, inputs, outputs, bat)
-                   
-
+            url=f'http://localhost:{self.port}/v2/repository/models/{model_name}/unload')
 
 if __name__ == "__main__":
     experiment_root = NODE_PROFILING_RESULTS_TRITON_PATH
     profile_parser = argparse.ArgumentParser()
+    # options obect_detection, image_classification,
+    #  text_classification
     profile_parser.add_argument('-t',
                        '--type',
                        help='type of profiling',
-                       default='text_classification')
+                       default='image_classification')
 
     profile_parser.add_argument('-p',
                        '--port', 
@@ -338,11 +343,11 @@ if __name__ == "__main__":
     profile_parser.add_argument('-y',
                        '--yaml',                   
                        help='yaml file for models',
-                       default='temp')
+                       default='model-load')
     profile_parser.add_argument('-r',
                        '--reason',
                        help='reason to proifile',
-                       default='nlp')
+                       default='resnet')
     
     profile_parser.add_argument('-f',
                        '--file',
@@ -352,32 +357,51 @@ if __name__ == "__main__":
     profile_parser.add_argument('-n',
                        '--name',
                        help='name of pod',
-                       default='triton-text')
+                       default='triton-image')
 
     profile_parser.add_argument('-c',
                        '--cpu',
                        help='cpu count',
-                       default= 8)    
+                       default= 1)    
+
     profile_parser.add_argument('-m',
-                       '--models',
-                       help='model_repository',
-                       default='triton-server-new-text')
+                       '--models_repository',
+                       help='models repository',
+                       default='triton-server-all-new')
+
+    profile_parser.add_argument('-i',
+                       '--iterations',
+                       help='iterations',
+                       default='10')
+
+    profile_parser.add_argument('-pr',
+                       '--protocol',
+                       help='sending protocol',
+                       default='grpc')
+
     profile_parser.add_argument('-x',
                        '--exit',
                        help='exit')
 
     args =  profile_parser.parse_args()
-    type_c = args.type
+    model_type = args.type
     cpu_count = int(args.cpu)
     pod_name = args.name
-    mr = args.models
-    database = os.path.join(experiment_root, args.reason, args.file)
+    models_repository = args.models_repository
+    database = os.path.join(
+        experiment_root, args.reason, args.file)
     port = args.port
     yaml_file = args.yaml
+    iterations = int(args.iterations)
+    protocol = args.protocol
 
-    print(f"Start profile {type}")
+    batch_sizes = [1, 2, 4, 8] # batch sizes to check
+    print("Profiling sarted ... ")
 
-    pr = Profiler(type_c, port, yaml_file, database, pod_name, mr, cpu_count)
+    pr = Profiler(
+        model_type, port, yaml_file, database,
+        pod_name, models_repository, cpu_count,
+        batch_sizes, iterations, protocol)
     pr.runner()
 
     

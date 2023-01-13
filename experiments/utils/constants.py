@@ -18,8 +18,14 @@ NODE_PROFILING_CONFIGS_PATH = os.path.join(
     PROFILING_CONFIGS_PATH, "nodes")
 PIPELINE_PROFILING_CONFIGS_PATH = os.path.join(
     PROFILING_CONFIGS_PATH, "pipelines")
-TRITON_PROFILING_CONFIGS_PATH = os.path.join(
+
+# triton folders
+TRITON_PROFILING_PATH = os.path.join(
     PROFILING_CONFIGS_PATH, "triton")
+TRITON_PROFILING_CONFIGS_PATH = os.path.join(
+    TRITON_PROFILING_PATH, "configs")
+TRITON_PROFILING_TEMPLATES_PATH = os.path.join(
+    TRITON_PROFILING_PATH, "templates")
 
 # results noraml path
 RESULTS_PATH = os.path.join(DATA_PATH, "results")

@@ -60,8 +60,7 @@ def get_inference_count(model, version, pod):
     return_values = float(values[1])   
     return return_values
 
-
-def get_memory_usage(pod_name, name_space,end, rate, need_max = False):
+def get_memory_usage(pod_name, name_space, end, rate, need_max = False):
     PROMETHEUS = "http://localhost:30090"
     prom = PrometheusConnect(url ="http://localhost:30090", disable_ssl=True)
 
@@ -95,4 +94,9 @@ def get_cpu_usage(pod_name, name_space, end, rate):
         data = values[val]['value']
         plot_values[val].append((float(data[1])))
     return plot_values[0][0]
+
+
+
+# import requests
+# from .constants import PROMETHEUS
 

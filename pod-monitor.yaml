@@ -1,7 +1,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
-  name: triton-text-podmonitor
+  name: triton-image-podmonitor
 spec:
   namespaceSelector:
     any: true
@@ -10,4 +10,4 @@ spec:
     port: metrics
   selector:
     matchLabels:
-      app: triton-text
+      app: triton-image
