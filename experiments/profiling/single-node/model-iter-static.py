@@ -82,6 +82,9 @@ def experiments(pipeline_name: str, node_name: str,
     load_duration = workload_config['load_duration']
     mode = config['mode']
     benchmark_duration = config['benchmark_duration']
+    use_threading = config['use_threading']
+    num_interop_threads = config['num_interop_threads']
+    num_threads = config['num_threads']
     if 'no_engine' in config.keys():
         no_engine = config['no_engine']
     else:
@@ -96,75 +99,80 @@ def experiments(pipeline_name: str, node_name: str,
                 for cpu_request in cpu_requests:
                     for memory_request in memory_requests:
                         for replica in replicas:
-                            for load in loads_to_test:
-                                setup_node(
-                                    node_name=node_name,
-                                    cpu_request=cpu_request,
-                                    memory_request=memory_request,
-                                    model_variant=model_variant,
-                                    max_batch_size=max_batch_size,
-                                    max_batch_time=max_batch_time,
-                                    replica=replica,
-                                    node_path=node_path,
-                                    timeout=timeout,
-                                    no_engine=no_engine
-                                )
-                                for rep in range(repetition):
-                                    print('-'*25\
-                                        + f' starting repetition {rep} ' +\
-                                            '-'*25)
-                                    print('\n')
-                                    # TODO timeout var
-                                    if rep != 0:
-                                        print(f'waiting for {timeout} seconds')
-                                        for _ in tqdm(range(20)):
-                                            time.sleep(timeout/20)
-                                    experiment_id = key_config_mapper(
-                                        pipeline_name=pipeline_name,
-                                        node_name=node_name,
-                                        cpu_request=cpu_request,
-                                        memory_request=memory_request,
-                                        model_variant=model_variant,
-                                        max_batch_size=max_batch_size,
-                                        max_batch_time=max_batch_time,
-                                        load=load,
-                                        load_duration=load_duration,
-                                        series=series,
-                                        series_meta=series_meta,
-                                        replica=replica,
-                                        no_engine=no_engine,
-                                        mode=mode,
-                                        data_type=data_type,
-                                        benchmark_duration=benchmark_duration)
-
-                                    start_time_experiment,\
-                                        end_time_experiment, responses = load_test(
+                            for num_interop_thread in num_interop_threads:
+                                for num_thread in num_threads:
+                                    for load in loads_to_test:
+                                        setup_node(
                                             node_name=node_name,
-                                            data_type=data_type,
+                                            cpu_request=cpu_request,
+                                            memory_request=memory_request,
+                                            model_variant=model_variant,
+                                            max_batch_size=max_batch_size,
+                                            max_batch_time=max_batch_time,
+                                            replica=replica,
                                             node_path=node_path,
-                                            load=load,
-                                            mode=mode,
-                                            namespace='default',
-                                            load_duration=load_duration,
+                                            timeout=timeout,
                                             no_engine=no_engine,
-                                            benchmark_duration=benchmark_duration)
-                                    # TODO id system for the experiments
-                                    save_report(
-                                        experiment_id=experiment_id,
-                                        responses = responses,
-                                        node_name=node_name,
-                                        start_time_experiment=start_time_experiment,
-                                        end_time_experiment=end_time_experiment,
-                                        series=series,
-                                        no_engine=no_engine)
-                                    
-                                    # backup(series=series)
+                                            use_threading=use_threading,
+                                            num_interop_threads=num_interop_thread,
+                                            num_threads=num_thread
+                                        )
+                                        for rep in range(repetition):
+                                            print('-'*25\
+                                                + f' starting repetition {rep} ' +\
+                                                    '-'*25)
+                                            print('\n')
+                                            # TODO timeout var
+                                            if rep != 0:
+                                                print(f'waiting for {timeout} seconds')
+                                                for _ in tqdm(range(20)):
+                                                    time.sleep(timeout/20)
+                                            experiment_id = key_config_mapper(
+                                                pipeline_name=pipeline_name,
+                                                node_name=node_name,
+                                                cpu_request=cpu_request,
+                                                memory_request=memory_request,
+                                                model_variant=model_variant,
+                                                max_batch_size=max_batch_size,
+                                                max_batch_time=max_batch_time,
+                                                load=load,
+                                                load_duration=load_duration,
+                                                series=series,
+                                                series_meta=series_meta,
+                                                replica=replica,
+                                                no_engine=no_engine,
+                                                mode=mode,
+                                                data_type=data_type,
+                                                benchmark_duration=benchmark_duration)
 
-                                # TODO better validation -> some request
-                                print(f'waiting for {timeout} seconds')
-                                for _ in tqdm(range(20)):
-                                    time.sleep(timeout/20)
-                                remove_node(node_name=node_name, timeout=timeout)
+                                            start_time_experiment,\
+                                                end_time_experiment, responses = load_test(
+                                                    node_name=node_name,
+                                                    data_type=data_type,
+                                                    node_path=node_path,
+                                                    load=load,
+                                                    mode=mode,
+                                                    namespace='default',
+                                                    load_duration=load_duration,
+                                                    no_engine=no_engine,
+                                                    benchmark_duration=benchmark_duration)
+                                            # TODO id system for the experiments
+                                            save_report(
+                                                experiment_id=experiment_id,
+                                                responses = responses,
+                                                node_name=node_name,
+                                                start_time_experiment=start_time_experiment,
+                                                end_time_experiment=end_time_experiment,
+                                                series=series,
+                                                no_engine=no_engine)
+                                    
+                                            # backup(series=series)
+
+                                    # TODO better validation -> some request
+                                    print(f'waiting for {timeout} seconds')
+                                    for _ in tqdm(range(20)):
+                                        time.sleep(timeout/20)
+                                    remove_node(node_name=node_name, timeout=timeout)
 
 def key_config_mapper(
     pipeline_name: str, node_name: str, cpu_request: str,
@@ -225,6 +233,7 @@ def key_config_mapper(
 def setup_node(node_name: str, cpu_request: str,
                memory_request: str, model_variant: str, max_batch_size: str,
                max_batch_time: str, replica: int, node_path: str, timeout: int,
+               use_threading: bool, num_interop_threads: int, num_threads: int,
                no_engine=False):
     print('-'*25 + ' setting up the node with following config' + '-'*25)
     print('\n')
@@ -238,7 +247,10 @@ def setup_node(node_name: str, cpu_request: str,
         "max_batch_size": max_batch_size,
         "max_batch_time": max_batch_time,
         "replicas": replica,
-        "no_engine": str(no_engine)
+        "no_engine": str(no_engine),
+        "use_threading": use_threading,
+        "num_interop_threads": num_interop_threads,
+        "num_threads": num_threads
         }
     environment = Environment(
         loader=FileSystemLoader(node_path))
@@ -445,7 +457,7 @@ def backup(series):
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='2-config-static-sent')
+    '--config-name', required=True, type=str, default='5-config-static-resnet-human-all')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")

@@ -1,6 +1,6 @@
 REPOS=(
     sdghafouri)
-IMAGE_NAME=simple-image:image-kamran
+IMAGE_NAME=simple-image:image
 DOCKER_BUILDKIT=1 docker build . --tag=$IMAGE_NAME
 for REPO in ${REPOS[@]}
 do

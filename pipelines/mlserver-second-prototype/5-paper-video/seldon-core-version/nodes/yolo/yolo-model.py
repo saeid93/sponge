@@ -36,6 +36,10 @@ def decode_from_bin(
         batch.append(array)
     return batch
 
+# torch.set_num_interop_threads(1)
+# torch.set_num_threads(1)
+
+
 class Yolo(MLModel):
     async def load(self):
         self.loaded = False

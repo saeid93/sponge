@@ -4,7 +4,7 @@ import torch
 from torchvision import models
 from torchvision import transforms
 from PIL import Image
-# import timm
+import timm
 import time
 import logging
 
@@ -19,10 +19,6 @@ except KeyError as e:
 dir = os.path.dirname(__file__)
 image_name = 'input-sample.JPEG'
 path = os.path.join(dir, image_name)
-
-
-torch.set_num_interop_threads(1)
-torch.set_num_threads(1)
 
 start = time.time()
 X = np.array(Image.open(path))
@@ -42,19 +38,18 @@ postprocessing_time = time.time() - start
 logging.warning(f"preprocessing time: {postprocessing_time}")
 
 start = time.time()
-resnet =  models.resnet50(pretrained=True)
+resnet = timm.create_model('resnet18')
 resnet.eval()
 logging.warning(f"model loading time: {time.time() - start}")
 
 logging.warning('starting the experiments')
 model_times = []
 softmax_times = []
-skip = 10
-for i in range(ITERATIONS + skip):
+for i in range(ITERATIONS):
     start = time.time()
     out = resnet(batch)
     iter_time = time.time() - start
-    # time.sleep(4)
+    time.sleep(4)
     model_times.append(iter_time)
     logging.warning(f'iteration {i} time: {iter_time}')
     start = time.time()
@@ -74,13 +69,13 @@ logging.warning('total times:')
 logging.warning(total_times)
 
 logging.warning('total times average:')
-logging.warning(np.average(total_times[skip:]))
+logging.warning(np.average(total_times))
 
 logging.warning('total times p99:')
-logging.warning(np.percentile(total_times[skip:], 99))
+logging.warning(np.percentile(total_times, 99))
 
 logging.warning('model times average:')
-logging.warning(np.average(model_times[skip:]))
+logging.warning(np.average(model_times))
 
 # logging.warning('softmax times average:')
 # logging.warning(np.average(softmax_times))

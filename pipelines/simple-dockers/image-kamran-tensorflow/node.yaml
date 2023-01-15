@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: iamge
-        image: sdghafouri/simple-image:image
+        image: sdghafouri/simple-image:image-kamran
         imagePullPolicy: Always
         env:
           - name: ITERATIONS

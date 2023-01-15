@@ -13,6 +13,10 @@ except KeyError as e:
     logging.warning(
         f"ITERATIONS env variable not set, using default value: {ITERATIONS}")
 
+# torch.set_num_interop_threads(1)
+# torch.set_num_threads(1)
+
+
 batch = "mister quilter is the apostle of the middle classes and we are glad to welcome his gospel"
 
 start = time.time()

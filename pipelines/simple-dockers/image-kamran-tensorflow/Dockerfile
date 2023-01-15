@@ -1,16 +1,11 @@
-FROM python:3.6
+FROM python:3.8.0
 
-RUN mkdir -p /GRPC/code
-RUN mkdir -p /data/persons
-RUN pip3 install --user --upgrade h5py==2.10.0 tensorflow==2.3.0
-RUN pip3 install --user --upgrade numpy grpcio keras Pillow matplotlib keras_vggface keras_applications keras_preprocessing requests psutil
-RUN apt-get update
-RUN apt-get install 'ffmpeg'\
-    'libsm6'\ 
-    'libxext6'  -y
+COPY requirements.txt /app/requirements.txt
+RUN pip install -r /app/requirements.txt
 
 COPY main.py /app/main.py
 COPY input-sample.JPEG /app/input-sample.JPEG
+COPY face-resnet50.h5 /app/face-resnet50.h5
 
 WORKDIR /app
 

@@ -42,6 +42,34 @@ def decode_from_bin(
         batch.append(array)
     return batch
 
+try:
+    USE_THREADING = bool(os.environ['USE_THREADING'])
+    logger.info(f'USE_THREADING set to: {USE_THREADING}')
+except KeyError as e:
+    USE_THREADING = False
+    logger.info(
+        f"USE_THREADING env variable not set, using default value: {USE_THREADING}")
+
+try:
+    NUM_INTEROP_THREADS = int(os.environ['NUM_INTEROP_THREADS'])
+    logger.info(f'NUM_INTEROP_THREADS set to: {NUM_INTEROP_THREADS}')
+except KeyError as e:
+    NUM_INTEROP_THREADS = 1
+    logger.info(
+        f"NUM_INTEROP_THREADS env variable not set, using default value: {NUM_INTEROP_THREADS}")
+
+try:
+    NUM_THREADS = int(os.environ['NUM_THREADS'])
+    logger.info(f'NUM_THREADS set to: {NUM_THREADS}')
+except KeyError as e:
+    NUM_THREADS = 1
+    logger.info(
+        f"NUM_THREADS env variable not set, using default value: {NUM_THREADS}")
+
+if USE_THREADING:
+    torch.set_num_interop_threads(NUM_INTEROP_THREADS)
+    torch.set_num_threads(NUM_THREADS)
+
 class ResnetHuman(MLModel):
     async def load(self) -> bool:
         self.loaded = False
