@@ -64,12 +64,15 @@ spec:
               value: '{{ max_batch_size_2 }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: '{{ max_batch_time_2 }}'
+<<<<<<< HEAD
             - name: USE_THREADING
               value: '{{use_threading_2}}'
             - name: NUM_INTEROP_THREADS
               value: '{{num_interop_threads_2}}'
             - name: NUM_THREADS
               value: '{{num_threads_2}}'
+=======
+>>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
       replicas: {{ replicas_2 }}
     graph:
       name: audio

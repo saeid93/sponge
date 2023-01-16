@@ -3,7 +3,10 @@ import time
 import json
 from mlserver import MLModel
 import numpy as np
+<<<<<<< HEAD
 import torch
+=======
+>>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
 from mlserver.codecs import NumpyCodec
 from mlserver.logging import logger
 from mlserver.utils import get_model_uri
@@ -13,6 +16,12 @@ from mlserver.types import (
     ResponseOutput,
     Parameters)
 from mlserver import MLModel
+<<<<<<< HEAD
+=======
+from mlserver.codecs import DecodedParameterName
+from mlserver.cli.serve import load_settings
+from copy import deepcopy
+>>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
 from transformers import pipeline
 from mlserver.codecs import StringCodec
 from mlserver_huggingface.common import NumpyEncoder
@@ -27,6 +36,7 @@ except KeyError as e:
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
+<<<<<<< HEAD
 try:
     USE_THREADING = bool(os.environ['USE_THREADING'])
     logger.info(f'USE_THREADING set to: {USE_THREADING}')
@@ -55,6 +65,8 @@ if USE_THREADING:
     torch.set_num_interop_threads(NUM_INTEROP_THREADS)
     torch.set_num_threads(NUM_THREADS)
 
+=======
+>>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
 class GeneralNLP(MLModel):
     async def load(self):
         self.loaded = False

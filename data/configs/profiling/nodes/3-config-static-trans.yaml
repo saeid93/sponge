@@ -1,4 +1,4 @@
-series: 1
+eries: 1
 series_meta: testing static trace
 pipeline_name: 3-paper-nlp
 node_name: nlp-trans

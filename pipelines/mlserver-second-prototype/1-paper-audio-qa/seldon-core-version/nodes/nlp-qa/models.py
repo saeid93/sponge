@@ -2,7 +2,11 @@ import os
 import time
 from copy import deepcopy
 from mlserver import MLModel
+<<<<<<< HEAD
 import torch
+=======
+import json
+>>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
 from mlserver.logging import logger
 from mlserver.types import (
     InferenceRequest,
@@ -11,6 +15,11 @@ from mlserver.types import (
     Parameters)
 from mlserver import MLModel
 from transformers import pipeline
+<<<<<<< HEAD
+=======
+from mlserver.codecs import StringCodec
+
+>>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
@@ -20,6 +29,7 @@ except KeyError as e:
     logger.info(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
+<<<<<<< HEAD
 try:
     USE_THREADING = bool(os.environ['USE_THREADING'])
     logger.info(f'USE_THREADING set to: {USE_THREADING}')
@@ -48,6 +58,8 @@ if USE_THREADING:
     torch.set_num_interop_threads(NUM_INTEROP_THREADS)
     torch.set_num_threads(NUM_THREADS)
 
+=======
+>>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
 class GeneralNLP(MLModel):
     async def load(self):
         self.loaded = False
@@ -91,7 +103,10 @@ class GeneralNLP(MLModel):
         arrival_time = time.time()
         for request_input in payload.inputs:
             prev_nodes_times = request_input.parameters.times
+<<<<<<< HEAD
             # HACK workaround for batch size of one
+=======
+>>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
             if type(prev_nodes_times) == str:
                 logger.info(f"prev_nodes_times:\n{prev_nodes_times}")
                 prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
@@ -132,7 +147,11 @@ class GeneralNLP(MLModel):
             this_node_time.update(prev_nodes_time)
             times.append(this_node_time)
         batch_times = list(map(lambda l: str(l), times))
+<<<<<<< HEAD
         if self.settings.max_batch_size == 1:
+=======
+        if batch_shape == 1:
+>>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
             batch_times = str(batch_times)
 
         # processing inference response

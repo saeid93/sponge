@@ -18,7 +18,11 @@ data = ds[0]["audio"]["array"].tolist()
 load = 1
 test_duration = 30
 variant = 0
+<<<<<<< HEAD
 platform = 'mlserver'
+=======
+platform = 'seldon'
+>>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
 mode = 'equal'
 
 # single node inference

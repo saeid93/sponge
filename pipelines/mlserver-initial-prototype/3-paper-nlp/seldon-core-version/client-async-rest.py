@@ -38,6 +38,7 @@ ils sont à quelques instants des exigences de la vie où vous pouvez simplement
 
 def send_requests():
     payload = {
+<<<<<<< HEAD
         "inputs":
 data=["""
 Après des décennies en tant que pratiquant d'arts martiaux et coureur, Wes a "trouvé" le yoga en 2010.
@@ -54,6 +55,19 @@ et axé sur la technologie d'aujourd'hui. Il enseigne à aider les autres à ré
 Mieux encore, les cours de yoga sont tout simplement merveilleux :
 ils sont à quelques instants des exigences de la vie où vous pouvez simplement prendre soin de vous physiquement et émotionnellement.
     """]
+=======
+        "inputs": [
+            {
+                "name": "text_inputs",
+                "shape": [1],
+                "datatype": "BYTES",
+                "data": data,
+                "parameters": {
+                    "content_type": "str"
+                }
+            }
+        ]
+>>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
     }
     response = requests.post(endpoint, json=payload)
     responses.append(response)
