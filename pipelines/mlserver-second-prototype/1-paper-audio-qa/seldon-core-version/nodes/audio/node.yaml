@@ -30,11 +30,17 @@ spec:
             - name: TASK
               value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: "1"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
+            - name: USE_THREADING
+              value: "True"
+            - name: NUM_INTEROP_THREADS
+              value: "1"
+            - name: NUM_THREADS
+              value: "1"
       replicas: 1
     graph:
       name: audio
@@ -43,10 +49,10 @@ spec:
     svcOrchSpec:
       resources:
         requests:
-          cpu: '4'
+          cpu: '1'
           memory: 4Gi
         limits:
-          cpu: '4'
+          cpu: '1'
           memory: 4Gi
     labels:
       sidecar.istio.io/inject: "true"

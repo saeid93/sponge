@@ -1,29 +1,63 @@
 import os
 import time
-import json
 from mlserver import MLModel
 import numpy as np
+import torch
 from mlserver.logging import logger
-from mlserver.utils import get_model_uri
 from mlserver.types import (
     InferenceRequest,
-    InferenceResponse)
+    InferenceResponse,
+    ResponseOutput,
+    Parameters)
 from mlserver import MLModel
-from mlserver.codecs import DecodedParameterName
-from mlserver.cli.serve import load_settings
-from copy import deepcopy
+from typing import List
 from transformers import pipeline
-from mlserver.codecs import StringCodec
-from mlserver_huggingface.common import NumpyEncoder
-from typing import List, Dict
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
     logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
-    PREDICTIVE_UNIT_ID = 'predictive_unit'
+    PREDICTIVE_UNIT_ID = 'audio'
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
+
+def decode_from_bin(
+    inputs: List[bytes], shapes: List[
+        List[int]], dtypes: List[str]) -> List[np.array]:
+    batch = []
+    for input, shape, dtype in zip(inputs, shapes, dtypes):
+        buff = memoryview(input)
+        array = np.frombuffer(buff, dtype=dtype).reshape(shape)
+        batch.append(array)
+    return batch
+
+try:
+    USE_THREADING = bool(os.environ['USE_THREADING'])
+    logger.info(f'USE_THREADING set to: {USE_THREADING}')
+except KeyError as e:
+    USE_THREADING = False
+    logger.info(
+        f"USE_THREADING env variable not set, using default value: {USE_THREADING}")
+
+try:
+    NUM_INTEROP_THREADS = int(os.environ['NUM_INTEROP_THREADS'])
+    logger.info(f'NUM_INTEROP_THREADS set to: {NUM_INTEROP_THREADS}')
+except KeyError as e:
+    NUM_INTEROP_THREADS = 1
+    logger.info(
+        f"NUM_INTEROP_THREADS env variable not set, using default value: {NUM_INTEROP_THREADS}")
+
+try:
+    NUM_THREADS = int(os.environ['NUM_THREADS'])
+    logger.info(f'NUM_THREADS set to: {NUM_THREADS}')
+except KeyError as e:
+    NUM_THREADS = 1
+    logger.info(
+        f"NUM_THREADS env variable not set, using default value: {NUM_THREADS}")
+
+if USE_THREADING:
+    torch.set_num_interop_threads(NUM_INTEROP_THREADS)
+    torch.set_num_threads(NUM_THREADS)
 
 class GeneralAudio(MLModel):
     async def load(self):
@@ -45,61 +79,75 @@ class GeneralAudio(MLModel):
             logger.error(
                 f"TASK env variable not set, using default value: {self.TASK}")
         logger.info('Loading the ML models')
-        # TODO add batching like the runtime
         logger.error(f'max_batch_size: {self._settings.max_batch_size}')
         logger.error(f'max_batch_time: {self._settings.max_batch_time}')
-        # self.model  = lambda l: l
         self.model = pipeline(
             task=self.TASK,
             model=self.MODEL_VARIANT,
             batch_size=self._settings.max_batch_size)
         self.loaded = True
-        logger.info('model loading complete!')
         return self.loaded
 
+
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
-        if self.loaded == False:
-            self.load()
-        # logger.error(f"payload:\n{payload}")
         arrival_time = time.time()
         for request_input in payload.inputs:
-            logger.error('request input shape:\n')
-            logger.error(f"{request_input.shape}\n")
-            decoded_input = self.decode(request_input)
-            logger.error(decoded_input)
-            X = decoded_input
-        X = list(map(lambda l: np.array(l), X))
+            dtypes = request_input.parameters.dtype
+            shapes = request_input.parameters.datashape
+            batch_shape = request_input.shape[0]
+            # batch one edge case
+            if type(shapes) != list:
+                shapes = [shapes]
+            input_data = request_input.data.__root__
+            logger.info(f"shapes:\n{shapes}")
+            shapes = list(map(lambda l: eval(l), shapes))
+            X = decode_from_bin(
+                inputs=input_data, shapes=shapes, dtypes=dtypes)
         received_batch_len = len(X)
-        logger.error(f"recieved batch len:\n{received_batch_len}")
+        logger.info(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += received_batch_len
         self.batch_counter += 1
+        logger.info(f"to the model:\n{type(X)}")
+        logger.info(f"type of the to the model:\n{type(X)}")
+        logger.info(f"len of the to the model:\n{len(X)}")
+
+        # model part
         output = self.model(X)
-        logger.error(f"model output:\n{output}")
+        output = list(map(lambda l:l['text'], output))
+        logger.info(f"model output:\n{output}")
+
+        # times processing
         serving_time = time.time()
-        timing = {
-            f"arrival_{PREDICTIVE_UNIT_ID}".replace(
-                "-","_"): arrival_time,
-            f"serving_{PREDICTIVE_UNIT_ID}".replace(
-                "-", "_"): serving_time
+        times = {
+            PREDICTIVE_UNIT_ID: {
+            "arrival": arrival_time,
+            "serving": serving_time
+            }
         }
-        output_with_time = list()
-        for pred in output:
-            output_with_time.append(
-                {
-                    'time': timing,
-                    'output': pred,                
-                }
-            )
-        str_out = [json.dumps(
-            pred, cls=NumpyEncoder) for pred in output_with_time]
-        prediction_encoded = StringCodec.encode_output(
-            payload=str_out, name="output")
-        logger.error(f"Output:\n{prediction_encoded}\nwas sent!")
-        logger.error(f"request counter:\n{self.request_counter}\n")
-        logger.error(f"batch counter:\n{self.batch_counter}\n")
-        return InferenceResponse(
-            id=payload.id,
+        batch_times = [str(times)] * batch_shape
+        if self.settings.max_batch_size == 1:
+            batch_times = str(batch_times)
+        logger.info(f'batch shapes:\n{batch_shape}')
+        logger.info(f"batch_times:\n{batch_times}")
+
+        # processing inference response
+        output_data = list(map(lambda l: l.encode('utf8'), output))
+        payload = InferenceResponse(
+            outputs=[
+                ResponseOutput(
+                    name="text",
+                    shape=[batch_shape],
+                    datatype="BYTES",
+                    data=output_data,
+                    parameters=Parameters(
+                        times=batch_times
+                    ),
+            )],
             model_name=self.name,
-            model_version=self.version,
-            outputs = [prediction_encoded]
+            parameters=Parameters(
+                type_of='text'
+            )
         )
+        logger.info(f"request counter:\n{self.request_counter}\n")
+        logger.info(f"batch counter:\n{self.batch_counter}\n")
+        return payload

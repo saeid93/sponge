@@ -5,7 +5,6 @@ from torchvision import transforms
 from PIL import Image
 import time
 from mlserver import MLModel
-import timm
 import numpy as np
 from mlserver.logging import logger
 from mlserver.types import (
@@ -96,8 +95,7 @@ class ResnetHuman(MLModel):
         )])
         logger.info('Init function complete!')
         model = {
-            # 'resnet18': models.resnet18,
-            'resnet18': timm.create_model('resnet18'),
+            'resnet18': models.resnet18,
             'resnet34': models.resnet34,
             'resnet50': models.resnet50,
             'resnet101': models.resnet101,
@@ -108,7 +106,7 @@ class ResnetHuman(MLModel):
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
         self.default_shape = [253, 294, 3]
-        self.resnet = model[self.MODEL_VARIANT] # (pretrained=True)
+        self.resnet = model[self.MODEL_VARIANT](pretrained=True)
         self.resnet.eval()
         self.loaded = True
         logger.info('model loading complete!')
@@ -191,7 +189,7 @@ class ResnetHuman(MLModel):
 
         # HACK workaround for batch size of one
         batch_times = list(map(lambda l: str(l), times))
-        if self.batch_size == 1:
+        if self.settings.max_batch_size == 1:
             batch_times = str(batch_times)
 
         # processing inference response

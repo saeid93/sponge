@@ -27,6 +27,12 @@ spec:
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
+            - name: USE_THREADING
+              value: "True"
+            - name: NUM_INTEROP_THREADS
+              value: "1"
+            - name: NUM_THREADS
+              value: "1"
           resources:
             requests:
               cpu: '4'
@@ -53,6 +59,12 @@ spec:
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
+            - name: USE_THREADING
+              value: "True"
+            - name: NUM_INTEROP_THREADS
+              value: "1"
+            - name: NUM_THREADS
+              value: "1"
           resources:
             requests:
               cpu: '8'
@@ -76,6 +88,12 @@ spec:
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
+              value: "1"
+            - name: USE_THREADING
+              value: "True"
+            - name: NUM_INTEROP_THREADS
+              value: "1"
+            - name: NUM_THREADS
               value: "1"
           resources:
             requests:

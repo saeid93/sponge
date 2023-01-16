@@ -28,6 +28,12 @@ spec:
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
+            - name: USE_THREADING
+              value: "True"
+            - name: NUM_INTEROP_THREADS
+              value: "1"
+            - name: NUM_THREADS
+              value: "1"
     - spec:
         containers:
         - image: sdghafouri/video-pipelines-mlserver-bytes:resnet-human
@@ -46,6 +52,12 @@ spec:
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
+            - name: USE_THREADING
+              value: "True"
+            - name: NUM_INTEROP_THREADS
+              value: "1"
+            - name: NUM_THREADS
+              value: "1"
     graph:
       name: yolo
       type: MODEL

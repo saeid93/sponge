@@ -29,6 +29,11 @@ replicas:
   - 1
 workload_type: static
 benchmark_duration: 2
+use_threading: 'True'
+num_interop_threads:
+  - '1'
+num_threads:
+  - '1'
 repetition: 3
 workload_config:
   loads_to_test:

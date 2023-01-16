@@ -32,6 +32,11 @@ memory_request:
 replicas:
   - 1
 workload_type: static
+use_threading: 'True'
+num_interop_threads:
+  - '1'
+num_threads:
+  - '1'
 benchmark_duration: 2
 repetition: 1
 workload_config:

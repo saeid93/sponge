@@ -2,7 +2,7 @@ import os
 import time
 from copy import deepcopy
 from mlserver import MLModel
-import json
+import torch
 from mlserver.logging import logger
 from mlserver.types import (
     InferenceRequest,
@@ -11,8 +11,6 @@ from mlserver.types import (
     Parameters)
 from mlserver import MLModel
 from transformers import pipeline
-from mlserver.codecs import StringCodec
-
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
@@ -21,6 +19,34 @@ except KeyError as e:
     PREDICTIVE_UNIT_ID = 'nlp-qa'
     logger.info(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
+
+try:
+    USE_THREADING = bool(os.environ['USE_THREADING'])
+    logger.info(f'USE_THREADING set to: {USE_THREADING}')
+except KeyError as e:
+    USE_THREADING = False
+    logger.info(
+        f"USE_THREADING env variable not set, using default value: {USE_THREADING}")
+
+try:
+    NUM_INTEROP_THREADS = int(os.environ['NUM_INTEROP_THREADS'])
+    logger.info(f'NUM_INTEROP_THREADS set to: {NUM_INTEROP_THREADS}')
+except KeyError as e:
+    NUM_INTEROP_THREADS = 1
+    logger.info(
+        f"NUM_INTEROP_THREADS env variable not set, using default value: {NUM_INTEROP_THREADS}")
+
+try:
+    NUM_THREADS = int(os.environ['NUM_THREADS'])
+    logger.info(f'NUM_THREADS set to: {NUM_THREADS}')
+except KeyError as e:
+    NUM_THREADS = 1
+    logger.info(
+        f"NUM_THREADS env variable not set, using default value: {NUM_THREADS}")
+
+if USE_THREADING:
+    torch.set_num_interop_threads(NUM_INTEROP_THREADS)
+    torch.set_num_threads(NUM_THREADS)
 
 class GeneralNLP(MLModel):
     async def load(self):
@@ -65,6 +91,7 @@ class GeneralNLP(MLModel):
         arrival_time = time.time()
         for request_input in payload.inputs:
             prev_nodes_times = request_input.parameters.times
+            # HACK workaround for batch size of one
             if type(prev_nodes_times) == str:
                 logger.info(f"prev_nodes_times:\n{prev_nodes_times}")
                 prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
@@ -105,7 +132,7 @@ class GeneralNLP(MLModel):
             this_node_time.update(prev_nodes_time)
             times.append(this_node_time)
         batch_times = list(map(lambda l: str(l), times))
-        if batch_shape == 1:
+        if self.settings.max_batch_size == 1:
             batch_times = str(batch_times)
 
         # processing inference response

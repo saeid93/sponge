@@ -2,20 +2,15 @@ import os
 import time
 from copy import deepcopy
 from mlserver import MLModel
-import numpy as np
-from mlserver.codecs import NumpyCodec
+import torch
 import json
 from mlserver.logging import logger
-from mlserver.utils import get_model_uri
 from mlserver.types import (
     InferenceRequest,
     InferenceResponse,
     ResponseOutput,
     Parameters)
-from mlserver.codecs.string import StringRequestCodec
 from mlserver import MLModel
-from mlserver.codecs import DecodedParameterName
-from mlserver.cli.serve import load_settings
 from transformers import pipeline
 from mlserver.codecs import StringCodec
 from mlserver_huggingface.common import NumpyEncoder
@@ -29,6 +24,34 @@ except KeyError as e:
     PREDICTIVE_UNIT_ID = 'predictive_unit'
     logger.error(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
+
+try:
+    USE_THREADING = bool(os.environ['USE_THREADING'])
+    logger.info(f'USE_THREADING set to: {USE_THREADING}')
+except KeyError as e:
+    USE_THREADING = False
+    logger.info(
+        f"USE_THREADING env variable not set, using default value: {USE_THREADING}")
+
+try:
+    NUM_INTEROP_THREADS = int(os.environ['NUM_INTEROP_THREADS'])
+    logger.info(f'NUM_INTEROP_THREADS set to: {NUM_INTEROP_THREADS}')
+except KeyError as e:
+    NUM_INTEROP_THREADS = 1
+    logger.info(
+        f"NUM_INTEROP_THREADS env variable not set, using default value: {NUM_INTEROP_THREADS}")
+
+try:
+    NUM_THREADS = int(os.environ['NUM_THREADS'])
+    logger.info(f'NUM_THREADS set to: {NUM_THREADS}')
+except KeyError as e:
+    NUM_THREADS = 1
+    logger.info(
+        f"NUM_THREADS env variable not set, using default value: {NUM_THREADS}")
+
+if USE_THREADING:
+    torch.set_num_interop_threads(NUM_INTEROP_THREADS)
+    torch.set_num_threads(NUM_THREADS)
 
 class GeneralNLP(MLModel):
     async def load(self):

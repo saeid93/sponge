@@ -2,6 +2,7 @@ import os
 import time
 from mlserver import MLModel
 import numpy as np
+import torch
 from mlserver.logging import logger
 from mlserver.types import (
     InferenceRequest,
@@ -29,6 +30,34 @@ def decode_from_bin(
         array = np.frombuffer(buff, dtype=dtype).reshape(shape)
         batch.append(array)
     return batch
+
+try:
+    USE_THREADING = bool(os.environ['USE_THREADING'])
+    logger.info(f'USE_THREADING set to: {USE_THREADING}')
+except KeyError as e:
+    USE_THREADING = False
+    logger.info(
+        f"USE_THREADING env variable not set, using default value: {USE_THREADING}")
+
+try:
+    NUM_INTEROP_THREADS = int(os.environ['NUM_INTEROP_THREADS'])
+    logger.info(f'NUM_INTEROP_THREADS set to: {NUM_INTEROP_THREADS}')
+except KeyError as e:
+    NUM_INTEROP_THREADS = 1
+    logger.info(
+        f"NUM_INTEROP_THREADS env variable not set, using default value: {NUM_INTEROP_THREADS}")
+
+try:
+    NUM_THREADS = int(os.environ['NUM_THREADS'])
+    logger.info(f'NUM_THREADS set to: {NUM_THREADS}')
+except KeyError as e:
+    NUM_THREADS = 1
+    logger.info(
+        f"NUM_THREADS env variable not set, using default value: {NUM_THREADS}")
+
+if USE_THREADING:
+    torch.set_num_interop_threads(NUM_INTEROP_THREADS)
+    torch.set_num_threads(NUM_THREADS)
 
 class GeneralAudio(MLModel):
     async def load(self):
@@ -96,8 +125,10 @@ class GeneralAudio(MLModel):
             }
         }
         batch_times = [str(times)] * batch_shape
-        if batch_shape == 1:
+        if self.settings.max_batch_size == 1:
             batch_times = str(batch_times)
+        logger.info(f'batch shapes:\n{batch_shape}')
+        logger.info(f"batch_times:\n{batch_times}")
 
         # processing inference response
         output_data = list(map(lambda l: l.encode('utf8'), output))
@@ -114,7 +145,7 @@ class GeneralAudio(MLModel):
             )],
             model_name=self.name,
             parameters=Parameters(
-                type_of='audio'
+                type_of='text'
             )
         )
         logger.info(f"request counter:\n{self.request_counter}\n")

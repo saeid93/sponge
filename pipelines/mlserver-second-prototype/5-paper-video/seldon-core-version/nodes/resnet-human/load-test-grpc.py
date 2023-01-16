@@ -16,7 +16,7 @@ def image_loader(folder_path, image_name):
     return image
 
 http_method = 'post'
-load = 1
+load = 4
 test_duration = 5
 variant = 0
 platform = 'seldon'

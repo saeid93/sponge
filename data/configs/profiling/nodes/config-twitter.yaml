@@ -22,6 +22,11 @@ replicas:
 workload_type: twitter
 benchmark_duration: 2
 repetition: 3
+use_threading: 'True'
+num_interop_threads:
+  - '1'
+num_threads:
+  - '1'
 workload_config:
   start_day: 3
   end_day: 5

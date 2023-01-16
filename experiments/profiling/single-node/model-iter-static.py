@@ -26,7 +26,6 @@ pp = PrettyPrinter(indent=4)
 
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 from barazmoon import (
-    MLServerAsyncRest,
     MLServerAsyncGrpc)
 
 # get an absolute path to the directory that contains parent files
@@ -99,72 +98,74 @@ def experiments(pipeline_name: str, node_name: str,
                 for cpu_request in cpu_requests:
                     for memory_request in memory_requests:
                         for replica in replicas:
-                            for num_interop_thread in num_interop_threads:
-                                for num_thread in num_threads:
-                                    for load in loads_to_test:
-                                        setup_node(
-                                            node_name=node_name,
-                                            cpu_request=cpu_request,
-                                            memory_request=memory_request,
-                                            model_variant=model_variant,
-                                            max_batch_size=max_batch_size,
-                                            max_batch_time=max_batch_time,
-                                            replica=replica,
-                                            node_path=node_path,
-                                            timeout=timeout,
-                                            no_engine=no_engine,
-                                            use_threading=use_threading,
-                                            num_interop_threads=num_interop_thread,
-                                            num_threads=num_thread
-                                        )
-                                        for rep in range(repetition):
-                                            print('-'*25\
-                                                + f' starting repetition {rep} ' +\
-                                                    '-'*25)
-                                            print('\n')
-                                            # TODO timeout var
-                                            if rep != 0:
-                                                print(f'waiting for {timeout} seconds')
-                                                for _ in tqdm(range(20)):
-                                                    time.sleep(timeout/20)
-                                            experiment_id = key_config_mapper(
-                                                pipeline_name=pipeline_name,
-                                                node_name=node_name,
-                                                cpu_request=cpu_request,
-                                                memory_request=memory_request,
-                                                model_variant=model_variant,
-                                                max_batch_size=max_batch_size,
-                                                max_batch_time=max_batch_time,
-                                                load=load,
-                                                load_duration=load_duration,
-                                                series=series,
-                                                series_meta=series_meta,
-                                                replica=replica,
-                                                no_engine=no_engine,
-                                                mode=mode,
-                                                data_type=data_type,
-                                                benchmark_duration=benchmark_duration)
+                            # for num_interop_thread in num_interop_threads:
+                            #     for num_thread in num_threads:
+                            for load in loads_to_test:
+                                setup_node(
+                                    node_name=node_name,
+                                    cpu_request=cpu_request,
+                                    memory_request=memory_request,
+                                    model_variant=model_variant,
+                                    max_batch_size=max_batch_size,
+                                    max_batch_time=max_batch_time,
+                                    replica=replica,
+                                    node_path=node_path,
+                                    timeout=timeout,
+                                    no_engine=no_engine,
+                                    use_threading=use_threading,
+                                    # HACK for now we set the number of requests
+                                    # proportional to the the number threads
+                                    num_interop_threads=cpu_request,
+                                    num_threads=cpu_request
+                                )
+                                for rep in range(repetition):
+                                    print('-'*25\
+                                        + f' starting repetition {rep} ' +\
+                                            '-'*25)
+                                    print('\n')
+                                    # TODO timeout var
+                                    if rep != 0:
+                                        print(f'waiting for {timeout} seconds')
+                                        for _ in tqdm(range(20)):
+                                            time.sleep(timeout/20)
+                                    experiment_id = key_config_mapper(
+                                        pipeline_name=pipeline_name,
+                                        node_name=node_name,
+                                        cpu_request=cpu_request,
+                                        memory_request=memory_request,
+                                        model_variant=model_variant,
+                                        max_batch_size=max_batch_size,
+                                        max_batch_time=max_batch_time,
+                                        load=load,
+                                        load_duration=load_duration,
+                                        series=series,
+                                        series_meta=series_meta,
+                                        replica=replica,
+                                        no_engine=no_engine,
+                                        mode=mode,
+                                        data_type=data_type,
+                                        benchmark_duration=benchmark_duration)
 
-                                            start_time_experiment,\
-                                                end_time_experiment, responses = load_test(
-                                                    node_name=node_name,
-                                                    data_type=data_type,
-                                                    node_path=node_path,
-                                                    load=load,
-                                                    mode=mode,
-                                                    namespace='default',
-                                                    load_duration=load_duration,
-                                                    no_engine=no_engine,
-                                                    benchmark_duration=benchmark_duration)
-                                            # TODO id system for the experiments
-                                            save_report(
-                                                experiment_id=experiment_id,
-                                                responses = responses,
-                                                node_name=node_name,
-                                                start_time_experiment=start_time_experiment,
-                                                end_time_experiment=end_time_experiment,
-                                                series=series,
-                                                no_engine=no_engine)
+                                    start_time_experiment,\
+                                        end_time_experiment, responses = load_test(
+                                            node_name=node_name,
+                                            data_type=data_type,
+                                            node_path=node_path,
+                                            load=load,
+                                            mode=mode,
+                                            namespace='default',
+                                            load_duration=load_duration,
+                                            no_engine=no_engine,
+                                            benchmark_duration=benchmark_duration)
+                                    # TODO id system for the experiments
+                                    save_report(
+                                        experiment_id=experiment_id,
+                                        responses = responses,
+                                        node_name=node_name,
+                                        start_time_experiment=start_time_experiment,
+                                        end_time_experiment=end_time_experiment,
+                                        series=series,
+                                        no_engine=no_engine)
                                     
                                             # backup(series=series)
 

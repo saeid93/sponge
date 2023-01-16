@@ -1,34 +1,24 @@
-import requests
-from pprint import PrettyPrinter
-pp = PrettyPrinter(indent=4)
-import json
-from mlserver.types import InferenceResponse
-from mlserver.codecs.string import StringRequestCodec
+import argparse
+from functools import partial
+import os
+import sys
+from io import BytesIO
 
-# single node inferline
+import numpy as np
+
+import tritonclient.grpc as grpcclient
+import tritonclient.grpc.model_config_pb2 as mc
+import tritonclient.http as httpclient
+from tritonclient.utils import InferenceServerException
+from tritonclient.utils import triton_to_np_dtype
+from datasets import load_dataset
+
+
 gateway_endpoint="localhost:32000"
 deployment_name = 'nlp'
 namespace = "default"
-
-endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
-
-def send_requests(endpoint, data):
-    payload = {
-        "inputs": [
-            {
-            "name": "text_inputs",
-            "shape": [1],
-            "datatype": "BYTES",
-            "data": data,
-            "parameters": {
-                "content_type": "str"
-            }
-            }
-        ]
-    }
-    response = requests.post(endpoint, json=payload)
-    return response
-
+endpoint = f"{gateway_endpoint}/seldon/{namespace}/{deployment_name}/v2/models/infer"
+print(endpoint)
 data=["""
 Après des décennies en tant que pratiquant d'arts martiaux et coureur, Wes a "trouvé" le yoga en 2010.
 Il en est venu à apprécier que son ampleur et sa profondeur fournissent un merveilleux lest pour stabiliser
@@ -44,17 +34,32 @@ et axé sur la technologie d'aujourd'hui. Il enseigne à aider les autres à ré
 Mieux encore, les cours de yoga sont tout simplement merveilleux :
 ils sont à quelques instants des exigences de la vie où vous pouvez simplement prendre soin de vous physiquement et émotionnellement.
     """]
+input_name = "text_inputs"
+shape = [1]
+shape_n = np.array(shape)
+dtype = "BYTES"
+inputs = [httpclient.InferInput(input_name, shape, dtype)]
 
+data_bytes = data[0].encode('utf-8')
+in0n = np.array([str(x).encode('utf-8') for x in data],
+                    dtype=np.object_)
+input0_data = in0n.reshape(shape_n.shape)
+inputs[0].set_data_from_numpy(input0_data)
 
-# sync version
-results = []
-for data_ins in data:
-    response = send_requests(endpoint, data_ins)
-    results.append(response)
+try:
+    triton_client = httpclient.InferenceServerClient(
+                url=endpoint, verbose=True, concurrency=1)
+except Exception as e:
+        print("client creation failed: " + str(e))
+        sys.exit(1)
 
-pp.pprint(results[0])
-inference_response = InferenceResponse.parse_raw(response.text)
-raw_json = StringRequestCodec.decode_response(inference_response)
-output = json.loads(raw_json[0])
-pp.pprint(output)
+# try:
+triton_client.infer(
+                    'nlp-trans',
+                    inputs,
 
+                        )
+
+# except Exception as e:
+#             print("inference failed: " + str(e))
+#             sys.exit(1)

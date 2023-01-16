@@ -9,9 +9,9 @@ import numpy as np
 
 
 load = 1
-test_duration = 10
+test_duration = 5
 variant = 0
-platform = 'mlserver'
+platform = 'seldon'
 mode = 'equal'
 
 request = {

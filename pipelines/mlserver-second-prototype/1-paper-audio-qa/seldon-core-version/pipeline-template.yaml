@@ -32,6 +32,12 @@ spec:
               value: '{{ max_batch_size_1 }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: '{{ max_batch_time_1 }}'
+            - name: USE_THREADING
+              value: '{{use_threading_1}}'
+            - name: NUM_INTEROP_THREADS
+              value: '{{num_interop_threads_1}}'
+            - name: NUM_THREADS
+              value: '{{num_threads_1}}'
       replicas: {{ replicas_1 }}
     - spec:
         containers:
@@ -58,6 +64,12 @@ spec:
               value: '{{ max_batch_size_2 }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: '{{ max_batch_time_2 }}'
+            - name: USE_THREADING
+              value: '{{use_threading_2}}'
+            - name: NUM_INTEROP_THREADS
+              value: '{{num_interop_threads_2}}'
+            - name: NUM_THREADS
+              value: '{{num_threads_2}}'
       replicas: {{ replicas_2 }}
     graph:
       name: audio

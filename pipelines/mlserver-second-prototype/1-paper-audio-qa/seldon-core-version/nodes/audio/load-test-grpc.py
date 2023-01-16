@@ -8,10 +8,10 @@ import time
 import numpy as np
 
 
-load = 1
+load = 3
 test_duration = 4
 variant = 0
-platform = 'mlserver'
+platform = 'seldon'
 mode = 'exponential'
 
 
@@ -133,12 +133,12 @@ for sec_resps in responses:
         times = resp['times']
         server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
         server_arrival_latency.append(server_recieving_time)
-fig, ax = plt.subplots()
-ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
-ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
-ax.grid()
-fig.savefig(f"custom-{platform}-load-{load}-test_duration-{test_duration}.png")
-plt.show()
+# fig, ax = plt.subplots()
+# ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
+# ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
+# ax.grid()
+# fig.savefig(f"custom-{platform}-load-{load}-test_duration-{test_duration}.png")
+# plt.show()
 
 print(f"{np.average(server_arrival_latency)}=")
 print(responses[0][0])

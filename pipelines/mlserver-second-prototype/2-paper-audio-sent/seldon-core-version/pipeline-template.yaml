@@ -16,25 +16,31 @@ spec:
           name: audio
           imagePullPolicy: Always
             requests:
-              cpu: '{{ cpu_request }}'
+              cpu: '{{ cpu_request_1 }}'
               memory: '{{ memory_request }}'
             limits:
-              cpu: '{{ cpu_limit }}'
+              cpu: '{{ cpu_limit_1 }}'
               memory: '{{ memory_limit }}'
           env:
             - name: MODEL_VARIANT
-              value: {{ model_variant }}
+              value: {{ model_variant_1 }}
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TASK
               value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: '{{ max_batch_size }}'
+              value: '{{ max_batch_size_1 }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: '{{ max_batch_time }}'
+              value: '{{ max_batch_time_1 }}'
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
-      replicas: {{ replicas }}
+            - name: USE_THREADING
+              value: '{{use_threading_1}}'
+            - name: NUM_INTEROP_THREADS
+              value: '{{num_interop_threads_1}}'
+            - name: NUM_THREADS
+              value: '{{num_threads_1}}'
+      replicas: {{ replicas_1 }}
     - spec:
         containers:
         - image: sdghafouri/audio-sent-pipelines-mlserver:nlpsent
@@ -42,24 +48,30 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '{{ cpu_request }}'
+              cpu: '{{ cpu_request_2 }}'
               memory: '{{ memory_request }}'
             limits:
-              cpu: '{{ cpu_limit }}'
+              cpu: '{{ cpu_limit_2 }}'
               memory: '{{ memory_limit }}'
           env:
             - name: MODEL_VARIANT
-              value: {{ model_variant }}
+              value: {{ model_variant_2 }}
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TASK
               value: sentiment-analysis
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: '{{ max_batch_size }}'
+              value: '{{ max_batch_size_2 }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: '{{ max_batch_time }}'
+              value: '{{ max_batch_time_2 }}'
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
+            - name: USE_THREADING
+              value: '{{use_threading_2}}'
+            - name: NUM_INTEROP_THREADS
+              value: '{{num_interop_threads_2}}'
+            - name: NUM_THREADS
+              value: '{{num_threads_2}}'
       replicas: {{ replicas }}
     graph:
       name: audio
