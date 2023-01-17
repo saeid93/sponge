@@ -2,7 +2,6 @@ from barazmoon import MLServerAsyncGrpc
 from barazmoon import Data
 import asyncio
 import time
-import json
 import os
 import pathlib
 from PIL import Image
@@ -20,8 +19,6 @@ PATH = pathlib.Path(__file__).parent.resolve()
 data = image_loader(PATH, 'input-sample.JPEG')
 data_shape = list(np.array(data).shape)
 data = np.array(data).flatten()
-
-http_method = 'post'
 
 load = 4
 test_duration = 4

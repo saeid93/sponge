@@ -15,7 +15,6 @@ def image_loader(folder_path, image_name):
     #     pass
     return image
 
-http_method = 'post'
 load = 4
 test_duration = 5
 variant = 0

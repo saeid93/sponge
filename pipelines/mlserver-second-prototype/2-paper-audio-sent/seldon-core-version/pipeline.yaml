@@ -12,7 +12,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/audio-sent-pipelines-mlserver:audio
+        - image: sdghafouri/audio-sent-pipelines-mlserver-bytes:audio
           name: audio
           imagePullPolicy: Always
           env:
@@ -36,15 +36,15 @@ spec:
               value: "1"
           resources:
             requests:
-              cpu: '4'
+              cpu: '1'
               memory: 4Gi
             limits:
-              cpu: '4'
+              cpu: '1'
               memory: 4Gi
       replicas: 1
     - spec:
         containers:
-        - image: sdghafouri/audio-sent-pipelines-mlserver:nlpsent
+        - image: sdghafouri/audio-sent-pipelines-mlserver-bytes:nlpsent
           name: nlp-sent
           imagePullPolicy: Always
           env:
@@ -68,10 +68,10 @@ spec:
               value: "1"
           resources:
             requests:
-              cpu: '4'
+              cpu: '1'
               memory: 4Gi
             limits:
-              cpu: '4'
+              cpu: '1'
               memory: 4Gi
       replicas: 1
     graph:

@@ -141,13 +141,11 @@ class ResnetHuman(MLModel):
                 shapes = eval(shapes)
                 if type(shapes[0]) == int:
                     shapes = [shapes]
-                logger.info('type_1')
             else:
                 shapes = list(map(lambda l: eval(l), shapes))
                 if shapes[0][0] == list and shapes[0][0][0] == int:
                     logger.info(shapes)
                     shapes = list(map(lambda l: l[0], shapes))
-                logger.info('type_2')
             logger.info(f"shapes:\n{shapes}")
             input_data = request_input.data.__root__
             X = decode_from_bin(

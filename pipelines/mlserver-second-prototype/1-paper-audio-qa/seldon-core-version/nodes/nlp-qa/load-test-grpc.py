@@ -1,23 +1,13 @@
-from dataclasses import dataclass
-from urllib import response
 from barazmoon import MLServerAsyncGrpc
 from barazmoon import Data
 import asyncio
-import json
 import time
 import numpy as np
 
-
 load = 1
-<<<<<<< HEAD
 test_duration = 5
 variant = 0
 platform = 'seldon'
-=======
-test_duration = 10
-variant = 0
-platform = 'mlserver'
->>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
 mode = 'equal'
 
 request = {
@@ -130,12 +120,12 @@ for sec_resps in responses:
         times = resp['times']
         server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
         server_arrival_latency.append(server_recieving_time)
-fig, ax = plt.subplots()
-ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
-ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
-ax.grid()
-fig.savefig(f"custom-{platform}-load-{load}-test_duration-{test_duration}.png")
-plt.show()
+# fig, ax = plt.subplots()
+# ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
+# ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
+# ax.grid()
+# fig.savefig(f"custom-{platform}-load-{load}-test_duration-{test_duration}.png")
+# plt.show()
 
 print(f"{np.average(server_arrival_latency)}=")
 print(responses[0][0])

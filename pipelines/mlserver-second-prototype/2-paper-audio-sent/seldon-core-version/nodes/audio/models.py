@@ -15,10 +15,10 @@ from transformers import pipeline
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
-    logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
+    logger.info(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
     PREDICTIVE_UNIT_ID = 'audio'
-    logger.error(
+    logger.info(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
 def decode_from_bin(

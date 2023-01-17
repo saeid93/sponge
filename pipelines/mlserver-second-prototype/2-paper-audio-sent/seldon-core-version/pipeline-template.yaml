@@ -12,7 +12,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/audio-sent-pipelines-mlserver:audio
+        - image: sdghafouri/audio-sent-pipelines-mlserver-bytes:audio
           name: audio
           imagePullPolicy: Always
             requests:
@@ -43,7 +43,7 @@ spec:
       replicas: {{ replicas_1 }}
     - spec:
         containers:
-        - image: sdghafouri/audio-sent-pipelines-mlserver:nlpsent
+        - image: sdghafouri/audio-sent-pipelines-mlserver-bytes:nlpsent
           name: nlp-sent
           imagePullPolicy: Always
           resources:

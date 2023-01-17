@@ -8,7 +8,7 @@ import json
 import time
 import numpy as np
 
-load = 4
+load = 1
 test_duration = 5
 variant = 0
 platform = 'seldon'

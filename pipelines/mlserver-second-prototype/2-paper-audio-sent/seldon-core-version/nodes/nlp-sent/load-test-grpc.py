@@ -27,7 +27,6 @@ request = {
     'outputs': [{'data': 'mister quilter is the apostle of the middle classes and we are glad to welcome his gospel'}]
 }
 
-
 times = str([str(request['times']['models'])])
 data = request['outputs'][0]['data']
 
@@ -66,7 +65,7 @@ load_tester = MLServerAsyncGrpc(
     mode=mode, # options - step, equal, exponential
     data_shape=data_shape,
     data_type=data_type,
-    benchmark_duration=4)
+    benchmark_duration=1)
 
 responses = asyncio.run(load_tester.start())
 
@@ -125,12 +124,12 @@ for sec_resps in responses:
         times = resp['times']
         server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
         server_arrival_latency.append(server_recieving_time)
-fig, ax = plt.subplots()
-ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
-ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
-ax.grid()
-fig.savefig(f"custom-{platform}-load-{load}-test_duration-{test_duration}.png")
-plt.show()
+# fig, ax = plt.subplots()
+# ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
+# ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
+# ax.grid()
+# fig.savefig(f"custom-{platform}-load-{load}-test_duration-{test_duration}.png")
+# plt.show()
 
 print(f"{np.average(server_arrival_latency)}=")
 print(responses[0][0])

@@ -127,11 +127,11 @@ for sec_resps in responses:
         times = resp['times']
         server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
         server_arrival_latency.append(server_recieving_time)
-fig, ax = plt.subplots()
-ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
-ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
-ax.grid()
-fig.savefig(f"grpc-compressed-image-{platform}_variant_{variant}-server_recieving_latency-load-{load}-test_duration-{test_duration}.png")
-plt.show()
+# fig, ax = plt.subplots()
+# ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
+# ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
+# ax.grid()
+# fig.savefig(f"grpc-compressed-image-{platform}_variant_{variant}-server_recieving_latency-load-{load}-test_duration-{test_duration}.png")
+# plt.show()
 
 print(f"{np.average(server_arrival_latency)}=")

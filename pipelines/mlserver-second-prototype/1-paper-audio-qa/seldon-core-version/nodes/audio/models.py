@@ -2,10 +2,7 @@ import os
 import time
 from mlserver import MLModel
 import numpy as np
-<<<<<<< HEAD
 import torch
-=======
->>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
 from mlserver.logging import logger
 from mlserver.types import (
     InferenceRequest,
@@ -18,10 +15,10 @@ from transformers import pipeline
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
-    logger.error(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
+    logger.info(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
     PREDICTIVE_UNIT_ID = 'audio'
-    logger.error(
+    logger.info(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
 def decode_from_bin(
@@ -34,7 +31,6 @@ def decode_from_bin(
         batch.append(array)
     return batch
 
-<<<<<<< HEAD
 try:
     USE_THREADING = bool(os.environ['USE_THREADING'])
     logger.info(f'USE_THREADING set to: {USE_THREADING}')
@@ -63,8 +59,6 @@ if USE_THREADING:
     torch.set_num_interop_threads(NUM_INTEROP_THREADS)
     torch.set_num_threads(NUM_THREADS)
 
-=======
->>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
 class GeneralAudio(MLModel):
     async def load(self):
         self.loaded = False
@@ -131,15 +125,10 @@ class GeneralAudio(MLModel):
             }
         }
         batch_times = [str(times)] * batch_shape
-<<<<<<< HEAD
         if self.settings.max_batch_size == 1:
             batch_times = str(batch_times)
         logger.info(f'batch shapes:\n{batch_shape}')
         logger.info(f"batch_times:\n{batch_times}")
-=======
-        if batch_shape == 1:
-            batch_times = str(batch_times)
->>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
 
         # processing inference response
         output_data = list(map(lambda l: l.encode('utf8'), output))
@@ -156,11 +145,7 @@ class GeneralAudio(MLModel):
             )],
             model_name=self.name,
             parameters=Parameters(
-<<<<<<< HEAD
                 type_of='text'
-=======
-                type_of='audio'
->>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
             )
         )
         logger.info(f"request counter:\n{self.request_counter}\n")

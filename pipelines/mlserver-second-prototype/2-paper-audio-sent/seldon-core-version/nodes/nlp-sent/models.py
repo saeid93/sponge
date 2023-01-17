@@ -139,7 +139,7 @@ class GeneralNLP(MLModel):
 
         # HACK workaround for batch size of one
         batch_times = list(map(lambda l: str(l), times))
-        if self.settings.max_batch_sizes == 1:
+        if self.settings.max_batch_size == 1:
             batch_times = str(batch_times)
 
         # processing inference response

@@ -1,11 +1,6 @@
 {
     "name": "audio",
     "implementation": "models.GeneralAudio",
-<<<<<<< HEAD
-=======
-    "max_batch_size": 3,
-    "max_batch_time": 1,
->>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
     "parameters": {
         "uri": "./fakeuri"
     }
