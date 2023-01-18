@@ -1,4 +1,4 @@
-series: 60
+series: 61
 series_meta: 'replicating old results with threading 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 pipeline_name: 5-paper-video
 node_name: resnet-human
@@ -33,7 +33,7 @@ replicas:
   - 1
 workload_type: static
 benchmark_duration: 1
-use_threading: 'True'
+use_threading: 'False'
 num_interop_threads:
   - '1'
 num_threads:
