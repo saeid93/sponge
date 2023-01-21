@@ -8,10 +8,10 @@ OBJ_PATH = "/home/cc/my_mounting_point/" # object store path
 # base DATA folder path and object sore path
 DATA_PATH = os.path.join(PROJECT_PATH, "data")
 OBJ_DATA_PATH = os.path.join(OBJ_PATH, "data")
-
+PIPELINES_FOLDER = "mlserver-prototype"
 # configs path
 PIPLINES_PATH = os.path.join(
-    PROJECT_PATH, "pipelines", "mlserver-second-prototype")
+    PROJECT_PATH, "pipelines", PIPELINES_FOLDER)
 CONFIGS_PATH = os.path.join(DATA_PATH, "configs")
 PROFILING_CONFIGS_PATH = os.path.join(CONFIGS_PATH, "profiling")
 NODE_PROFILING_CONFIGS_PATH = os.path.join(
