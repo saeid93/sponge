@@ -1,43 +1,51 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: yolo
+  name: resnet-human
 spec:
   protocol: v2
-  name: yolo
+  name: resnet-human
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: default 
+  - name: example
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/video-pipelines-mlserver-gpu:yolo
-          name: yolo
+        - image: sdghafouri/video-pipelines-mlserver-bytes-gpus1:resnet-human
+          name: resnet-human
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '4'
+              cpu: '1'
               memory: 4Gi
-              nvidia.com/gpu: 2
+              nvidia.com/gpu: 3
             limits:
-              cpu: '4'
+              cpu: '1'
               memory: 4Gi
-              nvidia.com/gpu: 2
+              nvidia.com/gpu: 3
           env:
             - name: MODEL_VARIANT
-              value: yolov5m
+              value: resnet18
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: "1"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
+              value: "1"
+            - name: MLSERVER_PARALLEL_WORKERS
+              value: "0"
+            - name: USE_THREADING
+              value: "False"
+            - name: NUM_INTEROP_THREADS
+              value: "1"
+            - name: NUM_THREADS
               value: "1"
       replicas: 1
     graph:
-      name: yolo
+      name: resnet-human
       type: MODEL
       children: []
     svcOrchSpec:
@@ -45,6 +53,8 @@ spec:
         requests:
           cpu: '4'
           memory: 4Gi
+          nvidia.com/gpu: 1
         limits:
           cpu: '4'
           memory: 4Gi
+          nvidia.com/gpu: 1

@@ -56,6 +56,7 @@ class Yolo(MLModel):
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         try:
             logger.error('Loading the ML models')
+            logger.error(f"cuda is {torch.cuda.is_available()}")
             self.device = torch.device(
                 "cuda:0" if GPU and torch.cuda.is_available() else "cpu")
             torch.hub.set_dir('./cache')
