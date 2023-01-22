@@ -19,6 +19,16 @@ except KeyError as e:
     PREDICTIVE_UNIT_ID = 'nlp-li'
     logger.info(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
+def to_bool(x):
+    return x in ("True", "true", True)
+
+try:
+    GPU = to_bool(os.environ['GPU'])
+    logger.error(f'PREDICTIVE_UNIT_ID set to: {GPU}')
+except KeyError as e:
+    GPU = False
+    logger.error(
+        f"GPU env variable not set, using default value: {GPU}")
 
 try:
     USE_THREADING = bool(os.environ['USE_THREADING'])
@@ -71,12 +81,19 @@ class GeneralNLP(MLModel):
         # TODO add batching like the runtime
         logger.info(f'max_batch_size: {self._settings.max_batch_size}')
         logger.info(f'max_batch_time: {self._settings.max_batch_time}')
-        self.model  = pipeline(
+        if True:
+            self.model  = pipeline(
             task=self.TASK,
             model=self.MODEL_VARIANT,
+            device=0,
             batch_size=self._settings.max_batch_size)
+        else:
+            self.model  = pipeline(
+                task=self.TASK,
+                model=self.MODEL_VARIANT,
+                batch_size=self._settings.max_batch_size)
         self.loaded = True
-        logger.info('model loading complete!')
+        logger.info(f'model loading complete on gpu is {GPU}!')
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
