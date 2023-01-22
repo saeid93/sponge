@@ -1,0 +1,7 @@
+{
+    "name": "node-one",
+    "implementation": "models.GeneralAudio",
+    "parameters": {
+        "uri": "./fakeuri"
+    }
+}

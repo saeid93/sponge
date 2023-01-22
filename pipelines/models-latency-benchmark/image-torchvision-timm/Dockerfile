@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-# Start from an official PyTorch image
->>>>>>> 3fee963e826ae39e288237a4584be4171d51eb2d
 FROM pytorch/pytorch:latest
 
 COPY requirements.txt /app/requirements.txt

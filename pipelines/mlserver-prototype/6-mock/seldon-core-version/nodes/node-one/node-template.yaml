@@ -1,52 +1,55 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: resnet-human
+  name: {{ name }}
 spec:
   protocol: v2
-  name: resnet-human
+  name: {{ name }}
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: example
+  - name: default
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/video-pipelines-mlserver-bytes:resnet-human
-          name: resnet-human
+        - image: sdghafouri/mock-mlserver-bytes:node-one
+          name: audio
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '1'
-              memory: 4Gi
+              cpu: '{{ cpu_request }}'
+              memory: '{{ memory_request }}'
             limits:
-              cpu: '1'
-              memory: 4Gi
+              cpu: '{{ cpu_limit }}'
+              memory: '{{ memory_limit }}'
           env:
             - name: MODEL_VARIANT
-              value: resnet18
+              value: {{ model_variant }}
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
-            - name: TORCH_HOME
-              value: /opt/mlserver/.torch
+            - name: TASK
+              value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "1"
+              value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: "1"
+              value: '{{ max_batch_time }}'
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
             - name: USE_THREADING
-              value: "True"
+              value: '{{use_threading}}'
             - name: NUM_INTEROP_THREADS
-              value: "1"
+              value: '{{num_interop_threads}}'
             - name: NUM_THREADS
-              value: "1"
-      replicas: 4
+              value: '{{num_threads}}'
+      replicas: {{ replicas }}
     graph:
-      name: resnet-human
+      name: audio
       type: MODEL
       children: []
     svcOrchSpec:
+      env:
+      - name: SELDON_LOG_LEVEL
+        value: DEBUG
       resources:
         requests:
           cpu: '4'
@@ -54,3 +57,6 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
+    labels:
+      sidecar.istio.io/inject: "true"
+
