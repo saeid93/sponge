@@ -1,43 +1,49 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: yolo
+  name: {{ name }}
 spec:
   protocol: v2
-  name: yolo
+  name: {{ name }}
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: default 
+  - name: default
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/video-pipelines-mlserver-gpu:yolo
-          name: yolo
+        - image: sdghafouri/video-pipelines-mlserver-bytes:resnet-human
+          name: resnet-human
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '4'
-              memory: 4Gi
-              nvidia.com/gpu: 2
+              cpu: '{{ cpu_request }}'
+              memory: '{{ memory_request }}'
             limits:
-              cpu: '4'
-              memory: 4Gi
-              nvidia.com/gpu: 2
+              cpu: '{{ cpu_limit }}'
+              memory: '{{ memory_limit }}'
           env:
             - name: MODEL_VARIANT
-              value: yolov5m
+              value: {{ model_variant }}
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: "1"
-      replicas: 1
+              value: '{{ max_batch_time }}'
+            - name: MLSERVER_PARALLEL_WORKERS
+              value: "0"
+            - name: USE_THREADING
+              value: '{{use_threading}}'
+            - name: NUM_INTEROP_THREADS
+              value: '{{num_interop_threads}}'
+            - name: NUM_THREADS
+              value: '{{num_threads}}'
+      replicas: {{ replicas }}
     graph:
-      name: yolo
+      name: resnet-human
       type: MODEL
       children: []
     svcOrchSpec:
