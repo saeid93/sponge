@@ -22,7 +22,9 @@ class Profile:
     
     @property
     def throughput(self):
-        return 1/self.latency
+        # TODO decide whether latency based or RPS
+        throughput = (1/self.latency) * self.batch
+        return throughput
 
     def __eq__(self, other):
         if not isinstance(other, int):

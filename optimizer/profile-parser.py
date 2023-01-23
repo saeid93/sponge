@@ -1,12 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
-import matplotlib.pyplot as plt
-import json
-from copy import deepcopy
-import random
 import sys
-import time
 from typing import List
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
@@ -30,7 +25,7 @@ from experiments.utils.constants import (
 from experiments.utils.loader import Loader
 
 
-series = 60
+series = 63
 experiment_id = 1
 config_key_mapper = "key_config_mapper.csv"
 model_name = 'resnet-human'
@@ -48,14 +43,15 @@ experiment_ids = key_config_df[
     (key_config_df['load'] == 1)]['experiment_id'].tolist()
 metadata_columns = [
     'model_variant',
+    'cpu_request',
     'max_batch_size',
-    'cpu_request', 'load']
+    'load']
 results_columns = [
     'model_latencies_min',
     'model_latencies_p99',
     'cpu_usage_count_avg',
     'model_latencies_avg']
-output = loader.table_maker(
+profiling_info = loader.table_maker(
     experiment_ids=experiment_ids,
     metadata_columns=metadata_columns,
     results_columns=results_columns)
@@ -63,24 +59,32 @@ output = loader.table_maker(
 
 # TODO add accuracies
 # TODO polish file format
-
-available_model_profiles = []
-for model_variant in output['model_variant'].unique():
-    for cpu_request in output['cpu_request'].unique():
-        for model_latencies_avg in output['model_latencies_avg'].unique():
+def read_task_profiles(profiling_info: pd.DataFrame) -> List[Model]:
+    available_model_profiles = []
+    for model_variant in profiling_info['model_variant'].unique():
+        model_variant_profiling_info =\
+            profiling_info[profiling_info['model_variant'] == model_variant]
+        for cpu_request in model_variant_profiling_info['cpu_request'].unique():
+            cpu_request_profiling_info =\
+                model_variant_profiling_info[model_variant_profiling_info['cpu_request'] == cpu_request]
+            measured_profiles = []
+            for _, row in cpu_request_profiling_info.iterrows():
+                measured_profiles.append(
+                    Profile(
+                        batch=row['max_batch_size'],
+                        latency=row['model_latencies_avg']))
             available_model_profiles.append(
                 Model(
-                    name='yolo5n',
-                    resource_allocation=ResourceAllocation(cpu=1),
-                    measured_profiles=[
-                        Profile(batch=1, latency=0.1),
-                        Profile(batch=2, latency=0.2),
-                        Profile(batch=4, latency=0.4),
-                        # Profile(batch=8, latency=0.8),
-                    ],
+                    name=model_variant,
+                    resource_allocation=ResourceAllocation(cpu=cpu_request),
+                    measured_profiles=measured_profiles,
                     accuracy=0.5
                 ) 
             )
+    return available_model_profiles
+
+available_model_profiles =\
+    read_task_profiles(profiling_info=profiling_info)
 
 # ---------- first task ----------
 task_a_model_1 = Model(
