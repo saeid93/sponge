@@ -18,6 +18,7 @@ from typing import List
 # sys.path.insert(0, './cache/ultralytics_yolov5_master')
 # sys.path.insert(0, os.path.join(os.getcwd(), '/cache'))
 
+
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
     logger.info(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')

@@ -4,8 +4,12 @@ import pandas as pd
 import itertools
 from sklearn import linear_model
 
-class ResourceRequirement:
+class ResourceAllocation:
     def __init__(self, cpu: float = 0, gpu: float = 0) -> None:
+        # For now only one type CPU/GPU allocation is allowed
+        if cpu != 0 and gpu != 0:
+            raise ValueError(
+                'For now only one of the CPU or GPU allocation is allowed')
         self.cpu = cpu
         self.gpu = gpu
 
@@ -31,11 +35,11 @@ class Model:
     def __init__(
         self,
         name: str,
-        resources: ResourceRequirement,
+        resource_allocation: ResourceAllocation,
         measured_profiles: List[Profile],
         accuracy: float) -> None:
 
-        self.resources = resources
+        self.resource_allocation = resource_allocation
         self.measured_profiles = measured_profiles
         self.accuracy = accuracy
         self.name = name
@@ -79,26 +83,71 @@ class Task:
     def __init__(
         self,
         name: str,
-        available_variants: Dict[str, Model],
-        active_variant: str, replica: int, batch: int,
+        available_model_profiles: List[Model], # TODO not dict and search instead
+        active_variant: str, active_allocation: ResourceAllocation,
+        replica: int, batch: int,
         gpu_mode: False) -> None:
-        self.available_variants = available_variants
+        self.available_model_profiles = available_model_profiles
+        self.active_variant = active_variant
+        self.active_allocation = active_allocation
         self.replicas = replica
         self.batch = batch
-        if active_variant not in self.available_variants.keys():
-            raise ValueError(f"{active_variant} not part of variants",
-                             f"available variants: {self.available_variants}")
-        self.active_variant = active_variant
         self.replicas = replica
         self.gpu_mode = gpu_mode
         self.name = name
-    # TODO add queue delay
+        for variant_index, variant in enumerate(self.available_model_profiles):
+            if variant.name == active_variant:
+                if self.gpu_mode:
+                    if self.active_allocation.gpu == variant.resource_allocation.gpu:
+                        self.active_variant_index = variant_index
+                        break
+                else:
+                    if self.active_allocation.cpu == variant.resource_allocation.cpu:
+                        self.active_variant_index = variant_index
+                        break
+        else: # no-break
+            raise ValueError(f"no matching profile for the variant {active_variant} and allocation"
+                             f"of cpu: {active_allocation.cpu} and gpu: {active_allocation.gpu}")
 
-    def model_switch(self, active_variant) -> None:
-        if active_variant not in self.available_variants.keys():
-            raise ValueError(f"{active_variant} not part of variants",
-                             f"available variants: {self.available_variants}")
-        self.active_variant = active_variant
+    def model_switch(self, active_variant: str) -> None:
+        """
+        changes variant under specific allocation
+        """
+        for variant_index, variant in enumerate(self.available_model_profiles):
+            if variant.name == active_variant:
+                if self.gpu_mode:
+                    if self.active_allocation.gpu == variant.resource_allocation.gpu:
+                        self.active_variant_index = variant_index
+                        self.active_variant = active_variant
+                        break
+                else:
+                    if self.active_allocation.cpu == variant.resource_allocation.cpu:
+                        self.active_variant_index = variant_index
+                        self.active_variant = active_variant
+                        break
+        else: # no-break
+            raise ValueError(f"no matching profile for the variant {active_variant} and allocation"
+                             f"of cpu: {self.active_allocation.cpu} and gpu: {self.active_allocation.gpu}")
+
+    def change_allocation(self, active_allocation: ResourceAllocation) -> None:
+        """
+        change allocation of a specific variant
+        """
+        for variant_index, variant in enumerate(self.available_model_profiles):
+            if variant.name == self.active_variant:
+                if self.gpu_mode:
+                    if active_allocation.gpu == variant.resource_allocation.gpu:
+                        self.active_variant_index = variant_index
+                        self.active_allocation = active_allocation
+                        break
+                else:
+                    if active_allocation.cpu == variant.resource_allocation.cpu:
+                        self.active_variant_index = variant_index
+                        self.active_allocation = active_allocation
+                        break
+        else: # no-break
+            raise ValueError(f"no matching profile for the variant {self.active_variant} and allocation"
+                             f"of cpu: {active_allocation.cpu} and gpu: {active_allocation.gpu}")
 
     def re_scale(self, replica) -> None:
         self.replicas = replica
@@ -108,19 +157,19 @@ class Task:
 
     @property
     def active_model(self) -> Model:
-        return self.available_variants[self.active_variant]
+        return self.available_model_profiles[self.active_variant_index]
 
     @property
     def cpu(self) -> int:
         if self.gpu_mode:
             raise ValueError('The node is on gpu mode')
         else:
-            return self.active_model.resources.cpu
+            return self.active_model.resource_allocation.cpu
 
     @property
     def gpu(self) -> float:
         if self.gpu_mode:
-            return self.active_model.resources.gpu
+            return self.active_model.resource_allocation.gpu
         else:
             return 0
 
@@ -129,12 +178,12 @@ class Task:
         if self.gpu_mode:
             raise ValueError('The node is on gpu mode')
         else:
-            return self.active_model.resources.cpu * self.replicas
+            return self.active_model.resource_allocation.cpu * self.replicas
 
     @property
     def gpu_all_replicas(self) -> float:
         if self.gpu_mode:
-            return self.active_model.resources.gpu * self.replicas
+            return self.active_model.resource_allocation.gpu * self.replicas
         return 0
 
     @property
@@ -168,13 +217,34 @@ class Task:
 
     @property
     def variant_names(self):
-        return list(self.available_variants.keys())
+        return list(set(map(
+            lambda l: l.name, self.available_model_profiles)))
 
     @property
     def batches(self):
         batches = list(map(
             lambda l: l.batch, self.active_model.profiles))
         return batches
+
+    @property
+    def resource_allocations_cpu_mode(self):
+        cpu_allocations = list(set(
+            list(map(
+                lambda l: l.resource_allocation.cpu,
+                self.available_model_profiles))))
+        resource_allocations = list(map(
+            lambda l: ResourceAllocation(cpu=l), cpu_allocations))
+        return resource_allocations
+
+    @property
+    def resource_allocations_gpu_mode(self):
+        gpu_allocations = list(set(
+            list(map(
+                lambda l: l.resource_allocation.gpu,
+                self.available_model_profiles))))
+        resource_allocations = list(map(
+            lambda l: ResourceAllocation(gpu=l), gpu_allocations))
+        return resource_allocations
 
 class Pipeline:
     def __init__(
@@ -344,17 +414,23 @@ class Optimizer:
         variant_names = []
         replicas = []
         batches = []
+        allocations = []
         for task in self.pipeline.inference_graph:
             variant_names.append(task.variant_names)
             replicas.append(np.arange(1, scaling_cap+1))
             batches.append(task.batches)
+            if task.gpu_mode:
+                allocations.append(task.resource_allocations_gpu_mode)
+            else:
+                allocations.append(task.resource_allocations_cpu_mode)
         variant_names = list(itertools.product(*variant_names))
         replicas = list(itertools.product(*replicas))
         batches = list(itertools.product(*batches))
+        allocations = list(itertools.product(*allocations))
 
         states = self._generate_states()
         all_combinations = list(
-            itertools.product(*[variant_names, replicas, batches]))
+            itertools.product(*[variant_names, allocations, replicas, batches]))
         for combination in all_combinations:
             for task_id_i in range(self.pipeline.num_nodes):
                 # change config knobs (model_variant, batch, scale)
@@ -362,9 +438,12 @@ class Optimizer:
                     task_id_i].model_switch(
                         active_variant=combination[0][task_id_i])
                 self.pipeline.inference_graph[
-                    task_id_i].re_scale(replica=combination[1][task_id_i])
+                    task_id_i].change_allocation(
+                        active_allocation=combination[1][task_id_i])
                 self.pipeline.inference_graph[
-                    task_id_i].change_batch(batch=combination[2][task_id_i])
+                    task_id_i].re_scale(replica=combination[2][task_id_i])
+                self.pipeline.inference_graph[
+                    task_id_i].change_batch(batch=combination[3][task_id_i])
             ok_to_add = False
             if check_constraints:
                 if self.constraints(arrival_rate=arrival_rate, sla=sla):
