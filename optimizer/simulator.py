@@ -408,11 +408,31 @@ class Optimizer:
         alpha: float = 1,
         beta: float = 1,
         arrival_rate: int = None,
-        sla: float = None) -> pd.DataFrame:
+        sla: float = None,
+        limit: int = None) -> pd.DataFrame:
+        """generate all the possible states based on profiling data
+
+        Args:
+            check_constraints (bool, optional): whether to check the
+                objective function contraint or not. Defaults to False.
+            scaling_cap (int, optional): maximum number of allowed horizontal
+                scaling for each node. Defaults to 2.
+            alpha (float, optional): accuracy ojbective weight.
+                Defaults to 1.
+            beta (float, optional): resource usage
+                objective weigth. Defaults to 1.
+            arrival_rate (int, optional): arrival rate into
+                the pipeline. Defaults to None.
+            sla (float, optional): end to end service level agreement
+                of pipeline. Defaults to None.
+            state_limit (int, optional): whether to generate a
+                fixed number of state. Defaults to None.
+
+        Returns:
+            pd.DataFrame: all the states of the pipeline
         """
-        scaling_cap: maximum number of allowed replication
-        returns all states of the pipeline
-        """
+        if limit is not None:
+            state_counter = 0
         variant_names = []
         replicas = []
         batches = []
@@ -494,16 +514,24 @@ class Optimizer:
                         self.accuracy_objective()
                     state['resource_objective'] =\
                         self.resource_objective()
-                    state['objective'] = self.objective(alpha=alpha, beta=beta)
+                    state['objective'] = self.objective(
+                        alpha=alpha, beta=beta)
                     state['alpha'] = alpha
                     state['beta'] = beta
                 states = states.append(state, ignore_index=True)
+                if limit is not None:
+                    state_counter += 1
+                    if state_counter == limit: break
         return states
 
-    def greedy_optimizer(self, scaling_cap: int, sla: float, arrival_rate: int):
+    def greedy_optimizer(
+        self, scaling_cap: int, sla: float,
+        arrival_rate: int, limit: int=None):
         states = self.all_states(
-            scaling_cap=scaling_cap, sla=sla, arrival_rate=arrival_rate)
-        optimal = states[states['objective'] == states['objective'].max()]
+            scaling_cap=scaling_cap, sla=sla,
+            arrival_rate=arrival_rate, limit=limit)
+        optimal = states[
+            states['objective'] == states['objective'].max()]
         return optimal
 
     def can_sustain_load(

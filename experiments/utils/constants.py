@@ -9,15 +9,24 @@ OBJ_PATH = "/home/cc/my_mounting_point/" # object store path
 DATA_PATH = os.path.join(PROJECT_PATH, "data")
 OBJ_DATA_PATH = os.path.join(OBJ_PATH, "data")
 PIPELINES_FOLDER = "mlserver-prototype"
+
 # configs path
 PIPLINES_PATH = os.path.join(
     PROJECT_PATH, "pipelines", PIPELINES_FOLDER)
 CONFIGS_PATH = os.path.join(DATA_PATH, "configs")
-PROFILING_CONFIGS_PATH = os.path.join(CONFIGS_PATH, "profiling")
+
+# profiling configs
+PROFILING_CONFIGS_PATH = os.path.join(
+    CONFIGS_PATH, "profiling")
 NODE_PROFILING_CONFIGS_PATH = os.path.join(
     PROFILING_CONFIGS_PATH, "nodes")
 PIPELINE_PROFILING_CONFIGS_PATH = os.path.join(
     PROFILING_CONFIGS_PATH, "pipelines")
+
+# pipeline simulation config path
+PIPELINE_SIMULATION_CONFIGS_PATH = os.path.join(
+    CONFIGS_PATH, "pipeline-simulation"
+)
 
 # triton folders
 TRITON_PROFILING_PATH = os.path.join(
@@ -31,6 +40,8 @@ TRITON_PROFILING_TEMPLATES_PATH = os.path.join(
 RESULTS_PATH = os.path.join(DATA_PATH, "results")
 PROFILING_RESULTS_PATH = os.path.join(
     RESULTS_PATH, "profiling")
+PIPELINE_SIMULATION_RESULTS_PATH = os.path.join(
+    RESULTS_PATH, "pipeline-simulation")
 NODE_PROFILING_RESULTS_PATH = os.path.join(
     PROFILING_RESULTS_PATH, "nodes")
 NODE_PROFILING_RESULTS_STATIC_PATH = os.path.join(
@@ -50,6 +61,8 @@ PIPELINE_PROFILING_RESULTS_DYNAMIC_PATH = os.path.join(
 OBJ_RESULTS_PATH = os.path.join(OBJ_DATA_PATH, "results")
 OBJ_PROFILING_RESULTS_PATH = os.path.join(
     OBJ_RESULTS_PATH, "profiling")
+OBJ_PIPELINE_SIMULATION_RESULTS_PATH = os.path.join(
+    RESULTS_PATH, "pipeline-simulation")
 OBJ_NODE_PROFILING_RESULTS_PATH = os.path.join(
     OBJ_PROFILING_RESULTS_PATH, "nodes")
 OBJ_NODE_PROFILING_RESULTS_STATIC_PATH = os.path.join(
@@ -89,10 +102,16 @@ def _create_dirs():
         os.makedirs(NODE_PROFILING_CONFIGS_PATH)
     if not os.path.exists(PIPELINE_PROFILING_CONFIGS_PATH):
         os.makedirs(PIPELINE_PROFILING_CONFIGS_PATH)
+    if not os.path.exists(PIPELINE_SIMULATION_CONFIGS_PATH):
+        os.makedirs(PIPELINE_SIMULATION_CONFIGS_PATH)
     if not os.path.exists(RESULTS_PATH):
         os.makedirs(RESULTS_PATH)
     if not os.path.exists(PROFILING_RESULTS_PATH):
         os.makedirs(PROFILING_RESULTS_PATH)
+    if not os.path.exists(PIPELINE_SIMULATION_RESULTS_PATH):
+        os.makedirs(PIPELINE_SIMULATION_RESULTS_PATH)
+    if not os.path.exists(PIPELINE_SIMULATION_RESULTS_PATH):
+        os.makedirs(PIPELINE_SIMULATION_RESULTS_PATH)
     if not os.path.exists(NODE_PROFILING_RESULTS_PATH):
         os.makedirs(NODE_PROFILING_RESULTS_PATH)
     if not os.path.exists(NODE_PROFILING_RESULTS_STATIC_PATH):
