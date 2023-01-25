@@ -1,6 +1,6 @@
 import pandas as pd
 import click
-import numpy as np
+import time
 import os
 import sys
 import shutil
@@ -188,29 +188,37 @@ def main(config_name: str):
         pipeline=pipeline
     )
 
+    start = time.time()
     if 'all' in generate:
         # all states
         states = optimizer.all_states(scaling_cap=scaling_cap, limit=limit)
-        print(f"{states = }")
-        states.to_markdown(os.path.join(dir_path, 'all-states.md'))
-        states.to_csv(os.path.join(dir_path, 'all-states.csv'))
+        # print(f"{states = }")
+        states.to_markdown(os.path.join(dir_path, 'all-states-readable.csv'), index=False)
+        states.to_csv(os.path.join(dir_path, 'all-states.csv'), index=False)
+        all_states_time = time.time()
+        print(f"all states time: {all_states_time - start}")
     if 'feasible' in generate:
         # all feasibla states
         with_constraints = optimizer.all_states(
             check_constraints=True, scaling_cap=scaling_cap,
             arrival_rate=arrival_rate, sla=sla, limit=limit)
-        print(f"{with_constraints = }")
+        # print(f"{with_constraints = }")
         with_constraints.to_markdown(
-            os.path.join(dir_path, 'with-constraints.md'))
+            os.path.join(dir_path, 'with-constraints-readable.csv'), index=False)
         with_constraints.to_csv(
-            os.path.join(dir_path, 'with-constraints.csv'))
+            os.path.join(dir_path, 'with-constraints.csv'), index=False)
+        feasible_time = time.time()
+        print(f"with constraint time: {feasible_time - all_states_time}")
     if 'optimal' in generate:
         # optimal states
         optimal = optimizer.greedy_optimizer(
             scaling_cap=scaling_cap, sla=sla, arrival_rate=arrival_rate, limit=limit)
-        print(f"{optimal = }")
-        optimal.to_markdown(os.path.join(dir_path, 'optimal.md'))
-        optimal.to_csv(os.path.join(dir_path, 'optimal.csv'))
+        # print(f"{optimal = }")
+        optimal.to_markdown(os.path.join(dir_path, 'optimal-readable.csv'), index=False)
+        optimal.to_csv(os.path.join(dir_path, 'optimal.csv'), index=False)
+        optimal_time = time.time()
+        print(f"feasible time: {optimal_time - feasible_time}")
+    print(f"total time spent: {time.time() - start}")
 
 if __name__ == "__main__":
     main()
