@@ -83,6 +83,7 @@ class GeneralNLP(MLModel):
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
+        print(f"inputs from triton are {payload.inputs}")
         for request_input in payload.inputs:
             prev_nodes_times = request_input.parameters.times
             # HACK workaround for batch size of one

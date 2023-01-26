@@ -16,7 +16,7 @@ try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
     logger.info(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
-    PREDICTIVE_UNIT_ID = 'nlp-sum'
+    PREDICTIVE_UNIT_ID = 'nlp-li'
     logger.info(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
 
@@ -57,14 +57,14 @@ class GeneralNLP(MLModel):
             self.MODEL_VARIANT = os.environ['MODEL_VARIANT']
             logger.info(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
-            self.MODEL_VARIANT = 'sshleifer/distilbart-cnn-12-6'
+            self.MODEL_VARIANT = 'dinalzein/xlm-roberta-base-finetuned-language-identification'
             logger.info(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         try:
             self.TASK = os.environ['TASK']
             logger.info(f'TASK set to: {self.TASK}')
         except KeyError as e:
-            self.TASK = 'summarization' 
+            self.TASK = 'text-classification' 
             logger.info(
                 f"MODEL_VARIANT env variable not set, using default value: {self.TASK}")
         logger.info('Loading the ML models')
@@ -83,19 +83,13 @@ class GeneralNLP(MLModel):
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
-        print("inputs are: ", payload.inputs)
         for request_input in payload.inputs:
-            prev_nodes_times = request_input.parameters.times
-            # HACK workaround for batch size of one
-            if type(prev_nodes_times) == str:
-                logger.info(f"prev_nodes_times:\n{prev_nodes_times}")
-                prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
-            else:
-                prev_nodes_times = list(
-                    map(lambda l: eval(eval(l)[0]), prev_nodes_times))
+            logger.info('request input:\n')
+            logger.info(f"{request_input}\n")
+            decoded_input = self.decode(request_input)
+            logger.info(decoded_input)
+            X = list(decoded_input)
             batch_shape = request_input.shape[0]
-            X = request_input.data.__root__
-            X = list(map(lambda l: l.decode(), X))
         logger.info(f"recieved batch len:\n{batch_shape}")
         self.request_counter += batch_shape
         self.batch_counter += 1
@@ -104,11 +98,14 @@ class GeneralNLP(MLModel):
         logger.info(f"len of the to the model:\n{len(X)}")
 
         # model part
-        output = self.model(X)
-        if type(output) == dict:
-            output = [output]
-        output = list(map(lambda l: str(l['summary_text']), output))
+        output: List[Dict] = self.model(X)
         logger.info(f"model output:\n{output}")
+        serving_time = time.time()
+        # HACK
+        # we have only one language and one upstream node
+        # therefore we just directly send the french text
+        # to the next node
+        output = X
 
         # times processing
         serving_time = time.time()
@@ -118,15 +115,11 @@ class GeneralNLP(MLModel):
             "serving": serving_time
             }
         }
-        this_node_times = [times] * batch_shape
-        times = []
-        for this_node_time, prev_nodes_time in zip(
-            this_node_times, prev_nodes_times):
-            this_node_time.update(prev_nodes_time)
-            times.append(this_node_time)
-        batch_times = list(map(lambda l: str(l), times))
+        batch_times = [str(times)] * batch_shape
         if self.settings.max_batch_size == 1:
             batch_times = str(batch_times)
+        logger.info(f'batch shapes:\n{batch_shape}')
+        logger.info(f"batch_times:\n{batch_times}")
 
         # processing inference response
         output_data = list(map(lambda l: l.encode('utf8'), output))
