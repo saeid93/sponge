@@ -242,3 +242,4 @@ Quantizer
 infass
 !pipelines/mlserver-prototype/5-paper-video/seldon-core-version/nodes/yolo/cache
 !data/configs
+*.lp

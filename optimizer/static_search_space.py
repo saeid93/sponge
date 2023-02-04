@@ -145,11 +145,18 @@ def main(config_name: str):
     # pipeline config
     sla = config['sla']
     arrival_rate = config['arrival_rate']
-    limit = config['limit']
+    num_state_limit = config['num_state_limit']
     generate = config['generate']
+    optimization_method = config['optimization_method']
+
+    # optimizer
+    alpha = config['alpha']
+    beta = config['beta']
+
+    # fix cpu on a cpu allocation
+    fix_cpu_on_initial = config['fix_cpu_on_initial']
 
     # config generation config
-
     dir_path = os.path.join(
         PIPELINE_SIMULATION_RESULTS_PATH,
         'series', str(series))
@@ -185,37 +192,58 @@ def main(config_name: str):
         initial_batch=initial_batch)
 
     optimizer = Optimizer(
-        pipeline=pipeline
+        pipeline=pipeline,
+        fix_cpu_on_initial=fix_cpu_on_initial,
+
     )
 
     start = time.time()
     if 'all' in generate:
         # all states
-        states = optimizer.all_states(scaling_cap=scaling_cap, limit=limit)
+        states = optimizer.all_states(
+            check_constraints=False,
+            scaling_cap=scaling_cap,
+            alpha=alpha, beta=beta,
+            arrival_rate=arrival_rate, sla=sla,
+            num_state_limit=num_state_limit)
         # print(f"{states = }")
-        states.to_markdown(os.path.join(dir_path, 'all-states-readable.csv'), index=False)
-        states.to_csv(os.path.join(dir_path, 'all-states.csv'), index=False)
+        states.to_markdown(
+            os.path.join(
+                dir_path, 'all-states-readable.csv'), index=False)
+        states.to_csv(
+            os.path.join(dir_path, 'all-states.csv'), index=False)
         all_states_time = time.time()
         print(f"all states time: {all_states_time - start}")
     if 'feasible' in generate:
         # all feasibla states
         with_constraints = optimizer.all_states(
-            check_constraints=True, scaling_cap=scaling_cap,
-            arrival_rate=arrival_rate, sla=sla, limit=limit)
+            check_constraints=True,
+            scaling_cap=scaling_cap,
+            alpha=alpha, beta=beta,
+            arrival_rate=arrival_rate, sla=sla,
+            num_state_limit=num_state_limit)
         # print(f"{with_constraints = }")
         with_constraints.to_markdown(
-            os.path.join(dir_path, 'with-constraints-readable.csv'), index=False)
+            os.path.join(
+                dir_path, 'with-constraints-readable.csv'),
+                index=False)
         with_constraints.to_csv(
             os.path.join(dir_path, 'with-constraints.csv'), index=False)
         feasible_time = time.time()
         print(f"with constraint time: {feasible_time - all_states_time}")
     if 'optimal' in generate:
         # optimal states
-        optimal = optimizer.greedy_optimizer(
-            scaling_cap=scaling_cap, sla=sla, arrival_rate=arrival_rate, limit=limit)
+        optimal = optimizer.optimize(
+            optimization_method=optimization_method,
+            scaling_cap=scaling_cap,
+            alpha=alpha, beta=beta,
+            arrival_rate=arrival_rate, sla=sla,
+            num_state_limit=num_state_limit)
         # print(f"{optimal = }")
-        optimal.to_markdown(os.path.join(dir_path, 'optimal-readable.csv'), index=False)
-        optimal.to_csv(os.path.join(dir_path, 'optimal.csv'), index=False)
+        optimal.to_markdown(os.path.join(
+            dir_path, 'optimal-readable.csv'), index=False)
+        optimal.to_csv(os.path.join(
+            dir_path, 'optimal.csv'), index=False)
         optimal_time = time.time()
         print(f"feasible time: {optimal_time - feasible_time}")
     print(f"total time spent: {time.time() - start}")

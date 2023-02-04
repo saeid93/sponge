@@ -181,7 +181,7 @@ all_states.to_markdown(
     f'feasible_scaling_cap_{scaling_cap}_sla_{sla}_load_{arrival_rate}.csv')
 
 # optimal states
-optimal = optimizer.greedy_optimizer(
+optimal = optimizer.optimize(
     scaling_cap=scaling_cap, sla=sla, arrival_rate=arrival_rate)
 optimal.to_markdown(
     f'optimal_scaling_cap_{scaling_cap}_sla_{sla}_load_{arrival_rate}.csv')

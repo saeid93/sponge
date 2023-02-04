@@ -1,4 +1,4 @@
-series: 4
+series: 7
 series_meta: 'checking the effect of changing all variables under arrival rate 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 number_tasks: 2
 profiling_series:
@@ -25,10 +25,14 @@ initial_replica:
 initial_batch:
   - 1
   - 1
+alpha: 1
+beta: 1
 scaling_cap: 2
 sla: 5
 arrival_rate: 10
-limit: 100000000000
+num_state_limit: 5
+optimization_method: brute-force # options: [brute-force | gurobi]
+fix_cpu_on_initial: true
 generate:
   - all
   - feasible
