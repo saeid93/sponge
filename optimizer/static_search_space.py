@@ -92,7 +92,8 @@ def generate_pipeline(
     initial_active_model: List[str],
     initial_cpu_allocation: List[int],
     initial_replica: List[int],
-    initial_batch: List[int]
+    initial_batch: List[int],
+    threshold: int
     ) -> Pipeline:
     inference_graph = []
     for i in range(number_tasks):
@@ -109,7 +110,8 @@ def generate_pipeline(
                 cpu=initial_cpu_allocation[i]),
             replica=initial_replica[i],
             batch=initial_batch[i],
-            gpu_mode=False
+            threshold=threshold,
+            gpu_mode=False,
         )
         inference_graph.append(task)
     pipeline = Pipeline(
@@ -146,6 +148,7 @@ def main(config_name: str):
     num_state_limit = config['num_state_limit']
     generate = config['generate']
     optimization_method = config['optimization_method']
+    threshold = config['threshold']
 
     # optimizer
     alpha = config['alpha']
@@ -153,7 +156,7 @@ def main(config_name: str):
     gamma = config['gamma']
 
     # fix cpu on a cpu allocation
-    fix_cpu_on_initial = config['fix_cpu_on_initial']
+    base_allocation_mode = config['base_allocation_mode']
 
     # config generation config
     dir_path = os.path.join(
@@ -188,12 +191,12 @@ def main(config_name: str):
         initial_active_model=initial_active_model,
         initial_cpu_allocation=initial_cpu_allocation,
         initial_replica=initial_replica,
-        initial_batch=initial_batch)
+        initial_batch=initial_batch,
+        threshold=threshold)
 
     optimizer = Optimizer(
         pipeline=pipeline,
-        fix_cpu_on_initial=fix_cpu_on_initial,
-
+        base_allocation_mode=base_allocation_mode,
     )
 
     start = time.time()

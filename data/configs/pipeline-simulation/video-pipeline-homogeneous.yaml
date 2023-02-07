@@ -30,10 +30,11 @@ beta: 1
 gamma: 1
 scaling_cap: 10
 sla: 5
+threshold: 10
 arrival_rate: 10
 num_state_limit: 10000000
 optimization_method: gurobi # options: [brute-force | gurobi]
-fix_cpu_on_initial: true
+base_allocation_mode: true
 generate:
   # - all
   # - feasible

@@ -5,6 +5,7 @@ import gurobipy as gp
 from gurobipy import GRB
 import itertools
 from sklearn import linear_model
+from copy import deepcopy
 
 class ResourceAllocation:
     def __init__(self, cpu: float = 0, gpu: float = 0) -> None:
@@ -87,18 +88,35 @@ class Task:
     def __init__(
         self,
         name: str,
-        available_model_profiles: List[Model], # TODO not dict and search instead
+        available_model_profiles: List[Model],
         active_variant: str, active_allocation: ResourceAllocation,
         replica: int, batch: int,
-        gpu_mode: False) -> None:
+        threshold: int, gpu_mode: False) -> None:
+        """each task of the inference pipeline
+
+        Args:
+            name (str): name of the task
+            available_model_profiles (List[Model]):
+                all available model variant for the task
+            active_variant (str): active model variant
+            active_allocation (ResourceAllocation):
+                active resource allocation for pipeline
+            replica (int): number of horizontal replicas for a task
+            batch (int): batch sizes
+            gpu_mode (False): if the task is running on GPU
+            threshold (int): threshold for finding the base allocation of
+                active model variant
+        """
         self.available_model_profiles = available_model_profiles
         self.active_variant = active_variant
         self.active_allocation = active_allocation
-        self.initial_allocation = active_allocation
+        # TODO change it to initial allocation
+        self.base_allocations = active_allocation
         self.replicas = replica
         self.batch = batch
         self.replicas = replica
         self.gpu_mode = gpu_mode
+        self.threshold = threshold
         self.name = name
         for variant_index, variant in enumerate(self.available_model_profiles):
             if variant.name == active_variant:
@@ -113,6 +131,8 @@ class Task:
         else: # no-break
             raise ValueError(f"no matching profile for the variant {active_variant} and allocation"
                              f"of cpu: {active_allocation.cpu} and gpu: {active_allocation.gpu}")
+
+        # self.set_to_base_allocation()
 
     def model_switch(self, active_variant: str) -> None:
         """
@@ -138,6 +158,7 @@ class Task:
         """
         change allocation of a specific variant
         """
+
         for variant_index, variant in enumerate(self.available_model_profiles):
             if variant.name == self.active_variant:
                 if self.gpu_mode:
@@ -241,6 +262,16 @@ class Task:
         batches = list(map(
             lambda l: l.batch, self.active_model.profiles))
         return batches
+
+    @property
+    def base_allocation(self):
+        cpu_allocations = list(set(
+            list(map(
+                lambda l: l.resource_allocation.cpu,
+                self.available_model_profiles))))
+        resource_allocations = list(map(
+            lambda l: ResourceAllocation(cpu=l), cpu_allocations))
+        return resource_allocations
 
     @property
     def resource_allocations_cpu_mode(self):
@@ -367,9 +398,9 @@ class Pipeline:
 class Optimizer:
     def __init__(
         self, pipeline: Pipeline,
-        fix_cpu_on_initial: bool) -> None:
+        base_allocation_mode: bool) -> None:
         self.pipeline = pipeline
-        self.fix_cpu_on_initial = fix_cpu_on_initial
+        self.base_allocation_mode = base_allocation_mode
         self.headers = self._generate_states_headers()
 
     def _generate_states_headers(self):
@@ -434,17 +465,46 @@ class Optimizer:
             return True
         return False
 
-    def latencies(self, task: Task):
-        # TODO a nested dictionary
+    def latencies(self):
+        # latencies of all cases nested dictionary
+        # for gorubi solver
         # [stage_name][variant][batch_size]
         latencies = {}
+        inference_graph = deepcopy(self.pipeline.inference_graph)
+        for task in inference_graph:
+            latencies[task.name] = {}
+            for variant_name in task.variant_names:
+                latencies[task.name][variant_name] = {}
+                task.model_switch(variant_name)
+                for batch_size in task.batches:
+                    task.change_batch(batch_size)
+                    latencies[task.name][
+                        variant_name][batch_size] = task.latency
         return latencies
 
-    def base_allocations(self, task: Task):
-        # TODO a nested dictionary
+    def throughputs(self):
+        # throughputs of all cases nested dictionary
+        # for gorubi solver
+        # [stage_name][variant][batch_size]
+        throughputs = {}
+        inference_graph = deepcopy(self.pipeline.inference_graph)
+        for task in inference_graph:
+            throughputs[task.name] = {}
+            for variant_name in task.variant_names:
+                throughputs[task.name][variant_name] = {}
+                task.model_switch(variant_name)
+                for batch_size in task.batches:
+                    task.change_batch(batch_size)
+                    throughputs[task.name][
+                        variant_name][batch_size] = task.throughput
+        return throughputs
+
+    def base_allocations(self):
+        # base allocations of all cases nested dictionary
+        # for gorubi solver
         # [stage_name][variant]
-        latencies = {}
-        return latencies
+        base_allocations = {}
+        return base_allocations
 
     def all_states(
         self,
@@ -488,8 +548,8 @@ class Optimizer:
             variant_names.append(task.variant_names)
             replicas.append(np.arange(1, scaling_cap+1))
             batches.append(task.batches)
-            if self.fix_cpu_on_initial:
-                allocations.append([task.initial_allocation])
+            if self.base_allocation_mode:
+                allocations.append([task.base_allocations])
             else:
                 if task.gpu_mode:
                     allocations.append(task.resource_allocations_gpu_mode)
@@ -630,8 +690,8 @@ class Optimizer:
         Returns:
             pd.DataFrame: all the states of the pipeline
         """
-        if num_state_limit is not None:
-            state_counter = 0
+        # if num_state_limit is not None:
+        #     state_counter = 0
         variant_names = []
         replicas = []
         batches = []
@@ -641,11 +701,11 @@ class Optimizer:
             replicas.append(np.arange(1, scaling_cap+1))
             batches.append(task.batches)
             # TODO TEMP extract numerical allocation for now
-            if self.fix_cpu_on_initial:
+            if self.base_allocation_mode:
                 if task.gpu_mode:
-                    allocations.append([task.initial_allocation.gpu])
+                    allocations.append([task.base_allocations.gpu])
                 else:
-                    allocations.append([task.initial_allocation.cpu])
+                    allocations.append([task.base_allocations.cpu])
             else:
                 if task.gpu_mode:
                     task_allocations = list(
@@ -681,97 +741,99 @@ class Optimizer:
         # TODO add constraint for maximum replication
         # TODO add constraint for throughput
         # TODO add latency constraint
-        latencies_per_task = {}
-        model.addConstrs()
-        model.addConstrs()
-        model.addConstrs()
+        latencies = self.latencies()
+        throughputs = self.throughputs()
+        base_allocations = self.base_allocations()
+        # model.addConstrs()
+        # model.addConstrs()
+        # model.addConstrs()
         # model.addConstrs()
         # TODO Descision Variables
 
         # TODO Constraints
-
+        a = 1
         # TODO Objective function
 
         # generate states header format
-        states = self._generate_states()
-        all_combinations = list(
-            itertools.product(*[
-                variant_names, allocations, replicas, batches]))
-        for combination in all_combinations:
-            for task_id_i in range(self.pipeline.num_nodes):
-                # change config knobs (model_variant, batch, scale)
-                self.pipeline.inference_graph[
-                    task_id_i].model_switch(
-                        active_variant=combination[0][task_id_i])
-                self.pipeline.inference_graph[
-                    task_id_i].change_allocation(
-                        active_allocation=combination[1][task_id_i])
-                self.pipeline.inference_graph[
-                    task_id_i].re_scale(replica=combination[2][task_id_i])
-                self.pipeline.inference_graph[
-                    task_id_i].change_batch(batch=combination[3][task_id_i])
-            ok_to_add = False
-            check_constraints = True
-            if check_constraints:
-                if self.constraints(arrival_rate=arrival_rate, sla=sla):
-                    ok_to_add = True
-            else:
-                ok_to_add = True
-            if ok_to_add:
-                state = {}
-                for task_id_j in range(self.pipeline.num_nodes):
-                    # record all stats under this configs
-                    state[f'task_{task_id_j}_variant'] =\
-                        self.pipeline.inference_graph[
-                            task_id_j].active_variant
-                    state[f'task_{task_id_j}_cpu'] =\
-                        self.pipeline.inference_graph[task_id_j].cpu
-                    state[f'task_{task_id_j}_gpu'] =\
-                        self.pipeline.inference_graph[task_id_j].gpu
-                    state[f'task_{task_id_j}_cpu_all_replicas'] =\
-                        self.pipeline.inference_graph[
-                            task_id_j].cpu_all_replicas
-                    state[f'task_{task_id_j}_gpu_all_replicas'] =\
-                        self.pipeline.inference_graph[
-                            task_id_j].gpu_all_replicas
-                    state[f'task_{task_id_j}_batch'] =\
-                        self.pipeline.inference_graph[task_id_j].batch
-                    state[f'task_{task_id_j}_replicas'] =\
-                        self.pipeline.inference_graph[task_id_j].replicas
-                    state[f'task_{task_id_j}_latency'] =\
-                        self.pipeline.inference_graph[task_id_j].latency
-                    state[f'task_{task_id_j}_throughput'] =\
-                        self.pipeline.inference_graph[task_id_j].throughput
-                    state[f'task_{task_id_j}_throughput_all_replicas'] =\
-                        self.pipeline.inference_graph[
-                            task_id_j].throughput_all_replicas
-                    state[f'task_{task_id_j}_accuracy'] =\
-                        self.pipeline.inference_graph[task_id_j].accuracy
-                    state[f'task_{task_id_j}_measured'] =\
-                        self.pipeline.inference_graph[task_id_j].measured
-                    state['pipeline_accuracy'] =\
-                        self.pipeline.pipeline_accuracy
-                    state['pipeline_latency'] =\
-                        self.pipeline.pipeline_latency
-                    state['pipeline_throughput'] =\
-                        self.pipeline.pipeline_throughput
-                    state['pipeline_cpu'] =\
-                        self.pipeline.pipeline_cpu
-                    state['pipeline_gpu'] =\
-                        self.pipeline.pipeline_gpu
-                    state['accuracy_objective'] =\
-                        self.accuracy_objective()
-                    state['resource_objective'] =\
-                        self.resource_objective()
-                    state['objective'] = self.objective(
-                        alpha=alpha, beta=beta, gamma=gamma)
-                    state['alpha'] = alpha
-                    state['beta'] = beta
-                    state['gamma'] = gamma
-                states = states.append(state, ignore_index=True)
-                if num_state_limit is not None:
-                    state_counter += 1
-                    if state_counter == num_state_limit: break
+        # states = self._generate_states()
+        # all_combinations = list(
+        #     itertools.product(*[
+        #         variant_names, allocations, replicas, batches]))
+        # for combination in all_combinations:
+        #     for task_id_i in range(self.pipeline.num_nodes):
+        #         # change config knobs (model_variant, batch, scale)
+        #         self.pipeline.inference_graph[
+        #             task_id_i].model_switch(
+        #                 active_variant=combination[0][task_id_i])
+        #         self.pipeline.inference_graph[
+        #             task_id_i].change_allocation(
+        #                 active_allocation=combination[1][task_id_i])
+        #         self.pipeline.inference_graph[
+        #             task_id_i].re_scale(replica=combination[2][task_id_i])
+        #         self.pipeline.inference_graph[
+        #             task_id_i].change_batch(batch=combination[3][task_id_i])
+        #     ok_to_add = False
+        #     check_constraints = True
+        #     if check_constraints:
+        #         if self.constraints(arrival_rate=arrival_rate, sla=sla):
+        #             ok_to_add = True
+        #     else:
+        #         ok_to_add = True
+        #     if ok_to_add:
+        #         state = {}
+        #         for task_id_j in range(self.pipeline.num_nodes):
+        #             # record all stats under this configs
+        #             state[f'task_{task_id_j}_variant'] =\
+        #                 self.pipeline.inference_graph[
+        #                     task_id_j].active_variant
+        #             state[f'task_{task_id_j}_cpu'] =\
+        #                 self.pipeline.inference_graph[task_id_j].cpu
+        #             state[f'task_{task_id_j}_gpu'] =\
+        #                 self.pipeline.inference_graph[task_id_j].gpu
+        #             state[f'task_{task_id_j}_cpu_all_replicas'] =\
+        #                 self.pipeline.inference_graph[
+        #                     task_id_j].cpu_all_replicas
+        #             state[f'task_{task_id_j}_gpu_all_replicas'] =\
+        #                 self.pipeline.inference_graph[
+        #                     task_id_j].gpu_all_replicas
+        #             state[f'task_{task_id_j}_batch'] =\
+        #                 self.pipeline.inference_graph[task_id_j].batch
+        #             state[f'task_{task_id_j}_replicas'] =\
+        #                 self.pipeline.inference_graph[task_id_j].replicas
+        #             state[f'task_{task_id_j}_latency'] =\
+        #                 self.pipeline.inference_graph[task_id_j].latency
+        #             state[f'task_{task_id_j}_throughput'] =\
+        #                 self.pipeline.inference_graph[task_id_j].throughput
+        #             state[f'task_{task_id_j}_throughput_all_replicas'] =\
+        #                 self.pipeline.inference_graph[
+        #                     task_id_j].throughput_all_replicas
+        #             state[f'task_{task_id_j}_accuracy'] =\
+        #                 self.pipeline.inference_graph[task_id_j].accuracy
+        #             state[f'task_{task_id_j}_measured'] =\
+        #                 self.pipeline.inference_graph[task_id_j].measured
+        #             state['pipeline_accuracy'] =\
+        #                 self.pipeline.pipeline_accuracy
+        #             state['pipeline_latency'] =\
+        #                 self.pipeline.pipeline_latency
+        #             state['pipeline_throughput'] =\
+        #                 self.pipeline.pipeline_throughput
+        #             state['pipeline_cpu'] =\
+        #                 self.pipeline.pipeline_cpu
+        #             state['pipeline_gpu'] =\
+        #                 self.pipeline.pipeline_gpu
+        #             state['accuracy_objective'] =\
+        #                 self.accuracy_objective()
+        #             state['resource_objective'] =\
+        #                 self.resource_objective()
+        #             state['objective'] = self.objective(
+        #                 alpha=alpha, beta=beta, gamma=gamma)
+        #             state['alpha'] = alpha
+        #             state['beta'] = beta
+        #             state['gamma'] = gamma
+        #         states = states.append(state, ignore_index=True)
+        #         if num_state_limit is not None:
+        #             state_counter += 1
+        #             if state_counter == num_state_limit: break
         # return states
 
     def optimize(
