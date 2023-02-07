@@ -57,7 +57,7 @@ class Model:
             lambda l: l.batch, self.measured_profiles))).reshape(-1, 1)
         train_y = np.array(list(map(
             lambda l: l.latency, self.measured_profiles))).reshape(-1, 1)
-        all_x = np.arange(self.min_batch, self.max_batch+1)
+        all_x = 2 ** np.arange(np.sqrt(self.max_batch) + 1)
         test_x = all_x[~np.isin(all_x, train_x)].reshape(-1, 1)
         regr = linear_model.LinearRegression()
         regr.fit(train_x, train_y)
@@ -192,10 +192,21 @@ class Task:
         return 0
 
     @property
-    def latency(self) -> float:
+    def model_latency(self) -> float:
         latency = next(filter(
             lambda profile: profile.batch == self.batch,
             self.active_model.profiles)).latency
+        return latency
+
+    @property
+    def queue_latency(self) -> float:
+        # TODO TEMP
+        queue_latency = 0
+        return queue_latency
+
+    @property
+    def latency(self) -> float:
+        latency = self.model_latency + self.queue_latency
         return latency
 
     @property
@@ -309,6 +320,13 @@ class Pipeline:
         return gpu
 
     @property
+    def stage_wise_task_names(self):
+        names = []
+        for task in self.inference_graph:
+            names.append(task.name)
+        return names 
+
+    @property
     def pipeline_cpu(self):
         return sum(self.stage_wise_cpu)
 
@@ -375,27 +393,36 @@ class Optimizer:
 
     def accuracy_objective(self) -> float:
         """
-        objective function of the pipeline
+        accuracy objective of the pipeline
         """
         accuracy_objective = self.pipeline.pipeline_accuracy
         return accuracy_objective
 
     def resource_objective(self) -> float:
         """
-        objective function of the pipeline
+        resource objective of the pipeline
         """
         resource_objective = 1/self.pipeline.cpu_usage
         return resource_objective
 
+    def batch_objective(self) -> float:
+        """
+        batch objecive of the pipeline
+        """
+        max_batch = 0
+        for task in self.pipeline.inference_graph:
+            max_batch += task.batch
+        return max_batch
+
     def objective(
         self,
-        alpha: float, beta: float) -> None:
+        alpha: float, beta: float, gamma: float) -> None:
         """
         objective function of the pipeline
         """
-        # TODO make it reconfigurable
         objective = alpha * self.accuracy_objective() +\
-            beta * self.resource_objective()
+            beta * self.resource_objective() +\
+                gamma * self.batch_objective()
         return objective
 
     def constraints(self, arrival_rate: int, sla: float) -> bool:
@@ -407,11 +434,24 @@ class Optimizer:
             return True
         return False
 
+    def latencies(self, task: Task):
+        # TODO a nested dictionary
+        # [stage_name][variant][batch_size]
+        latencies = {}
+        return latencies
+
+    def base_allocations(self, task: Task):
+        # TODO a nested dictionary
+        # [stage_name][variant]
+        latencies = {}
+        return latencies
+
     def all_states(
         self,
         scaling_cap: int,
         alpha: float,
         beta: float,
+        gamma: float,
         check_constraints: bool = False,
         arrival_rate: int = None,
         sla: float = None,
@@ -449,12 +489,12 @@ class Optimizer:
             replicas.append(np.arange(1, scaling_cap+1))
             batches.append(task.batches)
             if self.fix_cpu_on_initial:
+                allocations.append([task.initial_allocation])
+            else:
                 if task.gpu_mode:
                     allocations.append(task.resource_allocations_gpu_mode)
                 else:
                     allocations.append(task.resource_allocations_cpu_mode)
-            else:
-                allocations.append([task.initial_allocation])
         variant_names = list(itertools.product(*variant_names))
         replicas = list(itertools.product(*replicas))
         batches = list(itertools.product(*batches))
@@ -531,9 +571,10 @@ class Optimizer:
                     state['resource_objective'] =\
                         self.resource_objective()
                     state['objective'] = self.objective(
-                        alpha=alpha, beta=beta)
+                        alpha=alpha, beta=beta, gamma=gamma)
                     state['alpha'] = alpha
                     state['beta'] = beta
+                    state['gamma'] = gamma
                 states = states.append(state, ignore_index=True)
                 if num_state_limit is not None:
                     state_counter += 1
@@ -545,13 +586,14 @@ class Optimizer:
         scaling_cap: int,
         alpha: float,
         beta: float,
+        gamma: float,
         arrival_rate: int = None,
         sla: float = None,
         num_state_limit: int = None) -> pd.DataFrame:
         states = self.all_states(
             check_constraints=True,
             scaling_cap=scaling_cap,
-            alpha=alpha, beta=beta,
+            alpha=alpha, beta=beta, gamma=gamma,
             arrival_rate=arrival_rate, sla=sla,
             num_state_limit=num_state_limit)
         optimal = states[
@@ -563,6 +605,7 @@ class Optimizer:
         scaling_cap: int,
         alpha: float,
         beta: float,
+        gamma: float,
         arrival_rate: int = None,
         sla: float = None,
         num_state_limit: int = None) -> pd.DataFrame:
@@ -597,22 +640,59 @@ class Optimizer:
             variant_names.append(task.variant_names)
             replicas.append(np.arange(1, scaling_cap+1))
             batches.append(task.batches)
+            # TODO TEMP extract numerical allocation for now
             if self.fix_cpu_on_initial:
                 if task.gpu_mode:
-                    allocations.append(task.resource_allocations_gpu_mode)
+                    allocations.append([task.initial_allocation.gpu])
                 else:
-                    allocations.append(task.resource_allocations_cpu_mode)
+                    allocations.append([task.initial_allocation.cpu])
             else:
-                allocations.append([task.initial_allocation])
-        variant_names = list(itertools.product(*variant_names))
-        replicas = list(itertools.product(*replicas))
-        batches = list(itertools.product(*batches))
-        allocations = list(itertools.product(*allocations))
+                if task.gpu_mode:
+                    task_allocations = list(
+                        map(lambda l: l.gpu,
+                            task.resource_allocations_gpu_mode))
+                else:
+                    task_allocations = list(
+                        map(lambda l: l.cpu,
+                            task.resource_allocations_cpu_mode))
+                allocations.append(task_allocations)
 
         # defining groubipy model for descision problem
-        model = gp.Model('widget')
+        model = gp.Model('pipeline')
 
-        # generate states data
+        # TODO 
+        # stages
+        stages = self.pipeline.stage_wise_task_names
+        variant_names = variant_names[0]
+        replicas = replicas[0]
+        batches = batches[0]
+        allocations = allocations[0]
+        # variant_names = list(itertools.product(*variant_names))
+        # replicas = list(itertools.product(*replicas))
+        # batches = list(itertools.product(*batches))
+        # allocations = list(itertools.product(*allocations)
+        i = model.addVars(stages, variant_names, name='i', vtype=GRB.BINARY)
+        n = model.addVars(stages, name='n', vtype=GRB.INTEGER)
+        b = model.addVars(stages, name='b', vtype=GRB.INTEGER)
+
+
+
+        # TODO add constraint for the maximum batch size
+        # TODO add constraint for maximum replication
+        # TODO add constraint for throughput
+        # TODO add latency constraint
+        latencies_per_task = {}
+        model.addConstrs()
+        model.addConstrs()
+        model.addConstrs()
+        # model.addConstrs()
+        # TODO Descision Variables
+
+        # TODO Constraints
+
+        # TODO Objective function
+
+        # generate states header format
         states = self._generate_states()
         all_combinations = list(
             itertools.product(*[
@@ -684,9 +764,10 @@ class Optimizer:
                     state['resource_objective'] =\
                         self.resource_objective()
                     state['objective'] = self.objective(
-                        alpha=alpha, beta=beta)
+                        alpha=alpha, beta=beta, gamma=gamma)
                     state['alpha'] = alpha
                     state['beta'] = beta
+                    state['gamma'] = gamma
                 states = states.append(state, ignore_index=True)
                 if num_state_limit is not None:
                     state_counter += 1
@@ -699,12 +780,14 @@ class Optimizer:
         alpha: float,
         beta: float,
         sla: float,
+        gamma: float,
         arrival_rate: int, num_state_limit: int=None):
         if optimization_method == 'brute-force':
             optimal = self.brute_force(
                 scaling_cap=scaling_cap,
                 alpha=alpha,
                 beta=beta,
+                gamma=gamma,
                 sla=sla,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit)
@@ -713,6 +796,7 @@ class Optimizer:
                 scaling_cap=scaling_cap,
                 alpha=alpha,
                 beta=beta,
+                gamma=gamma,
                 sla=sla,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit)

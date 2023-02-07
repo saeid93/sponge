@@ -2,10 +2,10 @@ series: 2
 series_meta: 'checking the effect of changing all variables under arrival rate 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 number_tasks: 2
 profiling_series:
-  - 64
+  - 63
   - 63
 model_name:
-  - yolo
+  - resnet-human
   - resnet-human
 task_name: 
   - crop
@@ -14,7 +14,7 @@ experiment_id:
   - 1
   - 1
 initial_active_model:
-  - yolov5n
+  - resnet18
   - resnet18
 initial_cpu_allocation:
   - 1

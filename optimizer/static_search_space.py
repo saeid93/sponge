@@ -57,8 +57,6 @@ def load_profile(series, model_name, experiment_id=1, load=1):
         results_columns=results_columns)
     return profiling_info
 
-# TODO add accuracies
-# TODO polish file format
 def read_task_profiles(profiling_info: pd.DataFrame) -> List[Model]:
     available_model_profiles = []
     for model_variant in profiling_info['model_variant'].unique():
@@ -122,7 +120,7 @@ def generate_pipeline(
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='video-pipeline')
+    '--config-name', required=True, type=str, default='video-pipeline-homogeneous')
 def main(config_name: str):
     config_path = os.path.join(
         PIPELINE_SIMULATION_CONFIGS_PATH, f"{config_name}.yaml")
@@ -152,6 +150,7 @@ def main(config_name: str):
     # optimizer
     alpha = config['alpha']
     beta = config['beta']
+    gamma = config['gamma']
 
     # fix cpu on a cpu allocation
     fix_cpu_on_initial = config['fix_cpu_on_initial']
@@ -203,7 +202,7 @@ def main(config_name: str):
         states = optimizer.all_states(
             check_constraints=False,
             scaling_cap=scaling_cap,
-            alpha=alpha, beta=beta,
+            alpha=alpha, beta=beta, gamma=gamma,
             arrival_rate=arrival_rate, sla=sla,
             num_state_limit=num_state_limit)
         # print(f"{states = }")
@@ -219,7 +218,7 @@ def main(config_name: str):
         with_constraints = optimizer.all_states(
             check_constraints=True,
             scaling_cap=scaling_cap,
-            alpha=alpha, beta=beta,
+            alpha=alpha, beta=beta, gamma=gamma,
             arrival_rate=arrival_rate, sla=sla,
             num_state_limit=num_state_limit)
         # print(f"{with_constraints = }")
@@ -236,7 +235,7 @@ def main(config_name: str):
         optimal = optimizer.optimize(
             optimization_method=optimization_method,
             scaling_cap=scaling_cap,
-            alpha=alpha, beta=beta,
+            alpha=alpha, beta=beta, gamma=gamma,
             arrival_rate=arrival_rate, sla=sla,
             num_state_limit=num_state_limit)
         # print(f"{optimal = }")
