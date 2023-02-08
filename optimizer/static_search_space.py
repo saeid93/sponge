@@ -93,7 +93,9 @@ def generate_pipeline(
     initial_cpu_allocation: List[int],
     initial_replica: List[int],
     initial_batch: List[int],
-    threshold: int
+    allocation_mode: str,
+    threshold: int,
+    sla_factor: int,
     ) -> Pipeline:
     inference_graph = []
     for i in range(number_tasks):
@@ -111,18 +113,22 @@ def generate_pipeline(
             replica=initial_replica[i],
             batch=initial_batch[i],
             threshold=threshold,
+            sla_factor=sla_factor,
+            allocation_mode=allocation_mode,
+            # base_allocation_mode=True,
             gpu_mode=False,
         )
         inference_graph.append(task)
     pipeline = Pipeline(
         inference_graph=inference_graph,
-        gpu_mode=False
+        gpu_mode=False,
+        sla_factor=sla_factor
     )
     return pipeline
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='video-pipeline-homogeneous')
+    '--config-name', required=True, type=str, default='video-pipeline')
 def main(config_name: str):
     config_path = os.path.join(
         PIPELINE_SIMULATION_CONFIGS_PATH, f"{config_name}.yaml")
@@ -148,15 +154,16 @@ def main(config_name: str):
     num_state_limit = config['num_state_limit']
     generate = config['generate']
     optimization_method = config['optimization_method']
+    allocation_mode = config['allocation_mode']
+    # base_allocation = config['base_allocation']
+    # fix_cpu_on_initial = config['fix_cpu_on_initial']
     threshold = config['threshold']
+    sla_factor = config['sla_factor']
 
     # optimizer
     alpha = config['alpha']
     beta = config['beta']
     gamma = config['gamma']
-
-    # fix cpu on a cpu allocation
-    base_allocation_mode = config['base_allocation_mode']
 
     # config generation config
     dir_path = os.path.join(
@@ -189,14 +196,17 @@ def main(config_name: str):
         task_name=task_name,
         experiment_id=experiment_id,
         initial_active_model=initial_active_model,
+        allocation_mode=allocation_mode,
         initial_cpu_allocation=initial_cpu_allocation,
         initial_replica=initial_replica,
         initial_batch=initial_batch,
-        threshold=threshold)
+        threshold=threshold,
+        sla_factor=sla_factor)
 
     optimizer = Optimizer(
         pipeline=pipeline,
-        base_allocation_mode=base_allocation_mode,
+        allocation_mode=allocation_mode,
+        # fix_cpu_on_initial=fix_cpu_on_initial,
     )
 
     start = time.time()

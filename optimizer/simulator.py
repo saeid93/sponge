@@ -58,7 +58,7 @@ class Model:
             lambda l: l.batch, self.measured_profiles))).reshape(-1, 1)
         train_y = np.array(list(map(
             lambda l: l.latency, self.measured_profiles))).reshape(-1, 1)
-        all_x = 2 ** np.arange(np.sqrt(self.max_batch) + 1)
+        all_x = np.arange(self.min_batch, self.max_batch+1)
         test_x = all_x[~np.isin(all_x, train_x)].reshape(-1, 1)
         regr = linear_model.LinearRegression()
         regr.fit(train_x, train_y)
@@ -84,40 +84,38 @@ class Model:
     def max_batch(self):
         return max(self.profiled_batches)
 
+    @property
+    def max_batch(self):
+        return max(self.profiled_batches)
+
 class Task:
     def __init__(
         self,
         name: str,
         available_model_profiles: List[Model],
-        active_variant: str, active_allocation: ResourceAllocation,
+        active_variant: str,
+        active_allocation: ResourceAllocation,
         replica: int, batch: int,
-        threshold: int, gpu_mode: False) -> None:
-        """each task of the inference pipeline
+        allocation_mode: str,
+        threshold: int,
+        sla_factor: int,
+        gpu_mode: False) -> None:
 
-        Args:
-            name (str): name of the task
-            available_model_profiles (List[Model]):
-                all available model variant for the task
-            active_variant (str): active model variant
-            active_allocation (ResourceAllocation):
-                active resource allocation for pipeline
-            replica (int): number of horizontal replicas for a task
-            batch (int): batch sizes
-            gpu_mode (False): if the task is running on GPU
-            threshold (int): threshold for finding the base allocation of
-                active model variant
-        """
         self.available_model_profiles = available_model_profiles
         self.active_variant = active_variant
         self.active_allocation = active_allocation
-        # TODO change it to initial allocation
-        self.base_allocations = active_allocation
+        self.initial_allocation = active_allocation
         self.replicas = replica
         self.batch = batch
         self.replicas = replica
         self.gpu_mode = gpu_mode
         self.threshold = threshold
         self.name = name
+        self.sla_factor = sla_factor
+        self.allocation_mode = allocation_mode
+        if allocation_mode == 'base':
+            self.base_allocations = self.find_base_allocation()
+
         for variant_index, variant in enumerate(self.available_model_profiles):
             if variant.name == active_variant:
                 if self.gpu_mode:
@@ -131,8 +129,6 @@ class Task:
         else: # no-break
             raise ValueError(f"no matching profile for the variant {active_variant} and allocation"
                              f"of cpu: {active_allocation.cpu} and gpu: {active_allocation.gpu}")
-
-        # self.set_to_base_allocation()
 
     def model_switch(self, active_variant: str) -> None:
         """
@@ -154,11 +150,59 @@ class Task:
             raise ValueError(f"no matching profile for the variant {active_variant} and allocation"
                              f"of cpu: {self.active_allocation.cpu} and gpu: {self.active_allocation.gpu}")
 
+        if self.allocation_mode == 'base':
+            self.set_to_base_allocation()
+
+    def find_base_allocation(self) -> Dict[str, ResourceAllocation]:
+        models = {key: [] for key in self.variant_names}
+        # 1. filter out models
+        for model_variant in self.variant_names:
+            for allocation in self.available_model_profiles:
+                if allocation.name == model_variant:
+                    models[model_variant].append(allocation)
+        # 2. find variant SLA
+        model_sla = {}
+        for model, allocation in models.items():
+            # finding sla of each model
+            # sla is latency of minimum batch
+            # under minimum resource multiplied by
+            # a given scaling factor
+            # since allocations are sorted the first
+            # one will be the one with maximum resource req
+            sla = allocation[-1].profiles[0].latency * self.sla_factor
+            model_sla[model] = sla
+        base_allocation = {}
+        for model_variant, allocations in models.items():
+            # finding the mimumu allocation that can respond
+            # to the threshold
+            # the profiles are sorted therefore therefore
+            # we iterate from the first profile
+            for allocation in allocations:
+                # check if the max batch size throughput
+                # can reponsd to the threshold
+                if allocation.profiles[-1].throughput >= self.threshold\
+                    and allocation.profiles[-1].throughput >= model_sla[
+                        model_variant]:
+                    base_allocation[model_variant] = deepcopy(
+                        allocation.resource_allocation)
+                    break
+            else: # no-break
+                raise ValueError(
+                    f'No responsive model profile to threshold {self.threshold}'
+                    f' or model sla {model_sla[model_variant]} was found'
+                    f' for model variant {model_variant}'
+                    'consider either changing the the threshold or '
+                    f'sla factor {self.sla_factor}')
+        return base_allocation
+
+    def set_to_base_allocation(self):
+        self.change_allocation(
+            active_allocation=self.base_allocations[self.active_variant])
+
     def change_allocation(self, active_allocation: ResourceAllocation) -> None:
         """
         change allocation of a specific variant
         """
-
         for variant_index, variant in enumerate(self.available_model_profiles):
             if variant.name == self.active_variant:
                 if self.gpu_mode:
@@ -213,17 +257,17 @@ class Task:
         return 0
 
     @property
+    def queue_latency(self) -> float:
+        # TODO TEMP
+        queue_latency = 0
+        return queue_latency
+
+    @property
     def model_latency(self) -> float:
         latency = next(filter(
             lambda profile: profile.batch == self.batch,
             self.active_model.profiles)).latency
         return latency
-
-    @property
-    def queue_latency(self) -> float:
-        # TODO TEMP
-        queue_latency = 0
-        return queue_latency
 
     @property
     def latency(self) -> float:
@@ -264,16 +308,6 @@ class Task:
         return batches
 
     @property
-    def base_allocation(self):
-        cpu_allocations = list(set(
-            list(map(
-                lambda l: l.resource_allocation.cpu,
-                self.available_model_profiles))))
-        resource_allocations = list(map(
-            lambda l: ResourceAllocation(cpu=l), cpu_allocations))
-        return resource_allocations
-
-    @property
     def resource_allocations_cpu_mode(self):
         cpu_allocations = list(set(
             list(map(
@@ -296,9 +330,12 @@ class Task:
 class Pipeline:
     def __init__(
         self,
-        inference_graph: List[Task], gpu_mode: bool) -> None:
+        inference_graph: List[Task],
+        gpu_mode: bool,
+        sla_factor: int) -> None:
         self.inference_graph = inference_graph
         self.gpu_mode = gpu_mode
+        self.sla_factor = sla_factor
         if not self.gpu_mode:
             for task in self.inference_graph:
                 if task.gpu_mode:
@@ -351,13 +388,6 @@ class Pipeline:
         return gpu
 
     @property
-    def stage_wise_task_names(self):
-        names = []
-        for task in self.inference_graph:
-            names.append(task.name)
-        return names 
-
-    @property
     def pipeline_cpu(self):
         return sum(self.stage_wise_cpu)
 
@@ -398,9 +428,11 @@ class Pipeline:
 class Optimizer:
     def __init__(
         self, pipeline: Pipeline,
-        base_allocation_mode: bool) -> None:
+        # fix_cpu_on_initial: bool,
+        allocation_mode: str) -> None:
         self.pipeline = pipeline
-        self.base_allocation_mode = base_allocation_mode
+        # self.fix_cpu_on_initial = fix_cpu_on_initial
+        self.allocation_mode = allocation_mode
         self.headers = self._generate_states_headers()
 
     def _generate_states_headers(self):
@@ -424,14 +456,14 @@ class Optimizer:
 
     def accuracy_objective(self) -> float:
         """
-        accuracy objective of the pipeline
+        objective function of the pipeline
         """
         accuracy_objective = self.pipeline.pipeline_accuracy
         return accuracy_objective
 
     def resource_objective(self) -> float:
         """
-        resource objective of the pipeline
+        objective function of the pipeline
         """
         resource_objective = 1/self.pipeline.cpu_usage
         return resource_objective
@@ -499,13 +531,6 @@ class Optimizer:
                         variant_name][batch_size] = task.throughput
         return throughputs
 
-    def base_allocations(self):
-        # base allocations of all cases nested dictionary
-        # for gorubi solver
-        # [stage_name][variant]
-        base_allocations = {}
-        return base_allocations
-
     def all_states(
         self,
         scaling_cap: int,
@@ -528,6 +553,8 @@ class Optimizer:
                 Defaults to 1.
             beta (float, optional): resource usage
                 objective weigth. Defaults to 1.
+            gamma (float, optional): batch size
+                objective batch. Defaults to 1.
             arrival_rate (int, optional): arrival rate into
                 the pipeline. Defaults to None.
             sla (float, optional): end to end service level agreement
@@ -548,23 +575,32 @@ class Optimizer:
             variant_names.append(task.variant_names)
             replicas.append(np.arange(1, scaling_cap+1))
             batches.append(task.batches)
-            if self.base_allocation_mode:
-                allocations.append([task.base_allocations])
-            else:
+            if self.allocation_mode=='variable':
                 if task.gpu_mode:
                     allocations.append(task.resource_allocations_gpu_mode)
                 else:
                     allocations.append(task.resource_allocations_cpu_mode)
+            elif self.allocation_mode=='fix':
+                allocations.append([task.initial_allocation])
+            elif self.allocation_mode=='base':
+                pass
+
         variant_names = list(itertools.product(*variant_names))
         replicas = list(itertools.product(*replicas))
         batches = list(itertools.product(*batches))
-        allocations = list(itertools.product(*allocations))
+        if self.allocation_mode != 'base':
+            allocations = list(itertools.product(*allocations))
+            all_combinations = list(
+                itertools.product(*[
+                    variant_names, replicas, batches, allocations]))
+        else:
+            all_combinations = list(
+                itertools.product(*[
+                    variant_names, replicas, batches]))
 
         # generate states header format
         states = self._generate_states()
-        all_combinations = list(
-            itertools.product(*[
-                variant_names, allocations, replicas, batches]))
+
         for combination in all_combinations:
             for task_id_i in range(self.pipeline.num_nodes):
                 # change config knobs (model_variant, batch, scale)
@@ -572,12 +608,13 @@ class Optimizer:
                     task_id_i].model_switch(
                         active_variant=combination[0][task_id_i])
                 self.pipeline.inference_graph[
-                    task_id_i].change_allocation(
-                        active_allocation=combination[1][task_id_i])
+                    task_id_i].re_scale(replica=combination[1][task_id_i])
                 self.pipeline.inference_graph[
-                    task_id_i].re_scale(replica=combination[2][task_id_i])
-                self.pipeline.inference_graph[
-                    task_id_i].change_batch(batch=combination[3][task_id_i])
+                    task_id_i].change_batch(batch=combination[2][task_id_i])
+                if self.allocation_mode != 'base':
+                    self.pipeline.inference_graph[
+                        task_id_i].change_allocation(
+                            active_allocation=combination[3][task_id_i])
             ok_to_add = False
             if check_constraints:
                 if self.constraints(arrival_rate=arrival_rate, sla=sla):
@@ -690,8 +727,8 @@ class Optimizer:
         Returns:
             pd.DataFrame: all the states of the pipeline
         """
-        # if num_state_limit is not None:
-        #     state_counter = 0
+        if num_state_limit is not None:
+            state_counter = 0
         variant_names = []
         replicas = []
         batches = []
@@ -700,22 +737,35 @@ class Optimizer:
             variant_names.append(task.variant_names)
             replicas.append(np.arange(1, scaling_cap+1))
             batches.append(task.batches)
-            # TODO TEMP extract numerical allocation for now
-            if self.base_allocation_mode:
+            if self.allocation_mode=='variable':
                 if task.gpu_mode:
-                    allocations.append([task.base_allocations.gpu])
+                    allocations.append(task.resource_allocations_gpu_mode)
                 else:
-                    allocations.append([task.base_allocations.cpu])
-            else:
-                if task.gpu_mode:
-                    task_allocations = list(
-                        map(lambda l: l.gpu,
-                            task.resource_allocations_gpu_mode))
-                else:
-                    task_allocations = list(
-                        map(lambda l: l.cpu,
-                            task.resource_allocations_cpu_mode))
-                allocations.append(task_allocations)
+                    allocations.append(task.resource_allocations_cpu_mode)
+            elif self.allocation_mode=='fix':
+                allocations.append([task.initial_allocation])
+            elif self.allocation_mode=='base':
+                pass
+        # for task in self.pipeline.inference_graph:
+        #     variant_names.append(task.variant_names)
+        #     replicas.append(np.arange(1, scaling_cap+1))
+        #     batches.append(task.batches)
+        #     # TODO here
+        #     if self.base_allocation_mode:
+        #         if task.gpu_mode:
+        #             allocations.append([task.base_allocation.gpu])
+        #         else:
+        #             allocations.append([task.base_allocation.cpu])
+        #     else:
+        #         if task.gpu_mode:
+        #             task_allocations = list(
+        #                 map(lambda l: l.gpu,
+        #                     task.resource_allocations_gpu_mode))
+        #         else:
+        #             task_allocations = list(
+        #                 map(lambda l: l.cpu,
+        #                     task.resource_allocations_cpu_mode))
+        #         allocations.append(task_allocations)
 
         # defining groubipy model for descision problem
         model = gp.Model('pipeline')
@@ -727,10 +777,7 @@ class Optimizer:
         replicas = replicas[0]
         batches = batches[0]
         allocations = allocations[0]
-        # variant_names = list(itertools.product(*variant_names))
-        # replicas = list(itertools.product(*replicas))
-        # batches = list(itertools.product(*batches))
-        # allocations = list(itertools.product(*allocations)
+
         i = model.addVars(stages, variant_names, name='i', vtype=GRB.BINARY)
         n = model.addVars(stages, name='n', vtype=GRB.INTEGER)
         b = model.addVars(stages, name='b', vtype=GRB.INTEGER)
@@ -754,7 +801,8 @@ class Optimizer:
         a = 1
         # TODO Objective function
 
-        # generate states header format
+
+        # generate states data
         # states = self._generate_states()
         # all_combinations = list(
         #     itertools.product(*[
@@ -826,10 +874,9 @@ class Optimizer:
         #             state['resource_objective'] =\
         #                 self.resource_objective()
         #             state['objective'] = self.objective(
-        #                 alpha=alpha, beta=beta, gamma=gamma)
+        #                 alpha=alpha, beta=beta)
         #             state['alpha'] = alpha
         #             state['beta'] = beta
-        #             state['gamma'] = gamma
         #         states = states.append(state, ignore_index=True)
         #         if num_state_limit is not None:
         #             state_counter += 1

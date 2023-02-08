@@ -1,4 +1,4 @@
-series: 2
+series: 4
 series_meta: 'checking the effect of changing all variables under arrival rate 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 number_tasks: 2
 profiling_series:
@@ -32,9 +32,9 @@ scaling_cap: 10
 sla: 5
 threshold: 10
 arrival_rate: 10
-num_state_limit: 10000000
-optimization_method: gurobi # options: [brute-force | gurobi]
-base_allocation_mode: true
+num_state_limit: 100
+optimization_method: brute-force # options: [brute-force | gurobi]
+base_allocation_mode: false
 generate:
   # - all
   # - feasible

@@ -24,7 +24,6 @@ import shutil
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
-import mlserver.grpc.dataplane_pb2_grpc as dataplane
 from barazmoon import (
     MLServerAsyncGrpc)
 
