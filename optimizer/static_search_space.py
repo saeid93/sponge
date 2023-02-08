@@ -4,7 +4,7 @@ import time
 import os
 import sys
 import shutil
-from typing import List
+from typing import List, Dict, Any
 import yaml
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
@@ -23,7 +23,8 @@ sys.path.append(os.path.normpath(os.path.join(
 from experiments.utils.constants import (
     PIPELINE_SIMULATION_CONFIGS_PATH,
     PIPELINE_SIMULATION_RESULTS_PATH,
-    NODE_PROFILING_RESULTS_STATIC_PATH
+    NODE_PROFILING_RESULTS_STATIC_PATH,
+    ACCURACIES_PATH
 )
 from experiments.utils.loader import Loader
 
@@ -57,7 +58,9 @@ def load_profile(series, model_name, experiment_id=1, load=1):
         results_columns=results_columns)
     return profiling_info
 
-def read_task_profiles(profiling_info: pd.DataFrame) -> List[Model]:
+def read_task_profiles(
+    profiling_info: pd.DataFrame,
+    task_accuracies: Dict[str, float]) -> List[Model]:
     available_model_profiles = []
     for model_variant in profiling_info['model_variant'].unique():
         model_variant_profiling_info =\
@@ -80,7 +83,7 @@ def read_task_profiles(profiling_info: pd.DataFrame) -> List[Model]:
                     resource_allocation=ResourceAllocation(
                         cpu=cpu_request),
                     measured_profiles=measured_profiles,
-                    accuracy=0.5
+                    accuracy=task_accuracies[model_variant]
                 ) 
             )
     return available_model_profiles
@@ -89,7 +92,7 @@ def generate_pipeline(
     number_tasks: int,
     profiling_series: List[int],
     model_name: List[str],
-    task_name: List[str],
+    task_names: List[str],
     experiment_id: List[int],
     initial_active_model: List[str],
     initial_cpu_allocation: List[int],
@@ -98,6 +101,7 @@ def generate_pipeline(
     allocation_mode: str,
     threshold: int,
     sla_factor: int,
+    pipeline_accuracies: Dict[str, Dict[str, float]]
     ) -> Pipeline:
     inference_graph = []
     for i in range(number_tasks):
@@ -105,12 +109,14 @@ def generate_pipeline(
             series=profiling_series[i], model_name=model_name[i],
             experiment_id=experiment_id[i])
         available_model_profiles =\
-            read_task_profiles(profiling_info=profiling_info)
+            read_task_profiles(
+                profiling_info=profiling_info,
+                task_accuracies=pipeline_accuracies[task_names[i]])
         task = Task(
-            name=task_name[i],
+            name=task_names[i],
             available_model_profiles = available_model_profiles,
             active_variant = initial_active_model[i],
-            active_allocation=ResourceAllocation(
+            active_allocation=ResourceAllocation( 
                 cpu=initial_cpu_allocation[i]),
             replica=initial_replica[i],
             batch=initial_batch[i],
@@ -135,7 +141,8 @@ def main(config_name: str):
         PIPELINE_SIMULATION_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, 'r') as cf:
         config = yaml.safe_load(cf)
-
+    with open(ACCURACIES_PATH, 'r') as cf:
+        accuracies = yaml.safe_load(cf)
     # profiling config
     series = config['series']
     number_tasks = config['number_tasks']
@@ -148,6 +155,7 @@ def main(config_name: str):
     initial_replica = config['initial_replica']
     initial_batch = config['initial_batch']
     scaling_cap = config['scaling_cap']
+    pipeline_name = config['pipeline_name']
 
     # pipeline config
     sla = config['sla']
@@ -156,10 +164,9 @@ def main(config_name: str):
     generate = config['generate']
     optimization_method = config['optimization_method']
     allocation_mode = config['allocation_mode']
-    # base_allocation = config['base_allocation']
-    # fix_cpu_on_initial = config['fix_cpu_on_initial']
     threshold = config['threshold']
     sla_factor = config['sla_factor']
+    pipeline_accuracies = accuracies[pipeline_name]
 
     # optimizer
     alpha = config['alpha']
@@ -194,7 +201,7 @@ def main(config_name: str):
         number_tasks=number_tasks,
         profiling_series=profiling_series,
         model_name=model_name,
-        task_name=task_name,
+        task_names=task_name,
         experiment_id=experiment_id,
         initial_active_model=initial_active_model,
         allocation_mode=allocation_mode,
@@ -202,7 +209,8 @@ def main(config_name: str):
         initial_replica=initial_replica,
         initial_batch=initial_batch,
         threshold=threshold,
-        sla_factor=sla_factor)
+        sla_factor=sla_factor,
+        pipeline_accuracies=pipeline_accuracies)
 
     optimizer = Optimizer(
         pipeline=pipeline,
