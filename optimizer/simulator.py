@@ -113,6 +113,7 @@ class Task:
         self.name = name
         self.sla_factor = sla_factor
         self.allocation_mode = allocation_mode
+        self.sla = self.find_task_sla()
         if allocation_mode == 'base':
             self.base_allocations = self.find_base_allocation()
 
@@ -155,7 +156,7 @@ class Task:
         if self.allocation_mode == 'base':
             self.set_to_base_allocation()
 
-    def find_base_allocation(self) -> Dict[str, ResourceAllocation]:
+    def find_task_sla(self) -> Dict[str, ResourceAllocation]:
         models = {key: [] for key in self.variant_names}
         # 1. filter out models
         for model_variant in self.variant_names:
@@ -163,7 +164,7 @@ class Task:
                 if allocation.name == model_variant:
                     models[model_variant].append(allocation)
         # 2. find variant SLA
-        model_sla = {}
+        model_slas = {}
         for model, allocation in models.items():
             # finding sla of each model
             # sla is latency of minimum batch
@@ -172,7 +173,17 @@ class Task:
             # since allocations are sorted the first
             # one will be the one with maximum resource req
             sla = allocation[-1].profiles[0].latency * self.sla_factor
-            model_sla[model] = sla
+            model_slas[model] = sla
+        task_sla = min(model_slas.values())
+        return task_sla
+
+    def find_base_allocation(self) -> Dict[str, ResourceAllocation]:
+        models = {key: [] for key in self.variant_names}
+        # 1. filter out models
+        for model_variant in self.variant_names:
+            for allocation in self.available_model_profiles:
+                if allocation.name == model_variant:
+                    models[model_variant].append(allocation)
         base_allocation = {}
         for model_variant, allocations in models.items():
             # finding the mimumu allocation that can respond
@@ -183,15 +194,14 @@ class Task:
                 # check if the max batch size throughput
                 # can reponsd to the threshold
                 if allocation.profiles[-1].throughput >= self.threshold\
-                    and allocation.profiles[-1].throughput >= model_sla[
-                        model_variant]:
+                    and allocation.profiles[-1].throughput >= self.sla:
                     base_allocation[model_variant] = deepcopy(
                         allocation.resource_allocation)
                     break
             else: # no-break
                 raise ValueError(
                     f'No responsive model profile to threshold {self.threshold}'
-                    f' or model sla {model_sla[model_variant]} was found'
+                    f' or model sla {self.sla} was found'
                     f' for model variant {model_variant}'
                     'consider either changing the the threshold or '
                     f'sla factor {self.sla_factor}')
@@ -359,6 +369,12 @@ class Pipeline:
         return latencies
 
     @property
+    def sla(self):
+        sla = sum(
+            map(lambda l: l.sla, self.inference_graph))
+        return sla
+
+    @property
     def stage_wise_accuracies(self):
         latencies = list(
             map(lambda l: l.accuracy, self.inference_graph))
@@ -431,10 +447,8 @@ class Pipeline:
 class Optimizer:
     def __init__(
         self, pipeline: Pipeline,
-        # fix_cpu_on_initial: bool,
         allocation_mode: str) -> None:
         self.pipeline = pipeline
-        # self.fix_cpu_on_initial = fix_cpu_on_initial
         self.allocation_mode = allocation_mode
         self.headers = self._generate_states_headers()
 
@@ -891,7 +905,6 @@ class Optimizer:
         scaling_cap: int,
         alpha: float,
         beta: float,
-        sla: float,
         gamma: float,
         arrival_rate: int, num_state_limit: int=None):
         if optimization_method == 'brute-force':
@@ -900,7 +913,6 @@ class Optimizer:
                 alpha=alpha,
                 beta=beta,
                 gamma=gamma,
-                sla=sla,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit)
         elif optimization_method == 'gurobi':
@@ -909,7 +921,6 @@ class Optimizer:
                 alpha=alpha,
                 beta=beta,
                 gamma=gamma,
-                sla=sla,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit)
         return optimal
@@ -926,8 +937,7 @@ class Optimizer:
         return True
 
     def sla_is_met(self, sla) -> bool:
-        return self.pipeline.pipeline_latency < sla
-
+        return self.pipeline.pipeline_latency < self.pipeline.sla
 
     def find_load_bottlenecks(
         self,

@@ -158,7 +158,6 @@ def main(config_name: str):
     pipeline_name = config['pipeline_name']
 
     # pipeline config
-    sla = config['sla']
     arrival_rate = config['arrival_rate']
     num_state_limit = config['num_state_limit']
     generate = config['generate']
@@ -225,7 +224,7 @@ def main(config_name: str):
             check_constraints=False,
             scaling_cap=scaling_cap,
             alpha=alpha, beta=beta, gamma=gamma,
-            arrival_rate=arrival_rate, sla=sla,
+            arrival_rate=arrival_rate,
             num_state_limit=num_state_limit)
         # print(f"{states = }")
         states.to_markdown(
@@ -241,7 +240,7 @@ def main(config_name: str):
             check_constraints=True,
             scaling_cap=scaling_cap,
             alpha=alpha, beta=beta, gamma=gamma,
-            arrival_rate=arrival_rate, sla=sla,
+            arrival_rate=arrival_rate,
             num_state_limit=num_state_limit)
         # print(f"{with_constraints = }")
         with_constraints.to_markdown(
@@ -258,7 +257,7 @@ def main(config_name: str):
             optimization_method=optimization_method,
             scaling_cap=scaling_cap,
             alpha=alpha, beta=beta, gamma=gamma,
-            arrival_rate=arrival_rate, sla=sla,
+            arrival_rate=arrival_rate,
             num_state_limit=num_state_limit)
         # print(f"{optimal = }")
         optimal.to_markdown(os.path.join(
