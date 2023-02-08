@@ -62,12 +62,14 @@ def read_task_profiles(profiling_info: pd.DataFrame) -> List[Model]:
     for model_variant in profiling_info['model_variant'].unique():
         model_variant_profiling_info =\
             profiling_info[profiling_info['model_variant'] == model_variant]
+        model_variant_profiling_info.sort_values(by=['max_batch_size', 'cpu_request'])
         for cpu_request in model_variant_profiling_info['cpu_request'].unique():
             cpu_request_profiling_info =\
                 model_variant_profiling_info[
                     model_variant_profiling_info['cpu_request'] == cpu_request]
             measured_profiles = []
             for _, row in cpu_request_profiling_info.iterrows():
+                # TODO throughput from profiling
                 measured_profiles.append(
                     Profile(
                         batch=row['max_batch_size'],
@@ -115,7 +117,6 @@ def generate_pipeline(
             threshold=threshold,
             sla_factor=sla_factor,
             allocation_mode=allocation_mode,
-            # base_allocation_mode=True,
             gpu_mode=False,
         )
         inference_graph.append(task)

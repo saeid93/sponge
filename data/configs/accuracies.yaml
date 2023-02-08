@@ -1,0 +1,10 @@
+video-pipeline:
+  crop:
+  - yolov5n: 60
+  - yolov5m: 70
+  classification:
+    - resnet18: 77
+    - resnet34: 79
+    - resnet50: 81
+    - resnet101: 90
+    - resnet152: 50

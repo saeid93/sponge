@@ -1,6 +1,6 @@
 series: 1
 series_meta: testing static trace
-pipeline_name: 4-paper-sum-qa
+pipeline_name: sum-qa
 node_name: nlp-sum
 data_type: text
 timeout: 120

@@ -127,8 +127,9 @@ class Task:
                         self.active_variant_index = variant_index
                         break
         else: # no-break
-            raise ValueError(f"no matching profile for the variant {active_variant} and allocation"
-                             f"of cpu: {active_allocation.cpu} and gpu: {active_allocation.gpu}")
+            raise ValueError(
+                f"no matching profile for the variant {active_variant} and allocation"
+                f"of cpu: {active_allocation.cpu} and gpu: {active_allocation.gpu}")
 
     def model_switch(self, active_variant: str) -> None:
         """
@@ -147,8 +148,9 @@ class Task:
                         self.active_variant = active_variant
                         break
         else: # no-break
-            raise ValueError(f"no matching profile for the variant {active_variant} and allocation"
-                             f"of cpu: {self.active_allocation.cpu} and gpu: {self.active_allocation.gpu}")
+            raise ValueError(
+                f"no matching profile for the variant {active_variant} and allocation"
+                f"of cpu: {self.active_allocation.cpu} and gpu: {self.active_allocation.gpu}")
 
         if self.allocation_mode == 'base':
             self.set_to_base_allocation()
@@ -216,8 +218,9 @@ class Task:
                         self.active_allocation = active_allocation
                         break
         else: # no-break
-            raise ValueError(f"no matching profile for the variant {self.active_variant} and allocation"
-                             f"of cpu: {active_allocation.cpu} and gpu: {active_allocation.gpu}")
+            raise ValueError(
+                f"no matching profile for the variant {self.active_variant} and allocation"
+                f"of cpu: {active_allocation.cpu} and gpu: {active_allocation.gpu}")
 
     def re_scale(self, replica) -> None:
         self.replicas = replica

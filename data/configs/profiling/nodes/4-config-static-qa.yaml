@@ -1,6 +1,6 @@
 series: 12
 series_meta: 'checking effect of batch size,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
-pipeline_name: 4-paper-sum-qa
+pipeline_name: sum-qa
 node_name: nlp-qa
 data_type: text
 timeout: 180

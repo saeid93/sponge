@@ -1,6 +1,6 @@
 series: 1
 series_meta: testing static trace
-pipeline_name: 2-paper-audio-sent
+pipeline_name: audio-sent
 node_name: nlp-sent
 data_type: text
 timeout: 120
