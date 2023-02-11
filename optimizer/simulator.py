@@ -48,7 +48,7 @@ class Model:
         self.measured_profiles = measured_profiles
         self.accuracy = accuracy
         self.name = name
-        self.profiles = self.regression_model()
+        self.profiles, self.latency_model = self.regression_model()
 
     def regression_model(self) -> List[Profile]:
         """
@@ -60,16 +60,17 @@ class Model:
             lambda l: l.latency, self.measured_profiles))).reshape(-1, 1)
         all_x = np.arange(self.min_batch, self.max_batch+1)
         test_x = all_x[~np.isin(all_x, train_x)].reshape(-1, 1)
-        regr = linear_model.LinearRegression()
-        regr.fit(train_x, train_y)
-        test_y = regr.predict(test_x)
+        latency_model = linear_model.LinearRegression()
+        latency_model.fit(train_x, train_y)
+        test_y = latency_model.predict(test_x)
         predicted_profiles = []
         for x, y in zip(test_x.reshape(-1), test_y.reshape(-1)):
             predicted_profiles.append(
                 Profile(batch=x, latency=y, measured=False))
         profiles: List[Profile] = predicted_profiles + self.measured_profiles
         profiles.sort(key=lambda profile: profile.batch)
-        return profiles
+        latency_model = lambda l: l
+        return profiles, latency_model
 
     @property
     def profiled_batches(self):
@@ -243,6 +244,10 @@ class Task:
         return self.available_model_profiles[self.active_variant_index]
 
     @property
+    def model_latency_func(self) -> Model:
+        return self.available_model_profiles[self.active_variant_index].latency_model
+
+    @property
     def cpu(self) -> int:
         if self.gpu_mode:
             raise ValueError('The node is on gpu mode')
@@ -272,8 +277,14 @@ class Task:
     @property
     def queue_latency(self) -> float:
         # TODO TEMP
+        Task.queue_latency_func(self.batch)
         queue_latency = 0
         return queue_latency
+
+    @classmethod
+    def queue_latency_func(b):
+        # TODO temp
+        return 0
 
     @property
     def model_latency(self) -> float:
@@ -531,7 +542,8 @@ class Optimizer:
     def model_latencies(self):
         # latencies of all cases nested dictionary
         # for gorubi solver
-        # [stage_name][variant][batch_size]
+        # TODO add type hints
+        # [stage_name][variant]
         model_latencies = {}
         inference_graph = deepcopy(self.pipeline.inference_graph)
         for task in inference_graph:
@@ -541,28 +553,28 @@ class Optimizer:
                 task.model_switch(variant_name)
                 for batch_size in task.batches:
                     task.change_batch(batch_size)
-                    model_latencies[task.name][
-                        variant_name][batch_size] = task.model_latency
+                    model_latencies[task.name][variant_name] = task.model_latency_func
         return model_latencies
 
     def queue_latencies(self):
         # queue latencies of all cases nested dictionary
         # for gorubi solver
-        # [stage_name][batch_size]
+        # [stage_name]
+        # TODO change like model latencies
         queue_latencies = {}
         inference_graph = deepcopy(self.pipeline.inference_graph)
         for task in inference_graph:
             queue_latencies[task.name] = {}
             for batch_size in task.batches:
                 task.change_batch(batch_size)
-                queue_latencies[
-                    task.name][batch_size] = task.queue_latency
+                queue_latencies[task.name] = task.queue_latency_func
         return queue_latencies
 
     def throughputs(self):
         # throughputs of all cases nested dictionary
         # for gorubi solver
         # [stage_name][variant][batch_size]
+        # TODO change like model latencies
         throughputs = {}
         inference_graph = deepcopy(self.pipeline.inference_graph)
         for task in inference_graph:
@@ -836,12 +848,20 @@ class Optimizer:
         base_allocations = self.base_allocations()
         queue_latencies = self.queue_latencies()
 
+        latency_constraint = model.addConstrs(
+            (gp.quicksum(
+                gp.quicksum(
+                    model_latencies[stage][variant].predict(np.array(b[stage]).reshape(-1, 1))[0][0])
+                for variant in stages_variants[stage]
+                ) for stage in stages) <= sla, name='latency')
+
+
         # paper constraints
         latency_constraint = model.addConstrs(
             (gp.quicksum(
                 gp.quicksum(
-                    model_latencies[stage][variant][b[stage]]
-                for variant in stages_variants[stage]
+                    model_latencies[stage][variant].predict(np.array(b[stage].reshape(-1, 1)))
+                for variant in stages_variants[stage] # TODO add i
                 ) for stage in stages) + 
                     gp.quicksum(queue_latencies[stage][b[stage]] for stage in stages)) <= sla, name='latency')
         throughput_constraint = model.addConstrs(
