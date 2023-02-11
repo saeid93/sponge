@@ -33,10 +33,10 @@ scaling_cap: 2
 arrival_rate: 10
 num_state_limit: 100
 threshold: 50
-optimization_method: brute-force # options: [brute-force | gurobi]
+optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 generate:
-  - all
-  - feasible
+  # - all
+  # - feasible
   - optimal

@@ -115,6 +115,8 @@ class GurobiOptimizer:
                 if j < len(self.paths[i].path) - 1:
                     cq = (1000 * (b[self.paths[i].path[j]] - 1.0)) / self.ms_workload[self.paths[i].path[j]]
                     nq = (1000 * (b[self.paths[i].path[j + 1]] - 1.0)) / self.ms_workload[self.paths[i].path[j + 1]]
+                    # TODO cq and nq?
+                    # TODO queuing
                     model.addConstr(cq - nq <= 0)
             model.addQConstr(latencies + queues <= self.paths[i].sla)
 

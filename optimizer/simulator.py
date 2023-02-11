@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Any
 import numpy as np
 import pandas as pd
 import gurobipy as gp
@@ -407,6 +407,20 @@ class Pipeline:
         return gpu
 
     @property
+    def stage_wise_task_names(self):
+        task_names = []
+        for task in self.inference_graph:
+            task_names.append(task.name)
+        return task_names
+
+    @property
+    def stage_wise_available_variants(self):
+        task_names = {}
+        for task in self.inference_graph:
+            task_names[task.name] = task.variant_names
+        return task_names
+
+    @property
     def pipeline_cpu(self):
         return sum(self.stage_wise_cpu)
 
@@ -482,7 +496,7 @@ class Optimizer:
         """
         objective function of the pipeline
         """
-        resource_objective = 1/self.pipeline.cpu_usage
+        resource_objective = self.pipeline.cpu_usage
         return resource_objective
 
     def batch_objective(self) -> float:
@@ -500,7 +514,7 @@ class Optimizer:
         """
         objective function of the pipeline
         """
-        objective = alpha * self.accuracy_objective() +\
+        objective = alpha * self.accuracy_objective() -\
             beta * self.resource_objective() +\
                 gamma * self.batch_objective()
         return objective
@@ -514,22 +528,36 @@ class Optimizer:
             return True
         return False
 
-    def latencies(self):
+    def model_latencies(self):
         # latencies of all cases nested dictionary
         # for gorubi solver
         # [stage_name][variant][batch_size]
-        latencies = {}
+        model_latencies = {}
         inference_graph = deepcopy(self.pipeline.inference_graph)
         for task in inference_graph:
-            latencies[task.name] = {}
+            model_latencies[task.name] = {}
             for variant_name in task.variant_names:
-                latencies[task.name][variant_name] = {}
+                model_latencies[task.name][variant_name] = {}
                 task.model_switch(variant_name)
                 for batch_size in task.batches:
                     task.change_batch(batch_size)
-                    latencies[task.name][
-                        variant_name][batch_size] = task.latency
-        return latencies
+                    model_latencies[task.name][
+                        variant_name][batch_size] = task.model_latency
+        return model_latencies
+
+    def queue_latencies(self):
+        # queue latencies of all cases nested dictionary
+        # for gorubi solver
+        # [stage_name][batch_size]
+        queue_latencies = {}
+        inference_graph = deepcopy(self.pipeline.inference_graph)
+        for task in inference_graph:
+            queue_latencies[task.name] = {}
+            for batch_size in task.batches:
+                task.change_batch(batch_size)
+                queue_latencies[
+                    task.name][batch_size] = task.queue_latency
+        return queue_latencies
 
     def throughputs(self):
         # throughputs of all cases nested dictionary
@@ -548,15 +576,31 @@ class Optimizer:
                         variant_name][batch_size] = task.throughput
         return throughputs
 
+    def base_allocations(self):
+        # base allocation of all cases nested dictionary
+        # for gorubi solver
+        # [stage_name][variant]
+        base_allocations = {}
+        inference_graph = deepcopy(self.pipeline.inference_graph)
+        for task in inference_graph:
+            if self.pipeline.gpu_mode:
+                base_allocations[task.name] = {
+                    key: value.gpu for (
+                        key, value) in task.base_allocations.items()}
+            else:
+                base_allocations[task.name] = {
+                    key: value.cpu for (
+                        key, value) in task.base_allocations.items()}
+        return base_allocations
+
     def all_states(
         self,
         scaling_cap: int,
         alpha: float,
         beta: float,
         gamma: float,
-        check_constraints: bool = False,
-        arrival_rate: int = None,
-        sla: float = None,
+        check_constraints: bool,
+        arrival_rate: int,
         num_state_limit: int = None,
         ) -> pd.DataFrame:
         """generate all the possible states based on profiling data
@@ -574,14 +618,13 @@ class Optimizer:
                 objective batch. Defaults to 1.
             arrival_rate (int, optional): arrival rate into
                 the pipeline. Defaults to None.
-            sla (float, optional): end to end service level agreement
-                of pipeline. Defaults to None.
             state_limit (int, optional): whether to generate a
                 fixed number of state. Defaults to None.
 
         Returns:
             pd.DataFrame: all the states of the pipeline
         """
+        sla = self.pipeline.sla
         if num_state_limit is not None:
             state_counter = 0
         variant_names = []
@@ -701,18 +744,26 @@ class Optimizer:
         alpha: float,
         beta: float,
         gamma: float,
-        arrival_rate: int = None,
-        sla: float = None,
+        arrival_rate: int,
         num_state_limit: int = None) -> pd.DataFrame:
         states = self.all_states(
             check_constraints=True,
             scaling_cap=scaling_cap,
             alpha=alpha, beta=beta, gamma=gamma,
-            arrival_rate=arrival_rate, sla=sla,
+            arrival_rate=arrival_rate,
             num_state_limit=num_state_limit)
         optimal = states[
             states['objective'] == states['objective'].max()]
         return optimal
+
+    def func_l(b: gp.Var , model_latencies: Dict[str, Any], stage: str, model: str):
+        pass
+
+    def func_h(b: gp.Var, throughputs: Dict[str, Any], stage: str, model: str):
+        pass
+
+    def func_q(b: gp.Var, queue_latencies: Dict[str, Any], stage: str, model: str):
+        pass
 
     def gurobi_optmizer(
         self,
@@ -720,8 +771,7 @@ class Optimizer:
         alpha: float,
         beta: float,
         gamma: float,
-        arrival_rate: int = None,
-        sla: float = None,
+        arrival_rate: int,
         num_state_limit: int = None) -> pd.DataFrame:
         """generate all the possible states based on profiling data
 
@@ -744,80 +794,71 @@ class Optimizer:
         Returns:
             pd.DataFrame: all the states of the pipeline
         """
+        sla = self.pipeline.sla
         if num_state_limit is not None:
             state_counter = 0
         variant_names = []
         replicas = []
         batches = []
-        allocations = []
+        assert self.allocation_mode == 'base',\
+            'currrently only base mode is supported with Gurobi'
         for task in self.pipeline.inference_graph:
             variant_names.append(task.variant_names)
             replicas.append(np.arange(1, scaling_cap+1))
             batches.append(task.batches)
-            if self.allocation_mode=='variable':
-                if task.gpu_mode:
-                    allocations.append(task.resource_allocations_gpu_mode)
-                else:
-                    allocations.append(task.resource_allocations_cpu_mode)
-            elif self.allocation_mode=='fix':
-                allocations.append([task.initial_allocation])
-            elif self.allocation_mode=='base':
-                pass
-        # for task in self.pipeline.inference_graph:
-        #     variant_names.append(task.variant_names)
-        #     replicas.append(np.arange(1, scaling_cap+1))
-        #     batches.append(task.batches)
-        #     # TODO here
-        #     if self.base_allocation_mode:
-        #         if task.gpu_mode:
-        #             allocations.append([task.base_allocation.gpu])
-        #         else:
-        #             allocations.append([task.base_allocation.cpu])
-        #     else:
-        #         if task.gpu_mode:
-        #             task_allocations = list(
-        #                 map(lambda l: l.gpu,
-        #                     task.resource_allocations_gpu_mode))
-        #         else:
-        #             task_allocations = list(
-        #                 map(lambda l: l.cpu,
-        #                     task.resource_allocations_cpu_mode))
-        #         allocations.append(task_allocations)
+        batching_cap = max(batches[0])
 
         # defining groubipy model for descision problem
         model = gp.Model('pipeline')
 
-        # TODO 
         # stages
         stages = self.pipeline.stage_wise_task_names
-        variant_names = variant_names[0]
-        replicas = replicas[0]
-        batches = batches[0]
-        allocations = allocations[0]
+        stages_variants = self.pipeline.stage_wise_available_variants
 
-        i = model.addVars(stages, variant_names, name='i', vtype=GRB.BINARY)
-        n = model.addVars(stages, name='n', vtype=GRB.INTEGER)
-        b = model.addVars(stages, name='b', vtype=GRB.INTEGER)
+        # sets
+        gurobi_variants = []
+        gurobi_replicas = []
+        gurobi_batches = []
+        for stage_index, stage_name in enumerate(stages):
+            gurobi_variants += [(stage_name, variant) for variant in variant_names[stage_index]]
+            gurobi_replicas += [stage_name]
+            gurobi_batches += [stage_name]
 
+        # variables
+        i = model.addVars(gurobi_variants, name='i', vtype=GRB.BINARY)
+        n = model.addVars(gurobi_replicas, name='n', vtype=GRB.INTEGER, ub=scaling_cap)
+        b = model.addVars(gurobi_batches, name='b', vtype=GRB.INTEGER, ub=batching_cap)
+        model.update()
 
-
-        # TODO add constraint for the maximum batch size
-        # TODO add constraint for maximum replication
-        # TODO add constraint for throughput
-        # TODO add latency constraint
-        latencies = self.latencies()
+        # coefficients
+        model_latencies = self.model_latencies()
         throughputs = self.throughputs()
         base_allocations = self.base_allocations()
-        # model.addConstrs()
-        # model.addConstrs()
-        # model.addConstrs()
-        # model.addConstrs()
-        # TODO Descision Variables
+        queue_latencies = self.queue_latencies()
 
-        # TODO Constraints
-        a = 1
-        # TODO Objective function
+        # paper constraints
+        latency_constraint = model.addConstrs(
+            (gp.quicksum(
+                gp.quicksum(
+                    model_latencies[stage][variant][b[stage]]
+                for variant in stages_variants[stage]
+                ) for stage in stages) + 
+                    gp.quicksum(queue_latencies[stage][b[stage]] for stage in stages)) <= sla, name='latency')
+        throughput_constraint = model.addConstrs(
+            (n[stage] * gp.quicksum(throughputs[stage][variant][b[stage]] for variant in stages_variants[stage]) >= arrival_rate) for stage in stages)
+        one_model_constraint = model.addConstrs(
+            (gp.quicksum(
+                i[stage, variant] for variant in stages_variants[stage]) == 1\
+                    for stage in stages), name='one_model')
 
+        # max consraints
+        pass
+
+        # update the model
+        model.update()
+
+        # objective
+        model.setObjective()
 
         # generate states data
         # states = self._generate_states()
@@ -907,6 +948,7 @@ class Optimizer:
         beta: float,
         gamma: float,
         arrival_rate: int, num_state_limit: int=None):
+
         if optimization_method == 'brute-force':
             optimal = self.brute_force(
                 scaling_cap=scaling_cap,
