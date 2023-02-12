@@ -48,7 +48,7 @@ class Model:
         self.measured_profiles = measured_profiles
         self.accuracy = accuracy
         self.name = name
-        self.profiles, self.latency_model = self.regression_model()
+        self.profiles, self.latency_model_params = self.regression_model()
 
     def regression_model(self) -> List[Profile]:
         """
@@ -69,8 +69,7 @@ class Model:
                 Profile(batch=x, latency=y, measured=False))
         profiles: List[Profile] = predicted_profiles + self.measured_profiles
         profiles.sort(key=lambda profile: profile.batch)
-        latency_model = lambda l: l
-        return profiles, latency_model
+        return profiles, [latency_model.coef_[0][0], latency_model.intercept_[0]]
 
     @property
     def profiled_batches(self):
@@ -244,8 +243,8 @@ class Task:
         return self.available_model_profiles[self.active_variant_index]
 
     @property
-    def model_latency_func(self) -> Model:
-        return self.available_model_profiles[self.active_variant_index].latency_model
+    def latency_model_params(self) -> Model:
+        return self.available_model_profiles[self.active_variant_index].latency_model_params
 
     @property
     def cpu(self) -> int:
@@ -275,23 +274,21 @@ class Task:
         return 0
 
     @property
+    def queue_latency_params(self) -> float:
+        # TODO add a function to infer queue latency
+        queue_latency_params = 0
+        return [queue_latency_params]
+
+    @property
     def queue_latency(self) -> float:
         # TODO TEMP
-        Task.queue_latency_func(self.batch)
         queue_latency = 0
         return queue_latency
 
-    @classmethod
-    def queue_latency_func(b):
-        # TODO temp
-        return 0
-
-    @property
-    def model_latency(self) -> float:
-        latency = next(filter(
-            lambda profile: profile.batch == self.batch,
-            self.active_model.profiles)).latency
-        return latency
+    # TODO make it consistent latnecy model
+    # def model_latency_func(self) -> float:
+    #     latency, params = 0, 0
+    #     return latency, params
 
     @property
     def latency(self) -> float:
@@ -539,7 +536,7 @@ class Optimizer:
             return True
         return False
 
-    def model_latencies(self):
+    def latency_parameters(self):
         # latencies of all cases nested dictionary
         # for gorubi solver
         # TODO add type hints
@@ -553,10 +550,11 @@ class Optimizer:
                 task.model_switch(variant_name)
                 for batch_size in task.batches:
                     task.change_batch(batch_size)
-                    model_latencies[task.name][variant_name] = task.model_latency_func
+                    model_latencies[
+                        task.name][variant_name] = task.latency_model_params
         return model_latencies
 
-    def queue_latencies(self):
+    def queue_parameters(self):
         # queue latencies of all cases nested dictionary
         # for gorubi solver
         # [stage_name]
@@ -567,26 +565,9 @@ class Optimizer:
             queue_latencies[task.name] = {}
             for batch_size in task.batches:
                 task.change_batch(batch_size)
-                queue_latencies[task.name] = task.queue_latency_func
+                queue_latencies[task.name] = task.queue_latency_params
         return queue_latencies
 
-    def throughputs(self):
-        # throughputs of all cases nested dictionary
-        # for gorubi solver
-        # [stage_name][variant][batch_size]
-        # TODO change like model latencies
-        throughputs = {}
-        inference_graph = deepcopy(self.pipeline.inference_graph)
-        for task in inference_graph:
-            throughputs[task.name] = {}
-            for variant_name in task.variant_names:
-                throughputs[task.name][variant_name] = {}
-                task.model_switch(variant_name)
-                for batch_size in task.batches:
-                    task.change_batch(batch_size)
-                    throughputs[task.name][
-                        variant_name][batch_size] = task.throughput
-        return throughputs
 
     def base_allocations(self):
         # base allocation of all cases nested dictionary
@@ -768,15 +749,6 @@ class Optimizer:
             states['objective'] == states['objective'].max()]
         return optimal
 
-    def func_l(b: gp.Var , model_latencies: Dict[str, Any], stage: str, model: str):
-        pass
-
-    def func_h(b: gp.Var, throughputs: Dict[str, Any], stage: str, model: str):
-        pass
-
-    def func_q(b: gp.Var, queue_latencies: Dict[str, Any], stage: str, model: str):
-        pass
-
     def gurobi_optmizer(
         self,
         scaling_cap: int,
@@ -820,6 +792,45 @@ class Optimizer:
             batches.append(task.batches)
         batching_cap = max(batches[0])
 
+        def func_l(batch, params):
+            """using parameters of fitted models
+
+            Args:
+                batch: batch size
+                params: parameters of the linear model
+
+            Returns:
+                latency
+            """
+            latency = params[0] * batch + params[1]
+            return latency
+
+        def func_q(batch, params):
+            """queueing latency
+
+            Args:
+                batch: batch size
+                params: parameters of the linear model
+
+            Returns:
+                latency
+            """
+            queue = params[0] * batch
+            return queue
+
+        def func_h(batch, params):
+            """throughput function
+
+            Args:
+                batch: batch size
+                params: parameters of the linear model
+
+            Returns:
+                throughput
+            """
+            throughput = batch / (params[0] * batch + params[1])
+            return throughput
+
         # defining groubipy model for descision problem
         model = gp.Model('pipeline')
 
@@ -843,27 +854,19 @@ class Optimizer:
         model.update()
 
         # coefficients
-        model_latencies = self.model_latencies()
-        throughputs = self.throughputs()
+        latency_parameters = self.latency_parameters()
+        # throughputs = self.throughputs()
         base_allocations = self.base_allocations()
-        queue_latencies = self.queue_latencies()
-
-        latency_constraint = model.addConstrs(
-            (gp.quicksum(
-                gp.quicksum(
-                    model_latencies[stage][variant].predict(np.array(b[stage]).reshape(-1, 1))[0][0])
-                for variant in stages_variants[stage]
-                ) for stage in stages) <= sla, name='latency')
-
+        queue_parameters = self.queue_parameters()
 
         # paper constraints
-        latency_constraint = model.addConstrs(
-            (gp.quicksum(
-                gp.quicksum(
-                    model_latencies[stage][variant].predict(np.array(b[stage].reshape(-1, 1)))
-                for variant in stages_variants[stage] # TODO add i
-                ) for stage in stages) + 
-                    gp.quicksum(queue_latencies[stage][b[stage]] for stage in stages)) <= sla, name='latency')
+        model.addQConstr(
+            (gp.quicksum(func_l(b[stage], latency_parameters[stage][variant]) * i[stage, variant]\
+                for stage in stages for variant in stages_variants[stage]) +\
+                    gp.quicksum(func_q(b[stage], queue_parameters[stage]) for stage in stages) <= sla), name='latency')
+        for stage in stages:
+            model.addQConstr(
+                (gp.quicksum(n[stage] * func_h(b[stage], latency_parameters[stage][variant]) * i[stage, variant] for variant in stages_variants) <= arrival_rate), name='throughput')
         throughput_constraint = model.addConstrs(
             (n[stage] * gp.quicksum(throughputs[stage][variant][b[stage]] for variant in stages_variants[stage]) >= arrival_rate) for stage in stages)
         one_model_constraint = model.addConstrs(
