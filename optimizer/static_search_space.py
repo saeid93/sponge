@@ -219,6 +219,7 @@ def main(config_name: str):
 
     start = time.time()
     if 'all' in generate:
+        all_states_time = time.time()
         # all states
         states = optimizer.all_states(
             check_constraints=False,
@@ -232,9 +233,9 @@ def main(config_name: str):
                 dir_path, 'all-states-readable.csv'), index=False)
         states.to_csv(
             os.path.join(dir_path, 'all-states.csv'), index=False)
-        all_states_time = time.time()
-        print(f"all states time: {all_states_time - start}")
+        print(f"all states time: {time.time() - all_states_time}")
     if 'feasible' in generate:
+        feasible_time = time.time()
         # all feasibla states
         with_constraints = optimizer.all_states(
             check_constraints=True,
@@ -249,9 +250,9 @@ def main(config_name: str):
                 index=False)
         with_constraints.to_csv(
             os.path.join(dir_path, 'with-constraints.csv'), index=False)
-        feasible_time = time.time()
-        print(f"with constraint time: {feasible_time - all_states_time}")
+        print(f"with constraint time: {time.time() - feasible_time}")
     if 'optimal' in generate:
+        optimal_time = time.time()
         # optimal states
         optimal = optimizer.optimize(
             optimization_method=optimization_method,
@@ -264,8 +265,7 @@ def main(config_name: str):
             dir_path, 'optimal-readable.csv'), index=False)
         optimal.to_csv(os.path.join(
             dir_path, 'optimal.csv'), index=False)
-        optimal_time = time.time()
-        print(f"feasible time: {optimal_time - feasible_time}")
+        print(f"feasible time: {time.time() - optimal_time}")
     print(f"total time spent: {time.time() - start}")
 
 if __name__ == "__main__":
