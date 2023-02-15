@@ -538,10 +538,23 @@ class Optimizer:
             return True
         return False
 
-    def latency_parameters(self):
+    def pipeline_latency_upper_bound(self) -> float:
+        # maximum number for latency of a node in
+        # a pipeline
+        max_model_latencies = 0
+        inference_graph = deepcopy(self.pipeline.inference_graph)
+        for task in inference_graph:
+            for variant_name in task.variant_names:
+                task.model_switch(variant_name)
+                for batch_size in task.batches:
+                    task.change_batch(batch_size)
+                    if task.model_latency > max_model_latencies:
+                        max_model_latencies = task.model_latency
+        return max_model_latencies
+
+    def latency_parameters(self) -> Dict[str, Dict[str, List[float]]]:
         # latencies of all cases nested dictionary
         # for gorubi solver
-        # TODO add type hints
         # [stage_name][variant]
         model_latencies = {}
         inference_graph = deepcopy(self.pipeline.inference_graph)
@@ -556,10 +569,9 @@ class Optimizer:
                         task.name][variant_name] = task.latency_model_params
         return model_latencies
 
-    def accuracy_parameters(self):
+    def accuracy_parameters(self) -> Dict[str, Dict[str, float]]:
         # accuracies of all cases nested dictionary
         # for gorubi solver
-        # TODO add type hints
         # [stage_name][variant]
         model_accuracies = {}
         inference_graph = deepcopy(self.pipeline.inference_graph)
@@ -573,11 +585,10 @@ class Optimizer:
         return model_accuracies
 
 
-    def queue_parameters(self):
+    def queue_parameters(self) -> Dict[str, float]:
         # queue latencies of all cases nested dictionary
         # for gorubi solver
         # [stage_name]
-        # TODO change like model latencies
         queue_latencies = {}
         inference_graph = deepcopy(self.pipeline.inference_graph)
         for task in inference_graph:
@@ -837,19 +848,6 @@ class Optimizer:
             queue = params[0] * batch
             return queue
 
-        def func_h(batch, params):
-            """throughput function
-
-            Args:
-                batch: batch size
-                params: parameters of the linear model
-
-            Returns:
-                throughput
-            """
-            throughput = batch / (params[0] * batch + params[1])
-            return throughput
-
         # defining groubipy model for descision problem
         model = gp.Model('pipeline')
 
@@ -868,9 +866,10 @@ class Optimizer:
 
         # variables
         i = model.addVars(gurobi_variants, name='i', vtype=GRB.BINARY)
-        n = model.addVars(gurobi_replicas, name='n', vtype=GRB.INTEGER, lb=1, ub=scaling_cap)
-        b = model.addVars(gurobi_batches, name='b', vtype=GRB.INTEGER, lb=1, ub=batching_cap)
-        # h = model.addVars(gurobi_batches, name='h', vtype=GRB.INTEGER, ub=1000)
+        n_lb = 1
+        b_lb = 1
+        n = model.addVars(gurobi_replicas, name='n', vtype=GRB.INTEGER, lb=n_lb, ub=scaling_cap)
+        b = model.addVars(gurobi_batches, name='b', vtype=GRB.INTEGER, lb=b_lb, ub=batching_cap)
         model.update()
 
         # coefficients
@@ -885,19 +884,14 @@ class Optimizer:
             (gp.quicksum(func_l(b[stage], latency_parameters[stage][variant]) * i[stage, variant]\
                 for stage in stages for variant in stages_variants[stage]) +\
                     gp.quicksum(func_q(b[stage], queue_parameters[stage]) for stage in stages) <= sla), name='latency')
-        # for stage in stages:
-        #     model.addQConstr(
-        #         (gp.quicksum(
-        #             n[stage] * func_h(b[stage],
-        #             latency_parameters[stage][variant]) * i[stage, variant]\
-        #                 for variant in stages_variants[stage]) <= arrival_rate), name='throughput')
-        # HACK wrong temporary until finding a way to overcome
-        model.addQConstr(
-            (gp.quicksum(
-                n[stage] * b[stage] - arrival_rate *\
-                    func_l(b[stage], latency_parameters[stage][variant])\
-                        for stage in stages for variant in stages_variants[stage]) >= 0),
-                name='throughput')
+        # upper bound trick based on
+        # https://support.gurobi.com/hc/en-us/community/posts/12996185241105-How-to-add-quadratic-constraint-in-conditional-indicator-constraints
+        M = arrival_rate * self.pipeline_latency_upper_bound() - n_lb * b_lb
+        for stage in stages:
+            for variant in stages_variants[stage]:
+                model.addQConstr(((
+                    arrival_rate * func_l(b[stage],
+                    latency_parameters[stage][variant]) - n[stage] * b[stage]) <= M * (1-i[stage, variant])), f'throughput-{stage}-{variant}')
         model.addConstrs(
             (gp.quicksum(
                 i[stage, variant] for variant in stages_variants[stage]) == 1\
@@ -908,9 +902,9 @@ class Optimizer:
             accuracy_parameters[stage][vairant] * i[stage, vairant]\
                 for stage in stages for vairant in stages_variants[stage]
         )
-        # HACK wrong temporary until finding a way to overcome
+
         resource_objective = gp.quicksum(
-            base_allocations[stage][vairant] * i[stage, vairant]\
+            base_allocations[stage][vairant] * n[stage] * i[stage, vairant]\
                 for stage in stages for vairant in stages_variants[stage]
         )
         batch_objective = gp.quicksum(

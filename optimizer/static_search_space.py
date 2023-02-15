@@ -216,8 +216,15 @@ def main(config_name: str):
         allocation_mode=allocation_mode,
         # fix_cpu_on_initial=fix_cpu_on_initial,
     )
-
-    start = time.time()
+    all_states_time = None
+    feasible_time = None
+    optimal_time = None
+    total_time = None
+    time_file = open(
+        os.path.join(dir_path, 'times.csv'), "w")
+    if optimization_method == 'gurobi':
+        assert generate[0] == 'optimal', 'only optimal is allowed with gurbi'
+    total_time = time.time()
     if 'all' in generate:
         all_states_time = time.time()
         # all states
@@ -227,13 +234,14 @@ def main(config_name: str):
             alpha=alpha, beta=beta, gamma=gamma,
             arrival_rate=arrival_rate,
             num_state_limit=num_state_limit)
-        # print(f"{states = }")
         states.to_markdown(
             os.path.join(
                 dir_path, 'all-states-readable.csv'), index=False)
         states.to_csv(
             os.path.join(dir_path, 'all-states.csv'), index=False)
-        print(f"all states time: {time.time() - all_states_time}")
+        all_states_time = time.time() - all_states_time
+        time_file.write(f'all: {all_states_time}\n')
+        print(f"all states time: {all_states_time}")
     if 'feasible' in generate:
         feasible_time = time.time()
         # all feasibla states
@@ -250,6 +258,8 @@ def main(config_name: str):
                 index=False)
         with_constraints.to_csv(
             os.path.join(dir_path, 'with-constraints.csv'), index=False)
+        feasible_time = time.time() - feasible_time
+        time_file.write(f'feasible_time: {feasible_time}\n')
         print(f"with constraint time: {time.time() - feasible_time}")
     if 'optimal' in generate:
         optimal_time = time.time()
@@ -265,8 +275,13 @@ def main(config_name: str):
             dir_path, 'optimal-readable.csv'), index=False)
         optimal.to_csv(os.path.join(
             dir_path, 'optimal.csv'), index=False)
-        print(f"feasible time: {time.time() - optimal_time}")
-    print(f"total time spent: {time.time() - start}")
+        optimal_time = time.time() - optimal_time
+        time_file.write(f'optimal_time: {optimal_time}\n')
+        print(f"feasible time: {optimal_time}")
+    total_time = time.time() - total_time
+    time_file.write(f'total_time: {total_time}')
+    time_file.close()
+    print(f"total time spent: {total_time}")
 
 if __name__ == "__main__":
     main()
