@@ -33,9 +33,11 @@ scaling_cap: 2 # maximum possible scaling per nodes
 arrival_rate: 10
 num_state_limit: 1000 # number of states
 threshold: 50 # threshold for finding the base allocation
-optimization_method: gurobi # options: [brute-force | gurobi]
+optimization_method: brute-force # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
+normalize_accuracy: true
+accuracy_method: average # [average | sum | multiply]
 generate:
   # - all
   # - feasible

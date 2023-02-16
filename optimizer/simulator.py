@@ -355,10 +355,15 @@ class Pipeline:
         self,
         inference_graph: List[Task],
         gpu_mode: bool,
-        sla_factor: int) -> None:
+        sla_factor: int,
+        accuracy_method: str,
+        normalize_accuracy: str
+        ) -> None:
         self.inference_graph = inference_graph
         self.gpu_mode = gpu_mode
         self.sla_factor = sla_factor
+        self.accuracy_method = accuracy_method
+        self.normalize_accuracy = normalize_accuracy
         if not self.gpu_mode:
             for task in self.inference_graph:
                 if task.gpu_mode:
@@ -444,9 +449,22 @@ class Pipeline:
 
     @property    
     def pipeline_accuracy(self):
-        accuracy = 1
-        for task in self.inference_graph:
-            accuracy *= task.accuracy
+        if self.normalize_accuracy:
+            if self.accuracy_method == 'multiply':
+                pass
+            elif self.accuracy_method == 'sum':
+                pass
+            elif self.accuracy_method == 'average':
+                pass
+        else:
+            if self.accuracy_method == 'multiply':
+                accuracy = 1
+                for task in self.inference_graph:
+                    accuracy *= task.accuracy
+            elif self.accuracy_method == 'sum':
+                pass
+            elif self.accuracy_method == 'average':
+                pass
         return accuracy
 
     @property

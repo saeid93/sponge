@@ -101,6 +101,8 @@ def generate_pipeline(
     allocation_mode: str,
     threshold: int,
     sla_factor: int,
+    accuracy_method: int,
+    normalize_accuracy: int,
     pipeline_accuracies: Dict[str, Dict[str, float]]
     ) -> Pipeline:
     inference_graph = []
@@ -129,7 +131,9 @@ def generate_pipeline(
     pipeline = Pipeline(
         inference_graph=inference_graph,
         gpu_mode=False,
-        sla_factor=sla_factor
+        sla_factor=sla_factor,
+        accuracy_method=accuracy_method,
+        normalize_accuracy=normalize_accuracy
     )
     return pipeline
 
@@ -165,6 +169,10 @@ def main(config_name: str):
     allocation_mode = config['allocation_mode']
     threshold = config['threshold']
     sla_factor = config['sla_factor']
+    accuracy_method = config['accuracy_method']
+    normalize_accuracy = config['normalize_accuracy']
+
+    # pipeline accuracy
     pipeline_accuracies = accuracies[pipeline_name]
 
     # optimizer
@@ -209,13 +217,15 @@ def main(config_name: str):
         initial_batch=initial_batch,
         threshold=threshold,
         sla_factor=sla_factor,
+        accuracy_method=accuracy_method,
+        normalize_accuracy=normalize_accuracy,
         pipeline_accuracies=pipeline_accuracies)
 
     optimizer = Optimizer(
         pipeline=pipeline,
         allocation_mode=allocation_mode,
-        # fix_cpu_on_initial=fix_cpu_on_initial,
     )
+
     all_states_time = None
     feasible_time = None
     optimal_time = None
