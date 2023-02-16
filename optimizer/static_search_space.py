@@ -102,7 +102,7 @@ def generate_pipeline(
     threshold: int,
     sla_factor: int,
     accuracy_method: int,
-    normalize_accuracy: int,
+    normalize_accuracy: bool,
     pipeline_accuracies: Dict[str, Dict[str, float]]
     ) -> Pipeline:
     inference_graph = []
@@ -125,6 +125,7 @@ def generate_pipeline(
             threshold=threshold,
             sla_factor=sla_factor,
             allocation_mode=allocation_mode,
+            normalize_accuracy=normalize_accuracy,
             gpu_mode=False,
         )
         inference_graph.append(task)

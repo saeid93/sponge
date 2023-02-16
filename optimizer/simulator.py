@@ -46,7 +46,8 @@ class Model:
 
         self.resource_allocation = resource_allocation
         self.measured_profiles = measured_profiles
-        self.accuracy = accuracy
+        self.accuracy = accuracy/100
+        self.normalized_accuracy = None
         self.name = name
         self.profiles, self.latency_model_params = self.regression_model()
 
@@ -99,6 +100,7 @@ class Task:
         allocation_mode: str,
         threshold: int,
         sla_factor: int,
+        normalize_accuracy: bool,
         gpu_mode: False) -> None:
 
         self.available_model_profiles = available_model_profiles
@@ -109,11 +111,15 @@ class Task:
         self.batch = batch
         self.replicas = replica
         self.gpu_mode = gpu_mode
+        self.normalize_accuracy = normalize_accuracy
         self.threshold = threshold
         self.name = name
         self.sla_factor = sla_factor
         self.allocation_mode = allocation_mode
         self.sla = self.find_task_sla()
+        self.variants_accuracies = self.find_variants_accuracies()
+        self.variants_accuracies_normalized =\
+            self.find_variants_accuracies_normalized()
         if allocation_mode == 'base':
             self.base_allocations = self.find_base_allocation()
 
@@ -238,6 +244,37 @@ class Task:
     def change_batch(self, batch) -> None:
         self.batch = batch
 
+    def find_variants_accuracies(self) -> Dict[str, float]:
+        """create all the accuracies for each task
+
+        Returns:
+            Dict[str, float]: variant accuracies
+        """
+        variants_accuracies = {}
+        for profile in self.available_model_profiles:
+            variants_accuracies[profile.name] = profile.accuracy
+        return variants_accuracies
+
+    def find_variants_accuracies_normalized(self) -> Dict[str, float]:
+        """create normalized accuracies for each task
+
+        Returns:
+            Dict[str, float]: varaint accuracies
+        """
+        variants = []
+        accuracies = []
+        for variant, accuracy in self.variants_accuracies.items():
+            variants.append(variant)
+            accuracies.append(accuracy)
+        variants = [variant for _, variant in sorted(zip(accuracies, variants))]
+        accuracies.sort()
+        accuracies_normalized = (np.arange(
+            len(accuracies))/(len(accuracies)-1)).tolist()
+        variants_accuracies_normalized = {
+            variant: accuracy_normalized for variant, accuracy_normalized in zip(
+                variants, accuracies_normalized)}
+        return variants_accuracies_normalized 
+
     @property
     def active_model(self) -> Model:
         return self.available_model_profiles[self.active_variant_index]
@@ -317,7 +354,11 @@ class Task:
 
     @property
     def accuracy(self):
-        return self.active_model.accuracy
+        if self.normalize_accuracy:
+            return self.variants_accuracies_normalized[
+                self.active_variant]
+        else:
+            return self.active_model.accuracy
 
     @property
     def variant_names(self):
@@ -357,9 +398,9 @@ class Pipeline:
         gpu_mode: bool,
         sla_factor: int,
         accuracy_method: str,
-        normalize_accuracy: str
+        normalize_accuracy: bool
         ) -> None:
-        self.inference_graph = inference_graph
+        self.inference_graph: List[Task] = inference_graph
         self.gpu_mode = gpu_mode
         self.sla_factor = sla_factor
         self.accuracy_method = accuracy_method
@@ -449,22 +490,29 @@ class Pipeline:
 
     @property    
     def pipeline_accuracy(self):
-        if self.normalize_accuracy:
-            if self.accuracy_method == 'multiply':
-                pass
-            elif self.accuracy_method == 'sum':
-                pass
-            elif self.accuracy_method == 'average':
-                pass
-        else:
-            if self.accuracy_method == 'multiply':
-                accuracy = 1
-                for task in self.inference_graph:
-                    accuracy *= task.accuracy
-            elif self.accuracy_method == 'sum':
-                pass
-            elif self.accuracy_method == 'average':
-                pass
+        tasks_accuracies = {}
+        for task in self.inference_graph:
+            acive_variant = task.active_variant
+            if self.normalize_accuracy:
+                accuracy =\
+                    task.variants_accuracies_normalized[acive_variant]
+            else:
+                accuracy =\
+                    task.variants_accuracies[acive_variant]
+            tasks_accuracies[acive_variant] = accuracy
+        if self.accuracy_method == 'multiply':
+            accuracy = 1
+            for task, task_accuracy in tasks_accuracies.items():
+                accuracy *= task_accuracy
+        elif self.accuracy_method == 'sum':
+            accuracy = 0
+            for task, task_accuracy in tasks_accuracies.items():
+                accuracy += task_accuracy
+        elif self.accuracy_method == 'average':
+            accuracy = 0
+            for task, task_accuracy in tasks_accuracies.items():
+                accuracy += task_accuracy
+            accuracy /= len(self.inference_graph)
         return accuracy
 
     @property
@@ -601,7 +649,6 @@ class Optimizer:
                 model_accuracies[
                     task.name][variant_name] = task.accuracy
         return model_accuracies
-
 
     def queue_parameters(self) -> Dict[str, float]:
         # queue latencies of all cases nested dictionary
@@ -915,11 +962,22 @@ class Optimizer:
                 i[stage, variant] for variant in stages_variants[stage]) == 1\
                     for stage in stages), name='one_model')
 
-        # HACK wrong temporary until finding a way to overcome
-        accuracy_objective = gp.quicksum(
-            accuracy_parameters[stage][vairant] * i[stage, vairant]\
-                for stage in stages for vairant in stages_variants[stage]
-        )
+        # objectives
+        if self.pipeline.accuracy_method == 'multiply':
+            raise NotImplementedError(
+                ("multiplication accuracy objective is not implemented",
+                 "yet for Grubi due to quadratic limitation of Gurobi"))
+        elif self.pipeline.accuracy_method == 'sum':
+            accuracy_objective = gp.quicksum(
+                accuracy_parameters[stage][vairant] * i[stage, vairant]\
+                    for stage in stages for vairant in stages_variants[stage]
+            )
+        elif self.pipeline.accuracy_method == 'average':
+            accuracy_objective = gp.quicksum(
+                accuracy_parameters[stage][vairant]\
+                    * i[stage, vairant] * (1/len(stages))\
+                        for stage in stages for vairant in stages_variants[stage]
+            )
 
         resource_objective = gp.quicksum(
             base_allocations[stage][vairant] * n[stage] * i[stage, vairant]\
