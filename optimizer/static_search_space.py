@@ -271,7 +271,7 @@ def main(config_name: str):
             os.path.join(dir_path, 'with-constraints.csv'), index=False)
         feasible_time = time.time() - feasible_time
         time_file.write(f'feasible_time: {feasible_time}\n')
-        print(f"with constraint time: {time.time() - feasible_time}")
+        print(f"with constraint time: {feasible_time}")
     if 'optimal' in generate:
         optimal_time = time.time()
         # optimal states

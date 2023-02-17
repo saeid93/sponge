@@ -993,6 +993,11 @@ class Optimizer:
             beta * resource_objective +\
             gamma * batch_objective, GRB.MAXIMIZE)
 
+        # Parameters
+        model.Params.PoolSearchMode = 2
+        model.Params.PoolSolutions = 10**8
+        model.Params.PoolGap = 0.0
+
         model.update()
 
         # Solve bilinear model
