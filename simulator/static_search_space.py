@@ -4,17 +4,18 @@ import time
 import os
 import sys
 import shutil
-from typing import List, Dict, Any
+from typing import List, Dict
 import yaml
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
-from simulator import (
+from models import (
     Model,
     ResourceAllocation,
     Profile,
     Task,
-    Pipeline,
-    Optimizer)
+    Pipeline
+)
+from optimizer import Optimizer
 
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
@@ -273,22 +274,60 @@ def main(config_name: str):
         time_file.write(f'feasible_time: {feasible_time}\n')
         print(f"with constraint time: {feasible_time}")
     if 'optimal' in generate:
-        optimal_time = time.time()
-        # optimal states
-        optimal = optimizer.optimize(
-            optimization_method=optimization_method,
-            scaling_cap=scaling_cap,
-            alpha=alpha, beta=beta, gamma=gamma,
-            arrival_rate=arrival_rate,
-            num_state_limit=num_state_limit)
-        # print(f"{optimal = }")
-        optimal.to_markdown(os.path.join(
-            dir_path, 'optimal-readable.csv'), index=False)
-        optimal.to_csv(os.path.join(
-            dir_path, 'optimal.csv'), index=False)
-        optimal_time = time.time() - optimal_time
-        time_file.write(f'optimal_time: {optimal_time}\n')
-        print(f"feasible time: {optimal_time}")
+
+        if optimization_method == 'gurobi':
+            optimal_time = time.time()
+            # optimal states
+            optimal = optimizer.optimize(
+                optimization_method=optimization_method,
+                scaling_cap=scaling_cap,
+                alpha=alpha, beta=beta, gamma=gamma,
+                arrival_rate=arrival_rate,
+                num_state_limit=num_state_limit)
+            # print(f"{optimal = }")
+            optimal.to_markdown(os.path.join(
+                dir_path, 'optimal-readable-gurobi.csv'), index=False)
+            optimal.to_csv(os.path.join(
+                dir_path, 'optimal-gurobi.csv'), index=False)
+            optimal_time = time.time() - optimal_time
+            time_file.write(f'optimal_time_gurobi: {optimal_time}\n')
+            print(f"optimal time gurobi: {optimal_time}")
+
+        if optimization_method == 'both':
+            optimal_time = time.time()
+            # optimal states
+            optimal = optimizer.optimize(
+                optimization_method='brute-force',
+                scaling_cap=scaling_cap,
+                alpha=alpha, beta=beta, gamma=gamma,
+                arrival_rate=arrival_rate,
+                num_state_limit=num_state_limit)
+            # print(f"{optimal = }")
+            optimal.to_markdown(os.path.join(
+                dir_path, 'optimal-readable-brute-force.csv'), index=False)
+            optimal.to_csv(os.path.join(
+                dir_path, 'optimal-brute-force.csv'), index=False)
+            optimal_time = time.time() - optimal_time
+            time_file.write(f'optimal_time_brute_force: {optimal_time}\n')
+            print(f"optimal time brute-force: {optimal_time}")
+
+            optimal_time = time.time()
+            # optimal states
+            optimal = optimizer.optimize(
+                optimization_method='gurobi',
+                scaling_cap=scaling_cap,
+                alpha=alpha, beta=beta, gamma=gamma,
+                arrival_rate=arrival_rate,
+                num_state_limit=num_state_limit)
+            # print(f"{optimal = }")
+            optimal.to_markdown(os.path.join(
+                dir_path, 'optimal-readable-gurobi.csv'), index=False)
+            optimal.to_csv(os.path.join(
+                dir_path, 'optimal-gurobi.csv'), index=False)
+            optimal_time = time.time() - optimal_time
+            time_file.write(f'optimal_time_gurobi: {optimal_time}\n')
+            print(f"optimal time gurobi: {optimal_time}")
+
     total_time = time.time() - total_time
     time_file.write(f'total_time: {total_time}')
     time_file.close()

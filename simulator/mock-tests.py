@@ -1,10 +1,37 @@
-from simulator import (
+import os
+import sys
+from models import (
     Model,
     ResourceAllocation,
     Profile,
     Task,
-    Pipeline,
-    Optimizer)
+    Pipeline
+)
+from optimizer import Optimizer
+
+project_dir = os.path.dirname(__file__)
+sys.path.append(os.path.normpath(os.path.join(
+    project_dir, '..')))
+
+from experiments.utils.constants import (
+    PIPELINE_SIMULATION_MOCK_PATH
+)
+
+
+sla_factor = 10
+normalize_accuracy = True
+threshold = 5
+allocation_mode = 'base'
+gpu_mode = False
+optimization_method = 'gurobi'
+accuracy_method = 'sum'
+scaling_cap = 2
+sla = 5
+arrival_rate = 10
+alpha = 0.5
+beta = 0.5
+gamma = 0.5
+num_state_limit = 100000000
 
 # ---------- first task ----------
 task_a_model_1 = Model(
@@ -67,7 +94,11 @@ task_a = Task(
     active_allocation=ResourceAllocation(cpu=2),
     replica=2,
     batch=1,
-    gpu_mode=False
+    sla_factor=sla_factor,
+    normalize_accuracy=normalize_accuracy,
+    threshold=threshold,
+    allocation_mode=allocation_mode,
+    gpu_mode=gpu_mode
 )
 
 # ---------- second task ----------
@@ -128,10 +159,14 @@ task_b = Task(
         task_b_model_4
     ],
     active_variant = 'resnet34',
-    active_allocation=ResourceAllocation(cpu=1),
-    replica=1,
+    active_allocation=ResourceAllocation(cpu=2),
+    replica=2,
     batch=1,
-    gpu_mode=False
+    sla_factor=sla_factor,
+    normalize_accuracy=normalize_accuracy,
+    threshold=threshold,
+    allocation_mode=allocation_mode,
+    gpu_mode=gpu_mode
 )
 
 inference_graph = [
@@ -141,13 +176,16 @@ inference_graph = [
 
 pipeline = Pipeline(
     inference_graph=inference_graph,
-    gpu_mode=False
+    gpu_mode=gpu_mode,
+    sla_factor=sla_factor,
+    accuracy_method=accuracy_method,
+    normalize_accuracy=normalize_accuracy
 )
 
 optimizer = Optimizer(
-    pipeline=pipeline
+    pipeline=pipeline,
+    allocation_mode=allocation_mode
 )
-
 
 print(f"{pipeline.stage_wise_throughput = }")
 print(f"{pipeline.stage_wise_latencies = }")
@@ -160,28 +198,53 @@ print(f"{pipeline.pipeline_latency = }")
 
 print(f"{optimizer.can_sustain_load(arrival_rate=4) = }")
 print(f"{optimizer.find_load_bottlenecks(arrival_rate=30) = }")
-print(f"{optimizer.objective(alpha=0.5, beta=0.5) = }")
-
-# scaling, sla and arrival rate metrics
-scaling_cap = 2
-sla = 5
-arrival_rate = 10
+print(f"{optimizer.objective(alpha=alpha, beta=beta, gamma=gamma) = }")
 
 # all states
-states = optimizer.all_states(scaling_cap=scaling_cap)
+states = optimizer.all_states(
+    check_constraints=False,
+    scaling_cap=scaling_cap,
+    alpha=alpha, beta=beta, gamma=gamma,
+    arrival_rate=arrival_rate,
+    num_state_limit=num_state_limit)
 print(f"{states = }")
-states.to_markdown('all-states.csv')
+states.to_markdown(
+    os.path.join(PIPELINE_SIMULATION_MOCK_PATH,
+    'all-states.csv'))
 
 # all feasibla states
 all_states = optimizer.all_states(
-    check_constraints=True, scaling_cap=scaling_cap,
-    arrival_rate=arrival_rate, sla=sla)
+    check_constraints=True,
+    scaling_cap=scaling_cap,
+    alpha=alpha, beta=beta, gamma=gamma,
+    arrival_rate=arrival_rate,
+    num_state_limit=num_state_limit)
 print(f"{all_states = }")
 all_states.to_markdown(
-    f'feasible_scaling_cap_{scaling_cap}_sla_{sla}_load_{arrival_rate}.csv')
+    os.path.join(PIPELINE_SIMULATION_MOCK_PATH,
+    'feasible.csv')
+    )
 
+optimization_method = 'brute-force'
 # optimal states
 optimal = optimizer.optimize(
-    scaling_cap=scaling_cap, sla=sla, arrival_rate=arrival_rate)
+    optimization_method=optimization_method,
+    scaling_cap=scaling_cap,
+    alpha=alpha, beta=beta, gamma=gamma,
+    arrival_rate=arrival_rate,
+    num_state_limit=num_state_limit)
 optimal.to_markdown(
-    f'optimal_scaling_cap_{scaling_cap}_sla_{sla}_load_{arrival_rate}.csv')
+    os.path.join(PIPELINE_SIMULATION_MOCK_PATH,
+    f'optimal_{optimization_method}.csv'))
+
+optimization_method = 'gurobi'
+# optimal states
+optimal = optimizer.optimize(
+    optimization_method=optimization_method,
+    scaling_cap=scaling_cap,
+    alpha=alpha, beta=beta, gamma=gamma,
+    arrival_rate=arrival_rate,
+    num_state_limit=num_state_limit)
+optimal.to_markdown(
+    os.path.join(PIPELINE_SIMULATION_MOCK_PATH,
+    f'optimal_{optimization_method}.csv'))

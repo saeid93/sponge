@@ -45,6 +45,9 @@ PROFILING_RESULTS_PATH = os.path.join(
     RESULTS_PATH, "profiling")
 PIPELINE_SIMULATION_RESULTS_PATH = os.path.join(
     RESULTS_PATH, "pipeline-simulation")
+PIPELINE_SIMULATION_MOCK_PATH = os.path.join(
+    PIPELINE_SIMULATION_RESULTS_PATH,
+    'mock-simulation')
 NODE_PROFILING_RESULTS_PATH = os.path.join(
     PROFILING_RESULTS_PATH, "nodes")
 NODE_PROFILING_RESULTS_STATIC_PATH = os.path.join(
