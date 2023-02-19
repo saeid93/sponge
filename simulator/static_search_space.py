@@ -162,6 +162,7 @@ def main(config_name: str):
     initial_batch = config['initial_batch']
     scaling_cap = config['scaling_cap']
     pipeline_name = config['pipeline_name']
+    complete_profile = config['complete_profile']
 
     # pipeline config
     arrival_rate = config['arrival_rate']
@@ -226,6 +227,7 @@ def main(config_name: str):
     optimizer = Optimizer(
         pipeline=pipeline,
         allocation_mode=allocation_mode,
+        complete_profile=complete_profile
     )
 
     all_states_time = None
@@ -248,7 +250,7 @@ def main(config_name: str):
             num_state_limit=num_state_limit)
         states.to_markdown(
             os.path.join(
-                dir_path, 'all-states-readable.csv'), index=False)
+                dir_path, 'readable-all-states.csv'), index=False)
         states.to_csv(
             os.path.join(dir_path, 'all-states.csv'), index=False)
         all_states_time = time.time() - all_states_time
@@ -266,7 +268,7 @@ def main(config_name: str):
         # print(f"{with_constraints = }")
         with_constraints.to_markdown(
             os.path.join(
-                dir_path, 'with-constraints-readable.csv'),
+                dir_path, 'readable-with-constraints.csv'),
                 index=False)
         with_constraints.to_csv(
             os.path.join(dir_path, 'with-constraints.csv'), index=False)
@@ -286,7 +288,7 @@ def main(config_name: str):
                 num_state_limit=num_state_limit)
             # print(f"{optimal = }")
             optimal.to_markdown(os.path.join(
-                dir_path, 'optimal-readable-gurobi.csv'), index=False)
+                dir_path, 'readable-optimal-gurobi.csv'), index=False)
             optimal.to_csv(os.path.join(
                 dir_path, 'optimal-gurobi.csv'), index=False)
             optimal_time = time.time() - optimal_time
@@ -304,7 +306,7 @@ def main(config_name: str):
                 num_state_limit=num_state_limit)
             # print(f"{optimal = }")
             optimal.to_markdown(os.path.join(
-                dir_path, 'optimal-readable-brute-force.csv'), index=False)
+                dir_path, 'readable-optimal-brute-force.csv'), index=False)
             optimal.to_csv(os.path.join(
                 dir_path, 'optimal-brute-force.csv'), index=False)
             optimal_time = time.time() - optimal_time
@@ -321,7 +323,7 @@ def main(config_name: str):
                 num_state_limit=num_state_limit)
             # print(f"{optimal = }")
             optimal.to_markdown(os.path.join(
-                dir_path, 'optimal-readable-gurobi.csv'), index=False)
+                dir_path, 'readable-optimal-gurobi.csv'), index=False)
             optimal.to_csv(os.path.join(
                 dir_path, 'optimal-gurobi.csv'), index=False)
             optimal_time = time.time() - optimal_time
