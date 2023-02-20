@@ -1,6 +1,6 @@
 series: 1
 series_meta: testing static trace
-pipeline_name: 6-mlserver-mock
+pipeline_name: mlserver-mock
 node_name: mock-one
 data_type: audio
 timeout: 120

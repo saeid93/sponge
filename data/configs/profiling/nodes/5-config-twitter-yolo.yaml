@@ -1,6 +1,6 @@
 series: 1
 series_meta: testing static trace
-pipeline_name: 4-paper-video
+pipeline_name: video
 node_name: yolo
 data_type: image
 timeout: 120

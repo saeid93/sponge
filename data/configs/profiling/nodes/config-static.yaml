@@ -1,6 +1,6 @@
 series: 1
 series_meta: testing static trace
-pipeline_name: paper-audio-qa
+pipeline_name: audio-qa
 node_name: audio
 data_type: audio
 timeout: 120

@@ -1,6 +1,6 @@
 series: 40
 series_meta: rest vs grpc
-pipeline_name: 6-mlserver-mock
+pipeline_name: mlserver-mock
 node_name: mock-one
 data_type: audio
 no_engine: false

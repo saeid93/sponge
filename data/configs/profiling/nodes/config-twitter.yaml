@@ -1,6 +1,6 @@
 series: 1
 series_meta: testing twitter trace
-pipeline_name: paper-audio-sent
+pipeline_name: audio-sent
 node_name: audio
 data_type: audio
 timeout: 120

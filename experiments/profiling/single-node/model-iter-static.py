@@ -17,8 +17,9 @@ from jinja2 import Environment, FileSystemLoader
 from barazmoon import Data
 from PIL import Image
 from kubernetes import config
-from kubernetes.client import Configuration
-from kubernetes.client.api import core_v1_api
+from kubernetes import client
+# from kubernetes.client import Configuration
+# from kubernetes.client.api import core_v1_api
 from tqdm import tqdm
 import shutil
 from pprint import PrettyPrinter
@@ -41,23 +42,24 @@ from experiments.utils.constants import (
 )
 from experiments.utils.obj import setup_obj_store
 prom_client = SingleNodePromClient()
+try:
+    config.load_kube_config()
+    kube_config = client.Configuration().get_default_copy()
+except AttributeError:
+    kube_config = client.Configuration()
+    kube_config.assert_hostname = False
+client.Configuration.set_default(kube_config)
+kube_api = client.api.core_v1_api.CoreV1Api()
 
 KEY_CONFIG_FILENAME = 'key_config_mapper.csv'
+NAMESPACE='default'
 
-def get_pod_name(node_name: str, namespace='default', orchestrator=False):
+def get_pod_name(node_name: str, orchestrator=False):
     pod_regex = f"{node_name}.*"
-    try:
-        config.load_kube_config()
-        c = Configuration().get_default_copy()
-    except AttributeError:
-        c = Configuration()
-        c.assert_hostname = False
-    Configuration.set_default(c)
-    core_v1 = core_v1_api.CoreV1Api()
-    ret = core_v1.list_namespaced_pod(namespace)
+    pods_list = kube_api.list_namespaced_pod(NAMESPACE)
     pod_names = []
-    for i in ret.items:
-        pod_name=i.metadata.name
+    for pod_name in pods_list.items:
+        pod_name=pod_name.metadata.name
         if orchestrator and re.match(pod_regex, pod_name) and 'svc' in pod_name:
             return pod_name
         if re.match(pod_regex, pod_name) and 'svc' not in pod_name:
@@ -145,6 +147,13 @@ def experiments(pipeline_name: str, node_name: str,
                                         data_type=data_type,
                                         benchmark_duration=benchmark_duration)
 
+                                    check_load_test(
+                                        node_name=node_name, data_type=data_type,
+                                                node_path=node_path)
+
+                                    print('-'*25 + f' starting load test ' + '-'*25)
+                                    print('\n')
+
                                     start_time_experiment,\
                                         end_time_experiment, responses = load_test(
                                             node_name=node_name,
@@ -169,10 +178,10 @@ def experiments(pipeline_name: str, node_name: str,
                                             # backup(series=series)
 
                                     # TODO better validation -> some request
-                                    print(f'waiting for {timeout} seconds')
+                                    print(f'waiting for timeout: {timeout} seconds')
                                     for _ in tqdm(range(20)):
-                                        time.sleep(timeout/20)
-                                    remove_node(node_name=node_name, timeout=timeout)
+                                        time.sleep((timeout)/20)
+                                    remove_node(node_name=node_name)
 
 def key_config_mapper(
     pipeline_name: str, node_name: str, cpu_request: str,
@@ -261,12 +270,67 @@ def setup_node(node_name: str, cpu_request: str,
 {content}
         """
     os.system(command)
-    print('-'*25 + f' waiting {timeout} to make sure the node is up ' + '-'*25)
+    print('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
     print('\n')
-    print('-'*25 + f' model pod {timeout} successfuly set up ' + '-'*25)
+    print('-'*25 + f' model pod {node_name} successfuly set up ' + '-'*25)
     print('\n')
-    for _ in tqdm(range(20)):
-        time.sleep(timeout/20)
+    # checks if the pods are ready each 5 seconds
+    loop_timeout = 5
+    while True:
+        models_loaded, svc_loaded, container_loaded = False, False, False
+        print(f'waited for {loop_timeout} to check if the pods are up')
+        time.sleep(loop_timeout)
+        model_pods = kube_api.list_namespaced_pod(
+            namespace=NAMESPACE,
+            label_selector=f"seldon-deployment-id={node_name}")
+        all_model_pods = []
+        all_conainers = []
+        for pod in model_pods.items:
+            if pod.status.phase == "Running":
+                all_model_pods.append(True)
+                logs = kube_api.read_namespaced_pod_log(
+                    name=pod.metadata.name,
+                    namespace=NAMESPACE,
+                    container=node_name)
+                print(logs)
+                if 'Uvicorn running on http://0.0.0.0:6000' in logs:
+                    all_conainers.append(True)
+                else:
+                    all_conainers.append(False)
+            else:
+                all_model_pods.append(False)
+            # for container_status in pod.status.container_statuses:
+            #     # TODO seems to not getting correct results
+            #     # a = 1
+            #     if container_status.ready:
+            #         container_loaded = True
+            #     else:
+            #         continue
+            print(f"all_model_pods: {all_model_pods}")
+            if all(all_model_pods):
+                models_loaded = True
+            else: continue
+            print(f"all_containers: {all_conainers}")
+            if all(all_model_pods):
+                container_loaded = True
+            else: continue
+        if not no_engine:
+            svc_pods = kube_api.list_namespaced_pod(
+                namespace=NAMESPACE,
+                label_selector=f"seldon-deployment-id={node_name}-default")
+            for pod in svc_pods.items:
+                if pod.status.phase == "Running":
+                    svc_loaded = True
+                for container_status in pod.status.container_statuses:
+                    if container_status.ready:
+                        container_loaded = True
+                    else: continue
+                else: continue
+        if models_loaded and svc_loaded and container_loaded:
+            print('model container completely loaded!')
+            break
+    # HERE add try except here
+    # time.sleep(timeout)
 
 def load_test(node_name: str, data_type: str,
               node_path: str,
@@ -276,8 +340,6 @@ def load_test(node_name: str, data_type: str,
               mode: str = 'step',
               benchmark_duration=1):
     start_time = time.time()
-    print('-'*25 + f' starting load test ' + '-'*25)
-    print('\n')
     # load sample data
     # TODO change here
     if data_type == 'audio':
@@ -347,9 +409,32 @@ def load_test(node_name: str, data_type: str,
             response['outputs'] = []
     return start_time, end_time, responses
 
-def remove_node(node_name, timeout):
+def check_load_test(node_name: str, data_type: str,
+              node_path: str,
+              load=1, load_duration = 1):
+    loop_timeout = 5
+    ready = False
+    while True:
+        print(f'waited for {loop_timeout} to check for successful request')
+        time.sleep(loop_timeout)
+        try:
+            load_test(
+                node_name=node_name,
+                data_type=data_type,
+                node_path=node_path,
+                load=load,
+                load_duration=load_duration)
+            ready = True
+        except UnboundLocalError:
+            pass
+        if ready:
+            return ready
+
+
+
+def remove_node(node_name):
     os.system(f"kubectl delete seldondeployment {node_name} -n default")
-    print('-'*50 + f' model pod {timeout} successfuly set up ' + '-'*50)
+    print('-'*50 + f' model pod {node_name} successfuly set up ' + '-'*50)
     print('\n')
 
 
@@ -386,14 +471,14 @@ def save_report(experiment_id: int,
         NODE_PROFILING_RESULTS_STATIC_PATH,
         'series', str(series), f"{experiment_id}.json")
     # TODO add list of pods in case of replicas
-    pod_name = get_pod_name(node_name=node_name, namespace=namespace)[0]
+    pod_name = get_pod_name(node_name=node_name)[0]
 
     if not no_engine:
         svc_path = os.path.join(
             NODE_PROFILING_RESULTS_STATIC_PATH,
             'series', str(series), f"{experiment_id}.txt")
         svc_pod_name = get_pod_name(
-            node_name=node_name, namespace=namespace, orchestrator=True)
+            node_name=node_name, orchestrator=True)
     cpu_usage_count, time_cpu_usage_count =\
         prom_client.get_cpu_usage_count(
             pod_name=pod_name, namespace="default",
@@ -457,7 +542,7 @@ def backup(series):
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='1-config-static-audio-all')
+    '--config-name', required=True, type=str, default='5-config-static-resnet-human')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
