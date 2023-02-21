@@ -1,9 +1,9 @@
-series: 68
+series: 70
 series_meta: 'checking the effect of changing all variables under arrival rate 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 pipeline_name: video
 node_name: yolo
 data_type: image
-timeout: 180
+timeout: 1
 mode: exponential
 model_variants:
   - yolov5n
@@ -47,4 +47,4 @@ workload_config:
   - 10
   - 20
   # - 40
-  load_duration: 60
+  load_duration: 30

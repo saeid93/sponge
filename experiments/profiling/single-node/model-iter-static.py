@@ -83,6 +83,7 @@ def experiments(pipeline_name: str, node_name: str,
     mode = config['mode']
     benchmark_duration = config['benchmark_duration']
     use_threading = config['use_threading']
+    # for now set to the number of CPU
     num_interop_threads = config['num_interop_threads']
     num_threads = config['num_threads']
     if 'no_engine' in config.keys():
@@ -102,51 +103,46 @@ def experiments(pipeline_name: str, node_name: str,
                             # for num_interop_thread in num_interop_threads:
                             #     for num_thread in num_threads:
                             for load in loads_to_test:
-                                setup_node(
+                                # for rep in range(repetition):
+                                print('-'*25\
+                                    + f' starting repetition experiment ' +\
+                                        '-'*25)
+                                print('\n')
+                                experiments_exist, experiment_id = key_config_mapper(
+                                    pipeline_name=pipeline_name,
                                     node_name=node_name,
                                     cpu_request=cpu_request,
                                     memory_request=memory_request,
                                     model_variant=model_variant,
                                     max_batch_size=max_batch_size,
                                     max_batch_time=max_batch_time,
+                                    load=load,
+                                    load_duration=load_duration,
+                                    series=series,
+                                    series_meta=series_meta,
                                     replica=replica,
-                                    node_path=node_path,
-                                    timeout=timeout,
                                     no_engine=no_engine,
-                                    use_threading=use_threading,
-                                    # HACK for now we set the number of requests
-                                    # proportional to the the number threads
-                                    num_interop_threads=cpu_request,
-                                    num_threads=cpu_request
-                                )
-                                for rep in range(repetition):
-                                    print('-'*25\
-                                        + f' starting repetition {rep} ' +\
-                                            '-'*25)
-                                    print('\n')
-                                    # TODO timeout var
-                                    if rep != 0:
-                                        print(f'waiting for {timeout} seconds')
-                                        for _ in tqdm(range(20)):
-                                            time.sleep(timeout/20)
-                                    experiment_id = key_config_mapper(
-                                        pipeline_name=pipeline_name,
+                                    mode=mode,
+                                    data_type=data_type,
+                                    benchmark_duration=benchmark_duration)
+                                if not experiments_exist:
+                                    setup_node(
                                         node_name=node_name,
                                         cpu_request=cpu_request,
                                         memory_request=memory_request,
                                         model_variant=model_variant,
                                         max_batch_size=max_batch_size,
                                         max_batch_time=max_batch_time,
-                                        load=load,
-                                        load_duration=load_duration,
-                                        series=series,
-                                        series_meta=series_meta,
                                         replica=replica,
+                                        node_path=node_path,
+                                        timeout=timeout,
                                         no_engine=no_engine,
-                                        mode=mode,
-                                        data_type=data_type,
-                                        benchmark_duration=benchmark_duration)
-
+                                        use_threading=use_threading,
+                                        # HACK for now we set the number of requests
+                                        # proportional to the the number threads
+                                        num_interop_threads=cpu_request,
+                                        num_threads=cpu_request
+                                    )
                                     check_load_test(
                                         node_name=node_name, data_type=data_type,
                                                 node_path=node_path)
@@ -182,6 +178,10 @@ def experiments(pipeline_name: str, node_name: str,
                                     for _ in tqdm(range(20)):
                                         time.sleep((timeout)/20)
                                     remove_node(node_name=node_name)
+                                else:
+                                    print('experiment with the same set of varialbes already exists')
+                                    print('skipping to the next experiment ...')
+                                    continue
 
 def key_config_mapper(
     pipeline_name: str, node_name: str, cpu_request: str,
@@ -201,21 +201,8 @@ def key_config_mapper(
         'max_batch_time', 'load', 'load_duration',
         'series', 'series_meta', 'replicas', 'no_engine',
         'mode', 'data_type', 'benchmark_duration']
-    if not os.path.exists(file_path):
-        # os.makedirs(dir_path)
-        with open(file_path, 'w', newline="") as file:
-            csvwriter = csv.writer(file)
-            csvwriter.writerow(header)
-        experiment_id = 1
-    else:
-        with open(file_path) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            line_count = 0
-            for row in csv_reader:
-                line_count += 1
-        experiment_id = line_count
-    row = {
-        'experiment_id': experiment_id,
+    row_to_add = {
+        'experiment_id': None,
         'pipeline_name': pipeline_name,
         'model_variant': model_variant,
         'node_name': node_name,
@@ -233,11 +220,59 @@ def key_config_mapper(
         'data_type': data_type,
         'benchmark_duration': benchmark_duration
         }
-    with open(file_path, 'a') as row_writer:
-        dictwriter_object = csv.DictWriter(row_writer, fieldnames=header)
-        dictwriter_object.writerow(row)
-        row_writer.close()
-    return experiment_id
+    experiments_exist = False
+    if not os.path.exists(file_path):
+        # os.makedirs(dir_path)
+        with open(file_path, 'w', newline="") as file:
+            csvwriter = csv.writer(file)
+            csvwriter.writerow(header)
+        experiment_id = 1
+    else:
+        with open(file_path) as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            line_count = 0
+            for row in csv_reader:
+                # add logic of experiment exists
+                file_row_dict = {}
+                if line_count != 0:
+                    for key, value in zip(header, row):
+                        if key in [
+                            'pipeline_name', 'node_name',
+                            'max_batch_size', 'max_batch_time',
+                            'memory_request', 'model_variant',
+                            'memory_request', 'cpu_request',
+                            'series_meta', 'mode', 'data_type']:
+                            file_row_dict[key] = value
+                        elif key in [
+                            'experiment_id', 'load',
+                            'load_duration', 'series',
+                            'replicas', 'benchmark_duration']:
+                            file_row_dict[key] = int(value)
+                        elif key in ['no_engine']:
+                            file_row_dict[key] = eval(value)
+                    dict_items_equal = []
+                    for header_item in header:
+                        if header_item == 'experiment_id':
+                            continue
+                        if row_to_add[header_item] ==\
+                            file_row_dict[header_item]:
+                            dict_items_equal.append(True)
+                        else:
+                            dict_items_equal.append(False)
+                    if all(dict_items_equal):
+                        experiments_exist = True
+                        break
+                line_count += 1
+        experiment_id = line_count
+
+    if not experiments_exist:
+        row_to_add.update({'experiment_id': experiment_id})
+        with open(file_path, 'a') as row_writer:
+            dictwriter_object = csv.DictWriter(row_writer, fieldnames=header)
+            dictwriter_object.writerow(row_to_add)
+            row_writer.close()
+
+    return experiments_exist, experiment_id
 
 def setup_node(node_name: str, cpu_request: str,
                memory_request: str, model_variant: str, max_batch_size: str,
@@ -299,13 +334,6 @@ def setup_node(node_name: str, cpu_request: str,
                     all_conainers.append(False)
             else:
                 all_model_pods.append(False)
-            # for container_status in pod.status.container_statuses:
-            #     # TODO seems to not getting correct results
-            #     # a = 1
-            #     if container_status.ready:
-            #         container_loaded = True
-            #     else:
-            #         continue
             print(f"all_model_pods: {all_model_pods}")
             if all(all_model_pods):
                 models_loaded = True
@@ -329,8 +357,6 @@ def setup_node(node_name: str, cpu_request: str,
         if models_loaded and svc_loaded and container_loaded:
             print('model container completely loaded!')
             break
-    # HERE add try except here
-    # time.sleep(timeout)
 
 def load_test(node_name: str, data_type: str,
               node_path: str,
@@ -430,13 +456,10 @@ def check_load_test(node_name: str, data_type: str,
         if ready:
             return ready
 
-
-
 def remove_node(node_name):
     os.system(f"kubectl delete seldondeployment {node_name} -n default")
     print('-'*50 + f' model pod {node_name} successfuly set up ' + '-'*50)
     print('\n')
-
 
 def save_report(experiment_id: int,
                 responses: str,
