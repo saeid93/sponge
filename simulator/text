@@ -1,0 +1,55 @@
+latency:
+0.5719859128728828 i[crop,yolov5m] +
+0.24821629233280032 i[crop,yolov5s] +
+1.35990516278424 i[crop,yolov5l] +
+0.12898262701078844 i[crop,yolov5n] +
+3.626150033699185 i[crop,yolov5x] +
+0.09992919157617576 i[classification,resnet18] +
+0.36743481574501957 i[classification,resnet152] +
+0.14101024058053296 i[classification,resnet34] +
+0.33703090210196457 i[classification,resnet101] +
+0.20670159028581261 i[classification,resnet50] +
+[ 0.005892572793191281 i[crop,yolov5m] * b[crop] +
+0.0009360330372588261 i[crop,yolov5s] * b[crop] +
+0.004470790243372486 i[crop,yolov5l] * b[crop] +
+0.0005666692486968966 i[crop,yolov5n] * b[crop] +
+0.06891650056974953 i[crop,yolov5x] * b[crop] +
+0.00031860994834335016 i[classification,resnet18] * b[classification] +
+0.006259841814012191 i[classification,resnet152] * b[classification] +
+0.0003091656592639604 i[classification,resnet34] * b[classification] +
+0.0004017560933994146 i[classification,resnet101] * b[classification] +
+0.000565406166406306 i[classification,resnet50] * b[classification] ] <= 0.395842
+
+
+
+3.626150033699185 i[crop,yolov5x] +
+0.24821629233280032 i[crop,yolov5s] +
+0.12898262701078844 i[crop,yolov5n] +
+1.35990516278424 i[crop,yolov5l] +
+0.5719859128728828 i[crop,yolov5m] +
+0.36743481574501957 i[classification,resnet152] +
+0.09992919157617576 i[classification,resnet18] +
+0.20670159028581261 i[classification,resnet50] +
+0.33703090210196457 i[classification,resnet101] +
+0.14101024058053296 i[classification,resnet34] +
+[ 0.06891650056974953 i[crop,yolov5x] * b[crop] +
+0.0009360330372588261 i[crop,yolov5s] * b[crop] +
+0.0005666692486968966 i[crop,yolov5n] * b[crop] +
+0.004470790243372486 i[crop,yolov5l] * b[crop] +
+0.005892572793191281 i[crop,yolov5m] * b[crop] +
+0.006259841814012191 i[classification,resnet152] * b[classification] +
+0.00031860994834335016 i[classification,resnet18] * b[classification] +
+0.000565406166406306 i[classification,resnet50] * b[classification] +
+0.0004017560933994146 i[classification,resnet101] * b[classification] +
+0.0003091656592639604 i[classification,resnet34] * b[classification] ] <= 0.395842
+
+
+stage_one: yolov5s 50
+stage two: resnet18 2
+pipeline -> 0.40968675058968285
+optimizer -> 0.24821629233280032 + 0.0009360330372588261 * 50 + 0.09992919157617576 + 0.00031860994834335016 * 2 = 0.39558435566860406
+
+stage_one: yolov5s 50
+stage_two: resnet18 2
+pipeline -> 0.40875071755242404
+optimizer -> 0.24821629233280032 + 0.0009360330372588261 * 49 + 0.09992919157617576 + 0.00031860994834335016 * 2 = 0.39464832263134525

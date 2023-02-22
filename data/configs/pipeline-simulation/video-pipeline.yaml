@@ -1,10 +1,10 @@
-series: 34
+series: 101
 pipeline_name: video
 series_meta: 'checking the effect of changing all variables under arrival rate 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 number_tasks: 2
 profiling_series:
-  - 64
-  - 63
+  - 70
+  - 69
 model_name:
   - yolo
   - resnet-human
@@ -31,15 +31,15 @@ beta: 1
 gamma: 0
 scaling_cap: 4 # maximum possible scaling per nodes
 arrival_rate: 10
-num_state_limit: 10000000000 # number of states
+num_state_limit: 100 # number of states
 threshold: 10 # threshold for finding the base allocation
-optimization_method: both # options: [brute-force | gurobi | both]
+optimization_method: gurobi # options: [brute-force | gurobi | both]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
 complete_profile: false
 accuracy_method: sum # [average | sum | multiply]
 generate:
-  - all
-  - feasible
+  # - all
+  # - feasible
   - optimal

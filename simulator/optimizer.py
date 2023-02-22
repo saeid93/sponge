@@ -61,18 +61,16 @@ class Optimizer:
             return True
         return False
 
-    def pipeline_latency_upper_bound(self) -> float:
+    def pipeline_latency_upper_bound(self, stage, variant_name) -> float:
         # maximum number for latency of a node in
-        # a pipeline
+        # a pipeline for calculating the M variable
         max_model_latencies = 0
         inference_graph = deepcopy(self.pipeline.inference_graph)
         for task in inference_graph:
-            for variant_name in task.variant_names:
+            if task.name == stage:
                 task.model_switch(variant_name)
-                for batch_size in task.batches:
-                    task.change_batch(batch_size)
-                    if task.model_latency > max_model_latencies:
-                        max_model_latencies = task.model_latency
+                task.change_batch(max(task.batches))
+                max_model_latencies = task.model_latency
         return max_model_latencies
 
     def latency_parameters(self) -> Dict[str, Dict[str, List[float]]]:
@@ -316,7 +314,8 @@ class Optimizer:
         alpha: float,
         beta: float,
         gamma: float,
-        arrival_rate: int) -> pd.DataFrame:
+        arrival_rate: int,
+        num_state_limit: int) -> pd.DataFrame:
         """generate all the possible states based on profiling data
 
         Args:
@@ -407,13 +406,13 @@ class Optimizer:
         # paper constraints
         model.addQConstr(
             (gp.quicksum(func_l(b[stage], latency_parameters[stage][variant]) * i[stage, variant]\
-                for stage in stages for variant in stages_variants[stage]) +\
-                    gp.quicksum(func_q(b[stage], queue_parameters[stage]) for stage in stages) <= sla), name='latency')
+                + func_q(b[stage], queue_parameters[stage])
+                for stage in stages for variant in stages_variants[stage]) <= sla), name='latency')
         # upper bound trick based on
         # https://support.gurobi.com/hc/en-us/community/posts/12996185241105-How-to-add-quadratic-constraint-in-conditional-indicator-constraints
-        M = arrival_rate * self.pipeline_latency_upper_bound() - n_lb * b_lb
         for stage in stages:
             for variant in stages_variants[stage]:
+                M = arrival_rate * self.pipeline_latency_upper_bound(stage, variant) - n_lb * b_lb
                 model.addQConstr(((
                     arrival_rate * func_l(b[stage],
                     latency_parameters[stage][variant]) - n[stage] * b[stage]) <= M * (1-i[stage, variant])), f'throughput-{stage}-{variant}')
@@ -457,7 +456,8 @@ class Optimizer:
 
         # Parameters for retrieving more than one solution
         model.Params.PoolSearchMode = 2
-        model.Params.PoolSolutions = 10**8
+        # model.Params.PoolSolutions = 10**8
+        model.Params.PoolSolutions = num_state_limit
         model.Params.PoolGap = 0.0
 
         model.update()
@@ -501,6 +501,13 @@ class Optimizer:
                 self.pipeline.inference_graph[task_id].model_switch(i_output[stage])
                 self.pipeline.inference_graph[task_id].re_scale(n_output[stage])
                 self.pipeline.inference_graph[task_id].change_batch(b_output[stage])
+
+            # if not self.can_sustain_load(arrival_rate):
+            #     a = 1
+
+            # if not self.sla_is_met():
+            #     self.sla_is_met()
+            #     a = 1
 
             # generate states data
             state = {}
@@ -586,7 +593,8 @@ class Optimizer:
                 alpha=alpha,
                 beta=beta,
                 gamma=gamma,
-                arrival_rate=arrival_rate)
+                arrival_rate=arrival_rate,
+                num_state_limit=num_state_limit)
         else:
             raise ValueError(
                 f'Invalid optimization_method: {optimization_method}')

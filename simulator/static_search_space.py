@@ -295,6 +295,24 @@ def main(config_name: str):
             time_file.write(f'optimal_time_gurobi: {optimal_time}\n')
             print(f"optimal time gurobi: {optimal_time}")
 
+        if optimization_method == 'brute-force':
+            optimal_time = time.time()
+            # optimal states
+            optimal = optimizer.optimize(
+                optimization_method='brute-force',
+                scaling_cap=scaling_cap,
+                alpha=alpha, beta=beta, gamma=gamma,
+                arrival_rate=arrival_rate,
+                num_state_limit=num_state_limit)
+            # print(f"{optimal = }")
+            optimal.to_markdown(os.path.join(
+                dir_path, 'readable-optimal-brute-force.csv'), index=False)
+            optimal.to_csv(os.path.join(
+                dir_path, 'optimal-brute-force.csv'), index=False)
+            optimal_time = time.time() - optimal_time
+            time_file.write(f'optimal_time_brute_force: {optimal_time}\n')
+            print(f"optimal time brute-force: {optimal_time}")
+
         if optimization_method == 'both':
             optimal_time = time.time()
             # optimal states

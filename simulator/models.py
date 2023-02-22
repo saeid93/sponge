@@ -56,7 +56,10 @@ class Model:
         train_y = np.array(list(map(
             lambda l: l.latency, self.measured_profiles))).reshape(-1, 1)
         all_x = np.arange(self.min_batch, self.max_batch+1)
-        test_x = all_x[~np.isin(all_x, train_x)].reshape(-1, 1)
+        # HACK all the data from the latency model and not using
+        # measured data
+        # test_x = all_x[~np.isin(all_x, train_x)].reshape(-1, 1)
+        test_x = all_x.reshape(-1, 1)
         latency_model = linear_model.LinearRegression()
         latency_model.fit(train_x, train_y)
         test_y = latency_model.predict(test_x)
@@ -64,7 +67,9 @@ class Model:
         for x, y in zip(test_x.reshape(-1), test_y.reshape(-1)):
             predicted_profiles.append(
                 Profile(batch=x, latency=y, measured=False))
-        profiles: List[Profile] = predicted_profiles + self.measured_profiles
+        # HACK continue above hack
+        # profiles: List[Profile] = predicted_profiles + self.measured_profiles
+        profiles: List[Profile] = predicted_profiles
         profiles.sort(key=lambda profile: profile.batch)
         return profiles, [latency_model.coef_[0][0], latency_model.intercept_[0]]
 

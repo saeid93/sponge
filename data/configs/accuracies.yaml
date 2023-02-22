@@ -83,11 +83,16 @@ sum-qa:
     deepset/xlm-roberta-base-squad2: 86
 video:
   crop:
-    yolov5n: 60
-    yolov5m: 70
+    # source https://github.com/ultralytics/yolov5
+    yolov5n: 45.7
+    yolov5s: 56.8
+    yolov5m: 64.1
+    yolov5l: 67.3
+    yolov5x: 68.9
+    # https://pytorch.org/vision/stable/models.html#table-of-all-available-classification-weights
   classification:
-    resnet18: 77
-    resnet34: 79
-    resnet50: 81
-    resnet101: 90
-    resnet152: 50
+    resnet18: 69.75
+    resnet34: 73.31
+    resnet50: 76.13
+    resnet101: 77.37
+    resnet152: 78.31
