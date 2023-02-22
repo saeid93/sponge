@@ -41,7 +41,7 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
-      replicas: 4
+      replicas: 1
     graph:
       name: resnet-human
       type: MODEL

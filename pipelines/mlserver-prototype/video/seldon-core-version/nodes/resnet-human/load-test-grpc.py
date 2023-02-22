@@ -15,8 +15,8 @@ def image_loader(folder_path, image_name):
     #     pass
     return image
 
-load = 100
-test_duration = 5
+load = 20
+test_duration = 100
 variant = 0
 platform = 'seldon'
 image_name = 'input-sample.JPEG'

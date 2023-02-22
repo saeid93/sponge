@@ -169,7 +169,8 @@ def experiments(pipeline_name: str, node_name: str,
                                         start_time_experiment=start_time_experiment,
                                         end_time_experiment=end_time_experiment,
                                         series=series,
-                                        no_engine=no_engine)
+                                        no_engine=no_engine,
+                                        load_duration=load_duration)
                                     
                                             # backup(series=series)
 
@@ -468,7 +469,7 @@ def save_report(experiment_id: int,
                 end_time_experiment: float,
                 namespace: str = 'default',
                 series: int = 0,
-                no_engine: bool = False,
+                no_engine: bool = False
                 ):
     results = {
         'cpu_usage_count': [],
@@ -489,7 +490,7 @@ def save_report(experiment_id: int,
     }
     # TODO experiments id system
     duration = (end_time_experiment - start_time_experiment)//60 + 1
-
+    rate = (end_time_experiment - start_time_experiment)//60 + 1
     save_path = os.path.join(
         NODE_PROFILING_RESULTS_STATIC_PATH,
         'series', str(series), f"{experiment_id}.json")
@@ -509,7 +510,7 @@ def save_report(experiment_id: int,
     cpu_usage_rate, time_cpu_usage_rate =\
         prom_client.get_cpu_usage_rate(
             pod_name=pod_name, namespace="default",
-            duration=int(duration), container=node_name, rate=120)
+            duration=int(duration), container=node_name, rate=rate)
 
     cpu_throttled_count, time_cpu_throttled_count =\
         prom_client.get_cpu_throttled_count(
@@ -518,7 +519,7 @@ def save_report(experiment_id: int,
     cpu_throttled_rate, time_cpu_throttled_rate =\
         prom_client.get_cpu_throttled_rate(
             pod_name=pod_name, namespace="default",
-            duration=int(duration), container=node_name, rate=120)
+            duration=int(duration), container=node_name, rate=rate)
 
     memory_usage, time_memory_usage = prom_client.get_memory_usage(
         pod_name=pod_name, namespace="default",
@@ -526,7 +527,7 @@ def save_report(experiment_id: int,
 
     throughput, time_throughput = prom_client.get_request_per_second(
             pod_name=pod_name, namespace="default",
-            duration=int(duration), container=node_name, rate=120)
+            duration=int(duration), container=node_name, rate=rate)
 
     results['cpu_usage_count'] = cpu_usage_count
     results['time_cpu_usage_count'] = time_cpu_usage_count
