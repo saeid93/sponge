@@ -108,6 +108,7 @@ def experiments(pipeline_name: str, node_name: str,
                                     + f' starting repetition experiment ' +\
                                         '-'*25)
                                 print('\n')
+
                                 experiments_exist, experiment_id = key_config_mapper(
                                     pipeline_name=pipeline_name,
                                     node_name=node_name,
@@ -143,6 +144,14 @@ def experiments(pipeline_name: str, node_name: str,
                                         num_interop_threads=cpu_request,
                                         num_threads=cpu_request
                                     )
+                                    print('Checking if the model is up ...')
+                                    print('\n')
+                                    # check if the model is up or not
+                                    check_load_test(
+                                        node_name=node_name, data_type=data_type,
+                                                node_path=node_path)
+                                    print('Checking if the model is up ...')
+                                    print('\n')
                                     check_load_test(
                                         node_name=node_name, data_type=data_type,
                                                 node_path=node_path)
@@ -565,7 +574,7 @@ def backup(series):
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='5-config-static-resnet-human')
+    '--config-name', required=True, type=str, default='throughput-test')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
