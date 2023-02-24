@@ -32,6 +32,7 @@ from experiments.utils.loader import Loader
 
 config_key_mapper = "key_config_mapper.csv"
 
+# TEMP all model profiles built using load of 1
 def load_profile(series, model_name, experiment_id=1, load=1):
     series_path = os.path.join(
         NODE_PROFILING_RESULTS_STATIC_PATH,
@@ -276,7 +277,6 @@ def main(config_name: str):
         time_file.write(f'feasible_time: {feasible_time}\n')
         print(f"with constraint time: {feasible_time}")
     if 'optimal' in generate:
-
         if optimization_method == 'gurobi':
             optimal_time = time.time()
             # optimal states

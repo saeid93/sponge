@@ -150,31 +150,30 @@ def experiments(pipeline_name: str, node_name: str,
                                     print('-'*25 + f' starting load test ' + '-'*25)
                                     print('\n')
 
-                                    start_time_experiment,\
-                                        end_time_experiment, responses = load_test(
+                                    try:
+                                        start_time_experiment,\
+                                            end_time_experiment, responses = load_test(
+                                                node_name=node_name,
+                                                data_type=data_type,
+                                                node_path=node_path,
+                                                load=load,
+                                                mode=mode,
+                                                namespace='default',
+                                                load_duration=load_duration,
+                                                no_engine=no_engine,
+                                                benchmark_duration=benchmark_duration)
+                                        # TODO id system for the experiments
+                                        save_report(
+                                            experiment_id=experiment_id,
+                                            responses = responses,
                                             node_name=node_name,
-                                            data_type=data_type,
-                                            node_path=node_path,
-                                            load=load,
-                                            mode=mode,
-                                            namespace='default',
-                                            load_duration=load_duration,
-                                            no_engine=no_engine,
-                                            benchmark_duration=benchmark_duration)
-                                    # TODO id system for the experiments
-                                    save_report(
-                                        experiment_id=experiment_id,
-                                        responses = responses,
-                                        node_name=node_name,
-                                        start_time_experiment=start_time_experiment,
-                                        end_time_experiment=end_time_experiment,
-                                        series=series,
-                                        no_engine=no_engine,
-                                        load_duration=load_duration)
-                                    
-                                            # backup(series=series)
-
-                                    # TODO better validation -> some request
+                                            start_time_experiment=start_time_experiment,
+                                            end_time_experiment=end_time_experiment,
+                                            series=series,
+                                            no_engine=no_engine)
+                                    except UnboundLocalError:
+                                        print('Impossible experiment!')
+                                        print('skipping to the next experiment ...')
                                     print(f'waiting for timeout: {timeout} seconds')
                                     for _ in tqdm(range(20)):
                                         time.sleep((timeout)/20)
@@ -490,7 +489,7 @@ def save_report(experiment_id: int,
     }
     # TODO experiments id system
     duration = (end_time_experiment - start_time_experiment)//60 + 1
-    rate = (end_time_experiment - start_time_experiment)//60 + 1
+    rate = int(end_time_experiment - start_time_experiment)
     save_path = os.path.join(
         NODE_PROFILING_RESULTS_STATIC_PATH,
         'series', str(series), f"{experiment_id}.json")

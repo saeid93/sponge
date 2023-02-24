@@ -502,13 +502,6 @@ class Optimizer:
                 self.pipeline.inference_graph[task_id].re_scale(n_output[stage])
                 self.pipeline.inference_graph[task_id].change_batch(b_output[stage])
 
-            # if not self.can_sustain_load(arrival_rate):
-            #     a = 1
-
-            # if not self.sla_is_met():
-            #     self.sla_is_met()
-            #     a = 1
-
             # generate states data
             state = {}
 
