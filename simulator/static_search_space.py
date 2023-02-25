@@ -43,7 +43,7 @@ def load_profile(series, model_name, experiment_id=1, load=1):
         model_name=model_name)
     key_config_df = loader.key_config_mapper()
     experiment_ids = key_config_df[
-        (key_config_df['load'] == load)]['experiment_id'].tolist()
+        (key_config_df['load'] == load) | (key_config_df['load'] == str(load))]['experiment_id'].tolist()
     metadata_columns = [
         'model_variant',
         'cpu_request',

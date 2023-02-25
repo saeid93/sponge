@@ -148,17 +148,19 @@ def experiments(pipeline_name: str, node_name: str,
                                     print('\n')
                                     # check if the model is up or not
                                     check_load_test(
-                                        node_name=node_name, data_type=data_type,
-                                                node_path=node_path)
-                                    print('Checking if the model is up ...')
+                                        node_name=node_name,
+                                        data_type=data_type,
+                                        node_path=node_path)
+                                    print('model warm up ...')
                                     print('\n')
-                                    check_load_test(
-                                        node_name=node_name, data_type=data_type,
-                                                node_path=node_path)
-
-                                    print('-'*25 + f' starting load test ' + '-'*25)
+                                    warm_up_duration = 10
+                                    warm_up(
+                                        node_name=node_name,
+                                        data_type=data_type,
+                                        node_path=node_path,
+                                        load_duration=warm_up_duration)
+                                    print('-'*25 + f'starting load test ' + '-'*25)
                                     print('\n')
-
                                     try:
                                         start_time_experiment,\
                                             end_time_experiment, responses = load_test(
@@ -171,7 +173,8 @@ def experiments(pipeline_name: str, node_name: str,
                                                 load_duration=load_duration,
                                                 no_engine=no_engine,
                                                 benchmark_duration=benchmark_duration)
-                                        # TODO id system for the experiments
+                                        print('-'*25 + 'saving the report' + '-'*25)
+                                        print('\n')
                                         save_report(
                                             experiment_id=experiment_id,
                                             responses = responses,
@@ -444,13 +447,14 @@ def load_test(node_name: str, data_type: str,
             response['outputs'] = []
     return start_time, end_time, responses
 
-def check_load_test(node_name: str, data_type: str,
-              node_path: str,
-              load=1, load_duration = 1):
+def check_load_test(
+        node_name: str, data_type: str,
+        node_path: str,
+        load=1, load_duration = 1):
     loop_timeout = 5
     ready = False
     while True:
-        print(f'waited for {loop_timeout} to check for successful request')
+        print(f'waited for {loop_timeout} seconds to check for successful request')
         time.sleep(loop_timeout)
         try:
             load_test(
@@ -464,6 +468,17 @@ def check_load_test(node_name: str, data_type: str,
             pass
         if ready:
             return ready
+
+def warm_up(
+        node_name: str, data_type: str,
+        node_path: str,
+        load_duration: int, load=1):
+    load_test(
+        node_name=node_name,
+        data_type=data_type,
+        node_path=node_path,
+        load=load,
+        load_duration=load_duration)
 
 def remove_node(node_name):
     os.system(f"kubectl delete seldondeployment {node_name} -n default")
