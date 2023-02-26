@@ -194,7 +194,7 @@ class Task:
                     models[model_variant].append(allocation)
         base_allocation = {}
         for model_variant, allocations in models.items():
-            # finding the mimumu allocation that can respond
+            # finding the minimum allocation that can respond
             # to the threshold
             # the profiles are sorted therefore therefore
             # we iterate from the first profile
