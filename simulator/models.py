@@ -186,6 +186,7 @@ class Task:
 
     def find_base_allocation(self) -> Dict[str, ResourceAllocation]:
         models = {key: [] for key in self.variant_names}
+        # TOOD change here
         # 1. filter out models
         for model_variant in self.variant_names:
             for allocation in self.available_model_profiles:

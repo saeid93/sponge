@@ -50,6 +50,7 @@ def load_profile(series, model_name, experiment_id=1, load=1):
         'max_batch_size',
         'load']
     results_columns = [
+        'throughput_max',
         'model_latencies_min',
         'model_latencies_p99',
         'cpu_usage_count_avg',
