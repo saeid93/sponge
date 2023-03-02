@@ -1,3 +1,4 @@
+import random
 from typing import Dict, List
 import numpy as np
 import pandas as pd
@@ -13,10 +14,27 @@ class Optimizer:
     def __init__(
         self, pipeline: Pipeline,
         allocation_mode: str,
-        complete_profile) -> None:
+        complete_profile: bool,
+        only_measured_profiles: bool,
+        random_sample: bool) -> None:
+        """_summary_
+
+        Args:
+            pipeline (Pipeline): pipeline objecit for optimization
+            allocation_mode (str): allocation mode for cpu usage,
+                fix | base | variable
+                fix: stays on the initiial CPU allocation
+                base: finding the base allocation explained in the paper
+                variable: search through the cpu allocation as a configuration knob
+            complete_profile (bool): whether to log the complete result or not
+            only_measured_profiles (bool): only profiled based on the measured latency/throughput
+                profiles and not using regression models
+        """
         self.pipeline = pipeline
         self.allocation_mode = allocation_mode
         self.complete_profile = complete_profile
+        self.only_measured_profiles = only_measured_profiles
+        self.random_sample = random_sample
 
     def accuracy_objective(self) -> float:
         """
@@ -195,99 +213,105 @@ class Optimizer:
         batches = list(itertools.product(*batches))
         if self.allocation_mode != 'base':
             allocations = list(itertools.product(*allocations))
-            all_combinations = list(
-                itertools.product(*[
-                    variant_names, replicas, batches, allocations]))
+            all_combinations = itertools.product(*[
+                    variant_names, replicas, batches, allocations])
         else:
-            all_combinations = list(
-                itertools.product(*[
-                    variant_names, replicas, batches]))
+            all_combinations = itertools.product(*[
+                    variant_names, replicas, batches])
+
+        if self.random_sample:
+            all_combinations = random.sample(
+                list(all_combinations), num_state_limit)
 
         # generate states header format
         states = []
 
         for combination in all_combinations:
-            for task_id_i in range(self.pipeline.num_nodes):
-                # change config knobs (model_variant, batch, scale)
-                self.pipeline.inference_graph[
-                    task_id_i].model_switch(
-                        active_variant=combination[0][task_id_i])
-                self.pipeline.inference_graph[
-                    task_id_i].re_scale(replica=combination[1][task_id_i])
-                self.pipeline.inference_graph[
-                    task_id_i].change_batch(batch=combination[2][task_id_i])
-                if self.allocation_mode != 'base':
+            try: # Not all models profiles are available under all batch sizes
+                for task_id_i in range(self.pipeline.num_nodes):
+                    # change config knobs (model_variant, batch, scale)
                     self.pipeline.inference_graph[
-                        task_id_i].change_allocation(
-                            active_allocation=combination[3][task_id_i])
-            ok_to_add = False
-            if check_constraints:
-                if self.constraints(arrival_rate=arrival_rate):
+                        task_id_i].model_switch(
+                            active_variant=combination[0][task_id_i])
+                    self.pipeline.inference_graph[
+                        task_id_i].re_scale(replica=combination[1][task_id_i])
+                    self.pipeline.inference_graph[
+                        task_id_i].change_batch(batch=combination[2][task_id_i])
+                    if self.allocation_mode != 'base':
+                        self.pipeline.inference_graph[
+                            task_id_i].change_allocation(
+                                active_allocation=combination[3][task_id_i])
+                ok_to_add = False
+                if check_constraints:
+                    if self.constraints(arrival_rate=arrival_rate):
+                        ok_to_add = True
+                else:
                     ok_to_add = True
-            else:
-                ok_to_add = True
-            if ok_to_add:
-                state = {}
-                if self.complete_profile:
+                if ok_to_add:
+                    state = {}
+                    if self.complete_profile:
+                        for task_id_j in range(self.pipeline.num_nodes):
+                            # record all stats under this configs
+                            state[f'task_{task_id_j}_latency'] =\
+                                self.pipeline.inference_graph[task_id_j].latency
+                            state[f'task_{task_id_j}_throughput'] =\
+                                self.pipeline.inference_graph[task_id_j].throughput
+                            state[f'task_{task_id_j}_throughput_all_replicas'] =\
+                                self.pipeline.inference_graph[
+                                    task_id_j].throughput_all_replicas
+                            state[f'task_{task_id_j}_accuracy'] =\
+                                self.pipeline.inference_graph[task_id_j].accuracy
+                            state[f'task_{task_id_j}_measured'] =\
+                                self.pipeline.inference_graph[task_id_j].measured
+                            state[f'task_{task_id_j}_cpu_all_replicas'] =\
+                                self.pipeline.inference_graph[
+                                    task_id_j].cpu_all_replicas
+                            state[f'task_{task_id_j}_gpu_all_replicas'] =\
+                                self.pipeline.inference_graph[
+                                    task_id_j].gpu_all_replicas
+                        state['pipeline_accuracy'] =\
+                            self.pipeline.pipeline_accuracy
+                        state['pipeline_latency'] =\
+                            self.pipeline.pipeline_latency
+                        state['pipeline_throughput'] =\
+                            self.pipeline.pipeline_throughput
+                        state['pipeline_cpu'] =\
+                            self.pipeline.pipeline_cpu
+                        state['pipeline_gpu'] =\
+                            self.pipeline.pipeline_gpu
+                        state['alpha'] = alpha
+                        state['beta'] = beta
+                        state['gamma'] = gamma
+                        state['accuracy_objective'] =\
+                            self.accuracy_objective()
+                        state['resource_objective'] =\
+                            self.resource_objective()
+                        state['batch_objective'] =\
+                            self.batch_objective()
+
                     for task_id_j in range(self.pipeline.num_nodes):
                         # record all stats under this configs
-                        state[f'task_{task_id_j}_latency'] =\
-                            self.pipeline.inference_graph[task_id_j].latency
-                        state[f'task_{task_id_j}_throughput'] =\
-                            self.pipeline.inference_graph[task_id_j].throughput
-                        state[f'task_{task_id_j}_throughput_all_replicas'] =\
+                        state[f'task_{task_id_j}_variant'] =\
                             self.pipeline.inference_graph[
-                                task_id_j].throughput_all_replicas
-                        state[f'task_{task_id_j}_accuracy'] =\
-                            self.pipeline.inference_graph[task_id_j].accuracy
-                        state[f'task_{task_id_j}_measured'] =\
-                            self.pipeline.inference_graph[task_id_j].measured
-                        state[f'task_{task_id_j}_cpu_all_replicas'] =\
-                            self.pipeline.inference_graph[
-                                task_id_j].cpu_all_replicas
-                        state[f'task_{task_id_j}_gpu_all_replicas'] =\
-                            self.pipeline.inference_graph[
-                                task_id_j].gpu_all_replicas
-                    state['pipeline_accuracy'] =\
-                        self.pipeline.pipeline_accuracy
-                    state['pipeline_latency'] =\
-                        self.pipeline.pipeline_latency
-                    state['pipeline_throughput'] =\
-                        self.pipeline.pipeline_throughput
-                    state['pipeline_cpu'] =\
-                        self.pipeline.pipeline_cpu
-                    state['pipeline_gpu'] =\
-                        self.pipeline.pipeline_gpu
-                    state['alpha'] = alpha
-                    state['beta'] = beta
-                    state['gamma'] = gamma
-                    state['accuracy_objective'] =\
-                        self.accuracy_objective()
-                    state['resource_objective'] =\
-                        self.resource_objective()
-                    state['batch_objective'] =\
-                        self.batch_objective()
+                                task_id_j].active_variant
+                        state[f'task_{task_id_j}_cpu'] =\
+                            self.pipeline.inference_graph[task_id_j].cpu
+                        state[f'task_{task_id_j}_gpu'] =\
+                            self.pipeline.inference_graph[task_id_j].gpu
+                        state[f'task_{task_id_j}_batch'] =\
+                            self.pipeline.inference_graph[task_id_j].batch
+                        state[f'task_{task_id_j}_replicas'] =\
+                            self.pipeline.inference_graph[task_id_j].replicas
 
-                for task_id_j in range(self.pipeline.num_nodes):
-                    # record all stats under this configs
-                    state[f'task_{task_id_j}_variant'] =\
-                        self.pipeline.inference_graph[
-                            task_id_j].active_variant
-                    state[f'task_{task_id_j}_cpu'] =\
-                        self.pipeline.inference_graph[task_id_j].cpu
-                    state[f'task_{task_id_j}_gpu'] =\
-                        self.pipeline.inference_graph[task_id_j].gpu
-                    state[f'task_{task_id_j}_batch'] =\
-                        self.pipeline.inference_graph[task_id_j].batch
-                    state[f'task_{task_id_j}_replicas'] =\
-                        self.pipeline.inference_graph[task_id_j].replicas
-
-                state['objective'] = self.objective(
-                    alpha=alpha, beta=beta, gamma=gamma)
-                states.append(state)
-                if num_state_limit is not None:
-                    state_counter += 1
-                    if state_counter == num_state_limit: break
+                    state['objective'] = self.objective(
+                        alpha=alpha, beta=beta, gamma=gamma)
+                    states.append(state)
+                    if num_state_limit is not None:
+                        state_counter += 1
+                        # print(f"state {state_counter} added")
+                        if state_counter == num_state_limit: break
+            except StopIteration:
+                pass
         return pd.DataFrame(states)
 
     def brute_force(
@@ -393,29 +417,36 @@ class Optimizer:
         i = model.addVars(gurobi_variants, name='i', vtype=GRB.BINARY)
         n_lb = 1
         b_lb = 1
-        n = model.addVars(gurobi_replicas, name='n', vtype=GRB.INTEGER, lb=n_lb, ub=scaling_cap)
-        b = model.addVars(gurobi_batches, name='b', vtype=GRB.INTEGER, lb=b_lb, ub=batching_cap)
-        model.update()
-
+        if self.only_measured_profiles:
+            pass
+            a = 1
+        else:
+            n = model.addVars(gurobi_replicas, name='n', vtype=GRB.INTEGER, lb=n_lb, ub=scaling_cap)
+            b = model.addVars(gurobi_batches, name='b', vtype=GRB.INTEGER, lb=b_lb, ub=batching_cap)
+            model.update()
         # coefficients
-        latency_parameters = self.latency_parameters()
-        base_allocations = self.base_allocations()
-        queue_parameters = self.queue_parameters()
-        accuracy_parameters = self.accuracy_parameters()
+        if self.only_measured_profiles:
+            a = 1
+            pass
+        else:
+            latency_parameters = self.latency_parameters()
+            base_allocations = self.base_allocations()
+            queue_parameters = self.queue_parameters()
+            accuracy_parameters = self.accuracy_parameters()
 
-        # paper constraints
-        model.addQConstr(
-            (gp.quicksum(func_l(b[stage], latency_parameters[stage][variant]) * i[stage, variant]\
-                + func_q(b[stage], queue_parameters[stage])
-                for stage in stages for variant in stages_variants[stage]) <= sla), name='latency')
-        # upper bound trick based on
-        # https://support.gurobi.com/hc/en-us/community/posts/12996185241105-How-to-add-quadratic-constraint-in-conditional-indicator-constraints
-        for stage in stages:
-            for variant in stages_variants[stage]:
-                M = arrival_rate * self.pipeline_latency_upper_bound(stage, variant) - n_lb * b_lb
-                model.addQConstr(((
-                    arrival_rate * func_l(b[stage],
-                    latency_parameters[stage][variant]) - n[stage] * b[stage]) <= M * (1-i[stage, variant])), f'throughput-{stage}-{variant}')
+            # paper constraints
+            model.addQConstr(
+                (gp.quicksum(func_l(b[stage], latency_parameters[stage][variant]) * i[stage, variant]\
+                    + func_q(b[stage], queue_parameters[stage])
+                    for stage in stages for variant in stages_variants[stage]) <= sla), name='latency')
+            # upper bound trick based on
+            # https://support.gurobi.com/hc/en-us/community/posts/12996185241105-How-to-add-quadratic-constraint-in-conditional-indicator-constraints
+            for stage in stages:
+                for variant in stages_variants[stage]:
+                    M = arrival_rate * self.pipeline_latency_upper_bound(stage, variant) - n_lb * b_lb
+                    model.addQConstr(((
+                        arrival_rate * func_l(b[stage],
+                        latency_parameters[stage][variant]) - n[stage] * b[stage]) <= M * (1-i[stage, variant])), f'throughput-{stage}-{variant}')
         model.addConstrs(
             (gp.quicksum(
                 i[stage, variant] for variant in stages_variants[stage]) == 1\

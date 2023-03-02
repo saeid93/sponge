@@ -14,15 +14,20 @@ class ResourceAllocation:
 
 class Profile:
     def __init__(
-        self, batch: int, latency: float, measured: bool = True) -> None:
+        self, batch: int, latency: float,
+        measured: bool = True, measured_throughput = None) -> None:
         self.batch = batch
         self.latency = latency
         self.measured = measured
-    
+        if measured_throughput is not None:
+            self.measured_throughput = measured_throughput
+
     @property
     def throughput(self):
-        # TODO decide whether latency based or RPS
-        throughput = (1/self.latency) * self.batch
+        if self.measured:
+            throughput = self.measured_throughput
+        else:
+            throughput = (1/self.latency) * self.batch
         return throughput
 
     def __eq__(self, other):
@@ -38,13 +43,16 @@ class Model:
         name: str,
         resource_allocation: ResourceAllocation,
         measured_profiles: List[Profile],
+        only_measured_profiles: bool,
         accuracy: float) -> None:
 
         self.resource_allocation = resource_allocation
         self.measured_profiles = measured_profiles
+        self.measured_profiles.sort(key=lambda profile: profile.batch)
         self.accuracy = accuracy/100
         self.normalized_accuracy = None
         self.name = name
+        self.only_measured_profiles = only_measured_profiles
         self.profiles, self.latency_model_params = self.regression_model()
 
     def regression_model(self) -> List[Profile]:
@@ -55,7 +63,10 @@ class Model:
             lambda l: l.batch, self.measured_profiles))).reshape(-1, 1)
         train_y = np.array(list(map(
             lambda l: l.latency, self.measured_profiles))).reshape(-1, 1)
-        all_x = np.arange(self.min_batch, self.max_batch+1)
+        if self.only_measured_profiles:
+            all_x = train_x
+        else:
+            all_x = np.arange(self.min_batch, self.max_batch+1)
         # HACK all the data from the latency model and not using
         # measured data
         # test_x = all_x[~np.isin(all_x, train_x)].reshape(-1, 1)
@@ -64,9 +75,23 @@ class Model:
         latency_model.fit(train_x, train_y)
         test_y = latency_model.predict(test_x)
         predicted_profiles = []
-        for x, y in zip(test_x.reshape(-1), test_y.reshape(-1)):
-            predicted_profiles.append(
-                Profile(batch=x, latency=y, measured=False))
+        # for index, x, y in zip(range(
+        #     len(self.measured_profiles)), test_x.reshape(-1), test_y.reshape(-1)):
+        for index, x, y in zip(range(
+            len(all_x)), test_x.reshape(-1), test_y.reshape(-1)):
+            if self.only_measured_profiles:
+                predicted_profiles.append(
+                    Profile(
+                    batch=x, latency=y,
+                    measured=True,
+                    measured_throughput=\
+                        self.measured_profiles[index].measured_throughput))
+            else:
+                predicted_profiles.append(
+                    Profile(
+                    batch=x, latency=y,
+                    measured=False,
+                    measured_throughput=None))
         # HACK continue above hack
         # profiles: List[Profile] = predicted_profiles + self.measured_profiles
         profiles: List[Profile] = predicted_profiles

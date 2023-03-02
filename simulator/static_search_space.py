@@ -32,7 +32,6 @@ from experiments.utils.loader import Loader
 
 config_key_mapper = "key_config_mapper.csv"
 
-# TEMP all model profiles built using load of 1
 def load_profile(series, model_name, experiment_id=1, load=1):
     series_path = os.path.join(
         NODE_PROFILING_RESULTS_STATIC_PATH,
@@ -63,7 +62,8 @@ def load_profile(series, model_name, experiment_id=1, load=1):
 
 def read_task_profiles(
     profiling_info: pd.DataFrame,
-    task_accuracies: Dict[str, float]) -> List[Model]:
+    task_accuracies: Dict[str, float],
+    only_measured_profiles: bool) -> List[Model]:
     available_model_profiles = []
     for model_variant in profiling_info['model_variant'].unique():
         model_variant_profiling_info =\
@@ -75,18 +75,27 @@ def read_task_profiles(
                     model_variant_profiling_info['cpu_request'] == cpu_request]
             measured_profiles = []
             for _, row in cpu_request_profiling_info.iterrows():
-                # TODO throughput from profiling
-                measured_profiles.append(
-                    Profile(
-                        batch=row['max_batch_size'],
-                        latency=row['model_latencies_avg']))
+                # throughput from profiling
+                if only_measured_profiles:
+                    measured_profiles.append(
+                        Profile(
+                            batch=row['max_batch_size'],
+                            latency=row['model_latencies_avg'],
+                            measured_throughput=row['throughput_max']))
+                else:
+                # throughput from fromulation
+                    measured_profiles.append(
+                        Profile(
+                            batch=row['max_batch_size'],
+                            latency=row['model_latencies_avg']))
             available_model_profiles.append(
                 Model(
                     name=model_variant,
                     resource_allocation=ResourceAllocation(
                         cpu=cpu_request),
                     measured_profiles=measured_profiles,
-                    accuracy=task_accuracies[model_variant]
+                    accuracy=task_accuracies[model_variant],
+                    only_measured_profiles=only_measured_profiles
                 ) 
             )
     return available_model_profiles
@@ -106,17 +115,21 @@ def generate_pipeline(
     sla_factor: int,
     accuracy_method: int,
     normalize_accuracy: bool,
-    pipeline_accuracies: Dict[str, Dict[str, float]]
+    pipeline_accuracies: Dict[str, Dict[str, float]],
+    only_measured_profiles: bool,
+    profiling_load: bool,
     ) -> Pipeline:
     inference_graph = []
     for i in range(number_tasks):
         profiling_info = load_profile(
             series=profiling_series[i], model_name=model_name[i],
-            experiment_id=experiment_id[i])
+            experiment_id=experiment_id[i],
+            load=profiling_load)
         available_model_profiles =\
             read_task_profiles(
                 profiling_info=profiling_info,
-                task_accuracies=pipeline_accuracies[task_names[i]])
+                task_accuracies=pipeline_accuracies[task_names[i]],
+                only_measured_profiles=only_measured_profiles)
         task = Task(
             name=task_names[i],
             available_model_profiles = available_model_profiles,
@@ -129,7 +142,7 @@ def generate_pipeline(
             sla_factor=sla_factor,
             allocation_mode=allocation_mode,
             normalize_accuracy=normalize_accuracy,
-            gpu_mode=False,
+            gpu_mode=False
         )
         inference_graph.append(task)
     pipeline = Pipeline(
@@ -165,6 +178,9 @@ def main(config_name: str):
     scaling_cap = config['scaling_cap']
     pipeline_name = config['pipeline_name']
     complete_profile = config['complete_profile']
+    only_measured_profiles = config['only_measured_profiles']
+    profiling_load = config['profiling_load']
+    random_sample = config['random_sample']
 
     # pipeline config
     arrival_rate = config['arrival_rate']
@@ -224,12 +240,16 @@ def main(config_name: str):
         sla_factor=sla_factor,
         accuracy_method=accuracy_method,
         normalize_accuracy=normalize_accuracy,
-        pipeline_accuracies=pipeline_accuracies)
+        pipeline_accuracies=pipeline_accuracies,
+        only_measured_profiles=only_measured_profiles,
+        profiling_load=profiling_load)
 
     optimizer = Optimizer(
         pipeline=pipeline,
         allocation_mode=allocation_mode,
-        complete_profile=complete_profile
+        complete_profile=complete_profile,
+        only_measured_profiles=only_measured_profiles,
+        random_sample=random_sample
     )
 
     all_states_time = None
