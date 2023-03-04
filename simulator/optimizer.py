@@ -92,21 +92,61 @@ class Optimizer:
         return max_model_latencies
 
     def latency_parameters(self) -> Dict[str, Dict[str, List[float]]]:
-        # latencies of all cases nested dictionary
+        # latency parameters of regression models
+        #  of all cases nested dictionary
         # for gorubi solver
         # [stage_name][variant]
-        model_latencies = {}
+        model_latencies_parameters = {}
         inference_graph = deepcopy(self.pipeline.inference_graph)
         for task in inference_graph:
-            model_latencies[task.name] = {}
+            model_latencies_parameters[task.name] = {}
             for variant_name in task.variant_names:
-                model_latencies[task.name][variant_name] = {}
+                model_latencies_parameters[task.name][variant_name] = {}
+                task.model_switch(variant_name)
+                # for batch_size in task.batches:
+                # task.change_batch(batch_size)
+                model_latencies_parameters[
+                    task.name][variant_name] = task.latency_model_params
+        return model_latencies_parameters
+
+    def throughput_parameters(self) -> Dict[str, Dict[str, List[float]]]:
+        # throughputs of all cases nested dictionary
+        # for gorubi solver
+        # [stage_name][variant]
+        model_throughputs = {}
+        inference_graph = deepcopy(self.pipeline.inference_graph)
+        for task in inference_graph:
+            model_throughputs[task.name] = {}
+            for variant_name in task.variant_names:
+                model_throughputs[task.name][variant_name] = {}
                 task.model_switch(variant_name)
                 for batch_size in task.batches:
+                    model_throughputs[task.name][variant_name][batch_size] = {}
                     task.change_batch(batch_size)
-                    model_latencies[
-                        task.name][variant_name] = task.latency_model_params
-        return model_latencies
+                    model_throughputs[
+                        task.name][variant_name][batch_size] = task.throughput
+        # extract all batches profiles for filling out missing batches
+        # with very small values to make them consistent for Gurobi
+        batches_profiles = list(map(
+            lambda l: l,list(map(
+            lambda l: list(l.values()), list(model_throughputs.values())))))
+        all_batches_profiles = []
+        for batch_prfoile in batches_profiles:
+            all_batches_profiles += batch_prfoile
+        distinct_batches = []
+        for model_batch in all_batches_profiles:
+            for batch in model_batch:
+                if batch not in distinct_batches:
+                    distinct_batches.append(batch)
+        # add the small value for model with missing throughputs
+        dummy_throughput = 0.00001
+        for stage, variants in model_throughputs.items():
+            for variant_name, variant_profile in variants.items():
+                for batch in distinct_batches:
+                    if batch not in variant_profile.keys():
+                        model_throughputs[
+                            stage][variant_name][batch] = dummy_throughput
+        return distinct_batches, model_throughputs
 
     def accuracy_parameters(self) -> Dict[str, Dict[str, float]]:
         # accuracies of all cases nested dictionary
@@ -404,6 +444,13 @@ class Optimizer:
         stages = self.pipeline.stage_wise_task_names
         stages_variants = self.pipeline.stage_wise_available_variants
 
+        latency_parameters = self.latency_parameters()
+        base_allocations = self.base_allocations()
+        queue_parameters = self.queue_parameters()
+        accuracy_parameters = self.accuracy_parameters()
+        if self.only_measured_profiles:
+            distinct_batches, throughput_parameters = self.throughput_parameters()
+
         # sets
         gurobi_variants = []
         gurobi_replicas = []
@@ -411,34 +458,71 @@ class Optimizer:
         for stage_index, stage_name in enumerate(stages):
             gurobi_variants += [(stage_name, variant) for variant in variant_names[stage_index]]
             gurobi_replicas += [stage_name]
-            gurobi_batches += [stage_name]
+            if self.only_measured_profiles:
+                gurobi_batches += [stage_name]
+            else:
+                gurobi_batches += [stage_name]
 
         # variables
         i = model.addVars(gurobi_variants, name='i', vtype=GRB.BINARY)
         n_lb = 1
         b_lb = 1
         if self.only_measured_profiles:
-            pass
-            a = 1
+            # TODO change the batching parameteters
+            b = model.addVars(
+                gurobi_batches, distinct_batches, name='b',
+                vtype=GRB.BINARY)
+            aux = model.addVars(
+                gurobi_variants, distinct_batches, name='aux',
+                vtype=GRB.BINARY)
         else:
-            n = model.addVars(gurobi_replicas, name='n', vtype=GRB.INTEGER, lb=n_lb, ub=scaling_cap)
-            b = model.addVars(gurobi_batches, name='b', vtype=GRB.INTEGER, lb=b_lb, ub=batching_cap)
-            model.update()
+            b = model.addVars(
+                gurobi_batches, name='b', vtype=GRB.INTEGER,
+                lb=b_lb, ub=batching_cap)
+        n = model.addVars(
+            gurobi_replicas, name='n', vtype=GRB.INTEGER,
+            lb=n_lb, ub=scaling_cap)
+        model.update()
         # coefficients
         if self.only_measured_profiles:
-            a = 1
-            pass
+            # throughput constraint
+            # trick based on the following answer
+            # https://support.gurobi.com/hc/en-us/community/posts/360077892211-How-Indicator-constraint-can-be-triggered-with-multiple-variables-?input_string=How%20I%20can%20add%20an%20indicator%20cons            for stage in stages:
+            for stage in stages:
+                for variant in stages_variants[stage]:
+                    for batch in distinct_batches:
+                        model.addConstr(i[stage, variant] + b[stage, variant, batch] >= 1 - 2 * (1 - aux[stage, variant, batch]))
+                        model.addConstr(i[stage, variant] + b[stage, variant, batch] <= 1 + 2 * aux[stage, variant, batch])
+            for stage in stages:
+                for variant in stages_variants[stage]:
+                    for batch in distinct_batches:
+                        model.addConstr(
+                            (aux[stage, variant, batch] == 1) >>
+                            (n[stage] * throughput_parameters[stage][variant][batch] >= arrival_rate))
+            # TODO change - latency constraint
+            # model.addQConstr(
+            #     (gp.quicksum(func_l(b[stage], latency_parameters[stage][variant]) * i[stage, variant]\
+            #         + func_q(b[stage], queue_parameters[stage])
+            #         for stage in stages for variant in stages_variants[stage]) <= sla), name='latency')
+            # TODO change - one variant constraint
+            # model.addConstrs(
+            #     (gp.quicksum(
+            #         i[stage, variant] for variant in stages_variants[stage]) == 1\
+            #             for stage in stages), name='one_model')
+                    # model.addQConstr(
+                    #     ((throughput_parameters[stage][variant][b[stage]] * i[stage, variant]) >= arrival_rate), f'throughput-{stage}-{variant}')
+            # one variant constraint
+            model.addConstrs(
+                (gp.quicksum(
+                    i[stage, variant] for variant in stages_variants[stage]) == 1\
+                        for stage in stages), name='one_model')
+            # add the constraint of batches
+            model.addConstrs(
+                (gp.quicksum(
+                    b[stage, batch] for batch in distinct_batches) == 1\
+                        for stage in stages), name=f'single-batch-{stage}')
         else:
-            latency_parameters = self.latency_parameters()
-            base_allocations = self.base_allocations()
-            queue_parameters = self.queue_parameters()
-            accuracy_parameters = self.accuracy_parameters()
-
-            # paper constraints
-            model.addQConstr(
-                (gp.quicksum(func_l(b[stage], latency_parameters[stage][variant]) * i[stage, variant]\
-                    + func_q(b[stage], queue_parameters[stage])
-                    for stage in stages for variant in stages_variants[stage]) <= sla), name='latency')
+            # throughput constraint
             # upper bound trick based on
             # https://support.gurobi.com/hc/en-us/community/posts/12996185241105-How-to-add-quadratic-constraint-in-conditional-indicator-constraints
             for stage in stages:
@@ -447,10 +531,16 @@ class Optimizer:
                     model.addQConstr(((
                         arrival_rate * func_l(b[stage],
                         latency_parameters[stage][variant]) - n[stage] * b[stage]) <= M * (1-i[stage, variant])), f'throughput-{stage}-{variant}')
-        model.addConstrs(
-            (gp.quicksum(
-                i[stage, variant] for variant in stages_variants[stage]) == 1\
-                    for stage in stages), name='one_model')
+            # latency constraint
+            model.addQConstr(
+                (gp.quicksum(func_l(b[stage], latency_parameters[stage][variant]) * i[stage, variant]\
+                    + func_q(b[stage], queue_parameters[stage])
+                    for stage in stages for variant in stages_variants[stage]) <= sla), name='latency')
+            # one variant constraint
+            model.addConstrs(
+                (gp.quicksum(
+                    i[stage, variant] for variant in stages_variants[stage]) == 1\
+                        for stage in stages), name='one_model')
 
         # objectives
         if self.pipeline.accuracy_method == 'multiply':
@@ -475,9 +565,13 @@ class Optimizer:
             base_allocations[stage][vairant] * n[stage] * i[stage, vairant]\
                 for stage in stages for vairant in stages_variants[stage]
         )
-        batch_objective = gp.quicksum(
-            b[stage] for stage in stages
-        )
+        if self.only_measured_profiles:
+            # TODO add change here
+            a = 1
+        else:
+            batch_objective = gp.quicksum(
+                b[stage] for stage in stages
+            )
     
         # update the model
         model.setObjective(

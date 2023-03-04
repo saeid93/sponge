@@ -232,6 +232,7 @@ class Task:
                         allocation.resource_allocation)
                     break
             else: # no-break
+                # TODO remove none-working models
                 raise ValueError(
                     f'No responsive model profile to threshold {self.threshold}'
                     f' or model sla {self.sla} was found'
