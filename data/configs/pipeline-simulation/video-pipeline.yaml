@@ -1,4 +1,4 @@
-series: 119
+series: 121
 pipeline_name: video
 series_meta: 'checking the effect of changing all variables under arrival rate 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 number_tasks: 2
@@ -31,18 +31,18 @@ beta: 1
 gamma: 1
 scaling_cap: 10 # maximum possible scaling per nodes
 arrival_rate: 2
-num_state_limit: 100 # number of states
+num_state_limit: 1000000 # number of states
 threshold: 4 # threshold for finding the base allocation
-optimization_method: gurobi # options: [brute-force | gurobi | both]
+optimization_method: both # options: [brute-force | gurobi | both]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
 complete_profile: false
-only_measured_profiles: false
+only_measured_profiles: true
 random_sample: false
 profiling_load: 20
 accuracy_method: sum # [average | sum | multiply]
 generate:
-  # - all
-  # - feasible
+  - all
+  - feasible
   - optimal
