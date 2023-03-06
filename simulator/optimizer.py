@@ -517,7 +517,7 @@ class Optimizer:
             b = model.addVars(
                 gurobi_batches, distinct_batches, name='b',
                 vtype=GRB.BINARY)
-            aux = model.addVars(
+            aux_batch = model.addVars(
                 gurobi_variants, distinct_batches, name='aux',
                 vtype=GRB.BINARY)
         else:
@@ -538,19 +538,27 @@ class Optimizer:
                 for variant in stages_variants[stage]:
                     for batch in distinct_batches:
                         model.addGenConstrAnd(
-                            aux[stage, variant, batch], [i[stage, variant], b[stage, batch]], "andconstr-batch-variant")
+                            aux_batch[stage, variant, batch], [i[stage, variant], b[stage, batch]], "andconstr-batch-variant")
                         model.addConstr(
-                            (aux[stage, variant, batch] == 1) >>
+                            (aux_batch[stage, variant, batch] == 1) >>
                             (n[stage] * throughput_parameters[stage][variant][batch] >= arrival_rate))
             # latency constraint
-            for stage in stages:
-                for variant in stages_variants[stage]:
-                    for batch in distinct_batches:
-                        model.addConstr(
-                            (b[stage, batch] == 1) >>
-                            (latency_parameters[
-                            stage][variant][batch] * i[
-                            stage, variant] + func_q(b[stage, batch], queue_parameters[stage]) <= sla), name='latency')
+            # for stage in stages:
+            #     for variant in stages_variants[stage]:
+            #         for batch in distinct_batches:
+            #             model.addConstr(
+            #                 (b[stage, batch] == 1) >>
+            #                 (latency_parameters[stage][variant][batch] * i[stage, variant] +
+            #                 func_q(b[stage, batch], queue_parameters[stage]) <= sla), name='latency')
+            # for stage in stages:
+            #     for variant in stages_variants[stage]:
+            #         for batch in distinct_batches:
+            model.addQConstr(
+                (gp.quicksum(latency_parameters[stage][variant][batch] * i[stage, variant] * b[stage, batch] +
+                func_q(b[stage, batch], queue_parameters[stage])
+                for stage in stages
+                for variant in stages_variants[stage]
+                for batch in distinct_batches) <= sla), name='latency')
             # add the constraint of batches, only one batch get selected per model servers
             model.addConstrs(
                 (gp.quicksum(
@@ -624,6 +632,7 @@ class Optimizer:
         # Solve bilinear model
         model.params.NonConvex = 2
         model.optimize()
+        model.write('unmeasured.lp')
         # model.display()
         # model.printStatus()
 
