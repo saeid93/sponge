@@ -17,11 +17,6 @@ TODO pending the main document
    ```
    git clone https://github.com/saeid93/infernece-pipeline-joint-optimization.git
    ```
-   > [Optional] To get contents of the master_project, run:
-   > ```shell
-   > git submodule init
-   > git submodule update
-   > ```
 
 For setting infrastructure refer to accompanying repo [infrastructure](https://github.com/reconfigurable-ml-pipeline/infrastructure)
 

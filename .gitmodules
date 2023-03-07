@@ -1,3 +1,0 @@
-[submodule "master_project"]
-	path = master_project
-	url = git@gitlab.com:mehransi/master_project.git
