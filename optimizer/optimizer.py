@@ -6,7 +6,7 @@ import gurobipy as gp
 from gurobipy import GRB
 import itertools
 from copy import deepcopy
-from models import (
+from .models import (
     Pipeline
 )
 
@@ -533,7 +533,7 @@ class Optimizer:
         if self.only_measured_profiles:
             # throughput constraint
             # trick based on the following answer
-            # https://support.gurobi.com/hc/en-us/community/posts/360077892211-How-Indicator-constraint-can-be-triggered-with-multiple-variables-?input_string=How%20I%20can%20add%20an%20indicator%20cons            for stage in stages:
+            # https://support.gurobi.com/hc/en-us/community/posts/360077892211-How-Indicator-constraint-can-be-triggered-with-multiple-variables-?input_string=How%20I%20can%20add%20an%20indicator%20cons
             for stage in stages:
                 for variant in stages_variants[stage]:
                     for batch in distinct_batches:

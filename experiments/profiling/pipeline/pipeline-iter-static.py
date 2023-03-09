@@ -138,6 +138,7 @@ def experiments(pipeline_name: str, node_names: str,
     cpu_requests = list(itertools.product(*cpu_requests))
     memory_requests = list(itertools.product(*memory_requests))
     replicas = list(itertools.product(*replicas))
+    a = 1
     # TOOD Add cpu type, gpu type
     # TODO Better solution instead of nested for loops
     # TODO Also add the random - maybe just use Tune
@@ -434,7 +435,7 @@ def save_report(experiment_id: int,
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='5-paper-video')
+    '--config-name', required=True, type=str, default='video')
 def main(config_name: str):
     config_path = os.path.join(
         PIPELINE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")

@@ -4,7 +4,6 @@ of models and servers
 """
 import os
 import time
-import grpc
 import json
 import yaml
 import click

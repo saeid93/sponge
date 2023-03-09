@@ -8,31 +8,54 @@ from typing import List, Dict
 import yaml
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
-from models import (
+
+project_dir = os.path.dirname(__file__)
+sys.path.append(os.path.normpath(os.path.join(
+    project_dir, '..', '..')))
+
+from optimizer import (
     Model,
     ResourceAllocation,
     Profile,
     Task,
-    Pipeline
+    Pipeline,
+    Optimizer
 )
-from optimizer import Optimizer
-
-project_dir = os.path.dirname(__file__)
-sys.path.append(os.path.normpath(os.path.join(
-    project_dir, '..')))
 
 from experiments.utils.constants import (
-    PIPELINE_SIMULATION_CONFIGS_PATH,
-    PIPELINE_SIMULATION_RESULTS_PATH,
+    PIPELINE_EXPERIMENT_CONFIGS_PATH,
+    FINAL_RESULTS_PATH,
     NODE_PROFILING_RESULTS_STATIC_PATH,
     ACCURACIES_PATH
 )
 from experiments.utils.loader import Loader
 
 
+# TODO
+# 1. Start up the pipeline (this is pretty similar to the setup of profilers)
+# 2. Staring the load test from the Twitter dataset
+# 3. Reading data from the profiled experiments of the profiler in profiling folder
+# 4. Measure per node metrics (similar to the profiling pipeline and single node code)
+# 5. Wrapp the report in a single end to end experiment and save the report
+#   5.1. Save Twitter trace 
+#   5.2. Per request monitoring data
+#   5.3. Measuered vs Expected latency/throughput of each experiments
+# 6. Integrated profiling
+# 7. Merge common parts
+
 config_key_mapper = "key_config_mapper.csv"
 
-def load_profile(series, model_name, experiment_id=1, load=1):
+# video_pipeline
+def set_up_pipeline(pipeline_name, pipeline_config):
+    # read the pipeline
+    # read initial configs
+    # bring up pipeline
+    # do the warm up
+    # start the experiment
+    a = 1
+    pass
+
+def load_profile(series, model_name, load=1):
     series_path = os.path.join(
         NODE_PROFILING_RESULTS_STATIC_PATH,
         'series',
@@ -42,7 +65,8 @@ def load_profile(series, model_name, experiment_id=1, load=1):
         model_name=model_name)
     key_config_df = loader.key_config_mapper()
     experiment_ids = key_config_df[
-        (key_config_df['load'] == load) | (key_config_df['load'] == str(load))]['experiment_id'].tolist()
+        (key_config_df['load'] == load) |
+        (key_config_df['load'] == str(load))]['experiment_id'].tolist()
     metadata_columns = [
         'model_variant',
         'cpu_request',
@@ -100,12 +124,11 @@ def read_task_profiles(
             )
     return available_model_profiles
 
-def generate_pipeline(
+def generate_simulated_pipeline(
     number_tasks: int,
     profiling_series: List[int],
     model_name: List[str],
     task_names: List[str],
-    experiment_id: List[int],
     initial_active_model: List[str],
     initial_cpu_allocation: List[int],
     initial_replica: List[int],
@@ -123,7 +146,6 @@ def generate_pipeline(
     for i in range(number_tasks):
         profiling_info = load_profile(
             series=profiling_series[i], model_name=model_name[i],
-            experiment_id=experiment_id[i],
             load=profiling_load)
         available_model_profiles =\
             read_task_profiles(
@@ -159,18 +181,18 @@ def generate_pipeline(
     '--config-name', required=True, type=str, default='video-pipeline')
 def main(config_name: str):
     config_path = os.path.join(
-        PIPELINE_SIMULATION_CONFIGS_PATH, f"{config_name}.yaml")
+        PIPELINE_EXPERIMENT_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, 'r') as cf:
         config = yaml.safe_load(cf)
     with open(ACCURACIES_PATH, 'r') as cf:
         accuracies = yaml.safe_load(cf)
+
     # profiling config
     series = config['series']
     number_tasks = config['number_tasks']
     profiling_series = config['profiling_series']
     model_name = config['model_name']
     task_name = config['task_name']
-    experiment_id = config['experiment_id']
     initial_active_model = config['initial_active_model']
     initial_cpu_allocation = config['initial_cpu_allocation']
     initial_replica = config['initial_replica']
@@ -201,9 +223,11 @@ def main(config_name: str):
     beta = config['beta']
     gamma = config['gamma']
 
+    set_up_pipeline()
+
     # config generation config
     dir_path = os.path.join(
-        PIPELINE_SIMULATION_RESULTS_PATH,
+        FINAL_RESULTS_PATH,
         'series', str(series))
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
@@ -225,12 +249,14 @@ def main(config_name: str):
         )
         shutil.copy(config_path, dest_config_path)
 
-    pipeline = generate_pipeline(
+    # TODO
+    set_up_pipeline()
+
+    pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,
         profiling_series=profiling_series,
         model_name=model_name,
         task_names=task_name,
-        experiment_id=experiment_id,
         initial_active_model=initial_active_model,
         allocation_mode=allocation_mode,
         initial_cpu_allocation=initial_cpu_allocation,

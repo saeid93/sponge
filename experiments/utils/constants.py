@@ -31,6 +31,11 @@ PIPELINE_SIMULATION_CONFIGS_PATH = os.path.join(
     CONFIGS_PATH, "pipeline-simulation"
 )
 
+# pipeline simulation config path
+PIPELINE_EXPERIMENT_CONFIGS_PATH = os.path.join(
+    CONFIGS_PATH, "final-experiments"
+)
+
 # triton folders
 TRITON_PROFILING_PATH = os.path.join(
     PROFILING_CONFIGS_PATH, "triton")
@@ -45,6 +50,8 @@ PROFILING_RESULTS_PATH = os.path.join(
     RESULTS_PATH, "profiling")
 PIPELINE_SIMULATION_RESULTS_PATH = os.path.join(
     RESULTS_PATH, "pipeline-simulation")
+FINAL_RESULTS_PATH = os.path.join(
+    RESULTS_PATH, "final")
 PIPELINE_SIMULATION_MOCK_PATH = os.path.join(
     PIPELINE_SIMULATION_RESULTS_PATH,
     'mock-simulation')
@@ -69,6 +76,8 @@ OBJ_PROFILING_RESULTS_PATH = os.path.join(
     OBJ_RESULTS_PATH, "profiling")
 OBJ_PIPELINE_SIMULATION_RESULTS_PATH = os.path.join(
     RESULTS_PATH, "pipeline-simulation")
+OBJ_FINAL_RESULTS_PATH = os.path.join(
+    OBJ_RESULTS_PATH, "final")
 OBJ_NODE_PROFILING_RESULTS_PATH = os.path.join(
     OBJ_PROFILING_RESULTS_PATH, "nodes")
 OBJ_NODE_PROFILING_RESULTS_STATIC_PATH = os.path.join(
@@ -110,14 +119,16 @@ def _create_dirs():
         os.makedirs(PIPELINE_PROFILING_CONFIGS_PATH)
     if not os.path.exists(PIPELINE_SIMULATION_CONFIGS_PATH):
         os.makedirs(PIPELINE_SIMULATION_CONFIGS_PATH)
+    if not os.path.exists(PIPELINE_EXPERIMENT_CONFIGS_PATH):
+        os.makedirs(PIPELINE_EXPERIMENT_CONFIGS_PATH)
     if not os.path.exists(RESULTS_PATH):
         os.makedirs(RESULTS_PATH)
     if not os.path.exists(PROFILING_RESULTS_PATH):
         os.makedirs(PROFILING_RESULTS_PATH)
     if not os.path.exists(PIPELINE_SIMULATION_RESULTS_PATH):
         os.makedirs(PIPELINE_SIMULATION_RESULTS_PATH)
-    if not os.path.exists(PIPELINE_SIMULATION_RESULTS_PATH):
-        os.makedirs(PIPELINE_SIMULATION_RESULTS_PATH)
+    if not os.path.exists(FINAL_RESULTS_PATH):
+        os.makedirs(FINAL_RESULTS_PATH)
     if not os.path.exists(NODE_PROFILING_RESULTS_PATH):
         os.makedirs(NODE_PROFILING_RESULTS_PATH)
     if not os.path.exists(NODE_PROFILING_RESULTS_STATIC_PATH):
