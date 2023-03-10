@@ -8,7 +8,8 @@ spec:
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - componentSpecs:
+  - name: {{ name }}
+    componentSpecs:
     - spec:
         containers:
         - image: sdghafouri/nlp-pipelines-mlserver:nlpli
@@ -103,7 +104,6 @@ spec:
         limits:
           cpu: '8'
           memory: 4Gi
-    name: example
     # labels:
     #   sidecar.istio.io/inject: "true"
     replicas: 1

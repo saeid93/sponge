@@ -1,6 +1,6 @@
 """
 Iterate through all possible combination
-of models and servers
+of pipelines
 """
 import os
 import time
@@ -9,24 +9,24 @@ import yaml
 import click
 import sys
 import numpy as np
+from typing import Tuple
+import itertools
 import csv
 import re
 import asyncio
 from jinja2 import Environment, FileSystemLoader
-import itertools
-from typing import Tuple
-
+from barazmoon import Data
 from PIL import Image
 from kubernetes import config
-from kubernetes.client import Configuration
-from kubernetes.client.api import core_v1_api
+from kubernetes import client
+# from kubernetes.client import Configuration
+# from kubernetes.client.api import core_v1_api
 from tqdm import tqdm
 import shutil
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
 from barazmoon import (
-    MLServerAsyncRest,
     MLServerAsyncGrpc)
 
 # get an absolute path to the directory that contains parent files
@@ -38,77 +38,38 @@ from experiments.utils.prometheus import SingleNodePromClient
 from experiments.utils.constants import (
     PIPLINES_PATH,
     PIPELINE_PROFILING_CONFIGS_PATH,
-    PIPELINE_PROFILING_RESULTS_STATIC_PATH
+    PIPELINE_PROFILING_RESULTS_STATIC_PATH,
+    OBJ_PIPELINE_PROFILING_RESULTS_STATIC_PATH
 )
+from experiments.utils.obj import setup_obj_store
 prom_client = SingleNodePromClient()
+try:
+    config.load_kube_config()
+    kube_config = client.Configuration().get_default_copy()
+except AttributeError:
+    kube_config = client.Configuration()
+    kube_config.assert_hostname = False
+client.Configuration.set_default(kube_config)
+kube_api = client.api.core_v1_api.CoreV1Api()
 
 KEY_CONFIG_FILENAME = 'key_config_mapper.csv'
+NAMESPACE='default'
 
-# timeout = 180
-
-def get_pod_name(node_name: str, namespace='default'):
-    try:
-        config.load_kube_config()
-        c = Configuration().get_default_copy()
-    except AttributeError:
-        c = Configuration()
-        c.assert_hostname = False
-    Configuration.set_default(c)
-    core_v1 = core_v1_api.CoreV1Api()
-    ret = core_v1.list_namespaced_pod(namespace)
+def get_pod_name(node_name: str, orchestrator=False):
+    pod_regex = f"{node_name}.*"
+    pods_list = kube_api.list_namespaced_pod(NAMESPACE)
     pod_names = []
-    for i in ret.items:
-        pod_name=i.metadata.name
-        if node_name in pod_name and 'svc' not in pod_name:
+    for pod_name in pods_list.items:
+        pod_name=pod_name.metadata.name
+        if orchestrator and re.match(pod_regex, pod_name) and 'svc' in pod_name:
+            return pod_name
+        if re.match(pod_regex, pod_name) and 'svc' not in pod_name:
             pod_names.append(pod_name)
     return pod_names
-
-
-def key_config_mapper(
-    experiment_info: dict, load: int,
-    load_duration: int, series: int,
-    series_meta: str, replica: int,
-    protocol: str, data_type: str):
-    dir_path = os.path.join(
-        PIPELINE_PROFILING_RESULTS_STATIC_PATH,
-        'series', str(series))
-    file_path =  os.path.join(dir_path, KEY_CONFIG_FILENAME)
-    header = ['experiment_id']
-    header += list(experiment_info.keys())
-    header += ['load', 'load_duration', 'series', 'series_meta', 'protocol']
-    if not os.path.exists(file_path):
-        # os.makedirs(dir_path)
-        with open(file_path, 'w', newline="") as file:
-            csvwriter = csv.writer(file)
-            csvwriter.writerow(header)
-        experiment_id = 1
-    else:
-        with open(file_path) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            line_count = 0
-            for row in csv_reader:
-                line_count += 1
-        experiment_id = line_count
-    row = {
-        'experiment_id': experiment_id,
-        'load': load,
-        'load_duration': load_duration,
-        'series': series,
-        'series_meta': series_meta,
-        'protocol': protocol,
-        'data_type': data_type
-        }
-    row.update(experiment_info)
-    with open(file_path, 'a') as row_writer:
-        dictwriter_object = csv.DictWriter(row_writer, fieldnames=header)
-        dictwriter_object.writerow(row)
-        row_writer.close()
-    return experiment_id
 
 def experiments(pipeline_name: str, node_names: str,
                 config: dict, pipeline_path: str,
                 data_type: str):
-    # TODO make a for loop and make theses design time
     workload_config = config['workload_config']
     repetition = config['repetition']
     series = config['series']
@@ -116,7 +77,8 @@ def experiments(pipeline_name: str, node_names: str,
     loads_to_test = workload_config['loads_to_test']
     load_duration = workload_config['load_duration']
     timeout = config['timeout']
-    protocol = config['protocol']
+    mode = config['mode']
+    benchmark_duration = config['benchmark_duration']
 
     model_variants = []
     max_batch_sizes = []
@@ -124,6 +86,9 @@ def experiments(pipeline_name: str, node_names: str,
     cpu_requests = []
     memory_requests = []
     replicas = []
+    use_threading = []
+    num_iterop_threads = []
+    num_threads = []
     for node_config in config['nodes']:
         model_variants.append(node_config['model_variants'])
         max_batch_sizes.append(node_config['max_batch_size'])
@@ -131,6 +96,10 @@ def experiments(pipeline_name: str, node_names: str,
         cpu_requests.append(node_config['cpu_request'])
         memory_requests.append(node_config["memory_request"])
         replicas.append(node_config['replicas'])
+        use_threading.append([node_config['use_threading']])
+        num_iterop_threads.append(node_config['num_interop_threads'])
+        num_threads.append(node_config['num_threads'])
+
 
     model_variants = list(itertools.product(*model_variants))
     max_batch_sizes = list(itertools.product(*max_batch_sizes))
@@ -138,10 +107,13 @@ def experiments(pipeline_name: str, node_names: str,
     cpu_requests = list(itertools.product(*cpu_requests))
     memory_requests = list(itertools.product(*memory_requests))
     replicas = list(itertools.product(*replicas))
-    a = 1
+    use_threading = list(itertools.product(*use_threading))
+    num_iterop_threads = list(itertools.product(*num_iterop_threads))
+    num_threads = list(itertools.product(*num_threads))
     # TOOD Add cpu type, gpu type
     # TODO Better solution instead of nested for loops
     # TODO Also add the random - maybe just use Tune
+    a = 1
     for model_variant in model_variants:
         for max_batch_size in max_batch_sizes:
             for max_batch_time in max_batch_times:
@@ -149,6 +121,26 @@ def experiments(pipeline_name: str, node_names: str,
                     for memory_request in memory_requests:
                         for replica in replicas:
                             for load in loads_to_test:
+                                print('-'*25\
+                                    + f' starting repetition experiment ' +\
+                                        '-'*25)
+                                print('\n')
+                                experiments_exist, experiment_id = key_config_mapper(
+                                    pipeline_name=pipeline_name,
+                                    cpu_request=cpu_request,
+                                    memory_request=memory_request,
+                                    model_variant=model_variant,
+                                    max_batch_size=max_batch_size,
+                                    max_batch_time=max_batch_time,
+                                    load=load,
+                                    load_duration=load_duration,
+                                    series=series,
+                                    series_meta=series_meta,
+                                    replica=replica,
+                                    mode=mode,
+                                    data_type=data_type,
+                                    benchmark_duration=benchmark_duration)
+
                                 experiment_info = setup_pipeline(
                                     # pipeline_folder_name=pipeline_folder_name,
                                     pipeline_name=pipeline_name,
@@ -160,46 +152,31 @@ def experiments(pipeline_name: str, node_names: str,
                                     replica=replica,
                                     pipeline_path=pipeline_path,
                                     timeout=timeout,
-                                    num_nodes=len(config['nodes'])
+                                    num_nodes=len(config['nodes']),
+                                    use_threading=use_threading,
+                                    # HACK for now we set the number of requests
+                                    # proportional to the the number threads
+                                    num_interop_threads=cpu_request,
+                                    num_threads=cpu_request
                                 )
-                                for rep in range(repetition):
-                                    print('-'*25\
-                                        + f' starting repetition {rep} ' +\
-                                            '-'*25)
-                                    print('\n')
-                                    # TODO timeout var
-                                    if rep != 0:
-                                        print(f'waiting for {timeout} seconds')
-                                        for _ in tqdm(range(20)):
-                                            time.sleep(timeout/20)
-                                    experiment_id = key_config_mapper(
-                                        experiment_info=experiment_info,
-                                        load=load,
-                                        load_duration=load_duration,
-                                        series=series,
-                                        series_meta=series_meta,
-                                        replica=replica,
-                                        protocol=protocol,
-                                        data_type=data_type)
 
-                                    start_time_experiment,\
-                                        end_time_experiment, responses = load_test(
-                                            pipeline_name=pipeline_name,
-                                            data_type=data_type,
-                                            pipeline_path=pipeline_path,
-                                            load=load,
-                                            namespace='default',
-                                            load_duration=load_duration,
-                                            protocol=protocol)
-                                    # TODO id system for the experiments
-                                    save_report(
-                                        experiment_id=experiment_id,
-                                        responses = responses,
-                                        node_names=node_names,
-                                        start_time_experiment=start_time_experiment,
-                                        end_time_experiment=end_time_experiment,
-                                        series=series,
-                                        replicas=replicas)
+                                start_time_experiment,\
+                                    end_time_experiment, responses = load_test(
+                                        pipeline_name=pipeline_name,
+                                        data_type=data_type,
+                                        pipeline_path=pipeline_path,
+                                        load=load,
+                                        namespace='default',
+                                        load_duration=load_duration)
+                                # TODO id system for the experiments
+                                save_report(
+                                    experiment_id=experiment_id,
+                                    responses = responses,
+                                    node_names=node_names,
+                                    start_time_experiment=start_time_experiment,
+                                    end_time_experiment=end_time_experiment,
+                                    series=series,
+                                    replicas=replicas)
 
                                 # TODO better validation -> some request
                                 print(f'waiting for {timeout} seconds')
@@ -209,10 +186,12 @@ def experiments(pipeline_name: str, node_names: str,
                                     pipeline_name=pipeline_name, timeout=timeout)
 
 def setup_pipeline(pipeline_name: str,
-                   cpu_request: str, memory_request: str, model_variant: str,
-                   max_batch_size: str, max_batch_time: str,
-                   replica: int, pipeline_path: str, timeout: int,
-                   num_nodes: int):
+                   cpu_request: Tuple[str], memory_request: Tuple[str],
+                   model_variant: Tuple[str], max_batch_size: Tuple[str],
+                   max_batch_time: Tuple[str], replica: Tuple[int],
+                   use_threading: Tuple[bool], num_interop_threads: Tuple[int],
+                   num_threads: Tuple[int], pipeline_path: str,
+                   timeout: int, num_nodes: int):
     print('-'*25 + ' setting up the node with following config' + '-'*25)
     print('\n')
     # TODO add num nodes logic here
@@ -228,7 +207,10 @@ def setup_pipeline(pipeline_name: str,
                 f"model_variant_{node_index}": model_variant[node_id],
                 f"max_batch_size_{node_index}": max_batch_size[node_id],
                 f"max_batch_time_{node_index}": max_batch_time[node_id],
-                f"replicas_{node_index}": replica[node_id]
+                f"replicas_{node_index}": replica[node_id],
+                f"use_threading": use_threading,
+                f"num_interop_threads": num_interop_threads,
+                f"num_threads": num_threads
             })
     environment = Environment(
         loader=FileSystemLoader(pipeline_path))
@@ -239,28 +221,176 @@ def setup_pipeline(pipeline_name: str,
 {content}
         """
     os.system(command)
-    print('-'*25 + f' waiting {timeout} to make sure the node is up ' + '-'*25)
+    print('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
     print('\n')
-    print('-'*25 + f' model pod {timeout} successfuly set up ' + '-'*25)
+    print('-'*25 + f' model pod {pipeline_name} successfuly set up ' + '-'*25)
     print('\n')
-    for _ in tqdm(range(20)):
-        time.sleep(timeout/20)
-    return svc_vars
+    # extract model model container names
+    model_container = yaml.safe_load(content)
+    model_names = list(
+        map(
+        lambda l: l['spec']['containers'][0]['name'],
+        model_container['spec']['predictors'][0]['componentSpecs']))
+    # checks if the pods are ready each 5 seconds
+    loop_timeout = 5
+    while True:
+        models_loaded, svc_loaded, pipeline_loaded = False, False, False
+        print(f'waited for {loop_timeout} to check if the pods are up')
+        time.sleep(loop_timeout)
+        model_pods = kube_api.list_namespaced_pod(
+            namespace=NAMESPACE,
+            label_selector=f"seldon-deployment-id={pipeline_name}")
+        all_model_pods = []
+        all_conainers = []
+        for pod in model_pods.items:
+            if pod.status.phase == "Running":
+                all_model_pods.append(True)
+                pod_name = pod.metadata.name
+                for model_name in model_names:
+                    if model_name in pod_name:
+                        container_name = model_name
+                        break
+                logs = kube_api.read_namespaced_pod_log(
+                    name=pod.metadata.name,
+                    namespace=NAMESPACE,
+                    container=container_name)
+                print(logs)
+                if 'Uvicorn running on http://0.0.0.0:600' in logs:
+                    all_conainers.append(True)
+                else:
+                    all_conainers.append(False)
+            else:
+                all_model_pods.append(False)
+        print(f"all_model_pods: {all_model_pods}")
+        if all(all_model_pods):
+            models_loaded = True
+        else: continue
+        print(f"all_containers: {all_conainers}")
+        if all(all_model_pods):
+            pipeline_loaded = True
+        else: continue
+        svc_pods = kube_api.list_namespaced_pod(
+            namespace=NAMESPACE,
+            label_selector=f"seldon-deployment-id={pipeline_name}-{pipeline_name}")
+        for pod in svc_pods.items:
+            if pod.status.phase == "Running":
+                svc_loaded = True
+            for container_status in pod.status.container_statuses:
+                if container_status.ready:
+                    pipeline_loaded = True
+                else: continue
+            else: continue
+        if models_loaded and svc_loaded and pipeline_loaded:
+            print('model container completely loaded!')
+            break
 
-def load_test(pipeline_name: str, data_type: str,
-              pipeline_path: str,
+def key_config_mapper(
+    pipeline_name: str, node_name: str, cpu_request: str,
+    memory_request: str, model_variant: str, max_batch_size: str,
+    max_batch_time: str, load: int,
+    load_duration: int, series: int, series_meta: str, replica: int,
+    no_engine: bool = True, mode: str = 'step', data_type: str = 'audio',
+    benchmark_duration=1):
+    dir_path = os.path.join(
+        PIPELINE_PROFILING_RESULTS_STATIC_PATH,
+        'series', str(series))
+    file_path =  os.path.join(dir_path, KEY_CONFIG_FILENAME)
+    header = [
+        'experiment_id','pipeline_name', 'node_name',
+        'model_variant', 'cpu_request',
+        'memory_request', 'max_batch_size',
+        'max_batch_time', 'load', 'load_duration',
+        'series', 'series_meta', 'replicas', 'no_engine',
+        'mode', 'data_type', 'benchmark_duration']
+    row_to_add = {
+        'experiment_id': None,
+        'pipeline_name': pipeline_name,
+        'model_variant': model_variant,
+        'node_name': node_name,
+        'cpu_request': cpu_request,
+        'memory_request': memory_request,
+        'max_batch_size': max_batch_size,
+        'max_batch_time': max_batch_time,
+        'load': load,
+        'load_duration': load_duration,
+        'series': series,
+        'series_meta': series_meta,
+        'replicas': replica,
+        'no_engine': no_engine,
+        'mode': mode,
+        'data_type': data_type,
+        'benchmark_duration': benchmark_duration
+        }
+    experiments_exist = False
+    if not os.path.exists(file_path):
+        # os.makedirs(dir_path)
+        with open(file_path, 'w', newline="") as file:
+            csvwriter = csv.writer(file)
+            csvwriter.writerow(header)
+        experiment_id = 1
+    else:
+        with open(file_path) as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            line_count = 0
+            for row in csv_reader:
+                # add logic of experiment exists
+                file_row_dict = {}
+                if line_count != 0:
+                    for key, value in zip(header, row):
+                        if key in [
+                            'pipeline_name', 'node_name',
+                            'max_batch_size', 'max_batch_time',
+                            'memory_request', 'model_variant',
+                            'memory_request', 'cpu_request',
+                            'series_meta', 'mode', 'data_type']:
+                            file_row_dict[key] = value
+                        elif key in [
+                            'experiment_id', 'load',
+                            'load_duration', 'series',
+                            'replicas', 'benchmark_duration']:
+                            file_row_dict[key] = int(value)
+                        elif key in ['no_engine']:
+                            file_row_dict[key] = eval(value)
+                    dict_items_equal = []
+                    for header_item in header:
+                        if header_item == 'experiment_id':
+                            continue
+                        if row_to_add[header_item] ==\
+                            file_row_dict[header_item]:
+                            dict_items_equal.append(True)
+                        else:
+                            dict_items_equal.append(False)
+                    if all(dict_items_equal):
+                        experiments_exist = True
+                        break
+                line_count += 1
+        experiment_id = line_count
+
+    if not experiments_exist:
+        row_to_add.update({'experiment_id': experiment_id})
+        with open(file_path, 'a') as row_writer:
+            dictwriter_object = csv.DictWriter(row_writer, fieldnames=header)
+            dictwriter_object.writerow(row_to_add)
+            row_writer.close()
+
+    return experiments_exist, experiment_id
+
+def load_test(node_name: str, data_type: str,
+              node_path: str,
               load: int, load_duration: int,
-              namespace: str='default', protocol = 'rest'):
+              namespace: str='default',
+              no_engine: bool = False,
+              mode: str = 'step',
+              benchmark_duration=1):
     start_time = time.time()
-    print('-'*25 + f' starting load test ' + '-'*25)
-    print('\n')
     # load sample data
+    # TODO change here
     if data_type == 'audio':
         input_sample_path = os.path.join(
-            pipeline_path, 'input-sample.json'
+            node_path, 'input-sample.json'
         )
         input_sample_shape_path = os.path.join(
-            pipeline_path, 'input-sample-shape.json'
+            node_path, 'input-sample-shape.json'
         )
         with open(input_sample_path, 'r') as openfile:
             data = json.load(openfile)
@@ -269,73 +399,57 @@ def load_test(pipeline_name: str, data_type: str,
             data_shape = data_shape['data_shape']
     elif data_type == 'text':
         input_sample_path = os.path.join(
-            pipeline_path, 'input-sample.txt'
+            node_path, 'input-sample.txt'
         )
         input_sample_shape_path = os.path.join(
-            pipeline_path, 'input-sample-shape.json'
+            node_path, 'input-sample-shape.json'
         )
         with open(input_sample_path, 'r') as openfile:
             data = openfile.read()
-        with open(input_sample_shape_path, 'r') as openfile:
-            data_shape = json.load(openfile)
-            data_shape = data_shape['data_shape']
+        # with open(input_sample_shape_path, 'r') as openfile:
+        #     data_shape = json.load(openfile)
+        #     data_shape = data_shape['data_shape']
+            data_shape = [1]
     elif data_type == 'image':
         input_sample_path = os.path.join(
-            pipeline_path, 'input-sample.JPEG'
+            node_path, 'input-sample.JPEG'
         )
-        input_sample_shape_path = os.path.join(
-            pipeline_path, 'input-sample-shape.json'
-        )
-        data = np.array(Image.open(input_sample_path)).tolist()
-        with open(input_sample_shape_path, 'r') as openfile:
-            data_shape = json.load(openfile)
-            data_shape = data_shape['data_shape']
-        data = np.array(data).flatten().tolist()
-    else:
-        raise ValueError(f"Invalid data_type: {data_type}")
-    workload = [load] * load_duration
-    if protocol == 'rest':
-        # load test on the server
-        gateway_endpoint = "localhost:32000"
-        endpoint = f"http://{gateway_endpoint}/seldon/{namespace}/{pipeline_name}/v2/models/infer"
-        load_tester = MLServerAsyncRest(
-            endpoint=endpoint,
-            http_method='post',
-            workload=workload,
-            data=data,
-            data_shape=data_shape,
-            data_type=data_type)
-        responses = asyncio.run(load_tester.start())
-    elif protocol == 'grpc':
-        endpoint = "localhost:32000"
-        deployment_name = pipeline_name
-        model = None
-        namespace = "default"
-        metadata = [("seldon", deployment_name), ("namespace", namespace)]
-        load_tester = MLServerAsyncGrpc(
-            endpoint=endpoint,
-            metadata=metadata,
-            workload=workload,
-            model=model,
-            data=data,
-            data_shape=data_shape,
-            data_type=data_type)
-        responses = asyncio.run(load_tester.start())
-    else:
-        raise ValueError(f'Invalid protocol: {protocol}, use either grpc or rest')
+        data = Image.open(input_sample_path)
+        data_shape = list(np.array(data).shape)
+        data = np.array(data).flatten()
+    data_1 = Data(
+        data=data,
+        data_shape=data_shape,
+        custom_parameters={'custom': 'custom'},
+    )
 
+    # Data list
+    data = []
+    data.append(data_1)
+    workload = [load] * load_duration
+
+    endpoint = "localhost:32000"
+    deployment_name = node_name
+    model = node_name
+    namespace = "default"
+    metadata = [("seldon", deployment_name), ("namespace", namespace)]
+    load_tester = MLServerAsyncGrpc(
+        endpoint=endpoint,
+        metadata=metadata,
+        workload=workload,
+        model=model,
+        data=data,
+        mode=mode, # options - step, equal, exponential
+        data_type=data_type,
+        benchmark_duration=benchmark_duration)
+    responses = asyncio.run(load_tester.start())
     end_time = time.time()
 
     # remove ouput for image inputs/outpus (yolo)
     # as they make logs very heavy
     for second_response in responses:
         for response in second_response:
-            if 'outputs' in response.keys():
-                raw_response = json.loads(
-                    response['outputs'][0]['data'][0])
-                raw_response['output'] = []
-                summerized_response = json.dumps(raw_response)
-                response['outputs'][0]['data'][0] = summerized_response
+            response['outputs'] = []
     return start_time, end_time, responses
 
 def remove_pipeline(pipeline_name, timeout):

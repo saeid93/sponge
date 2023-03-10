@@ -8,7 +8,7 @@ spec:
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: example
+  - name: {{ name }}
     componentSpecs:
     - spec:
         containers:
@@ -92,7 +92,6 @@ spec:
         limits:
           cpu: '8'
           memory: 4Gi
-    name: example
     # labels:
     #   sidecar.istio.io/inject: "true"
     replicas: 1

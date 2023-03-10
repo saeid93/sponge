@@ -3,7 +3,7 @@ series_meta: 'Trying out the pipeline'
 timeout: 1
 pipeline_folder_name: video
 pipeline_name: video
-protocol: grpc
+mode: exponential
 nodes:
   - node_name: yolo
     data_type: image
@@ -33,6 +33,11 @@ nodes:
     replicas:
       - 1
       # - 2
+    use_threading: 'True'
+    num_interop_threads:
+      - '1'
+    num_threads:
+      - '1'
   - node_name: resnet-human
     data_type: text
     model_variants:
@@ -60,11 +65,21 @@ nodes:
     replicas:
       - 1
       # - 2
+    use_threading: 'True'
+    num_interop_threads:
+      - '1'
+    num_threads:
+      - '1'
 workload_type: static
+benchmark_duration: 1
 repetition: 1
 workload_config:
   loads_to_test:
-  - 1
+  # - 1
+  # - 5
   # - 10
   # - 20
+  # - 40
+  - 60
+  - 80
   load_duration: 60

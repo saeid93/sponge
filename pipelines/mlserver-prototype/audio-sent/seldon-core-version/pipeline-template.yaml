@@ -9,7 +9,8 @@ spec:
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - componentSpecs:
+  - name: {{ name }}
+    componentSpecs:
     - spec:
         containers:
         - image: sdghafouri/audio-sent-pipelines-mlserver-bytes:audio
@@ -88,7 +89,6 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
-    name: example
     labels:
       sidecar.istio.io/inject: "true"
     replicas: 1

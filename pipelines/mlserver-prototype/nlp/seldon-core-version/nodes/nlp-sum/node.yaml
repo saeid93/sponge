@@ -8,12 +8,12 @@ spec:
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: default 
+  - name: nlp-sum 
     componentSpecs:
     - spec:
         containers:
         - image: sdghafouri/nlp-pipelines-mlserver-bytes:nlpsum
-          name: nlp-sum 
+          name: nlp-sum
           imagePullPolicy: Always
           resources:
             requests:

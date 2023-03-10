@@ -1,4 +1,4 @@
-series: 76
+series: 200
 series_meta: 'checking the effect of changing all variables under arrival rate 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 pipeline_name: video
 node_name: yolo
@@ -32,14 +32,14 @@ memory_request:
   - 10Gi
 replicas:
   - 1
-workload_type: static
-benchmark_duration: 1
-repetition: 1
 use_threading: 'True'
 num_interop_threads:
   - '1'
 num_threads:
   - '1'
+workload_type: static
+benchmark_duration: 1
+repetition: 1
 workload_config:
   loads_to_test:
   # - 1

@@ -9,7 +9,8 @@ spec:
     seldon.io/engine-separate-pod: "true"
   protocol: v2
   predictors:
-  - componentSpecs:
+  - name: audio-sent
+    componentSpecs:
     - spec:
         containers:
         - image: sdghafouri/audio-sent-pipelines-mlserver-bytes:audio

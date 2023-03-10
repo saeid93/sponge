@@ -1,6 +1,6 @@
 """
 Iterate through all possible combination
-of models and servers
+of models
 """
 import os
 import time
@@ -345,18 +345,18 @@ def setup_node(node_name: str, cpu_request: str,
                     all_conainers.append(False)
             else:
                 all_model_pods.append(False)
-            print(f"all_model_pods: {all_model_pods}")
-            if all(all_model_pods):
-                models_loaded = True
-            else: continue
-            print(f"all_containers: {all_conainers}")
-            if all(all_model_pods):
-                container_loaded = True
-            else: continue
+        print(f"all_model_pods: {all_model_pods}")
+        if all(all_model_pods):
+            models_loaded = True
+        else: continue
+        print(f"all_containers: {all_conainers}")
+        if all(all_model_pods):
+            container_loaded = True
+        else: continue
         if not no_engine:
             svc_pods = kube_api.list_namespaced_pod(
                 namespace=NAMESPACE,
-                label_selector=f"seldon-deployment-id={node_name}-default")
+                label_selector=f"seldon-deployment-id={node_name}-{node_name}")
             for pod in svc_pods.items:
                 if pod.status.phase == "Running":
                     svc_loaded = True
@@ -588,7 +588,7 @@ def backup(series):
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='throughput-test')
+    '--config-name', required=True, type=str, default='5-config-static-yolo')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")

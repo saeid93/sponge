@@ -8,7 +8,7 @@ spec:
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: default 
+  - name: audio 
     componentSpecs:
     - spec:
         containers:

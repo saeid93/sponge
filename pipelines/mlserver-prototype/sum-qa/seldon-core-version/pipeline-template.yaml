@@ -8,7 +8,8 @@ spec:
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - componentSpecs:
+  - name: {{ name }}
+    componentSpecs:
     - spec:
         containers:
         - image: sdghafouri/sum-qa-pipelines-mlserver-bytes:nlpsum
