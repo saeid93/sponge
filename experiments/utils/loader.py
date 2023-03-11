@@ -20,6 +20,9 @@ class Loader:
         legal_types = ['node', 'pipeline', 'node_with_log']
         if type_of not in legal_types:
             raise ValueError(f'Invalid type: {type_of}')
+        self.node_orders = list(map(
+            lambda l: l['node_name'],
+            list(self.load_configs().values())[0]['nodes']))
 
     def load_configs(self) -> Dict[str, Dict[str, Any]]:
         config_files = {}
@@ -138,113 +141,163 @@ class Loader:
 
     def _pipeline_latency_calculator(
         self, results: Dict[Dict, Any]):
-        sample_time_entry = json.loads(
-            results[0]['outputs'][0]['data'][0])['time']
-        model_name_raws = list(
-            sample_time_entry.keys())
-        model_time_types = list(
-            map(lambda l: type(l), list(
-                json.loads(results[0][
-                    'outputs'][0]['data'][0])[
-                        'time'].values())))
-        time_variables = []
-        for model_name_raw, model_time_type in zip(
-            model_name_raws, model_time_types):
-            if model_time_type == list:
-                time_variables.append(
-                    list(sample_time_entry[
-                        model_name_raw][0].keys()))
-            else:
-                time_variables.append(model_name_raw)
-        flattened_time_variables = []
-        for time_variable in time_variables:
-            if type(time_variable) == str:
-                flattened_time_variables.append(time_variable)
-            elif type(time_variable) == list:
-                for sub_time_var in time_variable:
-                    flattened_time_variables.append(sub_time_var)
-        
-        raw_latencies = {
-            time_var: [] for time_var in flattened_time_variables}
-        raw_latencies.update({
-            'sending_time': [],
-            'arrival_time': []
-        })
-        # for time_variable in time_variables:
+        latencies = {
+            'client_to_pipeline_latencies': [],
+            'pipeline_to_client_latencies': [] 
+        }
+        # client_to_pipeline_latencies = []
+        # model_to_pipeline_latencies = []
+        for index, model in enumerate(self.node_orders):
+            latencies[f'task_{index}_model_latencies'] = []
+            if index < len(self.node_orders) - 1:
+                latencies[f'task_{index}_to_task_{index+1}_latencies'] = []
         timeout_count = 0
         for result in results:
             try:
-                # outer times
-                outter_times = result[
-                    'timing'] if 'timing' in result.keys() else result['time']
-                raw_latencies['sending_time'].append(
-                    outter_times["sending_time"])
-                raw_latencies['arrival_time'].append(
-                    outter_times["arrival_time"])
-                times = json.loads(
-                    result['outputs'][0]['data'][0])['time']
-                for time_var, value in times.items():
-                    if type(value) == list:
-                        reversed = {key: [] for key in list(value[0].keys())}
-                        for item in value:
-                            for entry, val in item.items():
-                                reversed[entry].append(val)
-                        reversed_to_add = {
-                            k: max(v) for k, v in reversed.items()}
-                        for latency_var, value in reversed_to_add.items():
-                            raw_latencies[latency_var].append(value)
-                    else:
-                        raw_latencies[time_var].append(value)
+                times = result['times']
+                request_times = times['request']
+                # model_times = times['models'][self.model_name]
+                model_times = times['models']
+                for index, model in enumerate(self.node_orders):
+                    if index == 0:
+                        latencies['client_to_pipeline_latencies'].append(
+                            model_times[model]['arrival'] - request_times['sending']
+                            )
+                    if index == len(self.node_orders) - 1:
+                        latencies['pipeline_to_client_latencies'].append(
+                            request_times['arrival'] - model_times[model]['serving']
+                        )
+                    latencies[f'task_{index}_model_latencies'].append(
+                        model_times[model]['serving'] - model_times[model]['arrival']
+                    )
+                    if index < len(self.node_orders) - 1:
+                        latencies[f'task_{index}_to_task_{index+1}_latencies'].append(
+                            model_times[self.node_orders[index+1]]['arrival'] - model_times[model]['serving']
+                        )
+                    # model_latency =\
+                    #     model_times['serving'] - model_times['arrival']
+                    # latencies['client_to_pipeline_latencies'].append(
+                    #     client_to_model_latency)
+                    # model_latencies.append(model_latency)
+                    # latencies['pipeline_to_client_latencies'].append(
+                    #     model_to_client_latency)
+                # latencies = {
+                #     'client_to_pipeline_latencies': client_to_pipeline_latencies,
+                #     # 'model_latencies': model_latencies,
+                #     'pipeline_to_client_latencies': model_to_pipeline_latencies
+                # }
+                a = 1
             except KeyError:
                 timeout_count += 1
-        latencies = raw_latencies
-        nodes_order = self._find_node_orders()
-        latencies = {
-            'client_to_model': []
-        }
-        for node_index in range(len(nodes_order)):
-            latencies.update({
-                f'{nodes_order[node_index]}': [],
-            })
-            if node_index + 1 != len(nodes_order):
-                latencies.update({
-                    f'{nodes_order[node_index]}_to_{nodes_order[node_index+1]}': [],
-                })
-            else: break
-        latencies.update({
-            f'server_to_client': []
-        })
-        for key, value in latencies.items():
-            if 'client_to_model' == key:
-                length = min(
-                    len(raw_latencies['sending_time']),
-                    len(raw_latencies[
-                        f"arrival_{nodes_order[0]}"]))
-                # TODO might be buggy
-                latencies[key] = np.array(
-                    raw_latencies[
-                        f"arrival_{nodes_order[0]}"][:length]) - np.array(
-                    raw_latencies['sending_time'][:length])
-            elif 'server_to_client' == key:
-                latencies[key] = np.array(
-                    raw_latencies[
-                        'arrival_time'][:length]) - np.array(
-                    raw_latencies[
-                        f"serving_{nodes_order[len(nodes_order)-1]}"][:length])
-                break
-            elif key in nodes_order:
-                latencies[key] = np.array(
-                    raw_latencies[
-                        f"serving_{key}"] - np.array(
-                            raw_latencies[f"arrival_{key}"]))
-            elif '_to_' in key and 'client' not in key:
-                nodes = key.split('_to_')
-                latencies[key] = np.array(
-                    raw_latencies[f'arrival_{nodes[1]}']) - np.array(
-                        raw_latencies[f"serving_{nodes[0]}"]
-                    )
-        latencies = {k: v.tolist() for k, v in latencies.items()}
         return latencies, timeout_count
+        # TODO results
+        # sample_time_entry = json.loads(
+        #     results[0]['outputs'][0]['data'][0])['time']
+        # model_name_raws = list(
+        #     sample_time_entry.keys())
+        # model_time_types = list(
+        #     map(lambda l: type(l), list(
+        #         json.loads(results[0][
+        #             'outputs'][0]['data'][0])[
+        #                 'time'].values())))
+        # time_variables = []
+        # for model_name_raw, model_time_type in zip(
+        #     model_name_raws, model_time_types):
+        #     if model_time_type == list:
+        #         time_variables.append(
+        #             list(sample_time_entry[
+        #                 model_name_raw][0].keys()))
+        #     else:
+        #         time_variables.append(model_name_raw)
+        # flattened_time_variables = []
+        # for time_variable in time_variables:
+        #     if type(time_variable) == str:
+        #         flattened_time_variables.append(time_variable)
+        #     elif type(time_variable) == list:
+        #         for sub_time_var in time_variable:
+        #             flattened_time_variables.append(sub_time_var)
+        
+        # raw_latencies = {
+        #     time_var: [] for time_var in flattened_time_variables}
+        # raw_latencies.update({
+        #     'sending_time': [],
+        #     'arrival_time': []
+        # })
+        # # for time_variable in time_variables:
+        # timeout_count = 0
+        # for result in results:
+        #     try:
+        #         # outer times
+        #         outter_times = result[
+        #             'timing'] if 'timing' in result.keys() else result['time']
+        #         raw_latencies['sending_time'].append(
+        #             outter_times["sending_time"])
+        #         raw_latencies['arrival_time'].append(
+        #             outter_times["arrival_time"])
+        #         times = json.loads(
+        #             result['outputs'][0]['data'][0])['time']
+        #         for time_var, value in times.items():
+        #             if type(value) == list:
+        #                 reversed = {key: [] for key in list(value[0].keys())}
+        #                 for item in value:
+        #                     for entry, val in item.items():
+        #                         reversed[entry].append(val)
+        #                 reversed_to_add = {
+        #                     k: max(v) for k, v in reversed.items()}
+        #                 for latency_var, value in reversed_to_add.items():
+        #                     raw_latencies[latency_var].append(value)
+        #             else:
+        #                 raw_latencies[time_var].append(value)
+        #     except KeyError:
+        #         timeout_count += 1
+        # latencies = raw_latencies
+        # nodes_order = self._find_node_orders()
+        # latencies = {
+        #     'client_to_model': []
+        # }
+        # for node_index in range(len(nodes_order)):
+        #     latencies.update({
+        #         f'{nodes_order[node_index]}': [],
+        #     })
+        #     if node_index + 1 != len(nodes_order):
+        #         latencies.update({
+        #             f'{nodes_order[node_index]}_to_{nodes_order[node_index+1]}': [],
+        #         })
+        #     else: break
+        # latencies.update({
+        #     f'server_to_client': []
+        # })
+        # for key, value in latencies.items():
+        #     if 'client_to_model' == key:
+        #         length = min(
+        #             len(raw_latencies['sending_time']),
+        #             len(raw_latencies[
+        #                 f"arrival_{nodes_order[0]}"]))
+        #         # TODO might be buggy
+        #         latencies[key] = np.array(
+        #             raw_latencies[
+        #                 f"arrival_{nodes_order[0]}"][:length]) - np.array(
+        #             raw_latencies['sending_time'][:length])
+        #     elif 'server_to_client' == key:
+        #         latencies[key] = np.array(
+        #             raw_latencies[
+        #                 'arrival_time'][:length]) - np.array(
+        #             raw_latencies[
+        #                 f"serving_{nodes_order[len(nodes_order)-1]}"][:length])
+        #         break
+        #     elif key in nodes_order:
+        #         latencies[key] = np.array(
+        #             raw_latencies[
+        #                 f"serving_{key}"] - np.array(
+        #                     raw_latencies[f"arrival_{key}"]))
+        #     elif '_to_' in key and 'client' not in key:
+        #         nodes = key.split('_to_')
+        #         latencies[key] = np.array(
+        #             raw_latencies[f'arrival_{nodes[1]}']) - np.array(
+        #                 raw_latencies[f"serving_{nodes[0]}"]
+        #             )
+        # latencies = {k: v.tolist() for k, v in latencies.items()}
+        # return latencies, timeout_count
 
     def latency_calculator(self, results: Dict[Dict, Any], log=None):
         """symmetric input meaning:
@@ -336,15 +389,26 @@ class Loader:
                         metric=metric, values=values))
                 final_dataframe.append(processed_exp)
             elif self.type_of=='pipeline':
-                nodes_order = self._find_node_orders()
-                for model in nodes_order:
+                # nodes_order = self._find_node_orders()
+                # for model in self.node_orders:
+                #     for pod_name, pod_values in result[model].items():
+                #         pod_index = 1
+                #         for metric, values in pod_values.items():
+                #             if metric in skipped_metrics:
+                #                 continue
+                #             processed_exp.update(self.metric_summary(
+                #                 metric=f'{model}_pod{pod_index}_{metric}',
+                #                 values=values))
+                #         pod_index += 1
+                # final_dataframe.append(processed_exp)
+                for index, model in enumerate(self.node_orders):
                     for pod_name, pod_values in result[model].items():
                         pod_index = 1
                         for metric, values in pod_values.items():
                             if metric in skipped_metrics:
                                 continue
                             processed_exp.update(self.metric_summary(
-                                metric=f'{model}_pod{pod_index}_{metric}',
+                                metric=f'task_{index}_{metric}',
                                 values=values))
                         pod_index += 1
                 final_dataframe.append(processed_exp)
@@ -397,10 +461,10 @@ class Loader:
     #                 'to_model_logs': to_model_logs_ts}
     #     return results
 
-    def _find_node_orders(self):
-        config = self.load_configs()
-        sample_config_key = list(config.keys())[0]
-        node_order = list(
-            map(lambda l: l['node_name'],
-            config[sample_config_key]['nodes']))
-        return node_order
+    # def _find_node_orders(self):
+    #     config = self.load_configs()
+    #     sample_config_key = list(config.keys())[0]
+    #     node_order = list(
+    #         map(lambda l: l['node_name'],
+    #         config[sample_config_key]['nodes']))
+    #     return node_order

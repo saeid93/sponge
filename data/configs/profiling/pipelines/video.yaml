@@ -1,5 +1,5 @@
 series: 1
-series_meta: 'Trying out the pipeline'
+metadata: 'Trying out the pipeline'
 timeout: 1
 pipeline_folder_name: video
 pipeline_name: video
@@ -75,11 +75,11 @@ benchmark_duration: 1
 repetition: 1
 workload_config:
   loads_to_test:
-  # - 1
+  - 1
   # - 5
   # - 10
   # - 20
   # - 40
-  - 60
-  - 80
-  load_duration: 60
+  # - 60
+  # - 80
+  load_duration: 30
