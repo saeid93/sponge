@@ -1,6 +1,6 @@
 series: 1
 series_meta: testing static trace
-pipeline_name: nlp
+pipeline_name: sum-qa
 node_name: nlp-sum
 data_type: text
 timeout: 120
@@ -40,7 +40,7 @@ memory_request:
   - 8Gi
 replicas:
   - 1
-workload_type: twitter
+workload_type: static
 benchmark_duration: 2
 repetition: 3
 use_threading: 'True'
@@ -49,5 +49,10 @@ num_interop_threads:
 num_threads:
   - '1'
 workload_config:
-  start_day: 3
-  end_day: 5
+  loads_to_test:
+  - 1
+  load_duration: 120
+# workload_type: twitter
+# workload_config:
+#   - start: '3:5:0'
+#     end: '3:5:1'

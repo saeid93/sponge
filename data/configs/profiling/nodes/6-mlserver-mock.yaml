@@ -37,3 +37,7 @@ workload_config:
   - 100
   - 1000
   load_duration: 60
+# workload_type: twitter
+# workload_config:
+#   - start: '3:5:0'
+#     end: '3:5:1'
