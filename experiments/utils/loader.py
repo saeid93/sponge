@@ -20,9 +20,10 @@ class Loader:
         legal_types = ['node', 'pipeline', 'node_with_log']
         if type_of not in legal_types:
             raise ValueError(f'Invalid type: {type_of}')
-        self.node_orders = list(map(
-            lambda l: l['node_name'],
-            list(self.load_configs().values())[0]['nodes']))
+        if type_of == 'pipeline':
+            self.node_orders = list(map(
+                lambda l: l['node_name'],
+                list(self.load_configs().values())[0]['nodes']))
 
     def load_configs(self) -> Dict[str, Dict[str, Any]]:
         config_files = {}

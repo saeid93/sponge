@@ -25,7 +25,7 @@ from optimizer import (
 from experiments.utils.constants import (
     PIPELINE_EXPERIMENT_CONFIGS_PATH,
     FINAL_RESULTS_PATH,
-    NODE_PROFILING_RESULTS_STATIC_PATH,
+    NODE_PROFILING_RESULTS_PATH,
     ACCURACIES_PATH
 )
 from experiments.utils.loader import Loader
@@ -57,7 +57,7 @@ def set_up_pipeline(pipeline_name, pipeline_config):
 
 def load_profile(series, model_name, load=1):
     series_path = os.path.join(
-        NODE_PROFILING_RESULTS_STATIC_PATH,
+        NODE_PROFILING_RESULTS_PATH,
         'series',
         str(series))
     loader = Loader(

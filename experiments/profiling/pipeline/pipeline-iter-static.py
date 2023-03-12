@@ -33,16 +33,16 @@ from barazmoon import (
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
     project_dir, '..', '..', '..')))
-from experiments.utils.prometheus import SingleNodePromClient
+from experiments.utils.prometheus import PromClient
 # import experiments.utils.constants import
 from experiments.utils.constants import (
     PIPLINES_PATH,
     PIPELINE_PROFILING_CONFIGS_PATH,
-    PIPELINE_PROFILING_RESULTS_STATIC_PATH,
-    OBJ_PIPELINE_PROFILING_RESULTS_STATIC_PATH
+    PIPELINE_PROFILING_RESULTS_PATH,
+    OBJ_PIPELINE_PROFILING_RESULTS_PATH
 )
 from experiments.utils.obj import setup_obj_store
-prom_client = SingleNodePromClient()
+prom_client = PromClient()
 try:
     config.load_kube_config()
     kube_config = client.Configuration().get_default_copy()
@@ -319,7 +319,7 @@ def key_config_mapper(
     mode: str = 'step', data_type: str = 'audio',
     benchmark_duration=1):
     dir_path = os.path.join(
-        PIPELINE_PROFILING_RESULTS_STATIC_PATH,
+        PIPELINE_PROFILING_RESULTS_PATH,
         'series', str(series))
     file_path =  os.path.join(dir_path, KEY_CONFIG_FILENAME)
     # header = [
@@ -558,7 +558,7 @@ def save_report(experiment_id: int,
     }
     # TODO add per pipeline id
     save_path = os.path.join(
-        PIPELINE_PROFILING_RESULTS_STATIC_PATH,
+        PIPELINE_PROFILING_RESULTS_PATH,
         'series', str(series), f"{experiment_id}.json")
     rate = int(end_time_experiment - start_time_experiment)
     duration = (end_time_experiment - start_time_experiment)//60 + 1
@@ -583,7 +583,7 @@ def save_report(experiment_id: int,
             }
 
             svc_path = os.path.join(
-                PIPELINE_PROFILING_RESULTS_STATIC_PATH,
+                PIPELINE_PROFILING_RESULTS_PATH,
                 'series', str(series), f"{experiment_id}.txt")
             svc_pod_name = get_pod_name(
                 node_name=node_name, orchestrator=True)
@@ -662,7 +662,7 @@ def main(config_name: str):
     )
 
     dir_path = os.path.join(
-        PIPELINE_PROFILING_RESULTS_STATIC_PATH,
+        PIPELINE_PROFILING_RESULTS_PATH,
         'series', str(series))
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)

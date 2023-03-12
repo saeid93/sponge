@@ -25,7 +25,7 @@ from optimizer import (
 from experiments.utils.constants import (
     PIPELINE_SIMULATION_CONFIGS_PATH,
     PIPELINE_SIMULATION_RESULTS_PATH,
-    NODE_PROFILING_RESULTS_STATIC_PATH,
+    NODE_PROFILING_RESULTS_PATH,
     ACCURACIES_PATH
 )
 from experiments.utils.loader import Loader
@@ -35,7 +35,7 @@ config_key_mapper = "key_config_mapper.csv"
 
 def load_profile(series, model_name, load=1):
     series_path = os.path.join(
-        NODE_PROFILING_RESULTS_STATIC_PATH,
+        NODE_PROFILING_RESULTS_PATH,
         'series',
         str(series))
     loader = Loader(

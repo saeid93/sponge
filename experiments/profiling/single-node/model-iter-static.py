@@ -6,6 +6,7 @@ import os
 import time
 import json
 import yaml
+from typing import List, Union
 import click
 import sys
 import numpy as np
@@ -26,21 +27,22 @@ pp = PrettyPrinter(indent=4)
 
 from barazmoon import (
     MLServerAsyncGrpc)
+from barazmoon.twitter import twitter_workload_generator
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
     project_dir, '..', '..', '..')))
-from experiments.utils.prometheus import SingleNodePromClient
+from experiments.utils.prometheus import PromClient
 # import experiments.utils.constants import
 from experiments.utils.constants import (
     PIPLINES_PATH,
     NODE_PROFILING_CONFIGS_PATH,
-    NODE_PROFILING_RESULTS_STATIC_PATH,
-    OBJ_NODE_PROFILING_RESULTS_STATIC_PATH
+    NODE_PROFILING_RESULTS_PATH,
+    OBJ_NODE_PROFILING_RESULTS_PATH
 )
 from experiments.utils.obj import setup_obj_store
-prom_client = SingleNodePromClient()
+prom_client = PromClient()
 try:
     config.load_kube_config()
     kube_config = client.Configuration().get_default_copy()
@@ -73,12 +75,27 @@ def experiments(pipeline_name: str, node_name: str,
     cpu_requests = config['cpu_request']
     memory_requests = config["memory_request"]
     replicas = config['replicas']
-    workload_config = config['workload_config']
     repetition = config['repetition']
     series = config['series']
     series_meta = config['series_meta']
-    loads_to_test = workload_config['loads_to_test']
-    load_duration = workload_config['load_duration']
+    workload_type = config['workload_type']
+    workload_config = config['workload_config']
+    if workload_type == 'static':
+        loads_to_test = workload_config['loads_to_test']
+        load_duration = workload_config['load_duration']
+    elif workload_type == 'twitter':
+        # loads_to_test = workload_config['loads_to_test']
+        loads_to_test = []
+        for w_config in workload_config:
+            start = w_config['start']
+            end = w_config['end']
+            load_to_test = start + '-' + end
+            loads_to_test.append(load_to_test)
+        workload = twitter_workload_generator(loads_to_test[0])
+        load_duration = len(workload)
+    else:
+        raise ValueError(f'Invalid workload type: {workload_type}')
+
     mode = config['mode']
     benchmark_duration = config['benchmark_duration']
     use_threading = config['use_threading']
@@ -107,7 +124,6 @@ def experiments(pipeline_name: str, node_name: str,
                                     + f' starting repetition experiment ' +\
                                         '-'*25)
                                 print('\n')
-
                                 experiments_exist, experiment_id = key_config_mapper(
                                     pipeline_name=pipeline_name,
                                     node_name=node_name,
@@ -157,19 +173,23 @@ def experiments(pipeline_name: str, node_name: str,
                                         node_name=node_name,
                                         data_type=data_type,
                                         node_path=node_path,
-                                        load_duration=warm_up_duration)
+                                        warm_up_duration=warm_up_duration)
                                     print('-'*25 + f'starting load test ' + '-'*25)
                                     print('\n')
+                                    if workload_type == 'static':
+                                        workload = [load] * load_duration
+                                    else:
+                                        pass
                                     try:
                                         start_time_experiment,\
                                             end_time_experiment, responses = load_test(
                                                 node_name=node_name,
                                                 data_type=data_type,
                                                 node_path=node_path,
-                                                load=load,
+                                                workload=workload,
                                                 mode=mode,
                                                 namespace='default',
-                                                load_duration=load_duration,
+                                                # load_duration=load_duration,
                                                 no_engine=no_engine,
                                                 benchmark_duration=benchmark_duration)
                                         print('-'*25 + 'saving the report' + '-'*25)
@@ -197,12 +217,12 @@ def experiments(pipeline_name: str, node_name: str,
 def key_config_mapper(
     pipeline_name: str, node_name: str, cpu_request: str,
     memory_request: str, model_variant: str, max_batch_size: str,
-    max_batch_time: str, load: int,
+    max_batch_time: str, load: Union[int, str],
     load_duration: int, series: int, series_meta: str, replica: int,
     no_engine: bool = True, mode: str = 'step', data_type: str = 'audio',
     benchmark_duration=1):
     dir_path = os.path.join(
-        NODE_PROFILING_RESULTS_STATIC_PATH,
+        NODE_PROFILING_RESULTS_PATH,
         'series', str(series))
     file_path =  os.path.join(dir_path, KEY_CONFIG_FILENAME)
     header = [
@@ -371,7 +391,7 @@ def setup_node(node_name: str, cpu_request: str,
 
 def load_test(node_name: str, data_type: str,
               node_path: str,
-              load: int, load_duration: int,
+              workload: List[int], # load_duration: int,
               namespace: str='default',
               no_engine: bool = False,
               mode: str = 'step',
@@ -420,7 +440,6 @@ def load_test(node_name: str, data_type: str,
     # Data list
     data = []
     data.append(data_1)
-    workload = [load] * load_duration
 
     endpoint = "localhost:32000"
     deployment_name = node_name
@@ -448,8 +467,7 @@ def load_test(node_name: str, data_type: str,
 
 def check_load_test(
         node_name: str, data_type: str,
-        node_path: str,
-        load=1, load_duration = 1):
+        node_path: str):
     loop_timeout = 5
     ready = False
     while True:
@@ -460,8 +478,7 @@ def check_load_test(
                 node_name=node_name,
                 data_type=data_type,
                 node_path=node_path,
-                load=load,
-                load_duration=load_duration)
+                workload=[1])
             ready = True
         except UnboundLocalError:
             pass
@@ -470,14 +487,13 @@ def check_load_test(
 
 def warm_up(
         node_name: str, data_type: str,
-        node_path: str,
-        load_duration: int, load=1):
+        node_path: str,warm_up_duration: int):
+    workload = [1] * warm_up_duration 
     load_test(
         node_name=node_name,
         data_type=data_type,
         node_path=node_path,
-        load=load,
-        load_duration=load_duration)
+        workload=workload)
 
 def remove_node(node_name):
     os.system(f"kubectl delete seldondeployment {node_name} -n default")
@@ -514,14 +530,14 @@ def save_report(experiment_id: int,
     duration = (end_time_experiment - start_time_experiment)//60 + 1
     rate = int(end_time_experiment - start_time_experiment)
     save_path = os.path.join(
-        NODE_PROFILING_RESULTS_STATIC_PATH,
+        NODE_PROFILING_RESULTS_PATH,
         'series', str(series), f"{experiment_id}.json")
     # TODO add list of pods in case of replicas
     pod_name = get_pod_name(node_name=node_name)[0]
 
     if not no_engine:
         svc_path = os.path.join(
-            NODE_PROFILING_RESULTS_STATIC_PATH,
+            NODE_PROFILING_RESULTS_PATH,
             'series', str(series), f"{experiment_id}.txt")
         svc_pod_name = get_pod_name(
             node_name=node_name, orchestrator=True)
@@ -578,17 +594,17 @@ def save_report(experiment_id: int,
 
 def backup(series):
     data_path = os.path.join(
-        NODE_PROFILING_RESULTS_STATIC_PATH,
+        NODE_PROFILING_RESULTS_PATH,
         'series', str(series))
     backup_path = os.path.join(
-        OBJ_NODE_PROFILING_RESULTS_STATIC_PATH,
+        OBJ_NODE_PROFILING_RESULTS_PATH,
         'series', str(series))
     setup_obj_store()
     shutil.copytree(data_path, backup_path)
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='5-config-static-yolo')
+    '--config-name', required=True, type=str, default='5-config-static-resnet-human')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
@@ -607,7 +623,7 @@ def main(config_name: str):
     )
 
     dir_path = os.path.join(
-        NODE_PROFILING_RESULTS_STATIC_PATH,
+        NODE_PROFILING_RESULTS_PATH,
         'series', str(series))
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)

@@ -1,7 +1,7 @@
 import requests
 from .constants import PROMETHEUS
 
-class SingleNodePromClient:
+class PromClient:
     def __init__(self) -> None:
         pass
 
