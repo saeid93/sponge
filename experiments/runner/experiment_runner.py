@@ -28,7 +28,7 @@ from experiments.utils.constants import (
     NODE_PROFILING_RESULTS_PATH,
     ACCURACIES_PATH
 )
-from experiments.utils.loader import Loader
+from experiments.utils.parser import Parser
 
 
 # TODO
@@ -60,7 +60,7 @@ def load_profile(series, model_name, load=1):
         NODE_PROFILING_RESULTS_PATH,
         'series',
         str(series))
-    loader = Loader(
+    loader = Parser(
         series_path=series_path, config_key_mapper=config_key_mapper,
         model_name=model_name)
     key_config_df = loader.key_config_mapper()

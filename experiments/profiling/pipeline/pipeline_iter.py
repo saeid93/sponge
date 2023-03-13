@@ -6,17 +6,13 @@ import os
 import time
 import json
 import yaml
-from typing import List, Union, Tuple
+from typing import Union, Tuple
 import click
 import sys
-import numpy as np
 import itertools
 import csv
 import re
-import asyncio
 from jinja2 import Environment, FileSystemLoader
-from barazmoon import Data
-from PIL import Image
 from kubernetes import config
 from kubernetes import client
 # from kubernetes.client import Configuration
@@ -26,8 +22,6 @@ import shutil
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
-from barazmoon import (
-    MLServerAsyncGrpc)
 from barazmoon.twitter import twitter_workload_generator
 
 # get an absolute path to the directory that contains parent files
@@ -35,6 +29,12 @@ project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
     project_dir, '..', '..', '..')))
 from experiments.utils.prometheus import PromClient
+from experiments.utils.pipeline_operations import (
+    load_data,
+    warm_up,
+    check_load_test,
+    load_test,
+    remove_pipeline)
 # import experiments.utils.constants import
 from experiments.utils.constants import (
     PIPLINES_PATH,
@@ -72,11 +72,8 @@ def experiments(pipeline_name: str, node_names: str,
                 config: dict, pipeline_path: str,
                 data_type: str):
     workload_config = config['workload_config']
-    repetition = config['repetition']
     series = config['series']
     metadata = config['metadata']
-    # loads_to_test = workload_config['loads_to_test']
-    # load_duration = workload_config['load_duration']
     timeout = config['timeout']
     mode = config['mode']
     benchmark_duration = config['benchmark_duration']
@@ -86,7 +83,6 @@ def experiments(pipeline_name: str, node_names: str,
         loads_to_test = workload_config['loads_to_test']
         load_duration = workload_config['load_duration']
     elif workload_type == 'twitter':
-        # loads_to_test = workload_config['loads_to_test']
         loads_to_test = []
         for w_config in workload_config:
             start = w_config['start']
@@ -197,12 +193,13 @@ def experiments(pipeline_name: str, node_names: str,
                                     print('\n')
                                     if workload_type == 'static':
                                         workload = [load] * load_duration
+                                    data = load_data(data_type, pipeline_path)
                                     try:
                                         start_time_experiment,\
                                             end_time_experiment, responses = load_test(
                                                 pipeline_name=pipeline_name,
                                                 data_type=data_type,
-                                                pipeline_path=pipeline_path,
+                                                data=data,
                                                 workload=workload,
                                                 mode=mode,
                                                 namespace='default',
@@ -256,13 +253,6 @@ def key_config_mapper(
     row_to_add = {
         'experiment_id': None,
         'pipeline_name': pipeline_name,
-        # 'model_variant': model_variant,
-        # 'node_name': node_name,
-        # 'cpu_request': cpu_request,
-        # 'memory_request': memory_request,
-        # 'max_batch_size': max_batch_size,
-        # 'max_batch_time': max_batch_time,
-        # 'replicas': replica,
         'load': load,
         'load_duration': load_duration,
         'series': series,
@@ -440,117 +430,6 @@ def setup_pipeline(pipeline_name: str,
         if models_loaded and svc_loaded and pipeline_loaded:
             print('model container completely loaded!')
             break
-
-def load_test(pipeline_name: str, data_type: str,
-              pipeline_path: str,
-              workload: List[int],
-              namespace: str='default',
-              no_engine: bool = False,
-              mode: str = 'step',
-              benchmark_duration=1):
-    start_time = time.time()
-    # load sample data
-    # TODO change here
-    if data_type == 'audio':
-        input_sample_path = os.path.join(
-            pipeline_path, 'input-sample.json'
-        )
-        input_sample_shape_path = os.path.join(
-            pipeline_path, 'input-sample-shape.json'
-        )
-        with open(input_sample_path, 'r') as openfile:
-            data = json.load(openfile)
-        with open(input_sample_shape_path, 'r') as openfile:
-            data_shape = json.load(openfile)
-            data_shape = data_shape['data_shape']
-    elif data_type == 'text':
-        input_sample_path = os.path.join(
-            pipeline_path, 'input-sample.txt'
-        )
-        input_sample_shape_path = os.path.join(
-            pipeline_path, 'input-sample-shape.json'
-        )
-        with open(input_sample_path, 'r') as openfile:
-            data = openfile.read()
-        # with open(input_sample_shape_path, 'r') as openfile:
-        #     data_shape = json.load(openfile)
-        #     data_shape = data_shape['data_shape']
-            data_shape = [1]
-    elif data_type == 'image':
-        input_sample_path = os.path.join(
-            pipeline_path, 'input-sample.JPEG'
-        )
-        data = Image.open(input_sample_path)
-        data_shape = list(np.array(data).shape)
-        data = np.array(data).flatten()
-    data_1 = Data(
-        data=data,
-        data_shape=data_shape,
-        custom_parameters={'custom': 'custom'},
-    )
-
-    # Data list
-    data = []
-    data.append(data_1)
-
-    endpoint = "localhost:32000"
-    deployment_name = pipeline_name
-    model = None
-    namespace = "default"
-    metadata = [("seldon", deployment_name), ("namespace", namespace)]
-    load_tester = MLServerAsyncGrpc(
-        endpoint=endpoint,
-        metadata=metadata,
-        workload=workload,
-        model=model,
-        data=data,
-        mode=mode, # options - step, equal, exponential
-        data_type=data_type,
-        benchmark_duration=benchmark_duration)
-    responses = asyncio.run(load_tester.start())
-    end_time = time.time()
-
-    # remove ouput for image inputs/outpus (yolo)
-    # as they make logs very heavy
-    for second_response in responses:
-        for response in second_response:
-            response['outputs'] = []
-    return start_time, end_time, responses
-
-def check_load_test(
-        pipeline_name: str, data_type: str,
-        pipeline_path: str):
-    loop_timeout = 5
-    ready = False
-    while True:
-        print(f'waited for {loop_timeout} seconds to check for successful request')
-        time.sleep(loop_timeout)
-        try:
-            load_test(
-                pipeline_name=pipeline_name,
-                data_type=data_type,
-                pipeline_path=pipeline_path,
-                workload=[1])
-            ready = True
-        except UnboundLocalError:
-            pass
-        if ready:
-            return ready
-
-def warm_up(
-        pipeline_name: str, data_type: str,
-        pipeline_path: str, warm_up_duration: int):
-    workload = [1] * warm_up_duration
-    load_test(
-        pipeline_name=pipeline_name,
-        data_type=data_type,
-        pipeline_path=pipeline_path,
-        workload=workload)
-
-def remove_pipeline(pipeline_name):
-    os.system(f"kubectl delete seldondeployment {pipeline_name} -n default")
-    print('-'*50 + f' pipeline {pipeline_name} successfuly removed ' + '-'*50)
-    print('\n')
 
 def save_report(experiment_id: int,
                 responses: str,

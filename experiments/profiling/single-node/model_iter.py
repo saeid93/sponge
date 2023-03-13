@@ -6,16 +6,13 @@ import os
 import time
 import json
 import yaml
-from typing import List, Union
+from typing import Union
 import click
 import sys
-import numpy as np
 import csv
 import re
-import asyncio
 from jinja2 import Environment, FileSystemLoader
 from barazmoon import Data
-from PIL import Image
 from kubernetes import config
 from kubernetes import client
 # from kubernetes.client import Configuration
@@ -34,6 +31,12 @@ project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
     project_dir, '..', '..', '..')))
 from experiments.utils.prometheus import PromClient
+from experiments.utils.pipeline_operations import (
+    load_data,
+    warm_up,
+    check_load_test,
+    load_test,
+    remove_pipeline)
 # import experiments.utils.constants import
 from experiments.utils.constants import (
     PIPLINES_PATH,
@@ -75,7 +78,6 @@ def experiments(pipeline_name: str, node_name: str,
     cpu_requests = config['cpu_request']
     memory_requests = config["memory_request"]
     replicas = config['replicas']
-    repetition = config['repetition']
     series = config['series']
     series_meta = config['series_meta']
     workload_type = config['workload_type']
@@ -84,7 +86,6 @@ def experiments(pipeline_name: str, node_name: str,
         loads_to_test = workload_config['loads_to_test']
         load_duration = workload_config['load_duration']
     elif workload_type == 'twitter':
-        # loads_to_test = workload_config['loads_to_test']
         loads_to_test = []
         for w_config in workload_config:
             start = w_config['start']
@@ -163,27 +164,30 @@ def experiments(pipeline_name: str, node_name: str,
                                     print('\n')
                                     # check if the model is up or not
                                     check_load_test(
-                                        node_name=node_name,
+                                        pipeline_name=node_name,
                                         data_type=data_type,
-                                        node_path=node_path)
+                                        pipeline_path=node_path)
                                     print('model warm up ...')
                                     print('\n')
                                     warm_up_duration = 10
                                     warm_up(
-                                        node_name=node_name,
+                                        pipeline_name=node_name,
                                         data_type=data_type,
-                                        node_path=node_path,
+                                        pipeline_path=node_path,
                                         warm_up_duration=warm_up_duration)
                                     print('-'*25 + f'starting load test ' + '-'*25)
                                     print('\n')
                                     if workload_type == 'static':
                                         workload = [load] * load_duration
+                                    data = load_data(
+                                        data_type=data_type,
+                                        pipeline_path=node_path)
                                     try:
                                         start_time_experiment,\
                                             end_time_experiment, responses = load_test(
-                                                node_name=node_name,
+                                                pipeline_name=node_name,
                                                 data_type=data_type,
-                                                node_path=node_path,
+                                                data=data,
                                                 workload=workload,
                                                 mode=mode,
                                                 namespace='default',
@@ -205,7 +209,7 @@ def experiments(pipeline_name: str, node_name: str,
                                     print(f'waiting for timeout: {timeout} seconds')
                                     for _ in tqdm(range(20)):
                                         time.sleep((timeout)/20)
-                                    remove_node(node_name=node_name)
+                                    remove_pipeline(pipeline_name=node_name)
                                 else:
                                     print('experiment with the same set of varialbes already exists')
                                     print('skipping to the next experiment ...')
@@ -386,117 +390,6 @@ def setup_node(node_name: str, cpu_request: str,
             print('model container completely loaded!')
             break
 
-def load_test(node_name: str, data_type: str,
-              node_path: str,
-              workload: List[int],
-              namespace: str='default',
-              no_engine: bool = False,
-              mode: str = 'step',
-              benchmark_duration=1):
-    start_time = time.time()
-    # load sample data
-    # TODO change here
-    if data_type == 'audio':
-        input_sample_path = os.path.join(
-            node_path, 'input-sample.json'
-        )
-        input_sample_shape_path = os.path.join(
-            node_path, 'input-sample-shape.json'
-        )
-        with open(input_sample_path, 'r') as openfile:
-            data = json.load(openfile)
-        with open(input_sample_shape_path, 'r') as openfile:
-            data_shape = json.load(openfile)
-            data_shape = data_shape['data_shape']
-    elif data_type == 'text':
-        input_sample_path = os.path.join(
-            node_path, 'input-sample.txt'
-        )
-        input_sample_shape_path = os.path.join(
-            node_path, 'input-sample-shape.json'
-        )
-        with open(input_sample_path, 'r') as openfile:
-            data = openfile.read()
-        # with open(input_sample_shape_path, 'r') as openfile:
-        #     data_shape = json.load(openfile)
-        #     data_shape = data_shape['data_shape']
-            data_shape = [1]
-    elif data_type == 'image':
-        input_sample_path = os.path.join(
-            node_path, 'input-sample.JPEG'
-        )
-        data = Image.open(input_sample_path)
-        data_shape = list(np.array(data).shape)
-        data = np.array(data).flatten()
-    data_1 = Data(
-        data=data,
-        data_shape=data_shape,
-        custom_parameters={'custom': 'custom'},
-    )
-
-    # Data list
-    data = []
-    data.append(data_1)
-
-    endpoint = "localhost:32000"
-    deployment_name = node_name
-    model = node_name
-    namespace = "default"
-    metadata = [("seldon", deployment_name), ("namespace", namespace)]
-    load_tester = MLServerAsyncGrpc(
-        endpoint=endpoint,
-        metadata=metadata,
-        workload=workload,
-        model=model,
-        data=data,
-        mode=mode, # options - step, equal, exponential
-        data_type=data_type,
-        benchmark_duration=benchmark_duration)
-    responses = asyncio.run(load_tester.start())
-    end_time = time.time()
-
-    # remove ouput for image inputs/outpus (yolo)
-    # as they make logs very heavy
-    for second_response in responses:
-        for response in second_response:
-            response['outputs'] = []
-    return start_time, end_time, responses
-
-def check_load_test(
-        node_name: str, data_type: str,
-        node_path: str):
-    loop_timeout = 5
-    ready = False
-    while True:
-        print(f'waited for {loop_timeout} seconds to check for successful request')
-        time.sleep(loop_timeout)
-        try:
-            load_test(
-                node_name=node_name,
-                data_type=data_type,
-                node_path=node_path,
-                workload=[1])
-            ready = True
-        except UnboundLocalError:
-            pass
-        if ready:
-            return ready
-
-def warm_up(
-        node_name: str, data_type: str,
-        node_path: str,  warm_up_duration: int):
-    workload = [1] * warm_up_duration 
-    load_test(
-        node_name=node_name,
-        data_type=data_type,
-        node_path=node_path,
-        workload=workload)
-
-def remove_node(node_name):
-    os.system(f"kubectl delete seldondeployment {node_name} -n default")
-    print('-'*50 + f' model pod {node_name} successfuly removed ' + '-'*50)
-    print('\n')
-
 def save_report(experiment_id: int,
                 responses: str,
                 node_name: str,
@@ -601,7 +494,7 @@ def backup(series):
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='5-config-static-resnet-human')
+    '--config-name', required=True, type=str, default='5-config-resnet-human')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")

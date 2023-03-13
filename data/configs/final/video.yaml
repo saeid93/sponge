@@ -67,21 +67,14 @@ nodes:
     num_threads: '1'
 benchmark_duration: 1
 repetition: 1
-# workload_type: static
-# workload_config:
-#   loads_to_test:
-#   - 1
-  # - 5
-  # - 10
-  # - 20
-  # - 40
-  # - 60
-  # - 80
-  # load_duration: 30
-workload_type: twitter
+workload_type: static
 workload_config:
-  - start: '3:5:0'
-    end: '3:5:1'
+  loads_to_test: 1
+  load_duration: 30
+# workload_type: twitter
+# workload_config:
+#   - start: '3:5:0'
+#     end: '3:5:1'
 
 
 
