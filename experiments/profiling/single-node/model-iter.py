@@ -494,7 +494,7 @@ def warm_up(
 
 def remove_node(node_name):
     os.system(f"kubectl delete seldondeployment {node_name} -n default")
-    print('-'*50 + f' model pod {node_name} successfuly set up ' + '-'*50)
+    print('-'*50 + f' model pod {node_name} successfuly removed ' + '-'*50)
     print('\n')
 
 def save_report(experiment_id: int,

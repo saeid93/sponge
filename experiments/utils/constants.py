@@ -32,8 +32,8 @@ PIPELINE_SIMULATION_CONFIGS_PATH = os.path.join(
 )
 
 # pipeline simulation config path
-PIPELINE_EXPERIMENT_CONFIGS_PATH = os.path.join(
-    CONFIGS_PATH, "final-experiments"
+FINAL_CONFIGS_PATH = os.path.join(
+    CONFIGS_PATH, "final"
 )
 
 # triton folders
@@ -103,8 +103,8 @@ def _create_dirs():
         os.makedirs(PIPELINE_PROFILING_CONFIGS_PATH)
     if not os.path.exists(PIPELINE_SIMULATION_CONFIGS_PATH):
         os.makedirs(PIPELINE_SIMULATION_CONFIGS_PATH)
-    if not os.path.exists(PIPELINE_EXPERIMENT_CONFIGS_PATH):
-        os.makedirs(PIPELINE_EXPERIMENT_CONFIGS_PATH)
+    if not os.path.exists(FINAL_CONFIGS_PATH):
+        os.makedirs(FINAL_CONFIGS_PATH)
     if not os.path.exists(RESULTS_PATH):
         os.makedirs(RESULTS_PATH)
     if not os.path.exists(PROFILING_RESULTS_PATH):
