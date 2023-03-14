@@ -6,3 +6,4 @@ from .models import (
     Pipeline
 )
 from .optimizer import Optimizer
+from .adapter import Adapter

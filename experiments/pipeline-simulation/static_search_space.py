@@ -4,7 +4,6 @@ import time
 import os
 import sys
 import shutil
-from typing import List, Dict
 import yaml
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
@@ -14,8 +13,6 @@ sys.path.append(os.path.normpath(os.path.join(
     project_dir, '..', '..')))
 
 from optimizer import Optimizer
-
-
 from experiments.utils.simulation_operations import (
     generate_simulated_pipeline
 )
@@ -75,30 +72,6 @@ def main(config_name: str):
     beta = config['beta']
     gamma = config['gamma']
 
-    # config generation config
-    dir_path = os.path.join(
-        PIPELINE_SIMULATION_RESULTS_PATH,
-        'series', str(series))
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
-        dest_config_path = os.path.join(
-            dir_path,
-            '0.yaml'
-        )
-        shutil.copy(config_path, dest_config_path)
-    else:
-        num_configs = 0
-        # Iterate directory
-        for file in os.listdir(dir_path):
-            # check only text files
-            if file.endswith('.yaml'):
-                num_configs += 1
-        dest_config_path = os.path.join(
-            dir_path,
-            f'{num_configs}.yaml'
-        )
-        shutil.copy(config_path, dest_config_path)
-
     pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,
         profiling_series=profiling_series,
@@ -125,6 +98,31 @@ def main(config_name: str):
         random_sample=random_sample
     )
 
+    # copy generation config
+    dir_path = os.path.join(
+        PIPELINE_SIMULATION_RESULTS_PATH,
+        'series', str(series))
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+        dest_config_path = os.path.join(
+            dir_path,
+            '0.yaml'
+        )
+        shutil.copy(config_path, dest_config_path)
+    else:
+        num_configs = 0
+        # Iterate directory
+        for file in os.listdir(dir_path):
+            # check only text files
+            if file.endswith('.yaml'):
+                num_configs += 1
+        dest_config_path = os.path.join(
+            dir_path,
+            f'{num_configs}.yaml'
+        )
+        shutil.copy(config_path, dest_config_path)
+
+    # doing the requested type of experiments
     all_states_time = None
     feasible_time = None
     optimal_time = None
@@ -193,7 +191,7 @@ def main(config_name: str):
             optimal_time = time.time()
             # optimal states
             optimal = optimizer.optimize(
-                optimization_method='brute-force',
+                optimization_method=optimization_method,
                 scaling_cap=scaling_cap,
                 alpha=alpha, beta=beta, gamma=gamma,
                 arrival_rate=arrival_rate,

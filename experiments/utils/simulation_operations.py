@@ -1,11 +1,7 @@
 import pandas as pd
-import click
-import time
 import os
 import sys
-import shutil
 from typing import List, Dict
-import yaml
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
@@ -26,10 +22,19 @@ from experiments.utils.constants import (
 )
 from experiments.utils.parser import Parser
 
-
 config_key_mapper = "key_config_mapper.csv"
 
-def load_profile(series, model_name, load=1):
+def load_profile(series: int, model_name: str, load: int=1):
+    """load a node profile
+
+    Args:
+        series (int): series of profiled data
+        model_name (str): name of the model
+        load (int): The load for profiled data. Defaults to 1.
+
+    Returns:
+        _type_: _description_
+    """
     series_path = os.path.join(
         NODE_PROFILING_RESULTS_PATH,
         'series',
@@ -57,10 +62,22 @@ def load_profile(series, model_name, load=1):
         results_columns=results_columns)
     return profiling_info
 
-def read_task_profiles(
+def make_task_profiles(
     profiling_info: pd.DataFrame,
     task_accuracies: Dict[str, float],
     only_measured_profiles: bool) -> List[Model]:
+    """make a task all model variants profiles
+
+    Args:
+        profiling_info (pd.DataFrame): dataframe of profiles
+        task_accuracies (Dict[str, float]): accuracies of each
+            variant of the task
+        only_measured_profiles (bool): whther to use regression
+            or not
+
+    Returns:
+        List[Model]: _description_
+    """
     available_model_profiles = []
     for model_variant in profiling_info['model_variant'].unique():
         model_variant_profiling_info =\
@@ -121,7 +138,7 @@ def generate_simulated_pipeline(
             series=profiling_series[i], model_name=model_name[i],
             load=profiling_load)
         available_model_profiles =\
-            read_task_profiles(
+            make_task_profiles(
                 profiling_info=profiling_info,
                 task_accuracies=pipeline_accuracies[task_names[i]],
                 only_measured_profiles=only_measured_profiles)

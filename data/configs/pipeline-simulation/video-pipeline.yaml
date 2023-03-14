@@ -28,8 +28,8 @@ beta: 1
 gamma: 1
 scaling_cap: 10 # maximum possible scaling per nodes
 arrival_rate: 2
-num_state_limit: 1 # number of states
-threshold: 4 # threshold for finding the base allocation
+num_state_limit: 10000000 # number of states
+threshold: 4 # RPS threshold for finding the base allocation
 optimization_method: both # options: [brute-force | gurobi | both]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
@@ -41,5 +41,5 @@ profiling_load: 20
 accuracy_method: sum # [average | sum | multiply]
 generate:
   - all
-  # - feasible
-  # - optimal
+  - feasible
+  - optimal
