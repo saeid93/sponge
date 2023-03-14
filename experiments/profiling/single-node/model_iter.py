@@ -36,7 +36,9 @@ from experiments.utils.pipeline_operations import (
     warm_up,
     check_load_test,
     load_test,
-    remove_pipeline)
+    remove_pipeline,
+    setup_node,
+    get_pod_name)
 # import experiments.utils.constants import
 from experiments.utils.constants import (
     PIPLINES_PATH,
@@ -56,19 +58,7 @@ client.Configuration.set_default(kube_config)
 kube_api = client.api.core_v1_api.CoreV1Api()
 
 KEY_CONFIG_FILENAME = 'key_config_mapper.csv'
-NAMESPACE='default'
 
-def get_pod_name(node_name: str, orchestrator=False):
-    pod_regex = f"{node_name}.*"
-    pods_list = kube_api.list_namespaced_pod(NAMESPACE)
-    pod_names = []
-    for pod_name in pods_list.items:
-        pod_name=pod_name.metadata.name
-        if orchestrator and re.match(pod_regex, pod_name) and 'svc' in pod_name:
-            return pod_name
-        if re.match(pod_regex, pod_name) and 'svc' not in pod_name:
-            pod_names.append(pod_name)
-    return pod_names
 
 def experiments(pipeline_name: str, node_name: str,
                 config: dict, node_path: str, data_type: str):
@@ -305,90 +295,6 @@ def key_config_mapper(
             row_writer.close()
 
     return experiments_exist, experiment_id
-
-def setup_node(node_name: str, cpu_request: str,
-               memory_request: str, model_variant: str, max_batch_size: str,
-               max_batch_time: str, replica: int, node_path: str, timeout: int,
-               use_threading: bool, num_interop_threads: int, num_threads: int,
-               no_engine=False):
-    print('-'*25 + ' setting up the node with following config' + '-'*25)
-    print('\n')
-    svc_vars = {
-        "name": node_name,
-        "cpu_request": cpu_request,
-        "memory_request": memory_request,
-        "cpu_limit": cpu_request,
-        "memory_limit": memory_request,
-        "model_variant": model_variant,
-        "max_batch_size": max_batch_size,
-        "max_batch_time": max_batch_time,
-        "replicas": replica,
-        "no_engine": str(no_engine),
-        "use_threading": use_threading,
-        "num_interop_threads": num_interop_threads,
-        "num_threads": num_threads
-        }
-    environment = Environment(
-        loader=FileSystemLoader(node_path))
-    svc_template = environment.get_template('node-template.yaml')
-    content = svc_template.render(svc_vars)
-    pp.pprint(content)
-    command = f"""cat <<EOF | kubectl apply -f -
-{content}
-        """
-    os.system(command)
-    print('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
-    print('\n')
-    print('-'*25 + f' model pod {node_name} successfuly set up ' + '-'*25)
-    print('\n')
-    # checks if the pods are ready each 5 seconds
-    loop_timeout = 5
-    while True:
-        models_loaded, svc_loaded, container_loaded = False, False, False
-        print(f'waited for {loop_timeout} to check if the pods are up')
-        time.sleep(loop_timeout)
-        model_pods = kube_api.list_namespaced_pod(
-            namespace=NAMESPACE,
-            label_selector=f"seldon-deployment-id={node_name}")
-        all_model_pods = []
-        all_conainers = []
-        for pod in model_pods.items:
-            if pod.status.phase == "Running":
-                all_model_pods.append(True)
-                logs = kube_api.read_namespaced_pod_log(
-                    name=pod.metadata.name,
-                    namespace=NAMESPACE,
-                    container=node_name)
-                print(logs)
-                if 'Uvicorn running on http://0.0.0.0:6000' in logs:
-                    all_conainers.append(True)
-                else:
-                    all_conainers.append(False)
-            else:
-                all_model_pods.append(False)
-        print(f"all_model_pods: {all_model_pods}")
-        if all(all_model_pods):
-            models_loaded = True
-        else: continue
-        print(f"all_containers: {all_conainers}")
-        if all(all_model_pods):
-            container_loaded = True
-        else: continue
-        if not no_engine:
-            svc_pods = kube_api.list_namespaced_pod(
-                namespace=NAMESPACE,
-                label_selector=f"seldon-deployment-id={node_name}-{node_name}")
-            for pod in svc_pods.items:
-                if pod.status.phase == "Running":
-                    svc_loaded = True
-                for container_status in pod.status.container_statuses:
-                    if container_status.ready:
-                        container_loaded = True
-                    else: continue
-                else: continue
-        if models_loaded and svc_loaded and container_loaded:
-            print('model container completely loaded!')
-            break
 
 def save_report(experiment_id: int,
                 responses: str,
