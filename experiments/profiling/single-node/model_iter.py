@@ -10,20 +10,12 @@ from typing import Union
 import click
 import sys
 import csv
-import re
-from jinja2 import Environment, FileSystemLoader
-from barazmoon import Data
 from kubernetes import config
 from kubernetes import client
-# from kubernetes.client import Configuration
-# from kubernetes.client.api import core_v1_api
 from tqdm import tqdm
 import shutil
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
-
-from barazmoon import (
-    MLServerAsyncGrpc)
 from barazmoon.twitter import twitter_workload_generator
 
 # get an absolute path to the directory that contains parent files
@@ -39,12 +31,12 @@ from experiments.utils.pipeline_operations import (
     remove_pipeline,
     setup_node,
     get_pod_name)
-# import experiments.utils.constants import
 from experiments.utils.constants import (
     PIPLINES_PATH,
     NODE_PROFILING_CONFIGS_PATH,
     NODE_PROFILING_RESULTS_PATH,
-    OBJ_NODE_PROFILING_RESULTS_PATH
+    OBJ_NODE_PROFILING_RESULTS_PATH,
+    KEY_CONFIG_FILENAME
 )
 from experiments.utils.obj import setup_obj_store
 prom_client = PromClient()
@@ -56,9 +48,6 @@ except AttributeError:
     kube_config.assert_hostname = False
 client.Configuration.set_default(kube_config)
 kube_api = client.api.core_v1_api.CoreV1Api()
-
-KEY_CONFIG_FILENAME = 'key_config_mapper.csv'
-
 
 def experiments(pipeline_name: str, node_name: str,
                 config: dict, node_path: str, data_type: str):

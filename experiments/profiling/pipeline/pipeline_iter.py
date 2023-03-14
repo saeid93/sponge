@@ -11,12 +11,8 @@ import click
 import sys
 import itertools
 import csv
-import re
-# from kubernetes.client import Configuration
-# from kubernetes.client.api import core_v1_api
 from tqdm import tqdm
 import shutil
-
 from barazmoon.twitter import twitter_workload_generator
 
 # get an absolute path to the directory that contains parent files
@@ -30,19 +26,17 @@ from experiments.utils.pipeline_operations import (
     check_load_test,
     load_test,
     remove_pipeline,
-    setup_pipeline,
+    setup_profiling_pipeline,
     get_pod_name)
-# import experiments.utils.constants import
 from experiments.utils.constants import (
     PIPLINES_PATH,
     PIPELINE_PROFILING_CONFIGS_PATH,
     PIPELINE_PROFILING_RESULTS_PATH,
-    OBJ_PIPELINE_PROFILING_RESULTS_PATH
+    OBJ_PIPELINE_PROFILING_RESULTS_PATH,
+    KEY_CONFIG_FILENAME
 )
 from experiments.utils.obj import setup_obj_store
 prom_client = PromClient()
-
-KEY_CONFIG_FILENAME = 'key_config_mapper.csv'
 
 
 def experiments(pipeline_name: str, node_names: str,
@@ -130,7 +124,7 @@ def experiments(pipeline_name: str, node_names: str,
                                     data_type=data_type,
                                     benchmark_duration=benchmark_duration)
                                 if not experiments_exist:
-                                    setup_pipeline(
+                                    setup_profiling_pipeline(
                                         # pipeline_folder_name=pipeline_folder_name,
                                         pipeline_name=pipeline_name,
                                         cpu_request=cpu_request,
@@ -308,105 +302,6 @@ def key_config_mapper(
             row_writer.close()
 
     return experiments_exist, experiment_id
-
-# def setup_pipeline(pipeline_name: str,
-#                    cpu_request: Tuple[str], memory_request: Tuple[str],
-#                    model_variant: Tuple[str], max_batch_size: Tuple[str],
-#                    max_batch_time: Tuple[str], replica: Tuple[int],
-#                    use_threading: Tuple[bool], num_interop_threads: Tuple[int],
-#                    num_threads: Tuple[int], pipeline_path: str,
-#                    timeout: int, num_nodes: int):
-#     print('-'*25 + ' setting up the node with following config' + '-'*25)
-#     print('\n')
-#     # TODO add num nodes logic here
-#     svc_vars = {"name": pipeline_name}
-#     for node_id in range(num_nodes):
-#         node_index = node_id + 1
-#         svc_vars.update(
-#             {
-#                 f"cpu_request_{node_index}": cpu_request[node_id],
-#                 f"memory_request_{node_index}": memory_request[node_id],
-#                 f"cpu_limit_{node_index}": cpu_request[node_id],
-#                 f"memory_limit_{node_index}": memory_request[node_id],
-#                 f"model_variant_{node_index}": model_variant[node_id],
-#                 f"max_batch_size_{node_index}": max_batch_size[node_id],
-#                 f"max_batch_time_{node_index}": max_batch_time[node_id],
-#                 f"replicas_{node_index}": replica[node_id],
-#                 f"use_threading_{node_index}": use_threading[node_id],
-#                 f"num_interop_threads_{node_index}": num_interop_threads[node_id],
-#                 f"num_threads_{node_index}": num_threads[node_id]
-#             })
-#     environment = Environment(
-#         loader=FileSystemLoader(pipeline_path))
-#     svc_template = environment.get_template('pipeline-template.yaml')
-#     content = svc_template.render(svc_vars)
-#     pp.pprint(content)
-#     command = f"""cat <<EOF | kubectl apply -f -
-# {content}
-#         """
-#     os.system(command)
-#     print('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
-#     print('\n')
-#     print('-'*25 + f' model pod {pipeline_name} successfuly set up ' + '-'*25)
-#     print('\n')
-#     # extract model model container names
-#     model_container = yaml.safe_load(content)
-#     model_names = list(
-#         map(
-#         lambda l: l['spec']['containers'][0]['name'],
-#         model_container['spec']['predictors'][0]['componentSpecs']))
-#     # checks if the pods are ready each 5 seconds
-#     loop_timeout = 5
-#     while True:
-#         models_loaded, svc_loaded, pipeline_loaded = False, False, False
-#         print(f'waited for {loop_timeout} to check if the pods are up')
-#         time.sleep(loop_timeout)
-#         model_pods = kube_api.list_namespaced_pod(
-#             namespace=NAMESPACE,
-#             label_selector=f"seldon-deployment-id={pipeline_name}")
-#         all_model_pods = []
-#         all_conainers = []
-#         for pod in model_pods.items:
-#             if pod.status.phase == "Running":
-#                 all_model_pods.append(True)
-#                 pod_name = pod.metadata.name
-#                 for model_name in model_names:
-#                     if model_name in pod_name:
-#                         container_name = model_name
-#                         break
-#                 logs = kube_api.read_namespaced_pod_log(
-#                     name=pod.metadata.name,
-#                     namespace=NAMESPACE,
-#                     container=container_name)
-#                 print(logs)
-#                 if 'Uvicorn running on http://0.0.0.0:600' in logs:
-#                     all_conainers.append(True)
-#                 else:
-#                     all_conainers.append(False)
-#             else:
-#                 all_model_pods.append(False)
-#         print(f"all_model_pods: {all_model_pods}")
-#         if all(all_model_pods):
-#             models_loaded = True
-#         else: continue
-#         print(f"all_containers: {all_conainers}")
-#         if all(all_model_pods):
-#             pipeline_loaded = True
-#         else: continue
-#         svc_pods = kube_api.list_namespaced_pod(
-#             namespace=NAMESPACE,
-#             label_selector=f"seldon-deployment-id={pipeline_name}-{pipeline_name}")
-#         for pod in svc_pods.items:
-#             if pod.status.phase == "Running":
-#                 svc_loaded = True
-#             for container_status in pod.status.container_statuses:
-#                 if container_status.ready:
-#                     pipeline_loaded = True
-#                 else: continue
-#             else: continue
-#         if models_loaded and svc_loaded and pipeline_loaded:
-#             print('model container completely loaded!')
-#             break
 
 def save_report(experiment_id: int,
                 responses: str,
