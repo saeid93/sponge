@@ -48,15 +48,15 @@ class Adapter:
             num_state_limit: int) -> None:
         """
         1. Gets the model of the inference pipeline
-        2. Watches the incoming load in the system
-        3. TODO LSTM for predicting the load
-         
-        4. Use monitoring for periodically checking the status of
+        2. Use monitoring for periodically checking the status of
             the pipeline in terms of load
-        5. Get the existing pipeline state
+        3. Watches the incoming load in the system
+        4. TODO LSTM for predicting the load
+        5. Get the existing pipeline state, batch size, model variant and replicas per
+            each node
         5. Give the load and pipeline status to the optimizer
         6. Compare the optimal solutions from the optimzer
-            to the existing pipeline's state    
+            to the existing pipeline's state
         7. Use the change config script to change the pipelien to the new config
 
         Args:
