@@ -24,18 +24,19 @@ sys.path.append(os.path.normpath(os.path.join(
     project_dir, '..', '..')))
 
 from optimizer import (
-    Optimizer
+    Optimizer,
+    Pipeline
 )
 from experiments.utils.constants import (
     NAMESPACE
 )
 from optimizer.optimizer import Optimizer
 
-
 class Adapter:
     def __init__(
             self,
             pipeline_name: str,
+            pipeline: Pipeline,
             adaptation_interval: int,
             optimization_method: Literal['gurobi', 'brute-force'],
             allocation_mode: Literal['base', 'variable'],
@@ -45,11 +46,38 @@ class Adapter:
             beta: float,
             gamma: float,
             num_state_limit: int) -> None:
+        """
+        1. Gets the model of the inference pipeline
+        2. Watches the incoming load in the system
+        3. TODO LSTM for predicting the load
+         
+        4. Use monitoring for periodically checking the status of
+            the pipeline in terms of load
+        5. Get the existing pipeline state
+        5. Give the load and pipeline status to the optimizer
+        6. Compare the optimal solutions from the optimzer
+            to the existing pipeline's state    
+        7. Use the change config script to change the pipelien to the new config
+
+        Args:
+            pipeline_name (str): name of the pipeline
+            pipeline (Pipeline): pipeline object
+            adaptation_interval (int): adaptation interval of the pipeline
+            optimization_method (Literal[gurobi, brute-force])
+            allocation_mode (Literal[base;variable])
+            only_measured_profiles (bool)
+            scaling_cap (int)
+            alpha (float): accuracy weight
+            beta (float): resource weight
+            gamma (float): batching weight
+            num_state_limit (int): cap on the number of optimal states
+        """
         self.pipeline_name = pipeline_name
+        self.pipeline = pipeline
         self.adaptation_interval = adaptation_interval
         self.lstm = lambda l: l[-1] # TEMP TODO replace with real lstm
         self.optimizer = Optimizer(
-            pipeline=pipeline_name,
+            pipeline=pipeline,
             allocation_mode=allocation_mode,
             complete_profile=False,
             only_measured_profiles=only_measured_profiles,
@@ -66,29 +94,28 @@ class Adapter:
     def start(self):
         no_pipeline = False
         while True:
-            time.sleep(self.adaptation_interval)
+            # time.sleep(self.adaptation_interval)
+
             rps_series = self.monitoring.monitor()
             predicted_load = self.lstm(rps_series)
-            self.optimizer(
+            optimal = self.optimizer.optimize(
                 optimization_method=self.optimization_method,
                 scaling_cap=self.scaling_cap,
                 alpha=self.alpha, beta=self.beta, gamma=self.gamma,
                 arrival_rate=predicted_load,
                 num_state_limit=self.num_state_limit
             )
+            new_config = self.output_parser(optimal)
             if no_pipeline:
                 # TODO check if there is not a pipeline stop wthile
                 # with the message that the process has ended
                 break
 
+    def extract_config(self):
+        # TODO
+        # 1. Extract existing config from the running pipeline
+        pass
 
-        # 1. Have the optimizer object of the pipelien here
-        # 2. For now and Adapter per pipeline -> an adapter for entire cluster that assigne each pipeline to it
-        # 3. TODO add LSTM for predicting the load
-        # 4. Use monitoring for periodically checking the status of the pipeline in terms of load (and maybe other metrics)
-        # 5. Give the load and pipeline status to the optimizer
-        # 6. Find the best answer
-        # 7. Use the change config script to change the pipelien to the new config
     def output_parser(self, optimizer_output: pd.DataFrame):
         pass
 

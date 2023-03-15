@@ -539,31 +539,31 @@ def main(config_name: str):
         profiling_load=profiling_load)
 
     # should be inside of experiments
-    adapter = Adapter(
-        pipeline_name=pipeline_name,
-        pipeline=pipeline,
-        adaptation_interval=adaptation_interval,
-        optimization_method=optimization_method,
-        allocation_mode=allocation_mode,
-        only_measured_profiles=only_measured_profiles,
-        scaling_cap=scaling_cap,
-        alpha=alpha,
-        beta=beta,
-        gamma=gamma,
-        num_state_limit=num_state_limit
-    )
-    adapter.start()
+    # adapter = Adapter(
+    #     pipeline_name=pipeline_name,
+    #     pipeline=pipeline,
+    #     adaptation_interval=adaptation_interval,
+    #     optimization_method=optimization_method,
+    #     allocation_mode=allocation_mode,
+    #     only_measured_profiles=only_measured_profiles,
+    #     scaling_cap=scaling_cap,
+    #     alpha=alpha,
+    #     beta=beta,
+    #     gamma=gamma,
+    #     num_state_limit=num_state_limit
+    # )
+    # adapter.start()
 
     # ----------- 3. Running an experiment series -------------
     # TODO pass adapter to the experiment
     # TODO run two separate processes in the experiments
-    # experiments(
-    #     pipeline_name=pipeline_name,
-    #     node_names=node_names,
-    #     config=config,
-    #     pipeline_path=pipeline_path,
-    #     data_type=data_type
-    #     )
+    experiments(
+        pipeline_name=pipeline_name,
+        node_names=node_names,
+        config=config,
+        pipeline_path=pipeline_path,
+        data_type=data_type
+        )
 
     # optimal = optimizer.optimize(
     #     optimization_method=optimization_method,

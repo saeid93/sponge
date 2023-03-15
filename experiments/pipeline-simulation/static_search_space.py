@@ -75,7 +75,7 @@ def main(config_name: str):
     pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,
         profiling_series=profiling_series,
-        model_name=model_name,
+        model_names=model_name,
         task_names=task_name,
         initial_active_model=initial_active_model,
         allocation_mode=allocation_mode,

@@ -13,7 +13,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '16'
     memory_request: 10Gi
-    replicas: 1
+    replicas: 2
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -36,7 +36,7 @@ adaptation_interval: 15
 workload_type: static
 workload_config:
   loads_to_test: 1
-  load_duration: 5
+  load_duration: 10000
 # workload_type: twitter
 # workload_config:
 #   - start: '3:5:0'

@@ -557,13 +557,13 @@ def main(config_name: str):
     # ----------- 3. Running an experiment series -------------
     # TODO pass adapter to the experiment
     # TODO run two separate processes in the experiments
-    experiments(
-        pipeline_name=pipeline_name,
-        node_names=node_names,
-        config=config,
-        pipeline_path=pipeline_path,
-        data_type=data_type
-        )
+    # experiments(
+    #     pipeline_name=pipeline_name,
+    #     node_names=node_names,
+    #     config=config,
+    #     pipeline_path=pipeline_path,
+    #     data_type=data_type
+    #     )
 
     # optimal = optimizer.optimize(
     #     optimization_method=optimization_method,
