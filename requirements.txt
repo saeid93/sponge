@@ -13,10 +13,10 @@ grpcio==1.51.1
 h5py==2.10.0
 idna==3.4
 importlib-metadata==6.0.0
-Keras==2.3.0
-Keras-Applications==1.0.8
-Keras-Preprocessing==1.1.2
-keras-vggface==0.6
+# Keras==2.3.0
+# Keras-Applications==1.0.8
+# Keras-Preprocessing==1.1.2
+# keras-vggface==0.6
 kiwisolver==1.4.4
 Markdown==3.4.1
 MarkupSafe==2.1.1
