@@ -20,8 +20,8 @@ spec:
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://triton-server-all-new/triton-server-all-new/"
-            - "/mnt/models"
+            - "s3://triton-server-all-new/triton-server-all-new/s2t-small-librispeech-asr"
+            - "/mnt/models/s2t-small-librispeech-asr"
 
           volumeMounts:
           - mountPath: /mnt/models
@@ -47,9 +47,9 @@ spec:
             name: classifier-provision-location
           env:
             - name: MODEL_VARIANT
-              value: facebook/s2t-small-librispeech-asr
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+              value: /mnt/models/s2t-small-librispeech-asr
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cache
             - name: TASK
               value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
