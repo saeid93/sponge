@@ -19,7 +19,7 @@ spec:
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://triton-server-all-new/triton-server-all-new/s2t-small-librispeech-asr"
+            - "s3://huggingface/s2t-small-librispeech-asr"
             - "/mnt/models/s2t-small-librispeech-asr"
           volumeMounts:
           - mountPath: /mnt/models
