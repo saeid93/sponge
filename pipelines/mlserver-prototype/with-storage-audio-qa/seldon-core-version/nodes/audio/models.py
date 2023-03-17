@@ -66,21 +66,21 @@ class GeneralAudio(MLModel):
         self.batch_counter = 0
         try:
             self.MODEL_VARIANT = os.environ['MODEL_VARIANT']
-            logger.error(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
+            logger.info(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
         except KeyError as e:
             self.MODEL_VARIANT = 'facebook/s2t-small-librispeech-asr'
-            logger.error(
+            logger.info(
                 f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
         try:
             self.TASK = os.environ['TASK']
-            logger.error(f'TASK set to: {self.TASK}')
+            logger.info(f'TASK set to: {self.TASK}')
         except KeyError as e:
             self.TASK = 'automatic-speech-recognition' 
-            logger.error(
+            logger.info(
                 f"TASK env variable not set, using default value: {self.TASK}")
         logger.info('Loading the ML models')
-        logger.error(f'max_batch_size: {self._settings.max_batch_size}')
-        logger.error(f'max_batch_time: {self._settings.max_batch_time}')
+        logger.info(f'max_batch_size: {self._settings.max_batch_size}')
+        logger.info(f'max_batch_time: {self._settings.max_batch_time}')
         self.model = pipeline(
             task=self.TASK,
             model=self.MODEL_VARIANT,

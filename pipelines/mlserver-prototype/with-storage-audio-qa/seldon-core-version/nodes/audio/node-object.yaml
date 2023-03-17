@@ -1,7 +1,7 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: audio
+  name: audio-object
 spec:
   protocol: v2
   name: audio
@@ -11,6 +11,23 @@ spec:
   - name: audio 
     componentSpecs:
     - spec:
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://triton-server-all-new/triton-server-all-new/s2t-small-librispeech-asr"
+            - "/mnt/models/s2t-small-librispeech-asr"
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
         - image: sdghafouri/audio-qa-pipelines-mlserver-bytes:audio
           name: audio
@@ -22,11 +39,14 @@ spec:
             limits:
               cpu: '4'
               memory: 4Gi
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
           env:
             - name: MODEL_VARIANT
-              value: facebook/s2t-small-librispeech-asr
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+              value: /mnt/models/s2t-small-librispeech-asr
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cache
             - name: TASK
               value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
