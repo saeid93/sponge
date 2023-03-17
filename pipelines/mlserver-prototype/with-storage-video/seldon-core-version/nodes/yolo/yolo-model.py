@@ -84,7 +84,7 @@ class Yolo(MLModel):
             # torch.hub.set_dir(os.path.join(os.getcwd(), '/cache'))
             logger.info(f'max_batch_size: {self._settings.max_batch_size}')
             logger.info(f'max_batch_time: {self._settings.max_batch_time}')
-            self.model = torch.hub.load('ultralytics/yolov5', self.MODEL_VARIANT)
+            self.model = torch.hub.load(os.getenv('MODEL_PATH'), self.MODEL_VARIANT, source="local")
             logger.info('model loaded!')
             self.loaded = True
             logger.info('model loading complete!')
