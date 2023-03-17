@@ -41,6 +41,14 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 1
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: 2
     graph:
       name: node-one
@@ -54,5 +62,13 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
-    labels:
-      sidecar.istio.io/inject: "true"
+      # readinessProbe:
+      #   failureThreshold: 3
+      #   initialDelaySeconds: 1
+      #   periodSeconds: 1
+      #   successThreshold: 1
+      #   tcpSocket:
+      #     port: 9000
+      #   timeoutSeconds: 1
+    # labels:
+    #   sidecar.istio.io/inject: "true"
