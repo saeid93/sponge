@@ -5,10 +5,12 @@ metadata:
 spec:
   protocol: v2
   name: {{ name }}
-  annotations:
-    seldon.io/engine-separate-pod: "true"
+  # annotations:
+  #   seldon.io/engine-separate-pod: "true"
   predictors:
   - name: default
+    annotations:
+      seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
         containers:
@@ -43,6 +45,14 @@ spec:
               value: '{{num_interop_threads}}'
             - name: NUM_THREADS
               value: '{{num_threads}}'
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: {{ replicas }}
     graph:
       name: nlp-qa

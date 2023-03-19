@@ -33,6 +33,14 @@ spec:
               value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: '{{ max_batch_time }}'
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: {{ replicas }}
     - spec:
         containers:
@@ -59,6 +67,14 @@ spec:
               value: '{{ max_batch_time }}'
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: {{ replicas }}
     - spec:
         containers:
@@ -85,6 +101,14 @@ spec:
               value: '{{ max_batch_time }}'
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: {{ replicas }}
     graph:
       name: nlp-li

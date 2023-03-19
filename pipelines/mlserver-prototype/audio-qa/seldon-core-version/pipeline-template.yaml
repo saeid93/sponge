@@ -5,8 +5,6 @@ metadata:
 spec:
   protocol: v2
   name: {{ name }}
-  annotations:
-    seldon.io/engine-separate-pod: "true"
   predictors:
   - name: {{ name }}
     componentSpecs:
@@ -39,6 +37,14 @@ spec:
               value: '{{num_interop_threads_1}}'
             - name: NUM_THREADS
               value: '{{num_threads_1}}'
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: {{ replicas_1 }}
     - spec:
         containers:
@@ -71,6 +77,14 @@ spec:
               value: '{{num_interop_threads_2}}'
             - name: NUM_THREADS
               value: '{{num_threads_2}}'
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: {{ replicas_2 }}
     graph:
       name: audio

@@ -41,6 +41,14 @@ spec:
             limits:
               cpu: '4'
               memory: 4Gi
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: 1
     - spec:
         containers:
@@ -73,6 +81,14 @@ spec:
             limits:
               cpu: '4'
               memory: 8Gi
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: 1
     - spec:
         containers:
@@ -103,6 +119,14 @@ spec:
             limits:
               cpu: '4'
               memory: 4Gi
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: 1
     graph:
       name: nlp-li

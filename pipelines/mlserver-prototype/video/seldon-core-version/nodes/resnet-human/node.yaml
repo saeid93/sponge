@@ -5,10 +5,12 @@ metadata:
 spec:
   protocol: v2
   name: resnet-human
-  annotations:
-    seldon.io/engine-separate-pod: "true"
+  # annotations:
+  #   seldon.io/engine-separate-pod: "true"
   predictors:
   - name: resnet-human
+    annotations:
+      seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
         containers:
@@ -41,7 +43,15 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
-      replicas: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
+      replicas: 3
     graph:
       name: resnet-human
       type: MODEL
@@ -54,6 +64,6 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
-    labels:
-      sidecar.istio.io/inject: "true"
-    replicas: 1
+    # labels:
+    #   sidecar.istio.io/inject: "true"
+    # replicas: 1

@@ -8,8 +8,8 @@ import time
 import numpy as np
 
 
-load = 1
-test_duration = 4
+load = 30
+test_duration = 10
 variant = 0
 platform = 'seldon'
 mode = 'exponential'

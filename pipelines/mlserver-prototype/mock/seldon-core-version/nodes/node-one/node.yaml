@@ -5,10 +5,12 @@ metadata:
 spec:
   protocol: v2
   name: node-one
-  annotations:
-    seldon.io/engine-separate-pod: "true"
+  # annotations:
+  #   seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: node-one 
+  - name: node-one
+    annotations:
+      seldon.io/no-engine: "true" 
     componentSpecs:
     - spec:
         containers:
@@ -43,13 +45,13 @@ spec:
               value: "1"
           readinessProbe:
             failureThreshold: 3
-            initialDelaySeconds: 1
+            initialDelaySeconds: 0
             periodSeconds: 1
             successThreshold: 1
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 2
     graph:
       name: node-one
       type: MODEL
@@ -62,11 +64,9 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
-  # readinessProbe: null
-
       # readinessProbe:
       #   failureThreshold: 3
-      #   initialDelaySeconds: 1
+      #   initialDelaySeconds: 0
       #   periodSeconds: 1
       #   successThreshold: 1
       #   tcpSocket:

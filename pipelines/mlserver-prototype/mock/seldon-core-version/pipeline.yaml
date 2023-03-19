@@ -40,7 +40,14 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
-              
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: 1
     - spec:
         containers:
@@ -75,6 +82,14 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: 1
     graph:
       name: node-one

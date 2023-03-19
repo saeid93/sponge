@@ -5,10 +5,12 @@ metadata:
 spec:
   protocol: v2
   name: audio
-  annotations:
-    seldon.io/engine-separate-pod: "true"
+  # annotations:
+  #   seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: audio 
+  - name: audio
+    annotations:
+      seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
         containers:
@@ -41,7 +43,15 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
-      replicas: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
+      replicas: 3
     graph:
       name: audio
       type: MODEL

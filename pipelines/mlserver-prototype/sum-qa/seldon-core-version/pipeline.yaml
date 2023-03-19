@@ -40,6 +40,15 @@ spec:
             limits:
               cpu: '4'
               memory: 4Gi
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
+      replicas: 2
     - spec:
         containers:
         - image: sdghafouri/sum-qa-pipelines-mlserver-bytes:nlpqa
@@ -73,6 +82,14 @@ spec:
             limits:
               cpu: '4'
               memory: 4Gi
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: 2
     graph:
       name: nlp-sum
