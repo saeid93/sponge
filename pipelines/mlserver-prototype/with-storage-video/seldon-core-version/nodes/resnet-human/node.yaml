@@ -22,9 +22,12 @@ spec:
             - "s3://torchhub/resnet/resnet152"
             - "/opt/mlserver/.torch/hub/checkpoints/"
           volumeMounts:
+          volumeMounts:
+          - mountPath: /opt/mlserver/.torch/hub/checkpoints
+      replicas: 1
           - mountPath: /opt/mlserver/.torch/hub/checkpoints
             name: resnet-volume
-          envFrom:
+              value: resnet152
           - secretRef:
               name: seldon-rclone-secret
 
@@ -41,7 +44,7 @@ spec:
               memory: 4Gi
           volumeMounts:
           - mountPath: /opt/mlserver/.torch/hub/checkpoints
-            name: resnet-volume
+      replicas: 1
           env:
             - name: MODEL_VARIANT
               value: resnet152

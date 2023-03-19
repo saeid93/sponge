@@ -49,7 +49,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 2
     graph:
       name: node-one
       type: MODEL
@@ -62,8 +62,6 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
-  # readinessProbe: null
-
       # readinessProbe:
       #   failureThreshold: 3
       #   initialDelaySeconds: 1

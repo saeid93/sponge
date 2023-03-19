@@ -12,7 +12,7 @@ spec:
     - spec:
         containers:
         - image: sdghafouri/mock-mlserver-bytes:node-one
-          name: audio
+          name: node-one 
           imagePullPolicy: Always
           resources:
             requests:
@@ -40,6 +40,7 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
+              
       replicas: 1
     - spec:
         containers:
