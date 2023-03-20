@@ -14,6 +14,8 @@ variant = 0
 platform = 'seldon'
 mode = 'exponential'
 
+# INFO this scripts is using https://github.com/reconfigurable-ml-pipeline/load_tester/tree/saeed
+# for load testing, can be substituted with any other load test scripts
 
 # single node inference
 if platform == 'seldon':

@@ -2,6 +2,7 @@
 
 import torch
 import os
+import shutil
 
 
 par_dir = "./yolov5_torchhub"

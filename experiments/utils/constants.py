@@ -80,8 +80,8 @@ OBJ_PIPELINE_PROFILING_RESULTS_PATH = os.path.join(
 # generated baesd on the users' path
 # TODO completely polish and remove unecessary ones
 TEMP_MODELS_PATH = os.path.join(DATA_PATH, "model-temp")
-KUBE_YAMLS_PATH = os.path.join(DATA_PATH, "yamls")
-PIPELINES_MODELS = os.path.join(DATA_PATH, "pipeline-test-meta")
+# KUBE_YAMLS_PATH = os.path.join(DATA_PATH, "yamls")
+# PIPELINES_MODELS = os.path.join(DATA_PATH, "pipeline-test-meta")
 
 def _create_dirs():
     """
@@ -89,10 +89,10 @@ def _create_dirs():
     """
     if not os.path.exists(TEMP_MODELS_PATH):
         os.makedirs(TEMP_MODELS_PATH)
-    if not os.path.exists(KUBE_YAMLS_PATH):
-        os.makedirs(KUBE_YAMLS_PATH)
-    if not os.path.exists(PIPELINES_MODELS):
-        os.makedirs(PIPELINES_MODELS)
+    # if not os.path.exists(KUBE_YAMLS_PATH):
+    #     os.makedirs(KUBE_YAMLS_PATH)
+    # if not os.path.exists(PIPELINES_MODELS):
+    #     os.makedirs(PIPELINES_MODELS)
     if not os.path.exists(PIPLINES_PATH):
         os.makedirs(PIPLINES_PATH)
     if not os.path.exists(CONFIGS_PATH):
