@@ -1,5 +1,8 @@
 import os
 from transformers import pipeline
+from experiments.utils.constants import (
+    ACCURACIES_PATH
+)
 
 # TODO add loading from some yaml
 
@@ -17,5 +20,6 @@ if model_name.index("/"):
     dirname = model_name[model_name.index("/") + 1:]
 model.save_pretrained(f"./{dirname}")
 
-# substitute with minio copying
+# TODO substitute with minio copying
+# TODO check if the directory exist
 os.system(f"sudo mv ./{dirname} /mnt/myshareddir/huggingface/")

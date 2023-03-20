@@ -9,7 +9,7 @@ import numpy as np
 
 
 load = 30
-test_duration = 10
+test_duration = 300
 variant = 0
 platform = 'seldon'
 mode = 'exponential'
