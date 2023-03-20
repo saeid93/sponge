@@ -20,6 +20,10 @@ CONFIGS_PATH = os.path.join(DATA_PATH, "configs")
 # accuracies files
 ACCURACIES_PATH = os.path.join(CONFIGS_PATH, 'accuracies.yaml')
 
+# models metadata file
+MODELS_METADATA_PATH = os.path.join(
+    CONFIGS_PATH, 'models-metadata.yaml')
+
 # profiling configs
 PROFILING_CONFIGS_PATH = os.path.join(
     CONFIGS_PATH, "profiling")

@@ -1,5 +1,8 @@
 import os
 import sys
+import click
+import yaml
+from typing import List
 from transformers import pipeline
 
 # get an absolute path to the directory that contains parent files
@@ -7,42 +10,77 @@ project_dir = os.path.dirname(os.path.join(os.getcwd(), __file__))
 sys.path.append(os.path.normpath(os.path.join(project_dir, '..')))
 
 from experiments.utils.constants import (
-    ACCURACIES_PATH,
+    MODELS_METADATA_PATH,
     TEMP_MODELS_PATH
 )
 import shutil
 
-# TODO add loading from some yaml
 
-task = "automatic-speech-recognition"
-model_name = 'facebook/s2t-small-librispeech-asr'
-batch_size = 5
+def setup_model(
+        task_name, node_name, model_name, batch_size):
+    model  = pipeline(
+        task=task_name,
+        model=model_name,
+        batch_size=batch_size
+    )
 
-model  = pipeline(
-    task=task,
-    model=model_name,
-    batch_size=batch_size
-)
-dirname = model_name
-if model_name.index("/"):
-    dirname = model_name[model_name.index("/") + 1:]
-model.save_pretrained(f"./{dirname}")
+    model_name = model_name.replace('/', '-')
 
-# TODO substitute with minio copying
-# TODO check if the directory exist
+    model_local_path = os.path.join(
+        TEMP_MODELS_PATH, task_name, model_name)
+    # model.save_pretrained(f"./{dirname}")
 
-def upload_minio(bucket_name: str):
+    model.save_pretrained(model_local_path)
+
+    return model_local_path
+
+def upload_minio(bucket_name: str, model_local_path: str):
     """uploads model files to minio
         and removes them from the disk
 
     Args:
         bucket_name (str): name of the minio bucket
     """
-    output_dir = os.path.join(TEMP_MODELS_PATH, bucket_name)
     # copy generated models to minio
     os.system(f"mc mb minio/{bucket_name} -p")
-    os.system(f"mc cp -r {output_dir}"
+    os.system(f"mc cp -r {model_local_path}"
               f" minio/{bucket_name}")
-    shutil.rmtree(output_dir)
+    shutil.rmtree(model_local_path)
 
-os.system(f"sudo mv ./{dirname} /mnt/myshareddir/huggingface/")
+
+def models_processing(
+        task_name: str, node_name: str, model_names: List[str], batch_size):
+    for model_name in model_names:
+        model_local_path = setup_model(
+            task_name=task_name,
+            node_name=node_name,
+            model_name=model_name, batch_size=batch_size)
+
+        task_remote_path = f"huggingface/{task_name}"
+        upload_minio(
+            bucket_name=task_remote_path,
+            model_local_path=model_local_path)
+
+
+@click.command()
+@click.option(
+    '--pipeline-name', required=True, type=str, default='nlp')
+@click.option(
+    '--node-name', required=True, type=str, default='nlp-trans')
+def main(pipeline_name: str, node_name: str):
+    with open(MODELS_METADATA_PATH, 'r') as cf:
+        models_metadata = yaml.safe_load(cf)
+
+    task_config = models_metadata[pipeline_name][node_name]
+    task_type = task_config['task-type']
+    task_name = task_config['task-name']
+    model_names = task_config['model-names']
+    batch_size = 100 # TODO check if this could be a problem
+
+    models_processing(
+        task_name=task_name, node_name=node_name,
+        model_names=model_names, batch_size=batch_size)
+
+
+if __name__ == "__main__":
+    main()

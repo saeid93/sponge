@@ -8,10 +8,10 @@ import time
 import numpy as np
 
 
-load = 1
-test_duration = 1
+load = 20
+test_duration = 5
 variant = 0
-platform = 'mlserver'
+platform = 'seldon'
 mode = 'exponential'
 
 

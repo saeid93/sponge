@@ -5,10 +5,12 @@ metadata:
 spec:
   protocol: v2
   name: yolo
-  annotations:
-    seldon.io/engine-separate-pod: "true"
+  # annotations:
+  #   seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: yolo 
+  - name: yolo
+    annotations:
+      seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
         volumes:
@@ -27,8 +29,6 @@ spec:
           envFrom:
           - secretRef:
               name: seldon-rclone-secret
-
-
         containers:
         - image: sdghafouri/video-pipelines-mlserver-bytes:yolov5
           name: yolo
@@ -64,6 +64,14 @@ spec:
               value: "5"
             - name: NUM_THREADS
               value: "1"
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: 1
     graph:
       name: yolo

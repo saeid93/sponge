@@ -5,10 +5,12 @@ metadata:
 spec:
   protocol: v2
   name: audio
-  annotations:
-    seldon.io/engine-separate-pod: "true"
+  # annotations:
+  #   seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: audio 
+  - name: audio
+    annotations:
+      seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
         volumes:
@@ -20,8 +22,8 @@ spec:
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://huggingface/s2t-small-librispeech-asr"
-            - "/mnt/models/s2t-small-librispeech-asr"
+            - "s3://huggingface/automatic-speech-recognition/facebook-s2t-small-librispeech-asr"
+            - "/mnt/models/facebook-s2t-small-librispeech-asr"
 
           volumeMounts:
           - mountPath: /mnt/models
@@ -47,13 +49,13 @@ spec:
             name: classifier-provision-location
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/s2t-small-librispeech-asr
+              value: /mnt/models/facebook-s2t-small-librispeech-asr
             # - name: TRANSFORMERS_CACHE
             #   value: /opt/mlserver/.cache
             - name: TASK
               value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: "10"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
@@ -64,6 +66,14 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: 1
     graph:
       name: audio
