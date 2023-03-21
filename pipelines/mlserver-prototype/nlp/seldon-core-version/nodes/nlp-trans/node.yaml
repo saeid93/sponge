@@ -13,22 +13,46 @@ spec:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://huggingface/translation_fr_to_en/Helsinki-NLP-opus-mt-fr-en"
+            - "/mnt/models/Helsinki-NLP-opus-mt-fr-en"
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
         - image: sdghafouri/nlp-pipelines-mlserver-bytes:nlptrans
           name: nlp-trans
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '4'
+              cpu: '16'
               memory: 4Gi
             limits:
-              cpu: '4'
+              cpu: '16'
               memory: 4Gi
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
           env:
             - name: MODEL_VARIANT
-              value: Helsinki-NLP/opus-mt-fr-en
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+              value: /mnt/models/Helsinki-NLP-opus-mt-fr-en
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cache
             - name: TASK
               value: translation_fr_to_en
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -40,9 +64,9 @@ spec:
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
-              value: "1"
+              value: "16"
             - name: NUM_THREADS
-              value: "1"
+              value: "16"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

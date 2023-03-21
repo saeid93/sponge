@@ -12,6 +12,7 @@ spec:
     annotations:
       seldon.io/no-engine: "true" 
     componentSpecs:
+
     - spec:
         volumes:
         - name: classifier-provision-location
@@ -51,8 +52,8 @@ spec:
           env:
             - name: MODEL_VARIANT
               value: /mnt/models/distilbert-base-cased-distilled-squad
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cache
             - name: TASK
               value: question-answering
             - name: CONTEXT

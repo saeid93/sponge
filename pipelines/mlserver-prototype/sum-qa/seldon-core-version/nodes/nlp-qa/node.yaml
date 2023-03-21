@@ -13,6 +13,27 @@ spec:
       seldon.io/no-engine: "true" 
     componentSpecs:
     - spec:
+
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://huggingface/question-answering/distilbert-base-cased-distilled-squad"
+            - "/mnt/models/distilbert-base-cased-distilled-squad"
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
         - image: sdghafouri/sum-qa-pipelines-mlserver-bytes:nlpqa
           name: nlp-qa 
@@ -24,11 +45,15 @@ spec:
             limits:
               cpu: '4'
               memory: 4Gi
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
           env:
             - name: MODEL_VARIANT
-              value: distilbert-base-uncased
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+              value: /mnt/models/distilbert-base-cased-distilled-squad
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cache
             - name: TASK
               value: question-answering
             - name: CONTEXT

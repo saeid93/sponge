@@ -13,6 +13,26 @@ spec:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://huggingface/summarization/sshleifer-distilbart-cnn-12-6"
+            - "/mnt/models/sshleifer-distilbart-cnn-12-6"
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
         - image: sdghafouri/sum-qa-pipelines-mlserver-bytes:nlpsum
           name: nlp-sum 
@@ -23,12 +43,15 @@ spec:
               memory: 4Gi
             limits:
               cpu: '4'
-              memory: 4Gi
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
           env:
             - name: MODEL_VARIANT
-              value: sshleifer/distilbart-cnn-12-6
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+              value:  /mnt/models/sshleifer-distilbart-cnn-12-6
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cache
             - name: TASK
               value: summarization
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE

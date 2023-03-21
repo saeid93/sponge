@@ -13,6 +13,26 @@ spec:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://huggingface/text-classification/dinalzein-xlm-roberta-base-finetuned-language-identification"
+            - "/mnt/models/dinalzein-xlm-roberta-base-finetuned-language-identification"
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
         - image: sdghafouri/nlp-pipelines-mlserver-bytes:nlpli
           name: nlp-li
@@ -24,11 +44,15 @@ spec:
             limits:
               cpu: '4'
               memory: 4Gi
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
           env:
             - name: MODEL_VARIANT
-              value: dinalzein/xlm-roberta-base-finetuned-language-identification
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+              value: /mnt/models/dinalzein-xlm-roberta-base-finetuned-language-identification
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cache
             - name: TASK
               value: text-classification
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE

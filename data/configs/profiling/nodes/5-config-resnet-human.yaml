@@ -1,4 +1,4 @@
-series: 300
+series: 1301
 series_meta: 'all variables change for making the profiler 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 pipeline_name: video
 node_name: resnet-human
@@ -45,7 +45,7 @@ workload_config:
   - 1
   # - 5
   # - 10
-  - 20
+  # - 20
   # - 40
   # - 60
   # - 80

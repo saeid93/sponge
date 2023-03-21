@@ -13,6 +13,22 @@ spec:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
+        volumes:
+        - name: yolov5-volume
+          emptyDir: {}
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://torchhub/yolo/yolov5m"
+            - "/mnt/models/yolov5m"
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: yolov5-volume
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
         containers:
         - image: sdghafouri/video-pipelines-mlserver-bytes:yolo
           name: yolo
@@ -24,7 +40,12 @@ spec:
             limits:
               cpu: '1'
               memory: 4Gi
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: yolov5-volume
           env:
+            - name: MODEL_PATH
+              value: /mnt/models/yolov5m
             - name: MODEL_VARIANT
               value: yolov5m
             - name: TRANSFORMERS_CACHE

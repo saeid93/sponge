@@ -84,7 +84,11 @@ class Yolo(MLModel):
             # torch.hub.set_dir(os.path.join(os.getcwd(), '/cache'))
             logger.info(f'max_batch_size: {self._settings.max_batch_size}')
             logger.info(f'max_batch_time: {self._settings.max_batch_time}')
-            self.model = torch.hub.load('ultralytics/yolov5', self.MODEL_VARIANT)
+            # self.model = torch.hub.load(os.getenv('MODEL_PATH'), self.MODEL_VARIANT, source="local", pretrained=False)
+            self.model = torch.hub.load('ultralytics/yolov5', 'custom',
+                                        path=os.path.join(os.getenv('MODEL_PATH'), f"{self.MODEL_VARIANT}.pt"))
+            # state_dict = torch.load(os.path.join(os.getenv('MODEL_PATH'), f"{self.MODEL_VARIANT}.pt"))
+            # self.model.load_state_dict(state_dict, strict=False)
             logger.info('model loaded!')
             self.loaded = True
             logger.info('model loading complete!')
@@ -115,7 +119,6 @@ class Yolo(MLModel):
         logger.info(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += received_batch_len
         self.batch_counter += 1
-        logger.info(f"to the model:\n{type(X)}")
         logger.info(f"type of the to the model:\n{type(X)}")
         logger.info(f"len of the to the model:\n{len(X)}")
         objs = self.model(X)

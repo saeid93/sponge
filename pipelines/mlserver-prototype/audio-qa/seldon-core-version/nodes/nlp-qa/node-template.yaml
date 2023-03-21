@@ -51,8 +51,8 @@ spec:
           env:
             - name: MODEL_VARIANT
               value: /mnt/models/{{ model_variant }}
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cache
             - name: TASK
               value: question-answering
             - name: CONTEXT

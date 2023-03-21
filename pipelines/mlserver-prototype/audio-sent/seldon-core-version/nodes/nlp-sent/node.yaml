@@ -12,7 +12,28 @@ spec:
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
+
     - spec:
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://huggingface/sentiment-analysis/distilbert-base-uncased-finetuned-sst-2-english"
+            - "/mnt/models/distilbert-base-uncased-finetuned-sst-2-english"
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
         - image: sdghafouri/audio-sent-pipelines-mlserver-bytes:nlpsent
           name: nlp-sent
@@ -24,11 +45,15 @@ spec:
             limits:
               cpu: '4'
               memory: 4Gi
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
           env:
             - name: MODEL_VARIANT
-              value: distilbert-base-uncased-finetuned-sst-2-english
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+              value: /mnt/models/distilbert-base-uncased-finetuned-sst-2-english
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cache
             - name: TASK
               value: sentiment-analysis
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -51,7 +76,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 3
+      replicas: 1
     graph:
       name: nlp-sent
       type: MODEL

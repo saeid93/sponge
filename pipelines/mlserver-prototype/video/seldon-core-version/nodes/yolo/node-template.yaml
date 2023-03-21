@@ -11,6 +11,26 @@ spec:
   - name:  {{ name }}
     componentSpecs:
     - spec:
+
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://torchhub/yolo/{{ model_variant }}"
+            - "/mnt/models/{{ model_variant }}"
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
         - image: sdghafouri/video-pipelines-mlserver-bytes:yolo
           name: yolo
@@ -22,11 +42,18 @@ spec:
             limits:
               cpu: '{{ cpu_limit }}'
               memory: '{{ memory_limit }}'
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: yolov5-volume
+
           env:
+            - name: MODEL_PATH
+              value: /mnt/models/{{ model_variant }}
             - name: MODEL_VARIANT
               value: {{ model_variant }}
             - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+            #   value: /opt/mlserver/.cache
+            # - name: TORCH_HOME
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -41,14 +68,6 @@ spec:
               value: '{{num_interop_threads}}'
             - name: NUM_THREADS
               value: '{{num_threads}}'
-          readinessProbe:
-            failureThreshold: 3
-            initialDelaySeconds: 0
-            periodSeconds: 1
-            successThreshold: 1
-            tcpSocket:
-              port: 9000
-            timeoutSeconds: 1
       replicas: {{ replicas }}
     graph:
       name: yolo

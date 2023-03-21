@@ -11,11 +11,33 @@ spec:
   - name: video
     componentSpecs:
     - spec:
+        volumes:
+        - name: yolov5-volume
+          emptyDir: {}
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://torchhub/yolov5m"
+            - "/mnt/models/yolov5m"
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: yolov5-volume
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
-        - image: sdghafouri/video-pipelines-mlserver-bytes:yolo
+        - image: sdghafouri/video-pipelines-mlserver-bytes:yolov5
           name: yolo
           imagePullPolicy: Always
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: yolov5-volume
           env:
+            - name: MODEL_PATH
+              value: /mnt/models/yolov5m
             - name: MODEL_VARIANT
               value: yolov5m
             - name: TRANSFORMERS_CACHE
@@ -34,20 +56,31 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
-          readinessProbe:
-            failureThreshold: 3
-            initialDelaySeconds: 0
-            periodSeconds: 1
-            successThreshold: 1
-            tcpSocket:
-              port: 9000
-            timeoutSeconds: 1
       replicas: 2
     - spec:
+        volumes:
+        - name: resnet-volume
+          emptyDir: {}
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://torchhub/resnet/resnet18"
+            - "/opt/mlserver/.torch/hub/checkpoints/"
+          volumeMounts:
+          - mountPath: /opt/mlserver/.torch/hub/checkpoints
+            name: resnet-volume
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
         containers:
         - image: sdghafouri/video-pipelines-mlserver-bytes:resnet-human
           name: resnet-human
           imagePullPolicy: Always
+          volumeMounts:
+          - mountPath: /opt/mlserver/.torch/hub/checkpoints
+            name: resnet-volume
           env:
             - name: MODEL_VARIANT
               value: resnet18
@@ -67,14 +100,6 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
-          readinessProbe:
-            failureThreshold: 3
-            initialDelaySeconds: 0
-            periodSeconds: 1
-            successThreshold: 1
-            tcpSocket:
-              port: 9000
-            timeoutSeconds: 1
       replicas: 2
     graph:
       name: yolo

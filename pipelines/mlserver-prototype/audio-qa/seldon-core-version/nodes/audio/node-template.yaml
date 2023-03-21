@@ -13,10 +13,10 @@ spec:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
+
         volumes:
         - name: classifier-provision-location
           emptyDir: {}
-
         initContainers:
         - name: classifier-model-initializer
           image: seldonio/rclone-storage-initializer:1.16.0-dev
@@ -32,7 +32,6 @@ spec:
           envFrom:
           - secretRef:
               name: seldon-rclone-secret
-
 
         containers:
         - image: sdghafouri/audio-qa-pipelines-mlserver-bytes:audio
@@ -52,8 +51,8 @@ spec:
           env:
             - name: MODEL_VARIANT
               value: /mnt/models/{{ model_variant }}
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cache
             - name: TASK
               value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE

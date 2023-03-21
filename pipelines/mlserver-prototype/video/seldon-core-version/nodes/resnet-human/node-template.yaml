@@ -13,6 +13,26 @@ spec:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
+
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://torchhub/resnet/{{ model_variant }}"
+            - "/opt/mlserver/.torch/hub/checkpoints/"
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
         - image: sdghafouri/video-pipelines-mlserver-bytes:resnet-human
           name: resnet-human
@@ -24,12 +44,16 @@ spec:
             limits:
               cpu: '{{ cpu_limit }}'
               memory: '{{ memory_limit }}'
+          volumeMounts:
+          - mountPath: /opt/mlserver/.torch/hub/checkpoints
+            name: resnet-volume
+
           env:
             - name: MODEL_VARIANT
               value: {{ model_variant }}
             - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
-            - name: TORCH_HOME
+            #   value: /opt/mlserver/.cache
+            # - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: '{{ max_batch_size }}'
@@ -43,14 +67,6 @@ spec:
               value: '{{num_interop_threads}}'
             - name: NUM_THREADS
               value: '{{num_threads}}'
-          readinessProbe:
-            failureThreshold: 3
-            initialDelaySeconds: 0
-            periodSeconds: 1
-            successThreshold: 1
-            tcpSocket:
-              port: 9000
-            timeoutSeconds: 1
       replicas: {{ replicas }}
     graph:
       name: resnet-human

@@ -13,6 +13,26 @@ spec:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://huggingface/question-answering/{{ model_variant }}"
+            - "/mnt/models/{{ model_variant }}"
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
         - image: sdghafouri/sum-qa-pipelines-mlserver-bytes:nlpqa
           name: nlp-qa 
@@ -24,11 +44,15 @@ spec:
             limits:
               cpu: '{{ cpu_limit }}'
               memory: '{{ memory_limit }}'
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
           env:
             - name: MODEL_VARIANT
-              value: {{ model_variant }}
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+              value: /mnt/models/{{ model_variant }}
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cachek
             - name: TASK
               value: question-answering
             - name: CONTEXT

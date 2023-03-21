@@ -13,6 +13,26 @@ spec:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
+        volumes:
+        - name: resnet-volume
+          emptyDir: {}
+
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://torchhub/resnet/resnet18"
+            - "/opt/mlserver/.torch/hub/checkpoints/"
+
+          volumeMounts:
+          - mountPath: /opt/mlserver/.torch/hub/checkpoints
+            name: resnet-volume
+
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
         - image: sdghafouri/video-pipelines-mlserver-bytes:resnet-human
           name: resnet-human
@@ -24,11 +44,15 @@ spec:
             limits:
               cpu: '1'
               memory: 4Gi
+          volumeMounts:
+          - mountPath: /opt/mlserver/.torch/hub/checkpoints
+            name: resnet-volume
+
           env:
             - name: MODEL_VARIANT
               value: resnet18
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cache
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -51,7 +75,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 3
+      replicas: 1
     graph:
       name: resnet-human
       type: MODEL

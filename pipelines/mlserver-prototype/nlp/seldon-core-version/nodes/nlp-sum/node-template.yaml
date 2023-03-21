@@ -5,12 +5,34 @@ metadata:
 spec:
   protocol: v2
   name: {{ name }}
-  annotations:
-    seldon.io/engine-separate-pod: "true"
+  # annotations:
+  #   seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: {{ name }} 
+  - name: {{ name }}
+    annotations:
+      seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
+
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://huggingface/summarization/{{ model_variant }}"
+            - "/mnt/models/{{ model_variant }}"
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
         - image: sdghafouri/nlp-pipelines-mlserver-bytes:nlpsum
           name: nlp-sum 
@@ -22,11 +44,15 @@ spec:
             limits:
               cpu: '{{ cpu_limit }}'
               memory: '{{ memory_limit }}'
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
           env:
             - name: MODEL_VARIANT
-              value: {{ model_variant }}
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+              value: /mnt/models/{{ model_variant }}
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cache
             - name: TASK
               value: summarization
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -54,3 +80,5 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
+    # labels:
+    #   sidecar.istio.io/inject: "true"
