@@ -1,2 +1,0 @@
-opencv-python
-# timm==0.5.4

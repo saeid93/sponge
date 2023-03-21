@@ -5,29 +5,31 @@ metadata:
 spec:
   protocol: v2
   name: resnet-human
-  annotations:
-    seldon.io/engine-separate-pod: "true"
+  # annotations:
+  #   seldon.io/engine-separate-pod: "true"
   predictors:
   - name: resnet-human
+    annotations:
+      seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
         volumes:
         - name: resnet-volume
           emptyDir: {}
+
         initContainers:
         - name: classifier-model-initializer
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://torchhub/resnet/resnet152"
+            - "s3://torchhub/resnet-1/resnet18"
             - "/opt/mlserver/.torch/hub/checkpoints/"
+
           volumeMounts:
-          volumeMounts:
-          - mountPath: /opt/mlserver/.torch/hub/checkpoints
-      replicas: 1
           - mountPath: /opt/mlserver/.torch/hub/checkpoints
             name: resnet-volume
-              value: resnet152
+
+          envFrom:
           - secretRef:
               name: seldon-rclone-secret
 
@@ -44,10 +46,11 @@ spec:
               memory: 4Gi
           volumeMounts:
           - mountPath: /opt/mlserver/.torch/hub/checkpoints
-      replicas: 1
+            name: resnet-volume
+
           env:
             - name: MODEL_VARIANT
-              value: resnet152
+              value: resnet18
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TORCH_HOME
@@ -64,6 +67,14 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: 1
     graph:
       name: resnet-human
@@ -77,6 +88,6 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
-    labels:
-      sidecar.istio.io/inject: "true"
-    replicas: 1
+    # labels:
+    #   sidecar.istio.io/inject: "true"
+    # replicas: 1

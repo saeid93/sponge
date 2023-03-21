@@ -47,6 +47,7 @@ spec:
           volumeMounts:
           - mountPath: /mnt/models
             name: classifier-provision-location
+
           env:
             - name: MODEL_VARIANT
               value: /mnt/models/facebook-s2t-small-librispeech-asr

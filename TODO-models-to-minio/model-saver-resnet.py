@@ -4,6 +4,8 @@ import click
 import yaml
 from typing import List
 import torch
+import torchvision.models as models
+
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(os.path.join(os.getcwd(), __file__))
@@ -21,29 +23,26 @@ def setup_model(node_name, model_name, batch_size):
     import torch
     import os
 
+    model_variants = {
+        'resnet18': models.resnet18,
+        'resnet34': models.resnet34,
+        'resnet50': models.resnet50,
+        'resnet101': models.resnet101,
+        'resnet152': models.resnet152,
+    } 
+    # TODO cpu and gpu from env variable
+    model = model_variants[model_name](pretrained=True)
 
-    model_local_path = "./yolov5_torchhub"
-    # model_name = "yolov5n"
-    torch.hub.set_dir(model_local_path)
-    model = torch.hub.load('ultralytics/yolov5', model_name)
-    # loc = f"/mnt/myshareddir/torchhub/{model_name}"
-    loc = f"{TEMP_MODELS_PATH}/{model_name}"
+    model_dir = f'{TEMP_MODELS_PATH}/model.pt'
+    torch.save(
+        model.state_dict(),
+        model_dir)
 
-    dirs = os.listdir(model_local_path)
-    for d in dirs:
-        if os.path.isdir(f"{model_local_path}/{d}"):
-            
-            os.system(f"mkdir {loc}")
-            os.system(f"mv {model_local_path}/{d}/* {loc}")
-            os.system(f"rm -rf {model_local_path}")
+    os.system(f"mc mb minio/torchhub/resnet-1/{model_name} -p")
+    os.system(f"mc cp -r {model_dir}"
+              f" minio/torchhub/resnet-1/{model_name}")
 
-    os.system(f"sudo mv {model_name}.pt {loc}")
-
-    os.system(f"mc mb minio/torchhub/yolo/{model_name} -p")
-    os.system(f"mc cp -r {loc}"
-              f" minio/torchhub/yolo/{model_name}")
-
-    os.system(f"rm -r {loc}")
+    os.system(f"rm -r {model_dir}")
 
 
 def models_processing(
@@ -58,7 +57,7 @@ def models_processing(
 @click.option(
     '--pipeline-name', required=True, type=str, default='video')
 @click.option(
-    '--node-name', required=True, type=str, default='crop')
+    '--node-name', required=True, type=str, default='classification')
 def main(pipeline_name: str, node_name: str):
     with open(MODELS_METADATA_PATH, 'r') as cf:
         models_metadata = yaml.safe_load(cf)

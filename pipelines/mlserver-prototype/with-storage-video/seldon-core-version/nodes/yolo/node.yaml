@@ -21,7 +21,7 @@ spec:
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://torchhub/yolov5m"
+            - "s3://torchhub/yolo/yolov5m"
             - "/mnt/models/yolov5m"
           volumeMounts:
           - mountPath: /mnt/models

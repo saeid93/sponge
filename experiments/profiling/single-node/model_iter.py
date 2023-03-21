@@ -389,7 +389,7 @@ def backup(series):
 
 @click.command()
 @click.option(
-    '--config-name', required=True, type=str, default='5-config-resnet-human')
+    '--config-name', required=True, type=str, default='1-config-audio')
 def main(config_name: str):
     config_path = os.path.join(
         NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")

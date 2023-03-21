@@ -1,7 +1,0 @@
-{
-    "name": "mock-one",
-    "implementation": "models.MockOne",
-    "parameters": {
-        "uri": "./fakeuri"
-    }
-}

@@ -15,6 +15,7 @@ import asyncio
 from barazmoon import Data
 from barazmoon import MLServerAsyncGrpc
 from pprint import PrettyPrinter
+from datasets import load_dataset
 pp = PrettyPrinter(indent=4)
 try:
     config.load_kube_config()
@@ -81,7 +82,8 @@ def setup_node(node_name: str, cpu_request: str,
     # checks if the pods are ready each 5 seconds
     loop_timeout = 5
     while True:
-        models_loaded, svc_loaded, container_loaded = False, False, False
+        # models_loaded, svc_loaded, container_loaded = False, False, False
+        models_loaded, container_loaded = False, False
         print(f'waited for {loop_timeout} to check if the pods are up')
         time.sleep(loop_timeout)
         model_pods = kube_api.list_namespaced_pod(
@@ -111,19 +113,23 @@ def setup_node(node_name: str, cpu_request: str,
         if all(all_model_pods):
             container_loaded = True
         else: continue
-        if not no_engine:
-            svc_pods = kube_api.list_namespaced_pod(
-                namespace=NAMESPACE,
-                label_selector=f"seldon-deployment-id={node_name}-{node_name}")
-            for pod in svc_pods.items:
-                if pod.status.phase == "Running":
-                    svc_loaded = True
-                for container_status in pod.status.container_statuses:
-                    if container_status.ready:
-                        container_loaded = True
-                    else: continue
-                else: continue
-        if models_loaded and svc_loaded and container_loaded:
+        # if not no_engine:
+        #     svc_pods = kube_api.list_namespaced_pod(
+        #         namespace=NAMESPACE,
+        #         label_selector=f"seldon-deployment-id={node_name}-{node_name}")
+        #     for pod in svc_pods.items:
+        #         if pod.status.phase == "Running":
+        #             svc_loaded = True
+        #         for container_status in pod.status.container_statuses:
+        #             if container_status.ready:
+        #                 container_loaded = True
+        #             else: continue
+        #         else: continue
+        # if models_loaded and svc_loaded and container_loaded:
+        #     print('model container completely loaded!')
+        #     break
+        a = 1
+        if models_loaded and container_loaded:
             print('model container completely loaded!')
             break
 
@@ -327,17 +333,23 @@ def setup_runner_pipeline(pipeline_name: str,
 
 def load_data(data_type: str, pipeline_path: str):
     if data_type == 'audio':
-        input_sample_path = os.path.join(
-            pipeline_path, 'input-sample.json'
-        )
-        input_sample_shape_path = os.path.join(
-            pipeline_path, 'input-sample-shape.json'
-        )
-        with open(input_sample_path, 'r') as openfile:
-            data = json.load(openfile)
-        with open(input_sample_shape_path, 'r') as openfile:
-            data_shape = json.load(openfile)
-            data_shape = data_shape['data_shape']
+        ds = load_dataset(
+            "hf-internal-testing/librispeech_asr_demo",
+            "clean",
+            split="validation")
+        data = ds[0]["audio"]["array"]
+        data_shape = [len(data)]
+        # input_sample_path = os.path.join(
+        #     pipeline_path, 'input-sample.json'
+        # )
+        # input_sample_shape_path = os.path.join(
+        #     pipeline_path, 'input-sample-shape.json'
+        # )
+        # with open(input_sample_path, 'r') as openfile:
+        #     data = json.load(openfile)
+        # with open(input_sample_shape_path, 'r') as openfile:
+        #     data_shape = json.load(openfile)
+        #     data_shape = data_shape['data_shape']
     elif data_type == 'text':
         input_sample_path = os.path.join(
             pipeline_path, 'input-sample.txt'
@@ -422,7 +434,7 @@ def load_test(
 
     endpoint = "localhost:32000"
     deployment_name = pipeline_name
-    model = None
+    model = pipeline_name
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
     load_tester = MLServerAsyncGrpc(

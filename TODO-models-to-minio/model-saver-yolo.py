@@ -39,9 +39,9 @@ def setup_model(node_name, model_name, batch_size):
 
     os.system(f"sudo mv {model_name}.pt {loc}")
 
-    os.system(f"mc mb minio/torchhub/yolo/{model_name} -p")
+    os.system(f"mc mb minio/torchhub/yolo -p")
     os.system(f"mc cp -r {loc}"
-              f" minio/torchhub/yolo/{model_name}")
+              f" minio/torchhub/yolo")
 
     os.system(f"rm -r {loc}")
 

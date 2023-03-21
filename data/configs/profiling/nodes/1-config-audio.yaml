@@ -1,16 +1,16 @@
-series: 100
+series: 400
 series_meta: 'checking effect of batch size,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 pipeline_name: audio-qa
 node_name: audio
 data_type: audio
-timeout: 120
+timeout: 1
 mode: step
 model_variants:
-  - facebook/s2t-small-librispeech-asr
-  # - facebook/s2t-medium-librispeech-asr
-  # - facebook/s2t-large-librispeech-asr
-  # - facebook/wav2vec2-base-960h
-  # - facebook/wav2vec2-large-960h
+  - facebook-s2t-small-librispeech-asr
+  # - facebook-s2t-medium-librispeech-asr
+  # - facebook-s2t-large-librispeech-asr
+  # - facebook-wav2vec2-base-960h
+  # - facebook-wav2vec2-large-960h
 max_batch_size:
   - '1'
   # - '2'
