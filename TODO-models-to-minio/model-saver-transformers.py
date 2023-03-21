@@ -64,9 +64,9 @@ def models_processing(
 
 @click.command()
 @click.option(
-    '--pipeline-name', required=True, type=str, default='nlp')
+    '--pipeline-name', required=True, type=str, default='audio-qa')
 @click.option(
-    '--node-name', required=True, type=str, default='nlp-trans')
+    '--node-name', required=True, type=str, default='nlp-qa')
 def main(pipeline_name: str, node_name: str):
     with open(MODELS_METADATA_PATH, 'r') as cf:
         models_metadata = yaml.safe_load(cf)

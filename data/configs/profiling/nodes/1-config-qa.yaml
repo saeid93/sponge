@@ -1,15 +1,15 @@
-series: 1
+series: 402
 series_meta: testing static trace
 pipeline_name: audio-qa
 node_name: nlp-qa 
 data_type: text
-timeout: 120
+timeout: 1 
 mode: step
 model_variants:
-  - deepset/roberta-base-squad2
-  # - deepset/xlm-roberta-large-squad2
+  - deepset-roberta-base-squad2
+  # - deepset-xlm-roberta-large-squad2
   # - distilbert-base-cased-distilled-squad
-  # - deepset/xlm-roberta-base-squad2
+  # - deepset-xlm-roberta-base-squad2
 max_batch_size:
   # - '1'
   - '4'
@@ -37,7 +37,7 @@ repetition: 3
 workload_config:
   loads_to_test:
   - 1
-  load_duration: 120
+  load_duration: 30
 # workload_type: twitter
 # workload_config:
 #   - start: '3:5:0'

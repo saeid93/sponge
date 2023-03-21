@@ -332,6 +332,21 @@ def setup_runner_pipeline(pipeline_name: str,
             break
 
 def load_data(data_type: str, pipeline_path: str):
+
+    request = {
+        'times': {
+            'models': {
+                'dummy': {
+                    'arrival': 1672276157.286681,
+                    'serving': 1672276157.2869108
+                    }
+                }
+            },
+    }
+    custom_parameters = str([str(request['times']['models'])])
+    # custom_parameters = {'times': str(times)}
+
+
     if data_type == 'audio':
         ds = load_dataset(
             "hf-internal-testing/librispeech_asr_demo",
@@ -373,7 +388,7 @@ def load_data(data_type: str, pipeline_path: str):
     data_1 = Data(
         data=data,
         data_shape=data_shape,
-        custom_parameters={'custom': 'custom'},
+        custom_parameters={'times': str(custom_parameters)},
     )
 
     # Data list
