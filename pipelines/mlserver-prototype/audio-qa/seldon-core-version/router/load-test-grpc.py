@@ -6,14 +6,16 @@ from datasets import load_dataset
 import asyncio
 import time
 import numpy as np
+import mlserver.types as types
 
-
-load = 1
+load = 10
 test_duration = 10
 variant = 0
-platform = 'seldon'
+platform = 'mlserver'
 mode = 'exponential'
 
+# INFO this scripts is using https://github.com/reconfigurable-ml-pipeline/load_tester/tree/saeed
+# for load testing, can be substituted with any other load test scripts
 
 # single node inference
 if platform == 'seldon':
@@ -24,7 +26,7 @@ if platform == 'seldon':
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == 'mlserver':
     endpoint = "localhost:8081"
-    model = 'audio'
+    model = 'router'
     metadata = []
 
 data_type = 'audio'
@@ -35,7 +37,7 @@ ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
     "clean",
     split="validation")
-data = ds[0]["audio"]["array"]
+data = ds[0]["audio"]["array"][1:500]
 data_shape = [len(data)]
 custom_parameters = {'custom_1': 'test_1'}
 data_1 = Data(
@@ -49,7 +51,7 @@ ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
     "clean",
     split="validation")
-data = ds[0]["audio"]["array"]
+data = ds[0]["audio"]["array"][1:500]
 data_shape = [len(data)]
 custom_parameters = {'custom_2': 'test_2'}
 data_2 = Data(
@@ -72,7 +74,8 @@ load_tester = MLServerAsyncGrpc(
     model=model,
     data=data,
     mode=mode, # options - step, equal, exponential
-    data_type=data_type)
+    data_type=data_type,
+    benchmark_duration=1)
 
 responses = asyncio.run(load_tester.start())
 
@@ -127,12 +130,12 @@ import numpy as np
 # plt.show()
 
 # server arrival latency
-server_arrival_latency = []
-for sec_resps in responses:
-    for resp in sec_resps:
-        times = resp['times']
-        server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
-        server_arrival_latency.append(server_recieving_time)
+# server_arrival_latency = []
+# for sec_resps in responses:
+#     for resp in sec_resps:
+#         times = resp['times']
+#         server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
+#         server_arrival_latency.append(server_recieving_time)
 # fig, ax = plt.subplots()
 # ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
 # ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
@@ -140,5 +143,6 @@ for sec_resps in responses:
 # fig.savefig(f"custom-{platform}-load-{load}-test_duration-{test_duration}.png")
 # plt.show()
 
-print(f"{np.average(server_arrival_latency)}=")
-print(responses[0][0])
+# print(f"{np.average(server_arrival_latency)}=")
+# print(responses[0][0])
+print(responses)
