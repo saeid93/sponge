@@ -36,6 +36,16 @@ async def send_requests(ch, model_name, payload, metadata):
         metadata=metadata)
     return response
 
+# def send_requests(ch, model_name, payload, metadata):
+#     grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
+
+#     inference_request_g = converters.ModelInferRequestConverter.from_types(
+#         payload, model_name=model_name, model_version=None
+#     )
+#     response = grpc_stub.ModelInfer(
+#         request=inference_request_g,
+#         metadata=metadata)
+#     return response
 
 class Router(MLModel):
     async def load(self):
@@ -47,6 +57,7 @@ class Router(MLModel):
 
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
+        t0 = time.time()
         arrival_time = time.time()
         request_input = payload.inputs[0]
         self.request_counter += 1
@@ -60,28 +71,21 @@ class Router(MLModel):
         model_name_one = 'audio'
         
         metadata_one = [("seldon", deployment_name_one), ("namespace", namespace)]
+        print(f"transform zero time: {time.time() - t0}")
+        t1 = time.time()
         payload_input = types.InferenceRequest(
             inputs=[request_input]
         )
+        print(f"trandform one time: {time.time() - t1}")
+        t2 = time.time()
         async with grpc.aio.insecure_channel(endpoint) as ch:
             output_one = await send_requests(ch, model_name_one, payload_input, metadata_one)
+        # ch = grpc.insecure_channel(endpoint)
+        # output_one = send_requests(ch, model_name_one, payload_input, metadata_one)
+
+        print(f"trandform two time: {time.time() - t2}")
+        t3 = time.time()
         inference_response_one = \
             converters.ModelInferResponseConverter.to_types(output_one)
-
-
-        # --------- model two ---------
-        deployment_name_two = 'nlp-qa'
-        model_name_two = 'nlp-qa'
-        metadata_two = [("seldon", deployment_name_two), ("namespace", namespace)]
-        input_two = inference_response_one.outputs[0]
-        payload_two = types.InferenceRequest(
-            inputs=[input_two]
-        )
-        async with grpc.aio.insecure_channel(endpoint) as ch:
-            payload = await send_requests(ch, model_name_two, payload_two, metadata_two)
-        inference_response = \
-            converters.ModelInferResponseConverter.to_types(payload)
-
-        # logger.info(f"request counter:\n{self.request_counter}\n")
-        # logger.info(f"batch counter:\n{self.batch_counter}\n")
-        return inference_response
+        print(f"trandform two time: {time.time() - t3}")
+        return inference_response_one

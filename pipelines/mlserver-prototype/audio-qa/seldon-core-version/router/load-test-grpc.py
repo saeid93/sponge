@@ -8,8 +8,8 @@ import time
 import numpy as np
 import mlserver.types as types
 
-load = 10
-test_duration = 10
+load = 5
+test_duration = 20
 variant = 0
 platform = 'mlserver'
 mode = 'exponential'
@@ -145,4 +145,4 @@ import numpy as np
 
 # print(f"{np.average(server_arrival_latency)}=")
 # print(responses[0][0])
-print(responses)
+# print(responses)

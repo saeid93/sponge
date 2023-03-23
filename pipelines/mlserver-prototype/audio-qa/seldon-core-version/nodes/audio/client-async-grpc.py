@@ -14,14 +14,11 @@ import json
 import asyncio
 
 
-async def send_requests(ch, payload, metadata):
-    grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
+async def send_requests(grpc_stub, payload, metadata):
 
-    inference_request_g = converters.ModelInferRequestConverter.from_types(
-        payload, model_name=model, model_version=None
-    )
+
     response = await grpc_stub.ModelInfer(
-        request=inference_request_g,
+        request=payload,
         metadata=metadata)
     return response
 
@@ -61,11 +58,23 @@ payload = types.InferenceRequest(
         )
     ]
 )
+import time
 
-
-async def main():
+async def mainn():
+    t1 = time.time()
     async with grpc.aio.insecure_channel(endpoint) as ch:
-        responses = await asyncio.gather(*[send_requests(ch, payload, metadata) for _ in range(10)])
+
+        inference_request_g = converters.ModelInferRequestConverter.from_types(
+            payload, model_name=model, model_version=None
+        )
+
+        grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
+        t2 = time.time()
+
+        l = [asyncio.create_task(send_requests(grpc_stub, inference_request_g, metadata)) for _ in range(5)]
+        print(f"creation time: {time.time() - t2}")
+        responses = await asyncio.gather(*l)
+    print(f"time: {time.time() - t1}")
 
     # inference_responses = list(map(
     #     lambda response: ModelInferResponseConverter.to_types(response), responses))
@@ -75,6 +84,6 @@ async def main():
     # outputs = list(map(
     #     lambda raw_json: json.loads(raw_json[0]), raw_jsons))
 
-    pp.pprint(responses)
+    # pp.pprint(responses)
 
-asyncio.run(main())
+asyncio.run(mainn())

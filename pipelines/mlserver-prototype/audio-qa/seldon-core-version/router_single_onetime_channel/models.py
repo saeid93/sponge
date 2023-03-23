@@ -42,6 +42,8 @@ class Router(MLModel):
         self.loaded = False
         self.request_counter = 0
         logger.info('Router loaded')
+        endpoint = "localhost:32000"
+        self.ch = grpc.aio.insecure_channel(endpoint)
         self.loaded = True
         return self.loaded
 
@@ -63,25 +65,25 @@ class Router(MLModel):
         payload_input = types.InferenceRequest(
             inputs=[request_input]
         )
-        async with grpc.aio.insecure_channel(endpoint) as ch:
-            output_one = await send_requests(ch, model_name_one, payload_input, metadata_one)
+        # async with grpc.aio.insecure_channel(endpoint) as ch:
+        output_one = await send_requests(self.ch, model_name_one, payload_input, metadata_one)
         inference_response_one = \
             converters.ModelInferResponseConverter.to_types(output_one)
 
 
         # --------- model two ---------
-        deployment_name_two = 'nlp-qa'
-        model_name_two = 'nlp-qa'
-        metadata_two = [("seldon", deployment_name_two), ("namespace", namespace)]
-        input_two = inference_response_one.outputs[0]
-        payload_two = types.InferenceRequest(
-            inputs=[input_two]
-        )
-        async with grpc.aio.insecure_channel(endpoint) as ch:
-            payload = await send_requests(ch, model_name_two, payload_two, metadata_two)
-        inference_response = \
-            converters.ModelInferResponseConverter.to_types(payload)
+        # deployment_name_two = 'nlp-qa'
+        # model_name_two = 'nlp-qa'
+        # metadata_two = [("seldon", deployment_name_two), ("namespace", namespace)]
+        # input_two = inference_response_one.outputs[0]
+        # payload_two = types.InferenceRequest(
+        #     inputs=[input_two]
+        # )
+        # async with grpc.aio.insecure_channel(endpoint) as ch:
+        #     payload = await send_requests(ch, model_name_two, payload_two, metadata_two)
+        # inference_response = \
+        #     converters.ModelInferResponseConverter.to_types(payload)
 
         # logger.info(f"request counter:\n{self.request_counter}\n")
         # logger.info(f"batch counter:\n{self.batch_counter}\n")
-        return inference_response
+        return inference_response_one

@@ -8,8 +8,8 @@ import time
 import numpy as np
 
 
-load = 1
-test_duration = 10
+load = 5
+test_duration = 1
 variant = 0
 platform = 'seldon'
 mode = 'exponential'
@@ -78,8 +78,8 @@ responses = asyncio.run(load_tester.start())
 
 print(f'{(time.time() - start_time):2.2}s spent in total')
 
-import matplotlib.pyplot as plt
-import numpy as np
+# import matplotlib.pyplot as plt
+# import numpy as np
 
 # Through away initial seconds results
 # responses = responses[3:]
@@ -127,12 +127,12 @@ import numpy as np
 # plt.show()
 
 # server arrival latency
-server_arrival_latency = []
-for sec_resps in responses:
-    for resp in sec_resps:
-        times = resp['times']
-        server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
-        server_arrival_latency.append(server_recieving_time)
+# server_arrival_latency = []
+# for sec_resps in responses:
+#     for resp in sec_resps:
+#         times = resp['times']
+#         server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
+#         server_arrival_latency.append(server_recieving_time)
 # fig, ax = plt.subplots()
 # ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
 # ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
@@ -140,5 +140,5 @@ for sec_resps in responses:
 # fig.savefig(f"custom-{platform}-load-{load}-test_duration-{test_duration}.png")
 # plt.show()
 
-print(f"{np.average(server_arrival_latency)}=")
-print(responses[0][0])
+# print(f"{np.average(server_arrival_latency)}=")
+# print(responses[0][0])

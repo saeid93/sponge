@@ -38,9 +38,9 @@ spec:
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
-              value: "1"
+              value: "4"
             - name: NUM_THREADS
-              value: "1"
+              value: "4"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -49,7 +49,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 2
     - spec:
         containers:
         - image: sdghafouri/audio-qa-pipelines-mlserver-bytes:nlpqa
@@ -80,9 +80,9 @@ spec:
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
-              value: "1"
+              value: "4"
             - name: NUM_THREADS
-              value: "1"
+              value: "4"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -91,7 +91,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 2
     graph:
       name: audio
       type: MODEL

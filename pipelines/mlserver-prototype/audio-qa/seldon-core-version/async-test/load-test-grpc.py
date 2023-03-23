@@ -1,55 +1,69 @@
+from dataclasses import dataclass
+from urllib import response
 from barazmoon import MLServerAsyncGrpc
 from barazmoon import Data
+from datasets import load_dataset
 import asyncio
 import time
 import numpy as np
+import mlserver.types as types
 
-load = 5
-test_duration = 10
+load = 10
+test_duration = 20
 variant = 0
-platform = 'seldon'
+platform = 'mlserver'
 mode = 'exponential'
 
-request = {
-    'times': {
-        'models': {
-            'audio': {
-                'arrival': 1672276157.286681,
-                'serving': 1672276157.2869108
-                }
-            }
-        },
-    'model_name': 'nlp-qa',
-    'outputs': [{'data': 'mister quilter is the apostle of the middle classes and we are glad to welcome his gospel'}]
-}
+# INFO this scripts is using https://github.com/reconfigurable-ml-pipeline/load_tester/tree/saeed
+# for load testing, can be substituted with any other load test scripts
 
+# single node inference
+if platform == 'seldon':
+    endpoint = "localhost:32000"
+    deployment_name = 'audio'
+    model = 'audio'
+    namespace = "default"
+    metadata = [("seldon", deployment_name), ("namespace", namespace)]
+elif platform == 'mlserver':
+    endpoint = "localhost:8081"
+    model = 'router'
+    metadata = []
 
-times = str([str(request['times']['models'])])
-data = request['outputs'][0]['data']
+data_type = 'audio'
+workload = [load] * test_duration
 
-data_shape = [1]
-custom_parameters = {'times': str(times)}
+# Data 1
+ds = load_dataset(
+    "hf-internal-testing/librispeech_asr_demo",
+    "clean",
+    split="validation")
+data = ds[0]["audio"]["array"][1:500]
+data_shape = [len(data)]
+custom_parameters = {'custom_1': 'test_1'}
 data_1 = Data(
     data=data,
     data_shape=data_shape,
     custom_parameters=custom_parameters
 )
 
-# single node inference
-if platform == 'seldon':
-    endpoint = "localhost:32000"
-    deployment_name = 'nlp-qa'
-    model = 'nlp-qa'
-    namespace = "default"
-    metadata = [("seldon", deployment_name), ("namespace", namespace)]
-elif platform == 'mlserver':
-    endpoint = "localhost:8081"
-    model = 'nlp-qa'
-    metadata = []
-
-workload = [load] * test_duration
+# Data 2
+ds = load_dataset(
+    "hf-internal-testing/librispeech_asr_demo",
+    "clean",
+    split="validation")
+data = ds[0]["audio"]["array"][1:500]
 data_shape = [len(data)]
-data_type = 'text'
+custom_parameters = {'custom_2': 'test_2'}
+data_2 = Data(
+    data=data,
+    data_shape=data_shape,
+    custom_parameters=custom_parameters
+)
+
+# Data list
+data = []
+data.append(data_1)
+data.append(data_2)
 
 start_time = time.time()
 
@@ -58,10 +72,10 @@ load_tester = MLServerAsyncGrpc(
     metadata=metadata,
     workload=workload,
     model=model,
-    data=[data_1],
+    data=data,
     mode=mode, # options - step, equal, exponential
-    data_shape=data_shape,
-    data_type=data_type)
+    data_type=data_type,
+    benchmark_duration=1)
 
 responses = asyncio.run(load_tester.start())
 
@@ -69,6 +83,9 @@ print(f'{(time.time() - start_time):2.2}s spent in total')
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+# Through away initial seconds results
+# responses = responses[3:]
 
 # # roundtrip latency
 # roundtrip_lat = []
@@ -112,14 +129,13 @@ import numpy as np
 # fig.savefig(f"grpc-compressed-audio-{platform}_variant_{variant}-server_arrival_time_from_start-load-{load}-test_duration-{test_duration}.png")
 # plt.show()
 
-model = 'nlp-qa'
 # server arrival latency
-server_arrival_latency = []
-for sec_resps in responses:
-    for resp in sec_resps:
-        times = resp['times']
-        server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
-        server_arrival_latency.append(server_recieving_time)
+# server_arrival_latency = []
+# for sec_resps in responses:
+#     for resp in sec_resps:
+#         times = resp['times']
+#         server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
+#         server_arrival_latency.append(server_recieving_time)
 # fig, ax = plt.subplots()
 # ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
 # ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
@@ -127,5 +143,6 @@ for sec_resps in responses:
 # fig.savefig(f"custom-{platform}-load-{load}-test_duration-{test_duration}.png")
 # plt.show()
 
-print(f"{np.average(server_arrival_latency)}=")
-print(responses[0][0])
+# print(f"{np.average(server_arrival_latency)}=")
+# print(responses[0][0])
+print(responses)

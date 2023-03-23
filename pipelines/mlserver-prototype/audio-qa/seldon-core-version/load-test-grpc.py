@@ -8,8 +8,8 @@ import json
 import time
 import numpy as np
 
-load = 30
-test_duration = 5
+load = 5
+test_duration = 10
 variant = 0
 platform = 'seldon'
 mode = 'exponential'
