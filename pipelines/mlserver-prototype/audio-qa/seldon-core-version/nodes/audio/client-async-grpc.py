@@ -13,35 +13,36 @@ import mlserver.types as types
 import json
 import asyncio
 
+async def request_after_grpc(grpc_stub, payload, metadata):
 
-async def send_requests(grpc_stub, payload, metadata):
-
+    await asyncio.sleep(0.001)
 
     response = await grpc_stub.ModelInfer(
         request=payload,
         metadata=metadata)
+
     return response
 
 # single node mlserver
-# endpoint = "localhost:8081"
-# model = 'node-one'
-# metadata = []
+endpoint = "localhost:8081"
+model = 'audio'
+metadata = []
 
 
 # single node seldon+mlserver
-endpoint = "localhost:32000"
-deployment_name = 'audio'
-model = 'audio'
-namespace = "default"
-metadata = [("seldon", deployment_name), ("namespace", namespace)]
+# endpoint = "localhost:32000"
+# deployment_name = 'audio'
+# model = 'audio'
+# namespace = "default"
+# metadata = [("seldon", deployment_name), ("namespace", namespace)]
 
-batch_test = 5
+batch_test = 10
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
     "clean",
     split="validation")
 
-input_data = ds[0]["audio"]["array"][1:500]
+input_data = ds[0]["audio"]["array"]
 data_shape = [len(input_data)]
 custom_parameters = {'custom_2': 'test_2'}
 payload = types.InferenceRequest(
@@ -71,9 +72,12 @@ async def mainn():
         grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
         t2 = time.time()
 
-        l = [asyncio.create_task(send_requests(grpc_stub, inference_request_g, metadata)) for _ in range(5)]
+        tasks = [asyncio.ensure_future(request_after_grpc(grpc_stub, inference_request_g, metadata)) for _ in range(batch_test)]
         print(f"creation time: {time.time() - t2}")
-        responses = await asyncio.gather(*l)
+        responses = await asyncio.gather(*tasks)
+        # raw_jsons = list(map(
+        #     lambda inference_response: StringRequestCodec.decode_response(
+        #         inference_response), responses))
     print(f"time: {time.time() - t1}")
 
     # inference_responses = list(map(

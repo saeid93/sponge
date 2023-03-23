@@ -1,21 +1,21 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: node-one
+  name: router
 spec:
   protocol: v2
-  name: node-one
+  name: router
   # annotations:
   #   seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: node-one
+  - name: router
     annotations:
       seldon.io/no-engine: "true" 
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/mock-mlserver-bytes:node-one
-          name: node-one
+        - image: sdghafouri/mock-mlserver-bytes:router
+          name: router
           imagePullPolicy: Always
           resources:
             requests:
@@ -25,10 +25,10 @@ spec:
               cpu: '4'
               memory: 4Gi
           env:
-            - name: MODEL_VARIANT
-              value: facebook/s2t-small-librispeech-asr
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+            # - name: MODEL_VARIANT
+            #   value: facebook/s2t-small-librispeech-asr
+            # - name: TRANSFORMERS_CACHE
+            #   value: /opt/mlserver/.cache
             - name: TASK
               value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -51,9 +51,9 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 2
+      replicas: 1
     graph:
-      name: node-one
+      name: router
       type: MODEL
       children: []
     svcOrchSpec:

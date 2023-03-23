@@ -8,7 +8,7 @@ import time
 import numpy as np
 import mlserver.types as types
 
-load = 5
+load = 20
 test_duration = 20
 variant = 0
 platform = 'mlserver'
@@ -37,7 +37,7 @@ ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
     "clean",
     split="validation")
-data = ds[0]["audio"]["array"][1:500]
+data = ds[0]["audio"]["array"]
 data_shape = [len(data)]
 custom_parameters = {'custom_1': 'test_1'}
 data_1 = Data(
@@ -51,7 +51,7 @@ ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
     "clean",
     split="validation")
-data = ds[0]["audio"]["array"][1:500]
+data = ds[0]["audio"]["array"]
 data_shape = [len(data)]
 custom_parameters = {'custom_2': 'test_2'}
 data_2 = Data(

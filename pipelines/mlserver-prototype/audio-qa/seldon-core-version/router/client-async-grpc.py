@@ -27,14 +27,14 @@ async def send_requests(ch, payload, metadata):
 
 # single node mlserver
 # endpoint = "localhost:8081"
-# model = 'node-one'
+# model = 'router'
 # metadata = []
 
 
 # single node seldon+mlserver
 endpoint = "localhost:32000"
-deployment_name = 'audio'
-model = 'audio'
+deployment_name = 'router'
+model = 'router'
 namespace = "default"
 metadata = [("seldon", deployment_name), ("namespace", namespace)]
 
@@ -44,7 +44,7 @@ ds = load_dataset(
     "clean",
     split="validation")
 
-input_data = ds[0]["audio"]["array"][1:500]
+input_data = ds[0]["audio"]["array"]
 data_shape = [len(input_data)]
 custom_parameters = {'custom_2': 'test_2'}
 payload = types.InferenceRequest(
