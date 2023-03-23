@@ -51,18 +51,15 @@ class Router(MLModel):
         request_input = payload.inputs[0]
         self.request_counter += 1
 
-        endpoint = "10.152.183.125"
+        endpoint = "localhost:32000"
         namespace = "default"
         logger.info(f"request counter:\n{self.request_counter}\n")
 
         # --------- model one ---------
-        # deployment_name_one = 'audio'
-        # model_name_one = 'audio'   
-        # metadata_one = [("seldon", deployment_name_one), ("namespace", namespace)]
         deployment_name_one = 'audio'
         model_name_one = 'audio'
+        
         metadata_one = [("seldon", deployment_name_one), ("namespace", namespace)]
-
         payload_input = types.InferenceRequest(
             inputs=[request_input]
         )
@@ -73,13 +70,9 @@ class Router(MLModel):
 
 
         # --------- model two ---------
-        # deployment_name_two = 'nlp-qa'
-        # model_name_two = 'nlp-qa'
-        # metadata_two = [("seldon", deployment_name_two), ("namespace", namespace)]
         deployment_name_two = 'nlp-qa'
         model_name_two = 'nlp-qa'
         metadata_two = [("seldon", deployment_name_two), ("namespace", namespace)]
-
         input_two = inference_response_one.outputs[0]
         payload_two = types.InferenceRequest(
             inputs=[input_two]

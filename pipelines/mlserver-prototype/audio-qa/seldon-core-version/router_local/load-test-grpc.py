@@ -8,7 +8,7 @@ import time
 import numpy as np
 import mlserver.types as types
 
-load = 20
+load = 5
 test_duration = 20
 variant = 0
 platform = 'mlserver'
@@ -20,8 +20,8 @@ mode = 'exponential'
 # single node inference
 if platform == 'seldon':
     endpoint = "localhost:32000"
-    deployment_name = 'audio'
-    model = 'audio'
+    deployment_name = 'router'
+    model = 'router'
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == 'mlserver':

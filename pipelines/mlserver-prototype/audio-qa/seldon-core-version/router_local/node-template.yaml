@@ -1,48 +1,48 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: router
+  name: {{ name }}
 spec:
   protocol: v2
-  name: router
+  name: {{ name }}
   # annotations:
   #   seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: router
+  - name: {{ name }}
     annotations:
-      seldon.io/no-engine: "true" 
+      seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/mock-mlserver-bytes:router
-          name: router
+        - image: sdghafouri/mock-mlserver-bytes:node-one
+          name: audio
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '4'
-              memory: 4Gi
+              cpu: '{{ cpu_request }}'
+              memory: '{{ memory_request }}'
             limits:
-              cpu: '4'
-              memory: 4Gi
+              cpu: '{{ cpu_limit }}'
+              memory: '{{ memory_limit }}'
           env:
-            # - name: MODEL_VARIANT
-            #   value: facebook/s2t-small-librispeech-asr
-            # - name: TRANSFORMERS_CACHE
-            #   value: /opt/mlserver/.cache
+            - name: MODEL_VARIANT
+              value: {{ model_variant }}
+            - name: TRANSFORMERS_CACHE
+              value: /opt/mlserver/.cache
             - name: TASK
               value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "1"
+              value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: "1"
+              value: '{{ max_batch_time }}'
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
             - name: USE_THREADING
-              value: "True"
+              value: '{{use_threading}}'
             - name: NUM_INTEROP_THREADS
-              value: "1"
+              value: '{{num_interop_threads}}'
             - name: NUM_THREADS
-              value: "1"
+              value: '{{num_threads}}'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -51,12 +51,15 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: {{ replicas }}
     graph:
-      name: router
+      name: audio
       type: MODEL
       children: []
     svcOrchSpec:
+      env:
+      - name: SELDON_LOG_LEVEL
+        value: DEBUG
       resources:
         requests:
           cpu: '4'
@@ -64,13 +67,6 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
-      # readinessProbe:
-      #   failureThreshold: 3
-      #   initialDelaySeconds: 0
-      #   periodSeconds: 1
-      #   successThreshold: 1
-      #   tcpSocket:
-      #     port: 9000
-      #   timeoutSeconds: 1
-    # labels:
-    #   sidecar.istio.io/inject: "true"
+    labels:
+      sidecar.istio.io/inject: "true"
+

@@ -75,7 +75,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 3
+      replicas: 1
     graph:
       name: audio
       type: MODEL
