@@ -19,14 +19,14 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '4'
+              cpu: '2'
               memory: 4Gi
             limits:
-              cpu: '4'
+              cpu: '2'
               memory: 4Gi
           env:
             - name: MODEL_LISTS
-              value: '["audio", "nlp-qa"]'
+              value: '["yolo", "resnet-human"]'
             #   value: automatic-speech-recognition
             # - name: MLSERVER_MODEL_MAX_BATCH_SIZE
             #   value: "1"

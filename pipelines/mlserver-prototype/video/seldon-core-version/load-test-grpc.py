@@ -39,8 +39,8 @@ image_size = 'input-sample-shape.json'
 # single node inference
 if platform == 'seldon':
     endpoint = "localhost:32000"
-    deployment_name = 'video'
-    model = None
+    deployment_name = 'router'
+    model = 'router'
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == 'mlserver':

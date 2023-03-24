@@ -39,10 +39,10 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '16'
+              cpu: '2'
               memory: 4Gi
             limits:
-              cpu: '16'
+              cpu: '2'
               memory: 4Gi
           volumeMounts:
           - mountPath: /mnt/models
@@ -64,9 +64,9 @@ spec:
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
-              value: "16"
+              value: "2"
             - name: NUM_THREADS
-              value: "16"
+              value: "2"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

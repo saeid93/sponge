@@ -8,8 +8,8 @@ import json
 import time
 import numpy as np
 
-load = 1
-test_duration = 5
+load = 5
+test_duration = 20
 variant = 0
 platform = 'seldon'
 mode = 'exponential'
@@ -17,8 +17,8 @@ mode = 'exponential'
 # single node inference
 if platform == 'seldon':
     endpoint = "localhost:32000"
-    deployment_name = 'audio-sent'
-    model = None
+    deployment_name = 'router'
+    model = 'router'
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == 'mlserver':

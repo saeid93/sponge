@@ -12,38 +12,28 @@ variant = 0
 platform = 'seldon'
 mode = 'equal'
 
-request = {
-    'times': {
-        'models': {
-            'nlp-trans': {
-                'arrival': 1672276157.286681,
-                'serving': 1672276157.2869108
-                }
-            }
-        },
-    'model_name': 'nlp-trans',
-}
+
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
 with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
     data = openfile.read()
 
-times = str([str(request['times']['models'])])
+# times = str([str(request['times']['models'])])
 
 data_shape = [1]
-custom_parameters = {'times': str(times)}
+# custom_parameters = {'times': str(times)}
 data_1 = Data(
     data=data,
-    data_shape=data_shape,
-    custom_parameters=custom_parameters
+    data_shape=data_shape
+    # custom_parameters=custom_parameters
 )
 
 # single node inference
 if platform == 'seldon':
     endpoint = "localhost:32000"
-    deployment_name = 'nlp-sum'
-    model = 'nlp-sum'
+    deployment_name = 'router'
+    model = 'router'
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == 'mlserver':
