@@ -14,7 +14,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/mock-mlserver-bytes:router
+        - image: sdghafouri/router:router
           name: router
           imagePullPolicy: Always
           resources:
@@ -25,11 +25,8 @@ spec:
               cpu: '4'
               memory: 4Gi
           env:
-            # - name: MODEL_VARIANT
-            #   value: facebook/s2t-small-librispeech-asr
-            # - name: TRANSFORMERS_CACHE
-            #   value: /opt/mlserver/.cache
-            # - name: TASK
+            - name: MODEL_LISTS
+              value: '["audio", "nlp-qa"]'
             #   value: automatic-speech-recognition
             # - name: MLSERVER_MODEL_MAX_BATCH_SIZE
             #   value: "1"
@@ -41,8 +38,8 @@ spec:
             #   value: "True"
             # - name: NUM_INTEROP_THREADS
             #   value: "1"
-            - name: NUM_THREADS
-              value: "1"
+            # - name: NUM_THREADS
+            #   value: "1"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

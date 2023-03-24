@@ -1,7 +1,7 @@
 import os
 import time
 from mlserver import MLModel
-# import torch
+import json
 from mlserver.logging import logger
 from mlserver.types import (
     InferenceRequest,
@@ -20,9 +20,17 @@ try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
     logger.info(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
 except KeyError as e:
-    PREDICTIVE_UNIT_ID = 'audio'
+    PREDICTIVE_UNIT_ID = 'router'
     logger.info(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
+
+
+try:
+    MODEL_LISTS = json.loads(os.environ['MODEL_LISTS'])
+    logger.info(f'MODEL_LISTS set to: {MODEL_LISTS}')
+except KeyError as e:
+    raise ValueError(
+        f"MODEL_LISTS env variable not set!")
 
 
 async def send_requests(ch, model_name, payload):
@@ -37,6 +45,24 @@ async def send_requests(ch, model_name, payload):
     return response
 
 
+async def model_infer(model_name, request_input):
+    try:
+        inputs = request_input.outputs[0]
+        logger.info(f'first node {model_name} data extracted!')
+    except:
+        inputs = request_input.inputs[0]
+        logger.info(f'second node {model_name} data extracted!')
+    payload_input = types.InferenceRequest(
+        inputs=[inputs]
+    )
+    endpoint=f"{model_name}-{model_name}.default.svc.cluster.local:9500"
+    async with grpc.aio.insecure_channel(endpoint) as ch:
+        output_one = await send_requests(ch, model_name, payload_input)
+    inference_response = \
+        converters.ModelInferResponseConverter.to_types(output_one)
+    return inference_response
+
+
 class Router(MLModel):
     async def load(self):
         self.loaded = False
@@ -47,32 +73,16 @@ class Router(MLModel):
 
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
-        arrival_time = time.time()
-        request_input = payload.inputs[0]
+        # arrival_time = time.time()
+        # request_input = payload.inputs[0]
         self.request_counter += 1
-        logger.info(f"request counter:\n{self.request_counter}\n")
+        logger.info(f"Request counter:\n{self.request_counter}\n")
 
-        # ---------- first model ----------
-        model_name_one = 'audio'
-        payload_input = types.InferenceRequest(
-            inputs=[request_input]
-        )
-        endpoint="audio-audio-audio.default.svc.cluster.local:9500"
-        async with grpc.aio.insecure_channel(endpoint) as ch:
-            output_one = await send_requests(ch, model_name_one, payload_input)
-        inference_response_one = \
-            converters.ModelInferResponseConverter.to_types(output_one)
-
-        # ---------- second ----------
-        model_name_two = 'nlp-qa'
-        endpoint="nlp-qa-nlp-qa-nlp-qa.default.svc.cluster.local:9500"
-        input_two = inference_response_one.outputs[0]
-        payload_two = types.InferenceRequest(
-            inputs=[input_two]
-        )
-        async with grpc.aio.insecure_channel(endpoint) as ch:
-            payload = await send_requests(ch, model_name_two, payload_two)
-        inference_response = \
-            converters.ModelInferResponseConverter.to_types(payload)
-
-        return inference_response
+        output = payload
+        for model_name in MODEL_LISTS:
+            logger.info(f"Getting inference responses {model_name}")
+            output = await model_infer(
+                model_name=model_name,
+                request_input=output
+                )
+        return output

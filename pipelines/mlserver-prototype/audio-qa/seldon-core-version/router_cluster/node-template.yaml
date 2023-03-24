@@ -14,7 +14,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/mock-mlserver-bytes:node-one
+        - image: sdghafouri/router:node-one
           name: audio
           imagePullPolicy: Always
           resources:
