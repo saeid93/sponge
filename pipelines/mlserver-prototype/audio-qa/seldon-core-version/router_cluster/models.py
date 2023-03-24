@@ -65,7 +65,8 @@ class Router(MLModel):
         payload_input = types.InferenceRequest(
             inputs=[request_input]
         )
-        endpoint = '10.152.183.251:9500'
+        endpoint="audio-audio-audio.default.svc.cluster.local:9500"
+        # endpoint = '10.152.183.251:9500'
         async with grpc.aio.insecure_channel(endpoint) as ch:
             output_one = await send_requests(ch, model_name_one, payload_input)
         inference_response_one = \
@@ -79,8 +80,8 @@ class Router(MLModel):
         # deployment_name_two = 'nlp-qa'
         model_name_two = 'nlp-qa'
         # metadata_two = [("seldon", deployment_name_two), ("namespace", namespace)]
-
-        endpoint = "10.152.183.125:9500"
+        endpoint="nlp-qa-nlp-qa-nlp-qa.default.svc.cluster.local:9500"
+        # endpoint = "10.152.183.125:9500"
         input_two = inference_response_one.outputs[0]
         payload_two = types.InferenceRequest(
             inputs=[input_two]

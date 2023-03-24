@@ -8,7 +8,7 @@ import time
 import numpy as np
 import mlserver.types as types
 
-load = 5
+load = 10
 test_duration = 20
 variant = 0
 platform = 'seldon'

@@ -75,7 +75,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 2
     graph:
       name: audio
       type: MODEL
@@ -88,5 +88,5 @@ spec:
         limits:
           cpu: '1'
           memory: 4Gi
-    # labels:
-    #   sidecar.istio.io/inject: "true"
+    labels:
+      sidecar.istio.io/inject: "true"
