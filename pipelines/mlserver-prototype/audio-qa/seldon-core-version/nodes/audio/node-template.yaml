@@ -34,7 +34,7 @@ spec:
               name: seldon-rclone-secret
 
         containers:
-        - image: sdghafouri/audio-qa-pipelines-mlserver-bytes:audio
+        - image: sdghafouri/audio-qa-final:audio
           name: audio
           imagePullPolicy: Always
           resources:
@@ -91,6 +91,6 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
-    # labels:
-    #   sidecar.istio.io/inject: "true"
+    labels:
+      sidecar.istio.io/inject: "true"
 

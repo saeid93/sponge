@@ -34,7 +34,7 @@ spec:
               name: seldon-rclone-secret
 
         containers:
-        - image: sdghafouri/nlp-pipelines-mlserver-bytes:nlptrans
+        - image: sdghafouri/nlp-final:nlptrans
           name: nlp-trans
           imagePullPolicy: Always
           resources:
@@ -88,3 +88,5 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
+    labels:
+      sidecar.istio.io/inject: "true"

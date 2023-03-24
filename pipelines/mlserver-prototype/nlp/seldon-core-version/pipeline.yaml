@@ -12,7 +12,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/nlp-pipelines-mlserver-bytes:nlpli
+        - image: sdghafouri/nlp-final:nlpli
           name: nlp-li
           imagePullPolicy: Always
           env:
@@ -52,7 +52,7 @@ spec:
       replicas: 1
     - spec:
         containers:
-        - image: sdghafouri/nlp-pipelines-mlserver-bytes:nlptrans
+        - image: sdghafouri/nlp-final:nlptrans
           name: nlp-trans
           imagePullPolicy: Always
           env:
@@ -92,7 +92,7 @@ spec:
       replicas: 1
     - spec:
         containers:
-        - image: sdghafouri/nlp-pipelines-mlserver-bytes:nlpsum
+        - image: sdghafouri/nlp-final:nlpsum
           name: nlp-sum
           imagePullPolicy: Always
           env:

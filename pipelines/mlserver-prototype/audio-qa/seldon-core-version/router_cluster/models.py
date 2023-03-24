@@ -50,38 +50,22 @@ class Router(MLModel):
         arrival_time = time.time()
         request_input = payload.inputs[0]
         self.request_counter += 1
-
-        # namespace = "default"
         logger.info(f"request counter:\n{self.request_counter}\n")
 
-        # --------- model one ---------
-        # deployment_name_one = 'audio'
-        # model_name_one = 'audio'   
-        # metadata_one = [("seldon", deployment_name_one), ("namespace", namespace)]
-        # deployment_name_one = 'audio'
+        # ---------- first model ----------
         model_name_one = 'audio'
-        # metadata_one = [("seldon", deployment_name_one), ("namespace", namespace)]
-
         payload_input = types.InferenceRequest(
             inputs=[request_input]
         )
         endpoint="audio-audio-audio.default.svc.cluster.local:9500"
-        # endpoint = '10.152.183.251:9500'
         async with grpc.aio.insecure_channel(endpoint) as ch:
             output_one = await send_requests(ch, model_name_one, payload_input)
         inference_response_one = \
             converters.ModelInferResponseConverter.to_types(output_one)
 
-
-        # --------- model two ---------
-        # deployment_name_two = 'nlp-qa'
-        # model_name_two = 'nlp-qa'
-        # metadata_two = [("seldon", deployment_name_two), ("namespace", namespace)]
-        # deployment_name_two = 'nlp-qa'
+        # ---------- second ----------
         model_name_two = 'nlp-qa'
-        # metadata_two = [("seldon", deployment_name_two), ("namespace", namespace)]
         endpoint="nlp-qa-nlp-qa-nlp-qa.default.svc.cluster.local:9500"
-        # endpoint = "10.152.183.125:9500"
         input_two = inference_response_one.outputs[0]
         payload_two = types.InferenceRequest(
             inputs=[input_two]
@@ -91,6 +75,4 @@ class Router(MLModel):
         inference_response = \
             converters.ModelInferResponseConverter.to_types(payload)
 
-        # logger.info(f"request counter:\n{self.request_counter}\n")
-        # logger.info(f"batch counter:\n{self.batch_counter}\n")
         return inference_response

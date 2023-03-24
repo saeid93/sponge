@@ -1,6 +1,6 @@
 REPOS=(
     sdghafouri)
-IMAGE_NAME=nlp-pipelines-mlserver-bytes:nlptrans
+IMAGE_NAME=nlp-final:nlptrans
 mlserver dockerfile --include-dockerignore .
 sed -i 's/seldonio/sdghafouri/g' Dockerfile
 sed -i 's/1.2.0.dev14-slim/custom-slim/g' Dockerfile

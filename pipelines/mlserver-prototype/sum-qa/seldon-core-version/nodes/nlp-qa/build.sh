@@ -1,6 +1,6 @@
 REPOS=(
     sdghafouri)
-IMAGE_NAME=sum-qa-pipelines-mlserver-bytes:nlpqa
+IMAGE_NAME=sum-qa-final:nlpqa
 mlserver dockerfile --include-dockerignore .
 sed -i 's/seldonio/sdghafouri/g' Dockerfile
 sed -i 's/1.2.0.dev14-slim/custom-slim/g' Dockerfile

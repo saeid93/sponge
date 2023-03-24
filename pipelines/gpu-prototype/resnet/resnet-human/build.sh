@@ -1,6 +1,6 @@
 REPOS=(
     sdghafouri)
-IMAGE_NAME=video-pipelines-mlserver-bytes-gpus1:resnet-human
+IMAGE_NAME=video-final-gpus1:resnet-human
 mlserver dockerfile --include-dockerignore .
 sed -i 's/seldonio/sdghafouri/g' Dockerfile
 sed -i 's/1.2.0.dev14-slim/custom-slim/g' Dockerfile

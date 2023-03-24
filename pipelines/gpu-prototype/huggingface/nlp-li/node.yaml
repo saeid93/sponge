@@ -12,7 +12,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/nlp-pipelines-mlserver-bytes-gpus:nlpli
+        - image: sdghafouri/nlp-final-gpus:nlpli
           name: nlp-li
           imagePullPolicy: Always
           resources:

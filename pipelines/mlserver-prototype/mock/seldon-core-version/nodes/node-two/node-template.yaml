@@ -14,7 +14,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/mock-pipelines-mlserver-bytes:node-two
+        - image: sdghafouri/mock-final:node-two
           name: node-two
           imagePullPolicy: Always
           resources:
@@ -69,3 +69,5 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
+    labels:
+      sidecar.istio.io/inject: "true"

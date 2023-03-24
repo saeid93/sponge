@@ -12,7 +12,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/video-pipelines-mlserver-bytes-gpus1:yolo
+        - image: sdghafouri/video-final-gpus1:yolo
           name: yolo
           imagePullPolicy: Always
           resources:

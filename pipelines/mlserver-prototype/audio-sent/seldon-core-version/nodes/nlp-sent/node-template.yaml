@@ -35,7 +35,7 @@ spec:
 
 
         containers:
-        - image: sdghafouri/audio-sent-pipelines-mlserver-bytes:nlpsent
+        - image: sdghafouri/audio-sent-final:nlpsent
           name: nlp-sent
           imagePullPolicy: Always
           resources:
@@ -89,3 +89,5 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
+    labels:
+      sidecar.istio.io/inject: "true"

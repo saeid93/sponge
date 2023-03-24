@@ -35,7 +35,7 @@ spec:
               name: seldon-rclone-secret
 
         containers:
-        - image: sdghafouri/audio-qa-pipelines-mlserver-bytes:nlpqa
+        - image: sdghafouri/audio-qa-final:nlpqa
           name: nlp-qa 
           imagePullPolicy: Always
           resources:

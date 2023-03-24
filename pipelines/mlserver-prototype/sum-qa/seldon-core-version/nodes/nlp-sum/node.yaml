@@ -34,7 +34,7 @@ spec:
               name: seldon-rclone-secret
 
         containers:
-        - image: sdghafouri/sum-qa-pipelines-mlserver-bytes:nlpsum
+        - image: sdghafouri/sum-qa-final:nlpsum
           name: nlp-sum 
           imagePullPolicy: Always
           resources:
@@ -87,3 +87,5 @@ spec:
         limits:
           cpu: '4'
           memory: 4Gi
+    labels:
+      sidecar.istio.io/inject: "true"

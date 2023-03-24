@@ -11,7 +11,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/sum-qa-pipelines-mlserver-bytes:nlpsum
+        - image: sdghafouri/sum-qa-final:nlpsum
           name: nlp-sum 
           imagePullPolicy: Always
           env:
@@ -51,7 +51,7 @@ spec:
       replicas: 2
     - spec:
         containers:
-        - image: sdghafouri/sum-qa-pipelines-mlserver-bytes:nlpqa
+        - image: sdghafouri/sum-qa-final:nlpqa
           name: nlp-qa
           imagePullPolicy: Always
           env:

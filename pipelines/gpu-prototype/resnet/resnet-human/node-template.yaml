@@ -12,7 +12,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/video-pipelines-mlserver-bytes:resnet-human
+        - image: sdghafouri/video-final:resnet-human
           name: resnet-human
           imagePullPolicy: Always
           resources:

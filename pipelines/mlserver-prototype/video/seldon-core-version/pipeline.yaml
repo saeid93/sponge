@@ -29,7 +29,7 @@ spec:
               name: seldon-rclone-secret
 
         containers:
-        - image: sdghafouri/video-pipelines-mlserver-bytes:yolov5
+        - image: sdghafouri/video-final:yolov5
           name: yolo
           imagePullPolicy: Always
           volumeMounts:
@@ -75,7 +75,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
         containers:
-        - image: sdghafouri/video-pipelines-mlserver-bytes:resnet-human
+        - image: sdghafouri/video-final:resnet-human
           name: resnet-human
           imagePullPolicy: Always
           volumeMounts:
