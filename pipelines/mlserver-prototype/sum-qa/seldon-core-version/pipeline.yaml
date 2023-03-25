@@ -8,17 +8,46 @@ spec:
     seldon.io/engine-separate-pod: "true"
   protocol: v2
   predictors:
-  - componentSpecs:
+  - name: sum-qa
+    componentSpecs:
     - spec:
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://huggingface/summarization/sshleifer-distilbart-cnn-12-6"
+            - "/mnt/models/sshleifer-distilbart-cnn-12-6"
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
         - image: sdghafouri/sum-qa-final:nlpsum
           name: nlp-sum 
           imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: '4'
+              memory: 4Gi
+            limits:
+              cpu: '4'
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
           env:
             - name: MODEL_VARIANT
-              value: sshleifer/distilbart-cnn-12-6
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+              value:  /mnt/models/sshleifer-distilbart-cnn-12-6
             - name: TASK
               value: summarization
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -33,13 +62,6 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
-          resources:
-            requests:
-              cpu: '4'
-              memory: 4Gi
-            limits:
-              cpu: '4'
-              memory: 4Gi
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -48,17 +70,47 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 2
+      replicas: 1
     - spec:
+
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://huggingface/question-answering/distilbert-base-cased-distilled-squad"
+            - "/mnt/models/distilbert-base-cased-distilled-squad"
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         containers:
         - image: sdghafouri/sum-qa-final:nlpqa
-          name: nlp-qa
+          name: nlp-qa 
           imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: '4'
+              memory: 4Gi
+            limits:
+              cpu: '4'
+              memory: 4Gi
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
           env:
             - name: MODEL_VARIANT
-              value: distilbert-base-uncased
-            - name: TRANSFORMERS_CACHE
-              value: /opt/mlserver/.cache
+              value: /mnt/models/distilbert-base-cased-distilled-squad
             - name: TASK
               value: question-answering
             - name: CONTEXT
@@ -75,13 +127,6 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
-          resources:
-            requests:
-              cpu: '4'
-              memory: 4Gi
-            limits:
-              cpu: '4'
-              memory: 4Gi
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

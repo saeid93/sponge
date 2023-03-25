@@ -12,6 +12,26 @@ spec:
     componentSpecs:
     - spec:
         containers:
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://huggingface/summarization/sshleifer-distilbart-cnn-12-6"
+            - "/mnt/models/sshleifer-distilbart-cnn-12-6"
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+
         - image: sdghafouri/sum-qa-final:nlpsum
           name: nlp-sum 
           imagePullPolicy: Always

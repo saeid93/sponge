@@ -27,7 +27,7 @@ data = np.array(data).flatten()
 http_method = 'post'
 
 load = 5
-test_duration = 100
+test_duration = 10
 variant = 0
 platform = 'seldon'
 workload = [load] * test_duration
@@ -37,7 +37,7 @@ image = 'input-sample.JPEG'
 image_size = 'input-sample-shape.json'
 
 # single node inference
-if platform == 'seldon':
+if platform == 'router':
     endpoint = "localhost:32000"
     deployment_name = 'router'
     model = 'router'
@@ -47,6 +47,12 @@ elif platform == 'mlserver':
     endpoint = "localhost:8081"
     model = 'yolo'
     metadata = []
+elif platform == 'seldon':
+    endpoint = "localhost:32000"
+    deployment_name = 'video'
+    model = None
+    namespace = "default"
+    metadata = [("seldon", deployment_name), ("namespace", namespace)]
 
 custom_parameters = {'custom_2': 'test_2'}
 data_1 = Data(

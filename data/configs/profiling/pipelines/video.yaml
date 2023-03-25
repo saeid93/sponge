@@ -1,4 +1,4 @@
-series: 5
+series: 11
 metadata: 'Trying out the pipeline'
 timeout: 1
 pipeline_folder_name: video
@@ -22,11 +22,11 @@ nodes:
     max_batch_time:
       - '1'
     cpu_request:
-      # - '1'
-      # - '2'
+      - '1'
+      - '2'
       # - '4'
       # - '8'
-      - '16'
+      # - '16'
       # - '32'
     memory_request:
       - 10Gi
@@ -55,11 +55,11 @@ nodes:
     max_batch_time:
       - '1'
     cpu_request:
-      # - '1'
-      # - '2'
+      - '1'
+      - '2'
       # - '4'
       # - '8'
-      - '16'
+      # - '16'
     memory_request:
       - 10Gi
     replicas:
@@ -72,18 +72,18 @@ nodes:
       - '1'
 benchmark_duration: 1
 repetition: 1
-# workload_type: static
-# workload_config:
-#   loads_to_test:
-#   - 1
+workload_type: static
+workload_config:
+  loads_to_test:
+  - 1
   # - 5
   # - 10
   # - 20
   # - 40
   # - 60
   # - 80
-  # load_duration: 30
-workload_type: twitter
-workload_config:
-  - start: '3:5:0'
-    end: '3:5:1'
+  load_duration: 30
+# workload_type: twitter
+# workload_config:
+#   - start: '3:5:0'
+#     end: '3:5:1'

@@ -164,7 +164,7 @@ def setup_profiling_pipeline(pipeline_name: str,
         loader=FileSystemLoader(pipeline_path))
     svc_template = environment.get_template('pipeline-template.yaml')
     content = svc_template.render(svc_vars)
-    pp.pprint(content)
+    print(content)
     command = f"""cat <<EOF | kubectl apply -f -
 {content}
         """
@@ -449,7 +449,7 @@ def load_test(
 
     endpoint = "localhost:32000"
     deployment_name = pipeline_name
-    model = pipeline_name
+    model = None
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
     load_tester = MLServerAsyncGrpc(

@@ -1,14 +1,14 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: video
+  name: {{ name }}
 spec:
   protocol: v2
-  name: video
+  name: {{ name }}
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - name: video
+  - name: {{ name }}
     componentSpecs:
     - spec:
         volumes:
@@ -19,8 +19,8 @@ spec:
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://torchhub/yolov5m"
-            - "/mnt/models/yolov5m"
+            - "s3://torchhub/{{ model_variant_1 }}"
+            - "/mnt/models/{{ model_variant_1 }}"
           volumeMounts:
           - mountPath: /mnt/models
             name: yolov5-volume
@@ -32,39 +32,38 @@ spec:
         - image: sdghafouri/video-final:yolo
           name: yolo
           imagePullPolicy: Always
-          resources:
-            requests:
-              cpu: '1'
-              memory: 4Gi
-            limits:
-              cpu: '1'
-              memory: 4Gi
           volumeMounts:
           - mountPath: /mnt/models
             name: yolov5-volume
+          resources:
+            requests:
+              cpu: '{{ cpu_request_1 }}'
+              memory: '{{ memory_request_1 }}'
+            limits:
+              cpu: '{{ cpu_limit_1 }}'
+              memory: '{{ memory_limit_1 }}'
           env:
             - name: MODEL_PATH
-              value: /mnt/models/yolov5m
+              value: /mnt/models/{{ model_variant_1 }}
             - name: MODEL_VARIANT
-              value: yolov5m
+              value: {{ model_variant_1 }}
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: '{{ max_batch_size_1 }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: "1"
+              value: '{{ max_batch_time_1 }}'
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
             - name: USE_THREADING
-              value: "True"
+              value: '{{use_threading_1}}'
             - name: NUM_INTEROP_THREADS
-              value: "1"
+              value: '{{num_interop_threads_1}}'
             - name: NUM_THREADS
-              value: "1"
-      replicas: 1
-
+              value: '{{num_threads_1}}'
+      replicas: {{ replicas_1 }}
     - spec:
         volumes:
         - name: resnet-volume
@@ -74,7 +73,7 @@ spec:
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://torchhub/resnet/resnet18"
+            - "s3://torchhub/resnet/ {{ model_variant_2 }}"
             - "/opt/mlserver/.torch/hub/checkpoints/"
           volumeMounts:
           - mountPath: /opt/mlserver/.torch/hub/checkpoints
@@ -87,36 +86,36 @@ spec:
         - image: sdghafouri/video-final:resnet-human
           name: resnet-human
           imagePullPolicy: Always
-          resources:
-            requests:
-              cpu: '1'
-              memory: 4Gi
-            limits:
-              cpu: '1'
-              memory: 4Gi
           volumeMounts:
           - mountPath: /opt/mlserver/.torch/hub/checkpoints
             name: resnet-volume
+          resources:
+            requests:
+              cpu: '{{ cpu_request_2 }}'
+              memory: '{{ memory_request_2 }}'
+            limits:
+              cpu: '{{ cpu_limit_2 }}'
+              memory: '{{ memory_limit_2 }}'
           env:
             - name: MODEL_VARIANT
-              value: resnet18
+              value: {{ model_variant_2 }}
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: '{{ max_batch_size_2 }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: "1"
+              value: '{{ max_batch_time_2 }}'
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
             - name: USE_THREADING
-              value: "True"
+              value: '{{use_threading_2}}'
             - name: NUM_INTEROP_THREADS
-              value: "1"
+              value: '{{num_interop_threads_2}}'
             - name: NUM_THREADS
-              value: "1"
-      replicas: 1
+              value: '{{num_threads_2}}'
+      replicas: {{ replicas_2 }}
     graph:
       name: yolo
       type: MODEL
@@ -125,6 +124,9 @@ spec:
         type: MODEL
         children: []
     svcOrchSpec:
+      env:
+      - name: SELDON_LOG_LEVEL
+        value: DEBUG
       resources:
         requests:
           cpu: '8'
@@ -132,6 +134,6 @@ spec:
         limits:
           cpu: '8'
           memory: 4Gi
-    labels:
-      sidecar.istio.io/inject: "true"
+    # labels:
+    #   sidecar.istio.io/inject: "true"
     replicas: 1
