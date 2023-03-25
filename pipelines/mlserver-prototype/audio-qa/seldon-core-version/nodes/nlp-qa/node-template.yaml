@@ -12,6 +12,7 @@ spec:
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
+
     - spec:
         volumes:
         - name: classifier-provision-location
@@ -82,16 +83,5 @@ spec:
       name: nlp-qa
       type: MODEL
       children: []
-    svcOrchSpec:
-      env:
-      - name: SELDON_LOG_LEVEL
-        value: DEBUG
-      resources:
-        requests:
-          cpu: '4'
-          memory: 4Gi
-        limits:
-          cpu: '4'
-          memory: 4Gi
     labels:
       sidecar.istio.io/inject: "true"

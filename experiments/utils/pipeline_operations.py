@@ -70,7 +70,7 @@ def setup_node(node_name: str, cpu_request: str,
         loader=FileSystemLoader(node_path))
     svc_template = environment.get_template('node-template.yaml')
     content = svc_template.render(svc_vars)
-    pp.pprint(content)
+    print(content)
     command = f"""cat <<EOF | kubectl apply -f -
 {content}
         """

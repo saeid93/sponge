@@ -5,8 +5,6 @@ metadata:
 spec:
   protocol: v2
   name: {{ name }}
-  # annotations:
-  #   seldon.io/engine-separate-pod: "true"
   predictors:
   - name: {{ name }}
     annotations:
@@ -15,8 +13,9 @@ spec:
     - spec:
 
         volumes:
-        - name: classifier-provision-location
+        - name: resnet-volume
           emptyDir: {}
+
         initContainers:
         - name: classifier-model-initializer
           image: seldonio/rclone-storage-initializer:1.16.0-dev
@@ -26,8 +25,8 @@ spec:
             - "/opt/mlserver/.torch/hub/checkpoints/"
 
           volumeMounts:
-          - mountPath: /mnt/models
-            name: classifier-provision-location
+          - mountPath: /opt/mlserver/.torch/hub/checkpoints
+            name: resnet-volume
 
           envFrom:
           - secretRef:
@@ -51,9 +50,7 @@ spec:
           env:
             - name: MODEL_VARIANT
               value: {{ model_variant }}
-            - name: TRANSFORMERS_CACHE
-            #   value: /opt/mlserver/.cache
-            # - name: TORCH_HOME
+            - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: '{{ max_batch_size }}'
@@ -67,18 +64,18 @@ spec:
               value: '{{num_interop_threads}}'
             - name: NUM_THREADS
               value: '{{num_threads}}'
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
       replicas: {{ replicas }}
     graph:
       name: resnet-human
       type: MODEL
       children: []
-    svcOrchSpec:
-      resources:
-        requests:
-          cpu: '4'
-          memory: 4Gi
-        limits:
-          cpu: '4'
-          memory: 4Gi
     labels:
       sidecar.istio.io/inject: "true"

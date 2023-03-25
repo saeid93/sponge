@@ -1,18 +1,17 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: {{ name }}
+  name: nlp-sum
 spec:
   protocol: v2
-  name: {{ name }}
-  # annotations:
-  #   seldon.io/engine-separate-pod: "true"
+  name: nlp-sum
   predictors:
-  - name: {{ name }}
+  - name: nlp-sum
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
+
         volumes:
         - name: classifier-provision-location
           emptyDir: {}
@@ -22,8 +21,8 @@ spec:
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://huggingface/question-answering/{{ model_variant }}"
-            - "/mnt/models/{{ model_variant }}"
+            - "s3://huggingface/summarization/sshleifer-distilbart-cnn-12-6"
+            - "/mnt/models/sshleifer-distilbart-cnn-12-6"
 
           volumeMounts:
           - mountPath: /mnt/models
@@ -34,41 +33,36 @@ spec:
               name: seldon-rclone-secret
 
         containers:
-        - image: sdghafouri/sum-qa-final:nlpqa
-          name: nlp-qa 
+        - image: sdghafouri/sum-qa-final:nlpsum
+          name: nlp-sum 
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '{{ cpu_request }}'
-              memory: '{{ memory_request }}'
+              cpu: '4'
+              memory: 4Gi
             limits:
-              cpu: '{{ cpu_limit }}'
-              memory: '{{ memory_limit }}'
+              cpu: '4'
           volumeMounts:
           - mountPath: /mnt/models
             name: classifier-provision-location
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/{{ model_variant }}
-            # - name: TRANSFORMERS_CACHE
-            #   value: /opt/mlserver/.cachek
+              value:  /mnt/models/sshleifer-distilbart-cnn-12-6
             - name: TASK
-              value: question-answering
-            - name: CONTEXT
-              value: default
+              value: summarization
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: '{{ max_batch_size }}'
+              value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: '{{ max_batch_time }}'
+              value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
             - name: USE_THREADING
-              value: '{{use_threading}}'
+              value: "True"
             - name: NUM_INTEROP_THREADS
-              value: '{{num_interop_threads}}'
+              value: "1"
             - name: NUM_THREADS
-              value: '{{num_threads}}'
+              value: "1"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -77,21 +71,10 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: {{ replicas }}
+      replicas: 1
     graph:
-      name: nlp-qa
+      name: nlp-sum
       type: MODEL
       children: []
-    svcOrchSpec:
-      env:
-      - name: SELDON_LOG_LEVEL
-        value: DEBUG
-      resources:
-        requests:
-          cpu: '4'
-          memory: 4Gi
-        limits:
-          cpu: '4'
-          memory: 4Gi
     labels:
       sidecar.istio.io/inject: "true"

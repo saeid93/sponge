@@ -5,24 +5,22 @@ metadata:
 spec:
   protocol: v2
   name: {{ name }}
-  annotations:
-    seldon.io/engine-separate-pod: "true"
   predictors:
   - name: {{ name }}
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
-
         volumes:
         - name: classifier-provision-location
           emptyDir: {}
+
         initContainers:
         - name: classifier-model-initializer
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://huggingface/summarization/{{ model_variant }}"
+            - "s3://huggingface/question-answering/{{ model_variant }}"
             - "/mnt/models/{{ model_variant }}"
 
           volumeMounts:
@@ -34,8 +32,8 @@ spec:
               name: seldon-rclone-secret
 
         containers:
-        - image: sdghafouri/sum-qa-final:nlpsum
-          name: nlp-sum 
+        - image: sdghafouri/sum-qa-final:nlpqa
+          name: nlp-qa 
           imagePullPolicy: Always
           resources:
             requests:
@@ -51,10 +49,10 @@ spec:
           env:
             - name: MODEL_VARIANT
               value: /mnt/models/{{ model_variant }}
-            # - name: TRANSFORMERS_CACHE
-            #   value: /opt/mlserver/.cache
             - name: TASK
-              value: summarization
+              value: question-answering
+            - name: CONTEXT
+              value: default
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
@@ -77,16 +75,8 @@ spec:
             timeoutSeconds: 1
       replicas: {{ replicas }}
     graph:
-      name: nlp-sum
+      name: nlp-qa
       type: MODEL
       children: []
-    svcOrchSpec:
-      resources:
-        requests:
-          cpu: '4'
-          memory: 4Gi
-        limits:
-          cpu: '4'
-          memory: 4Gi
     labels:
       sidecar.istio.io/inject: "true"

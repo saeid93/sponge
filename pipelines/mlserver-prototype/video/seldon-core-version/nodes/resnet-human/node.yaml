@@ -5,14 +5,13 @@ metadata:
 spec:
   protocol: v2
   name: resnet-human
-  # annotations:
-  #   seldon.io/engine-separate-pod: "true"
   predictors:
   - name: resnet-human
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
+
         volumes:
         - name: resnet-volume
           emptyDir: {}
@@ -51,8 +50,6 @@ spec:
           env:
             - name: MODEL_VARIANT
               value: resnet18
-            # - name: TRANSFORMERS_CACHE
-            #   value: /opt/mlserver/.cache
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -80,14 +77,6 @@ spec:
       name: resnet-human
       type: MODEL
       children: []
-    svcOrchSpec:
-      resources:
-        requests:
-          cpu: '4'
-          memory: 4Gi
-        limits:
-          cpu: '4'
-          memory: 4Gi
     labels:
       sidecar.istio.io/inject: "true"
     replicas: 1

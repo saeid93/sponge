@@ -51,3 +51,4 @@ click==8.0.4
 transformers==4.21.1
 opencv-python==4.6.0.66
 seaborn
+kubernetes

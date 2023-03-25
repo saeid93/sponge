@@ -12,7 +12,17 @@ variant = 0
 platform = 'seldon'
 mode = 'equal'
 
-
+# request = {
+#     'times': {
+#         'models': {
+#             'nlp-trans': {
+#                 'arrival': 1672276157.286681,
+#                 'serving': 1672276157.2869108
+#                 }
+#             }
+#         },
+#     'model_name': 'nlp-trans',
+# }
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
@@ -32,8 +42,8 @@ data_1 = Data(
 # single node inference
 if platform == 'seldon':
     endpoint = "localhost:32000"
-    deployment_name = 'router'
-    model = 'router'
+    deployment_name = 'nlp-sum'
+    model = 'nlp-sum'
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == 'mlserver':

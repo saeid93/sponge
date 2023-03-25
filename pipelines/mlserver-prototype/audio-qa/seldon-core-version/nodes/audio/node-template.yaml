@@ -13,10 +13,10 @@ spec:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
-
         volumes:
         - name: classifier-provision-location
           emptyDir: {}
+
         initContainers:
         - name: classifier-model-initializer
           image: seldonio/rclone-storage-initializer:1.16.0-dev
@@ -80,17 +80,6 @@ spec:
       name: audio
       type: MODEL
       children: []
-    svcOrchSpec:
-      env:
-      - name: SELDON_LOG_LEVEL
-        value: DEBUG
-      resources:
-        requests:
-          cpu: '4'
-          memory: 4Gi
-        limits:
-          cpu: '4'
-          memory: 4Gi
     labels:
       sidecar.istio.io/inject: "true"
 

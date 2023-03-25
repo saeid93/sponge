@@ -5,8 +5,6 @@ metadata:
 spec:
   protocol: v2
   name: {{ name }}
-  annotations:
-    seldon.io/engine-separate-pod: "true"
   predictors:
   - name: {{ name }}
     annotations:
@@ -81,13 +79,5 @@ spec:
       name: nlp-sent
       type: MODEL
       children: []
-    svcOrchSpec:
-      resources:
-        requests:
-          cpu: '4'
-          memory: 4Gi
-        limits:
-          cpu: '4'
-          memory: 4Gi
     labels:
       sidecar.istio.io/inject: "true"

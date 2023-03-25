@@ -1,18 +1,17 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: nlp-sum
+  name: nlp-qa
 spec:
   protocol: v2
-  name: nlp-sum
-  # annotations:
-  #   seldon.io/engine-separate-pod: "true"
+  name: nlp-qa
   predictors:
-  - name: nlp-sum
+  - name: nlp-qa
     annotations:
-      seldon.io/no-engine: "true"
+      seldon.io/no-engine: "true" 
     componentSpecs:
     - spec:
+
         volumes:
         - name: classifier-provision-location
           emptyDir: {}
@@ -22,8 +21,8 @@ spec:
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://huggingface/summarization/sshleifer-distilbart-cnn-12-6"
-            - "/mnt/models/sshleifer-distilbart-cnn-12-6"
+            - "s3://huggingface/question-answering/distilbert-base-cased-distilled-squad"
+            - "/mnt/models/distilbert-base-cased-distilled-squad"
 
           volumeMounts:
           - mountPath: /mnt/models
@@ -34,8 +33,8 @@ spec:
               name: seldon-rclone-secret
 
         containers:
-        - image: sdghafouri/sum-qa-final:nlpsum
-          name: nlp-sum 
+        - image: sdghafouri/sum-qa-final:nlpqa
+          name: nlp-qa 
           imagePullPolicy: Always
           resources:
             requests:
@@ -43,17 +42,18 @@ spec:
               memory: 4Gi
             limits:
               cpu: '4'
+              memory: 4Gi
           volumeMounts:
           - mountPath: /mnt/models
             name: classifier-provision-location
 
           env:
             - name: MODEL_VARIANT
-              value:  /mnt/models/sshleifer-distilbart-cnn-12-6
-            # - name: TRANSFORMERS_CACHE
-            #   value: /opt/mlserver/.cache
+              value: /mnt/models/distilbert-base-cased-distilled-squad
             - name: TASK
-              value: summarization
+              value: question-answering
+            - name: CONTEXT
+              value: default
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
@@ -76,16 +76,8 @@ spec:
             timeoutSeconds: 1
       replicas: 1
     graph:
-      name: nlp-sum
+      name: nlp-qa
       type: MODEL
       children: []
-    svcOrchSpec:
-      resources:
-        requests:
-          cpu: '4'
-          memory: 4Gi
-        limits:
-          cpu: '4'
-          memory: 4Gi
     labels:
       sidecar.istio.io/inject: "true"
