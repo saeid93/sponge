@@ -1,4 +1,4 @@
-series: 700
+series: 1000
 series_meta: testing static trace
 pipeline_name: nlp
 node_name: nlp-li
@@ -9,7 +9,7 @@ model_variants:
   - dinalzein-xlm-roberta-base-finetuned-language-identification
 max_batch_size:
   - '1'
-  # - '4'
+  - '4'
   # - '18'
 max_batch_time:
   - '1'
