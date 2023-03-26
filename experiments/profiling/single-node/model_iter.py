@@ -90,6 +90,7 @@ def experiments(pipeline_name: str, node_name: str,
     # TOOD Add cpu type, gpu type
     # TODO Better solution instead of nested for loops
     # TODO Also add the random - maybe just use Tune
+    remove_pipeline(pipeline_name=pipeline_name)
     for model_variant in model_variants:
         for max_batch_size in max_batch_sizes:
             for max_batch_time in max_batch_times:

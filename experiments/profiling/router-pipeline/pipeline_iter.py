@@ -6,7 +6,7 @@ import os
 import time
 import json
 import yaml
-from typing import Union, Tuple
+from typing import Union, Tuple, List
 import click
 import sys
 import itertools
@@ -97,9 +97,7 @@ def experiments(pipeline_name: str, node_names: str,
     # TOOD Add cpu type, gpu type
     # TODO Better solution instead of nested for loops
     # TODO Also add the random - maybe just use Tune
-    setup_router(
-        pipeline_name=pipeline_name,
-        node_names=node_names)
+    remove_pipeline(pipeline_name=pipeline_name)
     for model_variant in model_variants:
         for max_batch_size in max_batch_sizes:
             for max_batch_time in max_batch_times:
@@ -111,6 +109,9 @@ def experiments(pipeline_name: str, node_names: str,
                                     + f' starting repetition experiment ' +\
                                         '-'*25)
                                 print('\n')
+                                setup_router(
+                                    pipeline_name=pipeline_name,
+                                    node_names=node_names)
                                 experiments_exist, experiment_id = key_config_mapper(
                                     pipeline_name=pipeline_name,
                                     node_name=node_names,
@@ -151,16 +152,16 @@ def experiments(pipeline_name: str, node_names: str,
                                     print('\n')
                                     # check if the model is up or not
                                     check_load_test(
-                                        pipeline_name=pipeline_name,
-                                        model=pipeline_name,
+                                        pipeline_name='router',
+                                        model='router',
                                         data_type=data_type,
                                         pipeline_path=pipeline_path)
                                     print('model warm up ...')
                                     print('\n')
                                     warm_up_duration = 10
                                     warm_up(
-                                        pipeline_name=pipeline_name,
-                                        model=pipeline_name,
+                                        pipeline_name='router',
+                                        model='router',
                                         data_type=data_type,
                                         pipeline_path=pipeline_path,
                                         warm_up_duration=warm_up_duration)
@@ -171,30 +172,30 @@ def experiments(pipeline_name: str, node_names: str,
                                     if workload_type == 'static':
                                         workload = [load] * load_duration
                                     data = load_data(data_type, pipeline_path)
-                                    try:
-                                        start_time_experiment,\
-                                            end_time_experiment, responses = load_test(
-                                                pipeline_name=pipeline_name,
-                                                model=pipeline_name,
-                                                data_type=data_type,
-                                                data=data,
-                                                workload=workload,
-                                                mode=mode,
-                                                namespace='default',
-                                                benchmark_duration=benchmark_duration)
-                                        print('-'*25 + 'saving the report' + '-'*25)
-                                        print('\n')
-                                        save_report(
-                                            experiment_id=experiment_id,
-                                            responses=responses,
-                                            pipeline_name=pipeline_name,
-                                            node_names=node_names,
-                                            start_time_experiment=start_time_experiment,
-                                            end_time_experiment=end_time_experiment,
-                                            series=series)
-                                    except UnboundLocalError:
-                                        print('Impossible experiment!')
-                                        print('skipping to the next experiment ...')
+                                    # try:
+                                    start_time_experiment,\
+                                        end_time_experiment, responses = load_test(
+                                            pipeline_name='router',
+                                            model='router',
+                                            data_type=data_type,
+                                            data=data,
+                                            workload=workload,
+                                            mode=mode,
+                                            namespace='default',
+                                            benchmark_duration=benchmark_duration)
+                                    print('-'*25 + 'saving the report' + '-'*25)
+                                    print('\n')
+                                    save_report(
+                                        experiment_id=experiment_id,
+                                        responses=responses,
+                                        pipeline_name=pipeline_name,
+                                        node_names=node_names,
+                                        start_time_experiment=start_time_experiment,
+                                        end_time_experiment=end_time_experiment,
+                                        series=series)
+                                    # except UnboundLocalError:
+                                    #     print('Impossible experiment!')
+                                    #     print('skipping to the next experiment ...')
                                     print(f'waiting for timeout: {timeout} seconds')
                                     for _ in tqdm(range(20)):
                                         time.sleep((timeout)/20)
@@ -313,7 +314,7 @@ def key_config_mapper(
 def save_report(experiment_id: int,
                 responses: str,
                 pipeline_name: str,
-                node_names: Tuple[str],
+                node_names: List[str],
                 start_time_experiment: float,
                 end_time_experiment: float,
                 namespace: str = 'default',
@@ -330,9 +331,14 @@ def save_report(experiment_id: int,
         'series', str(series), f"{experiment_id}.json")
     rate = int(end_time_experiment - start_time_experiment)
     duration = (end_time_experiment - start_time_experiment)//60 + 1
-    pod_names = get_pod_name(node_name=pipeline_name)
+    # node_names.append('router')
+    pod_names = []
     for node_name in node_names:
-        node_pod_names = [s for s in pod_names if node_name in s]
+        pod_name = get_pod_name(node_name=node_name)
+        pod_names.append(pod_name)
+    # pod_names = get_pod_name(node_name=pipeline_name)
+    for node_name in node_names:
+        node_pod_names = [s[0] for s in pod_names if node_name in s[0]]
         node_results = {}
         for node_pod_name in node_pod_names:
             pod_results = {
@@ -350,11 +356,11 @@ def save_report(experiment_id: int,
                 'time_throughput': [],
             }
 
-            svc_path = os.path.join(
-                PIPELINE_PROFILING_RESULTS_PATH,
-                'series', str(series), f"{experiment_id}.txt")
-            svc_pod_name = get_pod_name(
-                node_name=node_name, orchestrator=True)
+            # svc_path = os.path.join(
+            #     PIPELINE_PROFILING_RESULTS_PATH,
+            #     'series', str(series), f"{experiment_id}.txt")
+            # svc_pod_name = get_pod_name(
+            #     node_name=node_name, orchestrator=True)
             cpu_usage_count, time_cpu_usage_count =\
                 prom_client.get_cpu_usage_count(
                     pod_name=node_pod_name, namespace="default",
@@ -404,9 +410,9 @@ def save_report(experiment_id: int,
 
     with open(save_path, "w") as outfile:
         outfile.write(json.dumps(results))
-    os.system(
-        f'kubectl logs -n {namespace} {svc_pod_name} > {svc_path}'
-    )
+    # os.system(
+    #     f'kubectl logs -n {namespace} {svc_pod_name} > {svc_path}'
+    # )
     print(f'results have been sucessfully saved in:\n{save_path}')
 
 def backup(series):

@@ -6,7 +6,7 @@ import os
 import time
 import json
 import yaml
-from typing import Union, Tuple
+from typing import Union, Tuple, List
 import click
 import sys
 import itertools
@@ -96,6 +96,7 @@ def experiments(pipeline_name: str, node_names: str,
     # TOOD Add cpu type, gpu type
     # TODO Better solution instead of nested for loops
     # TODO Also add the random - maybe just use Tune
+    remove_pipeline(pipeline_name=pipeline_name)
     for model_variant in model_variants:
         for max_batch_size in max_batch_sizes:
             for max_batch_time in max_batch_times:
@@ -309,7 +310,7 @@ def key_config_mapper(
 def save_report(experiment_id: int,
                 responses: str,
                 pipeline_name: str,
-                node_names: Tuple[str],
+                node_names: List[str],
                 start_time_experiment: float,
                 end_time_experiment: float,
                 namespace: str = 'default',

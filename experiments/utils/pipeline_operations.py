@@ -124,6 +124,7 @@ def setup_router(pipeline_name, node_names):
     print('-'*25 + ' setting up the node with following config' + '-'*25)
     print('\n')
     model_lists = str(node_names)
+    model_lists = model_lists.replace('\'', '"')
     svc_vars = {
         "name": pipeline_name,
         "cpu_request": 2,
@@ -421,17 +422,17 @@ def setup_runner_pipeline(
 
 def load_data(data_type: str, pipeline_path: str):
 
-    request = {
-        'times': {
-            'models': {
-                'dummy': {
-                    'arrival': 1672276157.286681,
-                    'serving': 1672276157.2869108
-                    }
-                }
-            },
-    }
-    custom_parameters = str([str(request['times']['models'])])
+    # request = {
+    #     'times': {
+    #         'models': {
+    #             'dummy': {
+    #                 'arrival': 1672276157.286681,
+    #                 'serving': 1672276157.2869108
+    #                 }
+    #             }
+    #         },
+    # }
+    # custom_parameters = str([str(request['times']['models'])])
     # custom_parameters = {'times': str(times)}
 
 
@@ -475,8 +476,8 @@ def load_data(data_type: str, pipeline_path: str):
         data = np.array(data).flatten()
     data_1 = Data(
         data=data,
-        data_shape=data_shape,
-        custom_parameters={'times': str(custom_parameters)},
+        data_shape=data_shape
+        # custom_parameters={'times': str(custom_parameters)},
     )
 
     # Data list
@@ -524,6 +525,12 @@ def warm_up(
 
 def remove_pipeline(pipeline_name):
     os.system(f"kubectl delete seldondeployment {pipeline_name} -n default")
+    # TEMP TODO until fixing the server problem
+    os.system(f"kubectl delete seldondeployment --all -n default")
+    os.system(f"kubectl delete deployments --all -n default")
+    os.system(f"kubectl delete replicaset --all -n default")
+    os.system(f"kubectl delete pods --all -n default")
+    os.system("kubectl get services | grep -v \"kubernetes\" | awk \'{print $1}\' | xargs kubectl delete service -n default")
     print('-'*50 + f' pipeline {pipeline_name} successfuly removed ' + '-'*50)
     print('\n')
 

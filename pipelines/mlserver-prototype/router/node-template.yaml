@@ -1,19 +1,19 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: {{ name }}
+  name: router
 spec:
   protocol: v2
-  name: {{ name }}
+  name: router
   predictors:
-  - name: {{ name }}
+  - name: router
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
         containers:
         - image: sdghafouri/router:router
-          name: {{ name }}
+          name: router
           imagePullPolicy: Always
           resources:
             requests:
@@ -24,7 +24,7 @@ spec:
               memory: '{{ memory_limit }}'
           env:
             - name: MODEL_LISTS
-              value: "{{ model_lists }}"
+              value: '{{ model_lists }}'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -35,7 +35,7 @@ spec:
             timeoutSeconds: 1
       replicas: {{ replicas }}
     graph:
-      name: {{ name }}
+      name: router
       type: MODEL
       children: []
     labels:

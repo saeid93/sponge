@@ -1,4 +1,4 @@
-series: 12
+series: 13
 metadata: 'Trying out the pipeline'
 timeout: 1
 pipeline_folder_name: video
@@ -9,7 +9,7 @@ nodes:
     data_type: image
     model_variants:
       - yolov5n
-      - yolov5s
+      # - yolov5s
       # - yolov5m
       # - yolov5l
       # - yolov5x
