@@ -148,6 +148,7 @@ def experiments(pipeline_name: str, node_names: str,
                                     # check if the model is up or not
                                     check_load_test(
                                         pipeline_name=pipeline_name,
+                                        model=None,
                                         data_type=data_type,
                                         pipeline_path=pipeline_path)
                                     print('model warm up ...')
@@ -155,6 +156,7 @@ def experiments(pipeline_name: str, node_names: str,
                                     warm_up_duration = 10
                                     warm_up(
                                         pipeline_name=pipeline_name,
+                                        model=None,
                                         data_type=data_type,
                                         pipeline_path=pipeline_path,
                                         warm_up_duration=warm_up_duration)
@@ -169,6 +171,7 @@ def experiments(pipeline_name: str, node_names: str,
                                         start_time_experiment,\
                                             end_time_experiment, responses = load_test(
                                                 pipeline_name=pipeline_name,
+                                                model=None,
                                                 data_type=data_type,
                                                 data=data,
                                                 workload=workload,

@@ -1,0 +1,43 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: {{ name }}
+spec:
+  protocol: v2
+  name: {{ name }}
+  predictors:
+  - name: {{ name }}
+    annotations:
+      seldon.io/no-engine: "true"
+    componentSpecs:
+    - spec:
+        containers:
+        - image: sdghafouri/router:router
+          name: {{ name }}
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: '{{ cpu_request }}'
+              memory: '{{ memory_request }}'
+            limits:
+              cpu: '{{ cpu_limit }}'
+              memory: '{{ memory_limit }}'
+          env:
+            - name: MODEL_LISTS
+              value: "{{ model_lists }}"
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
+      replicas: {{ replicas }}
+    graph:
+      name: {{ name }}
+      type: MODEL
+      children: []
+    labels:
+      sidecar.istio.io/inject: "true"
+

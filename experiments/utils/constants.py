@@ -17,6 +17,12 @@ PIPLINES_PATH = os.path.join(
     PROJECT_PATH, "pipelines", PIPELINES_FOLDER)
 CONFIGS_PATH = os.path.join(DATA_PATH, "configs")
 
+# router path
+ROUTER_PATH = os.path.join(
+    PIPLINES_PATH,
+    'router'
+)
+
 # accuracies files
 ACCURACIES_PATH = os.path.join(CONFIGS_PATH, 'accuracies.yaml')
 

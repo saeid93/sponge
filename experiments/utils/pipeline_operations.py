@@ -30,7 +30,9 @@ kube_api = client.api.core_v1_api.CoreV1Api()
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
     project_dir, '..', '..')))
-from experiments.utils.constants import NAMESPACE
+from experiments.utils.constants import (
+    NAMESPACE,
+    ROUTER_PATH)
 
 def get_pod_name(node_name: str, orchestrator=False):
     pod_regex = f"{node_name}.*"
@@ -44,11 +46,12 @@ def get_pod_name(node_name: str, orchestrator=False):
             pod_names.append(pod_name)
     return pod_names
 
-def setup_node(node_name: str, cpu_request: str,
-               memory_request: str, model_variant: str, max_batch_size: str,
-               max_batch_time: str, replica: int, node_path: str, timeout: int,
-               use_threading: bool, num_interop_threads: int, num_threads: int,
-               no_engine=False):
+def setup_node(
+        node_name: str, cpu_request: str,
+        memory_request: str, model_variant: str, max_batch_size: str,
+        max_batch_time: str, replica: int, node_path: str, timeout: int,
+        use_threading: bool, num_interop_threads: int, num_threads: int,
+        no_engine=False):
     print('-'*25 + ' setting up the node with following config' + '-'*25)
     print('\n')
     svc_vars = {
@@ -113,22 +116,70 @@ def setup_node(node_name: str, cpu_request: str,
         if all(all_model_pods):
             container_loaded = True
         else: continue
-        # if not no_engine:
-        #     svc_pods = kube_api.list_namespaced_pod(
-        #         namespace=NAMESPACE,
-        #         label_selector=f"seldon-deployment-id={node_name}-{node_name}")
-        #     for pod in svc_pods.items:
-        #         if pod.status.phase == "Running":
-        #             svc_loaded = True
-        #         for container_status in pod.status.container_statuses:
-        #             if container_status.ready:
-        #                 container_loaded = True
-        #             else: continue
-        #         else: continue
-        # if models_loaded and svc_loaded and container_loaded:
-        #     print('model container completely loaded!')
-        #     break
-        a = 1
+        if models_loaded and container_loaded:
+            print('model container completely loaded!')
+            break
+
+def setup_router(pipeline_name, node_names):
+    print('-'*25 + ' setting up the node with following config' + '-'*25)
+    print('\n')
+    model_lists = str(node_names)
+    svc_vars = {
+        "name": pipeline_name,
+        "cpu_request": 2,
+        "memory_request": "4Gi",
+        "cpu_limit": 2,
+        "memory_limit": "4Gi",
+        "replicas": 1,
+        "model_lists": model_lists
+        }
+    environment = Environment(
+        loader=FileSystemLoader(ROUTER_PATH))
+    svc_template = environment.get_template('node-template.yaml')
+    content = svc_template.render(svc_vars)
+    print(content)
+    command = f"""cat <<EOF | kubectl apply -f -
+{content}
+        """
+    os.system(command)
+    print('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
+    print('\n')
+    print('-'*25 + f' router pod {pipeline_name} successfuly set up ' + '-'*25)
+    print('\n')
+    # checks if the pods are ready each 5 seconds
+    loop_timeout = 5
+    while True:
+        # models_loaded, svc_loaded, container_loaded = False, False, False
+        models_loaded, container_loaded = False, False
+        print(f'waited for {loop_timeout} to check if the pods are up')
+        time.sleep(loop_timeout)
+        model_pods = kube_api.list_namespaced_pod(
+            namespace=NAMESPACE,
+            label_selector=f"seldon-deployment-id={pipeline_name}")
+        all_model_pods = []
+        all_conainers = []
+        for pod in model_pods.items:
+            if pod.status.phase == "Running":
+                all_model_pods.append(True)
+                logs = kube_api.read_namespaced_pod_log(
+                    name=pod.metadata.name,
+                    namespace=NAMESPACE,
+                    container=pipeline_name)
+                print(logs)
+                if 'Uvicorn running on http://0.0.0.0:6000' in logs:
+                    all_conainers.append(True)
+                else:
+                    all_conainers.append(False)
+            else:
+                all_model_pods.append(False)
+        print(f"all_model_pods: {all_model_pods}")
+        if all(all_model_pods):
+            models_loaded = True
+        else: continue
+        print(f"all_containers: {all_conainers}")
+        if all(all_model_pods):
+            container_loaded = True
+        else: continue
         if models_loaded and container_loaded:
             print('model container completely loaded!')
             break
@@ -232,13 +283,50 @@ def setup_profiling_pipeline(pipeline_name: str,
             print('model container completely loaded!')
             break
 
-def setup_runner_pipeline(pipeline_name: str,
-                   cpu_request: List[str], memory_request: List[str],
-                   model_variant: List[str], max_batch_size: List[str],
-                   max_batch_time: List[str], replica: Tuple[int],
-                   use_threading: List[bool], num_interop_threads: List[int],
-                   num_threads: Tuple[int], pipeline_path: str,
-                   timeout: int, num_nodes: int):
+def setup_profiling_pipeline_router(
+        pipeline_name: str, node_names: List[str],
+        cpu_request: Tuple[str], memory_request: Tuple[str],
+        model_variant: Tuple[str], max_batch_size: Tuple[str],
+        max_batch_time: Tuple[str], replica: Tuple[int],
+        use_threading: Tuple[bool], num_interop_threads: Tuple[int],
+        num_threads: Tuple[int], pipeline_path: str,
+        timeout: int, num_nodes: int):
+    print('-'*25 + ' setting up the node with following config' + '-'*25)
+    print('\n')
+    # TODO add num nodes logic here
+    # svc_vars = {"name": pipeline_name}
+    for node_id, node_name in zip(range(num_nodes), node_names):
+        node_path = os.path.join(
+            pipeline_path,
+            'nodes',
+            node_name
+        )
+        setup_node(
+            node_name=node_name,
+            cpu_request=cpu_request[node_id],
+            memory_request=memory_request[node_id],
+            model_variant=model_variant[node_id],
+            max_batch_size=max_batch_size[node_id],
+            max_batch_time=max_batch_time[node_id],
+            replica=replica[node_id],
+            node_path=node_path,
+            timeout=timeout,
+            no_engine=True,
+            use_threading=use_threading[node_id],
+            # HACK for now we set the number of requests
+            # proportional to the the number threads
+            num_interop_threads=cpu_request[node_id],
+            num_threads=cpu_request[node_id]
+        )
+
+def setup_runner_pipeline(
+        pipeline_name: str,
+        cpu_request: List[str], memory_request: List[str],
+        model_variant: List[str], max_batch_size: List[str],
+        max_batch_time: List[str], replica: Tuple[int],
+        use_threading: List[bool], num_interop_threads: List[int],
+        num_threads: Tuple[int], pipeline_path: str,
+        timeout: int, num_nodes: int):
     print('-'*25 + ' setting up the node with following config' + '-'*25)
     print('\n')
     # TODO add num nodes logic here
@@ -398,7 +486,7 @@ def load_data(data_type: str, pipeline_path: str):
 
 def check_load_test(
         pipeline_name: str, data_type: str,
-        pipeline_path: str):
+        pipeline_path: str, model: str):
     data = load_data(
         data_type=data_type,
         pipeline_path=pipeline_path)
@@ -410,6 +498,7 @@ def check_load_test(
         try:
             load_test(
                 pipeline_name=pipeline_name,
+                model=model,
                 data=data,
                 data_type=data_type,
                 workload=[1])
@@ -420,7 +509,7 @@ def check_load_test(
             return ready
 
 def warm_up(
-        pipeline_name: str, data_type: str,
+        pipeline_name: str, data_type: str, model: str,
         pipeline_path: str, warm_up_duration: int):
     workload = [1] * warm_up_duration
     data = load_data(
@@ -428,6 +517,7 @@ def warm_up(
         pipeline_path=pipeline_path)
     load_test(
         pipeline_name=pipeline_name,
+        model=model,
         data=data,
         data_type=data_type,
         workload=workload)
@@ -439,6 +529,7 @@ def remove_pipeline(pipeline_name):
 
 def load_test(
         pipeline_name: str, data_type: str,
+        model: str,
         workload: List[int],
         data: List[Data],
         namespace: str='default',
@@ -449,7 +540,6 @@ def load_test(
 
     endpoint = "localhost:32000"
     deployment_name = pipeline_name
-    model = None
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
     load_tester = MLServerAsyncGrpc(
