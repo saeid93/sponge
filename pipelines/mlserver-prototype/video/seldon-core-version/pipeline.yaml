@@ -63,7 +63,7 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
-      replicas: 1
+      replicas: 2
 
     - spec:
         volumes:
