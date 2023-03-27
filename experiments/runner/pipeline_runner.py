@@ -10,6 +10,56 @@ from typing import Union, Tuple
 import click
 import sys
 import csv
+from tqdm import tqdm
+import shutil
+from barazmoon.twitter import twitter_workload_generator
+import multiprocessing
+
+# get an absolute path to the directory that contains parent files
+project_dir = os.path.dirname(__file__)
+sys.path.append(os.path.normpath(os.path.join(
+    project_dir, '..', '..')))
+from experiments.utils.prometheus import PromClient
+from experiments.utils.pipeline_operations import (
+    load_data,
+    warm_up,
+    check_load_test,
+    load_test,
+    remove_pipeline,
+    setup_router_pipeline,
+    get_pod_name,
+    setup_router)
+from experiments.utils.constants import (
+    PIPLINES_PATH,
+    FINAL_CONFIGS_PATH,
+    FINAL_RESULTS_PATH,
+    ACCURACIES_PATH,
+    OBJ_FINAL_RESULTS_PATH,
+    KEY_CONFIG_FILENAME
+)
+from experiments.utils.obj import setup_obj_store
+prom_client = PromClient()
+from optimizer import (
+    Optimizer,
+    Adapter
+    )
+from experiments.utils.simulation_operations import (
+    generate_simulated_pipeline
+)
+
+# ----------------------
+"""
+Iterate through all possible combination
+of pipelines
+"""
+import os
+import time
+import json
+import yaml
+from typing import Union, Tuple
+import click
+import sys
+import csv
 import re
 from kubernetes import config
 from kubernetes import client
@@ -31,7 +81,6 @@ from experiments.utils.pipeline_operations import (
     check_load_test,
     load_test,
     remove_pipeline,
-    setup_runner_pipeline,
     get_pod_name)
 from experiments.utils.constants import (
     PIPLINES_PATH,
@@ -77,6 +126,7 @@ def get_pod_name(node_name: str, orchestrator=False):
 def experiments(pipeline_name: str, node_names: str,
                 config: dict, pipeline_path: str,
                 data_type: str):
+
     workload_config = config['workload_config']
     series = config['series']
     metadata = config['metadata']
@@ -115,7 +165,7 @@ def experiments(pipeline_name: str, node_names: str,
         cpu_requests.append(node_config['cpu_request'])
         memory_requests.append(node_config["memory_request"])
         replicas.append(node_config['replicas'])
-        use_threading.append([node_config['use_threading']])
+        use_threading.append([node_config['use_threading']][0])
         num_iterop_threads.append(node_config['num_interop_threads'])
         num_threads.append(node_config['num_threads'])
 
@@ -136,11 +186,9 @@ def experiments(pipeline_name: str, node_names: str,
         data_type=data_type,
         benchmark_duration=benchmark_duration)
 
-    # TODO make the model of pipeline from the optimizer
-    # optimizer = load_optimizer()
-
-    setup_runner_pipeline(
-        # pipeline_folder_name=pipeline_folder_name,
+    remove_pipeline(pipeline_name=pipeline_name)
+    setup_router_pipeline(
+        node_names=node_names,
         pipeline_name=pipeline_name,
         cpu_request=cpu_requests,
         memory_request=memory_requests,
@@ -157,19 +205,23 @@ def experiments(pipeline_name: str, node_names: str,
         num_interop_threads=cpu_requests,
         num_threads=cpu_requests
     )
-
+    setup_router(
+        pipeline_name=pipeline_name,
+        node_names=node_names)
     print('Checking if the model is up ...')
     print('\n')
     # check if the model is up or not
     check_load_test(
-        pipeline_name=pipeline_name,
+        pipeline_name='router',
+        model='router',
         data_type=data_type,
         pipeline_path=pipeline_path)
     print('model warm up ...')
     print('\n')
     warm_up_duration = 10
     warm_up(
-        pipeline_name=pipeline_name,
+        pipeline_name='router',
+        model='router',
         data_type=data_type,
         pipeline_path=pipeline_path,
         warm_up_duration=warm_up_duration)
@@ -181,24 +233,16 @@ def experiments(pipeline_name: str, node_names: str,
         workload = [loads_to_test] * load_duration
     data = load_data(data_type, pipeline_path)
     try:
-    # TODO Adaptation process
-    #      1. Call adapter in a different process
-    #      2. Monitoring the pipeline load (prometheus) in intervals
-    #      3. Running the optimizer
-    #      4. Applying the changes
         start_time_experiment,\
             end_time_experiment, responses = load_test(
-                pipeline_name=pipeline_name,
+                pipeline_name='router',
+                model='router',
                 data_type=data_type,
                 data=data,
                 workload=workload,
                 mode=mode,
                 namespace='default',
-                benchmark_duration=benchmark_duration
-                # TODO add optimizer variables
-                # TODO add changing variables variables
-                # TODO add changing 
-            )
+                benchmark_duration=benchmark_duration)
         print('-'*25 + 'saving the report' + '-'*25)
         print('\n')
         save_report(
@@ -552,28 +596,34 @@ def main(config_name: str):
         gamma=gamma,
         num_state_limit=num_state_limit
     )
-    adapter.start()
 
     # ----------- 3. Running an experiment series -------------
-    # TODO pass adapter to the experiment
-    # TODO run two separate processes in the experiments
-    # experiments(
-    #     pipeline_name=pipeline_name,
-    #     node_names=node_names,
-    #     config=config,
-    #     pipeline_path=pipeline_path,
-    #     data_type=data_type
-    #     )
+    # pass adapter to the experiment
+    # run two separate processes in the experiments
 
-    # optimal = optimizer.optimize(
-    #     optimization_method=optimization_method,
-    #     scaling_cap=scaling_cap,
-    #     alpha=alpha, beta=beta, gamma=gamma,
-    #     arrival_rate=arrival_rate,
-    #     num_state_limit=num_state_limit)
-    
-    a = 1
 
+    # 1. process one the experiment runner
+    pipeline_setup_process = multiprocessing.Process(
+        target=experiments,
+        kwargs={
+            'pipeline_name': pipeline_name,
+            'node_names': node_names,
+            'config': config,
+            'pipeline_path': pipeline_path,
+            'data_type': data_type            
+        })
+
+    # 2. process two the pipeline adapter
+    adaptation_process = multiprocessing.Process(
+        target=adapter.start)
+
+    # start the two process
+    pipeline_setup_process.start()
+    adaptation_process.start()
+
+    # finish the experiments
+    pipeline_setup_process.join()
+    adaptation_process.join()
 
 if __name__ == "__main__":
     main()

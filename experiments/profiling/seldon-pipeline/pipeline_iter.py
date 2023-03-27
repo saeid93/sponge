@@ -26,7 +26,7 @@ from experiments.utils.pipeline_operations import (
     check_load_test,
     load_test,
     remove_pipeline,
-    setup_profiling_pipeline,
+    setup_seldon_pipeline,
     get_pod_name)
 from experiments.utils.constants import (
     PIPLINES_PATH,
@@ -125,7 +125,7 @@ def experiments(pipeline_name: str, node_names: str,
                                     data_type=data_type,
                                     benchmark_duration=benchmark_duration)
                                 if not experiments_exist:
-                                    setup_profiling_pipeline(
+                                    setup_seldon_pipeline(
                                         # pipeline_folder_name=pipeline_folder_name,
                                         pipeline_name=pipeline_name,
                                         cpu_request=cpu_request,

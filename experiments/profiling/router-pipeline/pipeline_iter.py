@@ -26,7 +26,7 @@ from experiments.utils.pipeline_operations import (
     check_load_test,
     load_test,
     remove_pipeline,
-    setup_profiling_pipeline_router,
+    setup_router_pipeline,
     get_pod_name,
     setup_router)
 from experiments.utils.constants import (
@@ -43,6 +43,7 @@ prom_client = PromClient()
 def experiments(pipeline_name: str, node_names: str,
                 config: dict, pipeline_path: str,
                 data_type: str):
+
     workload_config = config['workload_config']
     series = config['series']
     metadata = config['metadata']
@@ -109,9 +110,6 @@ def experiments(pipeline_name: str, node_names: str,
                                     + f' starting repetition experiment ' +\
                                         '-'*25)
                                 print('\n')
-                                setup_router(
-                                    pipeline_name=pipeline_name,
-                                    node_names=node_names)
                                 experiments_exist, experiment_id = key_config_mapper(
                                     pipeline_name=pipeline_name,
                                     node_name=node_names,
@@ -129,7 +127,7 @@ def experiments(pipeline_name: str, node_names: str,
                                     data_type=data_type,
                                     benchmark_duration=benchmark_duration)
                                 if not experiments_exist:
-                                    setup_profiling_pipeline_router(
+                                    setup_router_pipeline(
                                         node_names=node_names,
                                         pipeline_name=pipeline_name,
                                         cpu_request=cpu_request,
@@ -147,6 +145,9 @@ def experiments(pipeline_name: str, node_names: str,
                                         num_interop_threads=cpu_request,
                                         num_threads=cpu_request
                                     )
+                                    setup_router(
+                                        pipeline_name=pipeline_name,
+                                        node_names=node_names)
 
                                     print('Checking if the model is up ...')
                                     print('\n')
@@ -172,30 +173,30 @@ def experiments(pipeline_name: str, node_names: str,
                                     if workload_type == 'static':
                                         workload = [load] * load_duration
                                     data = load_data(data_type, pipeline_path)
-                                    # try:
-                                    start_time_experiment,\
-                                        end_time_experiment, responses = load_test(
-                                            pipeline_name='router',
-                                            model='router',
-                                            data_type=data_type,
-                                            data=data,
-                                            workload=workload,
-                                            mode=mode,
-                                            namespace='default',
-                                            benchmark_duration=benchmark_duration)
-                                    print('-'*25 + 'saving the report' + '-'*25)
-                                    print('\n')
-                                    save_report(
-                                        experiment_id=experiment_id,
-                                        responses=responses,
-                                        pipeline_name=pipeline_name,
-                                        node_names=node_names,
-                                        start_time_experiment=start_time_experiment,
-                                        end_time_experiment=end_time_experiment,
-                                        series=series)
-                                    # except UnboundLocalError:
-                                    #     print('Impossible experiment!')
-                                    #     print('skipping to the next experiment ...')
+                                    try:
+                                        start_time_experiment,\
+                                            end_time_experiment, responses = load_test(
+                                                pipeline_name='router',
+                                                model='router',
+                                                data_type=data_type,
+                                                data=data,
+                                                workload=workload,
+                                                mode=mode,
+                                                namespace='default',
+                                                benchmark_duration=benchmark_duration)
+                                        print('-'*25 + 'saving the report' + '-'*25)
+                                        print('\n')
+                                        save_report(
+                                            experiment_id=experiment_id,
+                                            responses=responses,
+                                            pipeline_name=pipeline_name,
+                                            node_names=node_names,
+                                            start_time_experiment=start_time_experiment,
+                                            end_time_experiment=end_time_experiment,
+                                            series=series)
+                                    except UnboundLocalError:
+                                        print('Impossible experiment!')
+                                        print('skipping to the next experiment ...')
                                     print(f'waiting for timeout: {timeout} seconds')
                                     for _ in tqdm(range(20)):
                                         time.sleep((timeout)/20)

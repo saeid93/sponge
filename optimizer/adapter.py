@@ -92,10 +92,16 @@ class Adapter:
         self.monitoring = Monitoring(
             pipeline_name=self.pipeline_name)
     def start(self):
+
+        # TODO Adaptation process
+        #      1. Call adapter in a different process
+        #      2. Monitoring the pipeline load (prometheus) in intervals
+        #      3. Running the optimizer
+        #      4. Applying the changes
+
         no_pipeline = False
         while True:
-            # time.sleep(self.adaptation_interval)
-
+            time.sleep(self.adaptation_interval)
             rps_series = self.monitoring.monitor()
             predicted_load = self.lstm(rps_series)
             optimal = self.optimizer.optimize(

@@ -185,13 +185,13 @@ def setup_router(pipeline_name, node_names):
             print('model container completely loaded!')
             break
 
-def setup_profiling_pipeline(pipeline_name: str,
-                   cpu_request: Tuple[str], memory_request: Tuple[str],
-                   model_variant: Tuple[str], max_batch_size: Tuple[str],
-                   max_batch_time: Tuple[str], replica: Tuple[int],
-                   use_threading: Tuple[bool], num_interop_threads: Tuple[int],
-                   num_threads: Tuple[int], pipeline_path: str,
-                   timeout: int, num_nodes: int):
+def setup_seldon_pipeline(
+        pipeline_name: str, cpu_request: Tuple[str],
+        memory_request: Tuple[str], model_variant: Tuple[str],
+        max_batch_size: Tuple[str], max_batch_time: Tuple[str],
+        replica: Tuple[int], use_threading: Tuple[bool],
+        num_interop_threads: Tuple[int], num_threads: Tuple[int],
+        pipeline_path: str, timeout: int, num_nodes: int):
     print('-'*25 + ' setting up the node with following config' + '-'*25)
     print('\n')
     # TODO add num nodes logic here
@@ -284,7 +284,7 @@ def setup_profiling_pipeline(pipeline_name: str,
             print('model container completely loaded!')
             break
 
-def setup_profiling_pipeline_router(
+def setup_router_pipeline(
         pipeline_name: str, node_names: List[str],
         cpu_request: Tuple[str], memory_request: Tuple[str],
         model_variant: Tuple[str], max_batch_size: Tuple[str],
@@ -320,122 +320,7 @@ def setup_profiling_pipeline_router(
             num_threads=cpu_request[node_id]
         )
 
-def setup_runner_pipeline(
-        pipeline_name: str,
-        cpu_request: List[str], memory_request: List[str],
-        model_variant: List[str], max_batch_size: List[str],
-        max_batch_time: List[str], replica: Tuple[int],
-        use_threading: List[bool], num_interop_threads: List[int],
-        num_threads: Tuple[int], pipeline_path: str,
-        timeout: int, num_nodes: int):
-    print('-'*25 + ' setting up the node with following config' + '-'*25)
-    print('\n')
-    # TODO add num nodes logic here
-    svc_vars = {"name": pipeline_name}
-    for node_id in range(num_nodes):
-        node_index = node_id + 1
-        svc_vars.update(
-            {
-                f"cpu_request_{node_index}": cpu_request[node_id],
-                f"memory_request_{node_index}": memory_request[node_id],
-                f"cpu_limit_{node_index}": cpu_request[node_id],
-                f"memory_limit_{node_index}": memory_request[node_id],
-                f"model_variant_{node_index}": model_variant[node_id],
-                f"max_batch_size_{node_index}": max_batch_size[node_id],
-                f"max_batch_time_{node_index}": max_batch_time[node_id],
-                f"replicas_{node_index}": replica[node_id],
-                f"use_threading_{node_index}": use_threading[node_id][0],
-                f"num_interop_threads_{node_index}": num_interop_threads[node_id],
-                f"num_threads_{node_index}": num_threads[node_id]
-            })
-    environment = Environment(
-        loader=FileSystemLoader(pipeline_path))
-    svc_template = environment.get_template('pipeline-template.yaml')
-    content = svc_template.render(svc_vars)
-    pp.pprint(content)
-    command = f"""cat <<EOF | kubectl apply -f -
-{content}
-        """
-    os.system(command)
-    print('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
-    print('\n')
-    print('-'*25 + f' model pod {pipeline_name} successfuly set up ' + '-'*25)
-    print('\n')
-    # extract model container names
-    model_container = yaml.safe_load(content)
-    model_names = list(
-        map(
-        lambda l: l['spec']['containers'][0]['name'],
-        model_container['spec']['predictors'][0]['componentSpecs']))
-    # checks if the pods are ready each 5 seconds
-    loop_timeout = 5
-    while True:
-        models_loaded, svc_loaded, pipeline_loaded = False, False, False
-        print(f'waited for {loop_timeout} to check if the pods are up')
-        time.sleep(loop_timeout)
-        model_pods = kube_api.list_namespaced_pod(
-            namespace=NAMESPACE,
-            label_selector=f"seldon-deployment-id={pipeline_name}")
-        all_model_pods = []
-        all_conainers = []
-        for pod in model_pods.items:
-            if pod.status.phase == "Running":
-                all_model_pods.append(True)
-                pod_name = pod.metadata.name
-                for model_name in model_names:
-                    if model_name in pod_name:
-                        container_name = model_name
-                        break
-                logs = kube_api.read_namespaced_pod_log(
-                    name=pod.metadata.name,
-                    namespace=NAMESPACE,
-                    container=container_name)
-                print(logs)
-                if 'Uvicorn running on http://0.0.0.0:600' in logs:
-                    all_conainers.append(True)
-                else:
-                    all_conainers.append(False)
-            else:
-                all_model_pods.append(False)
-        print(f"all_model_pods: {all_model_pods}")
-        if all(all_model_pods):
-            models_loaded = True
-        else: continue
-        print(f"all_containers: {all_conainers}")
-        if all(all_model_pods):
-            pipeline_loaded = True
-        else: continue
-        svc_pods = kube_api.list_namespaced_pod(
-            namespace=NAMESPACE,
-            label_selector=f"seldon-deployment-id={pipeline_name}-{pipeline_name}")
-        for pod in svc_pods.items:
-            if pod.status.phase == "Running":
-                svc_loaded = True
-            for container_status in pod.status.container_statuses:
-                if container_status.ready:
-                    pipeline_loaded = True
-                else: continue
-            else: continue
-        if models_loaded and svc_loaded and pipeline_loaded:
-            print('model container completely loaded!')
-            break
-
 def load_data(data_type: str, pipeline_path: str):
-
-    # request = {
-    #     'times': {
-    #         'models': {
-    #             'dummy': {
-    #                 'arrival': 1672276157.286681,
-    #                 'serving': 1672276157.2869108
-    #                 }
-    #             }
-    #         },
-    # }
-    # custom_parameters = str([str(request['times']['models'])])
-    # custom_parameters = {'times': str(times)}
-
-
     if data_type == 'audio':
         ds = load_dataset(
             "hf-internal-testing/librispeech_asr_demo",
@@ -443,17 +328,6 @@ def load_data(data_type: str, pipeline_path: str):
             split="validation")
         data = ds[0]["audio"]["array"]
         data_shape = [len(data)]
-        # input_sample_path = os.path.join(
-        #     pipeline_path, 'input-sample.json'
-        # )
-        # input_sample_shape_path = os.path.join(
-        #     pipeline_path, 'input-sample-shape.json'
-        # )
-        # with open(input_sample_path, 'r') as openfile:
-        #     data = json.load(openfile)
-        # with open(input_sample_shape_path, 'r') as openfile:
-        #     data_shape = json.load(openfile)
-        #     data_shape = data_shape['data_shape']
     elif data_type == 'text':
         input_sample_path = os.path.join(
             pipeline_path, 'input-sample.txt'
