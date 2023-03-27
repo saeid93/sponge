@@ -10,7 +10,7 @@ NAMESPACE = 'default'
 # base DATA folder path and object sore path
 DATA_PATH = os.path.join(PROJECT_PATH, "data")
 OBJ_DATA_PATH = os.path.join(OBJ_PATH, "data")
-PIPELINES_FOLDER = "mlserver-prototype"
+PIPELINES_FOLDER = "mlserver-final"
 
 # configs path
 PIPLINES_PATH = os.path.join(
