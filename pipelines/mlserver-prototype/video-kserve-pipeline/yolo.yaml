@@ -6,7 +6,7 @@ metadata:
 spec:
   predictor:
     volumes:
-    - name: yolo5-volume
+    - name: yolov5-volume
       persistentVolumeClaim:
         claimName: torchhub-claim
         readOnly: true

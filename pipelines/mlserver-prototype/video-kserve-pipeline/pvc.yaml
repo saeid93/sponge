@@ -10,6 +10,4 @@ spec:
     requests:
       storage: 20Gi
   storageClassName: slow
-  selector:
-    matchLabels:
-      name: torchhub-vol
+  volumeName: torchhub-vol
