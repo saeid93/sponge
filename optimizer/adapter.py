@@ -7,17 +7,25 @@ import os
 import sys
 import pandas as pd
 
+# get an absolute path to the directory that contains parent files
+project_dir = os.path.dirname(__file__)
+sys.path.append(os.path.normpath(os.path.join(
+    project_dir, '..')))
+from experiments.utils.pipeline_operations import (
+    check_node_up
+)
+
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
-try:
-    config.load_kube_config()
-    kube_config = client.Configuration().get_default_copy()
-except AttributeError:
-    kube_config = client.Configuration()
-    kube_config.assert_hostname = False
-client.Configuration.set_default(kube_config)
-kube_api = client.api.core_v1_api.CoreV1Api()
+# try:
+#     config.load_kube_config()
+#     kube_config = client.Configuration().get_default_copy()
+# except AttributeError:
+#     kube_config = client.Configuration()
+#     kube_config.assert_hostname = False
+# client.Configuration.set_default(kube_config)
+# kube_api = client.api.core_v1_api.CoreV1Api()
 
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
@@ -79,7 +87,8 @@ class Adapter:
         self.num_state_limit = num_state_limit
         self.monitoring = Monitoring(
             pipeline_name=self.pipeline_name)
-    def start(self):
+
+    def start_experiment(self):
 
         # 0. Check if pipeline is up
         # 1. Use monitoring for periodically checking the status of
@@ -92,9 +101,9 @@ class Adapter:
         # 6. Compare the optimal solutions from the optimzer
         #     to the existing pipeline's state
         # 7. Use the change config script to change the pipelien to the new config
-        no_pipeline = False
+        pipeline_up = False
         # TODO check if router is up
-        # check_router()
+        pipeline_up = check_node_up(node_name='router', silent_mode=True)
 
         while True:
             time.sleep(self.adaptation_interval)
@@ -108,7 +117,8 @@ class Adapter:
                 num_state_limit=self.num_state_limit
             )
             new_config = self.output_parser(optimal)
-            if no_pipeline:
+            if not pipeline_up:
+                pipeline_up = check_node_up(node_name='router', silent_mode=True)
                 # TODO check if there is not a pipeline stop wthile
                 # with the message that the process has ended
                 break

@@ -145,9 +145,6 @@ def experiments(pipeline_name: str, node_names: str,
                                         num_interop_threads=cpu_request,
                                         num_threads=cpu_request
                                     )
-                                    setup_router(
-                                        pipeline_name=pipeline_name,
-                                        node_names=node_names)
 
                                     print('Checking if the model is up ...')
                                     print('\n')

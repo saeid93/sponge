@@ -80,45 +80,7 @@ def setup_node(
     os.system(command)
     print('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
     print('\n')
-    print('-'*25 + f' model pod {node_name} successfuly set up ' + '-'*25)
-    print('\n')
-    # checks if the pods are ready each 5 seconds
-    loop_timeout = 5
-    while True:
-        # models_loaded, svc_loaded, container_loaded = False, False, False
-        models_loaded, container_loaded = False, False
-        print(f'waited for {loop_timeout} to check if the pods are up')
-        time.sleep(loop_timeout)
-        model_pods = kube_api.list_namespaced_pod(
-            namespace=NAMESPACE,
-            label_selector=f"seldon-deployment-id={node_name}")
-        all_model_pods = []
-        all_conainers = []
-        for pod in model_pods.items:
-            if pod.status.phase == "Running":
-                all_model_pods.append(True)
-                logs = kube_api.read_namespaced_pod_log(
-                    name=pod.metadata.name,
-                    namespace=NAMESPACE,
-                    container=node_name)
-                print(logs)
-                if 'Uvicorn running on http://0.0.0.0:6000' in logs:
-                    all_conainers.append(True)
-                else:
-                    all_conainers.append(False)
-            else:
-                all_model_pods.append(False)
-        print(f"all_model_pods: {all_model_pods}")
-        if all(all_model_pods):
-            models_loaded = True
-        else: continue
-        print(f"all_containers: {all_conainers}")
-        if all(all_model_pods):
-            container_loaded = True
-        else: continue
-        if models_loaded and container_loaded:
-            print('model container completely loaded!')
-            break
+    check_node_up(node_name=node_name)
 
 def setup_router(pipeline_name, node_names):
     print('-'*25 + ' setting up the node with following config' + '-'*25)
@@ -145,45 +107,7 @@ def setup_router(pipeline_name, node_names):
     os.system(command)
     print('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
     print('\n')
-    print('-'*25 + f' router pod {pipeline_name} successfuly set up ' + '-'*25)
-    print('\n')
-    # checks if the pods are ready each 5 seconds
-    loop_timeout = 5
-    while True:
-        # models_loaded, svc_loaded, container_loaded = False, False, False
-        models_loaded, container_loaded = False, False
-        print(f'waited for {loop_timeout} to check if the pods are up')
-        time.sleep(loop_timeout)
-        model_pods = kube_api.list_namespaced_pod(
-            namespace=NAMESPACE,
-            label_selector=f"seldon-deployment-id={pipeline_name}")
-        all_model_pods = []
-        all_conainers = []
-        for pod in model_pods.items:
-            if pod.status.phase == "Running":
-                all_model_pods.append(True)
-                logs = kube_api.read_namespaced_pod_log(
-                    name=pod.metadata.name,
-                    namespace=NAMESPACE,
-                    container=pipeline_name)
-                print(logs)
-                if 'Uvicorn running on http://0.0.0.0:6000' in logs:
-                    all_conainers.append(True)
-                else:
-                    all_conainers.append(False)
-            else:
-                all_model_pods.append(False)
-        print(f"all_model_pods: {all_model_pods}")
-        if all(all_model_pods):
-            models_loaded = True
-        else: continue
-        print(f"all_containers: {all_conainers}")
-        if all(all_model_pods):
-            container_loaded = True
-        else: continue
-        if models_loaded and container_loaded:
-            print('model container completely loaded!')
-            break
+    check_node_up(node_name='router')
 
 def setup_seldon_pipeline(
         pipeline_name: str, cpu_request: Tuple[str],
@@ -319,6 +243,9 @@ def setup_router_pipeline(
             num_interop_threads=cpu_request[node_id],
             num_threads=cpu_request[node_id]
         )
+    setup_router(
+        pipeline_name=pipeline_name,
+        node_names=node_names)
 
 def load_data(data_type: str, pipeline_path: str):
     if data_type == 'audio':
@@ -397,7 +324,7 @@ def warm_up(
         data_type=data_type,
         workload=workload)
 
-def remove_pipeline(pipeline_name):
+def remove_pipeline(pipeline_name: str):
     os.system(f"kubectl delete seldondeployment {pipeline_name} -n default")
     # TEMP TODO until fixing the server problem
     os.system(f"kubectl delete seldondeployment --all -n default")
@@ -441,3 +368,50 @@ def load_test(
         for response in second_response:
             response['outputs'] = []
     return start_time, end_time, responses
+
+def check_node_up(node_name: str, silent_mode: bool=False) -> bool:
+    if not silent_mode:
+        print('-'*25 + f' model pod {node_name} successfuly set up ' + '-'*25)
+        print('\n')
+    # checks if the pods are ready each 5 seconds
+    loop_timeout = 5
+    while True:
+        # models_loaded, svc_loaded, container_loaded = False, False, False
+        models_loaded, container_loaded = False, False
+        model_pods = kube_api.list_namespaced_pod(
+            namespace=NAMESPACE,
+            label_selector=f"seldon-deployment-id={node_name}")
+        all_model_pods = []
+        all_conainers = []
+        for pod in model_pods.items:
+            if pod.status.phase == "Running":
+                all_model_pods.append(True)
+                logs = kube_api.read_namespaced_pod_log(
+                    name=pod.metadata.name,
+                    namespace=NAMESPACE,
+                    container=node_name)
+                if not silent_mode:
+                    print(logs)
+                if 'Uvicorn running on http://0.0.0.0:6000' in logs:
+                    all_conainers.append(True)
+                else:
+                    all_conainers.append(False)
+            else:
+                all_model_pods.append(False)
+        if not silent_mode:
+            print(f"all_model_pods: {all_model_pods}")
+        if all(all_model_pods):
+            models_loaded = True
+        else: continue
+        if not silent_mode:
+            print(f"all_containers: {all_conainers}")
+        if all(all_model_pods):
+            container_loaded = True
+        else: continue
+        if models_loaded and container_loaded:
+            if not silent_mode:
+                print('model container completely loaded!')
+            return True
+        if not silent_mode:
+            print(f'waited for {loop_timeout} to check if the pods are up')
+        time.sleep(loop_timeout)

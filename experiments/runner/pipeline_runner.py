@@ -27,8 +27,7 @@ from experiments.utils.pipeline_operations import (
     load_test,
     remove_pipeline,
     setup_router_pipeline,
-    get_pod_name,
-    setup_router)
+    get_pod_name)
 from experiments.utils.constants import (
     PIPLINES_PATH,
     FINAL_CONFIGS_PATH,
@@ -46,68 +45,6 @@ from optimizer import (
 from experiments.utils.simulation_operations import (
     generate_simulated_pipeline
 )
-
-# ----------------------
-"""
-Iterate through all possible combination
-of pipelines
-"""
-import os
-import time
-import json
-import yaml
-from typing import Union, Tuple
-import click
-import sys
-import csv
-import re
-from kubernetes import config
-from kubernetes import client
-from tqdm import tqdm
-import shutil
-from pprint import PrettyPrinter
-pp = PrettyPrinter(indent=4)
-
-from barazmoon.twitter import twitter_workload_generator
-
-# get an absolute path to the directory that contains parent files
-project_dir = os.path.dirname(__file__)
-sys.path.append(os.path.normpath(os.path.join(
-    project_dir, '..', '..')))
-from experiments.utils.prometheus import PromClient
-from experiments.utils.pipeline_operations import (
-    load_data,
-    warm_up,
-    check_load_test,
-    load_test,
-    remove_pipeline,
-    get_pod_name)
-from experiments.utils.constants import (
-    PIPLINES_PATH,
-    FINAL_CONFIGS_PATH,
-    FINAL_RESULTS_PATH,
-    ACCURACIES_PATH,
-    OBJ_FINAL_RESULTS_PATH
-)
-from experiments.utils.obj import setup_obj_store
-prom_client = PromClient()
-try:
-    config.load_kube_config()
-    kube_config = client.Configuration().get_default_copy()
-except AttributeError:
-    kube_config = client.Configuration()
-    kube_config.assert_hostname = False
-client.Configuration.set_default(kube_config)
-kube_api = client.api.core_v1_api.CoreV1Api()
-
-from optimizer import (
-    Optimizer,
-    Adapter
-    )
-from experiments.utils.simulation_operations import (
-    generate_simulated_pipeline
-)
-
 
 def setup_pipeline(
         pipeline_name: str, node_names: str,
@@ -190,9 +127,6 @@ def setup_pipeline(
         num_interop_threads=cpu_requests,
         num_threads=cpu_requests
     )
-    setup_router(
-        pipeline_name=pipeline_name,
-        node_names=node_names)
     print('Checking if the model is up ...')
     print('\n')
     # check if the model is up or not
@@ -601,8 +535,10 @@ def main(config_name: str):
     )
 
     # ----------- 3. Running an experiment series -------------
-    # pass adapter to the experiment
-    # run two separate processes in the experiments
+    # 1. Setup the pipeline
+    # 2. Makes two processes for experiment and adapter
+    # 3. Run both processes at the same time
+    # 4. Join both processes
 
     # 0. setup pipeline
     remove_pipeline(pipeline_name=pipeline_name)
@@ -618,7 +554,7 @@ def main(config_name: str):
     # TODO check if experiment exists
 
     # 1. process one the experiment runner
-    pipeline_setup_process = multiprocessing.Process(
+    experiment_process = multiprocessing.Process(
         target=experiments,
         kwargs={
             'pipeline_name': pipeline_name,
@@ -631,14 +567,14 @@ def main(config_name: str):
 
     # 2. process two the pipeline adapter
     adaptation_process = multiprocessing.Process(
-        target=adapter.start)
+        target=adapter.start_experiment)
 
-    # start the two process
-    pipeline_setup_process.start()
+    # start both processese at the same time
+    experiment_process.start()
     adaptation_process.start()
 
     # finish the experiments
-    pipeline_setup_process.join()
+    experiment_process.join()
     adaptation_process.join()
 
     print(f'waiting for timeout: {timeout} seconds')
