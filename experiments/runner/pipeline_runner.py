@@ -6,14 +6,18 @@ import os
 import time
 import json
 import yaml
-from typing import Union, Tuple
+from typing import (
+    Union,
+    Tuple,
+    Any,
+    Dict)
 import click
 import sys
 import csv
 from tqdm import tqdm
 import shutil
 from barazmoon.twitter import twitter_workload_generator
-import multiprocessing
+import threading
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -151,7 +155,7 @@ def setup_pipeline(
     print('\n')
     return experiments_exist, experiment_id
 
-def experiments(
+def start_experiment(
         pipeline_name: str, node_names: str,
         config: dict, pipeline_path: str,
         data_type: str, experiment_id: int):
@@ -399,73 +403,12 @@ def save_report(experiment_id: int,
         outfile.write(json.dumps(results))
     print(f'results have been sucessfully saved in:\n{save_path}')
 
-def backup(series):
-    data_path = os.path.join(
-        FINAL_RESULTS_PATH,
-        'series', str(series))
-    backup_path = os.path.join(
-        FINAL_RESULTS_PATH,
-        'series', str(series))
-    setup_obj_store()
-    shutil.copytree(data_path, backup_path)
+def adaptation_function(
+        config: Dict[str, Any],
+        accuracies: Dict[str, Any]):
 
-@click.command()
-@click.option(
-    '--config-name', required=True, type=str, default='video')
-def main(config_name: str):
-    """loading system configs
 
-    Args:
-        config_name (str): configuration for an e2e experiment
-    """
-    # ----------- 1. loading system configs -------------
-    # TODO add logs of load changes and config changes
-    config_path = os.path.join(
-        FINAL_CONFIGS_PATH, f"{config_name}.yaml")
-    with open(config_path, 'r') as cf:
-        config = yaml.safe_load(cf)
-    pipeline_name = config['pipeline_name']
-    pipeline_folder_name = config['pipeline_folder_name']
-    node_names = [config['node_name'] for config in config['nodes']]
     adaptation_interval = config['adaptation_interval']
-    # first node of the pipeline determins the pipeline data_type
-    data_type = config['nodes'][0]['data_type']
-    series = config['series']
-    pipeline_path = os.path.join(
-        PIPLINES_PATH,
-        pipeline_folder_name,
-        'seldon-core-version'
-    )
-
-    dir_path = os.path.join(
-        FINAL_RESULTS_PATH,
-        'series', str(series))
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
-        dest_config_path = os.path.join(
-            dir_path,
-            '0.yaml'
-        )
-        shutil.copy(config_path, dest_config_path)
-    else:
-        num_configs = 0
-        # Iterate directory
-        for file in os.listdir(dir_path):
-            # check only text files
-            if file.endswith('.yaml'):
-                num_configs += 1
-        dest_config_path = os.path.join(
-            dir_path,
-            f'{num_configs}.yaml'
-        )
-        shutil.copy(config_path, dest_config_path)
-
-    # ----------- 2. loading profiling configs -------------
-    with open(config_path, 'r') as cf:
-        config = yaml.safe_load(cf)
-    with open(ACCURACIES_PATH, 'r') as cf:
-        accuracies = yaml.safe_load(cf)
-
     # timeout variable
     timeout = config['timeout']
 
@@ -533,14 +476,75 @@ def main(config_name: str):
         gamma=gamma,
         num_state_limit=num_state_limit
     )
+    adapter.start_adaptation()
 
-    # ----------- 3. Running an experiment series -------------
+def backup(series):
+    data_path = os.path.join(
+        FINAL_RESULTS_PATH,
+        'series', str(series))
+    backup_path = os.path.join(
+        FINAL_RESULTS_PATH,
+        'series', str(series))
+    setup_obj_store()
+    shutil.copytree(data_path, backup_path)
+
+@click.command()
+@click.option(
+    '--config-name', required=True, type=str, default='video')
+def main(config_name: str):
+    """loading system configs
+
+    Args:
+        config_name (str): configuration for an e2e experiment
+    """
+    # ----------- 1. loading system configs -------------
+    # TODO add logs of load changes and config changes
+    config_path = os.path.join(
+        FINAL_CONFIGS_PATH, f"{config_name}.yaml")
+    with open(config_path, 'r') as cf:
+        config = yaml.safe_load(cf)
+    pipeline_name = config['pipeline_name']
+    pipeline_folder_name = config['pipeline_folder_name']
+    node_names = [config['node_name'] for config in config['nodes']]
+    # first node of the pipeline determins the pipeline data_type
+    data_type = config['nodes'][0]['data_type']
+    series = config['series']
+    pipeline_path = os.path.join(
+        PIPLINES_PATH,
+        pipeline_folder_name,
+        'seldon-core-version'
+    )
+
+    dir_path = os.path.join(
+        FINAL_RESULTS_PATH,
+        'series', str(series))
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+        dest_config_path = os.path.join(
+            dir_path,
+            '0.yaml'
+        )
+        shutil.copy(config_path, dest_config_path)
+    else:
+        num_configs = 0
+        # Iterate directory
+        for file in os.listdir(dir_path):
+            # check only text files
+            if file.endswith('.yaml'):
+                num_configs += 1
+        dest_config_path = os.path.join(
+            dir_path,
+            f'{num_configs}.yaml'
+        )
+        shutil.copy(config_path, dest_config_path)
+
+    # ----------- 2. Running an experiment series -------------
     # 1. Setup the pipeline
     # 2. Makes two processes for experiment and adapter
     # 3. Run both processes at the same time
     # 4. Join both processes
 
-    # 0. setup pipeline
+    # 1. setup pipeline
     remove_pipeline(pipeline_name=pipeline_name)
     experiments_exist, experiment_id =\
         setup_pipeline(
@@ -550,12 +554,13 @@ def main(config_name: str):
         pipeline_path=pipeline_path,
         data_type=data_type
         )
-    
-    # TODO check if experiment exists
+    with open(config_path, 'r') as cf:
+        config = yaml.safe_load(cf)
+    with open(ACCURACIES_PATH, 'r') as cf:
+        accuracies = yaml.safe_load(cf)
 
-    # 1. process one the experiment runner
-    experiment_process = multiprocessing.Process(
-        target=experiments,
+    experiment_process = threading.Thread(
+        target=start_experiment,
         kwargs={
             'pipeline_name': pipeline_name,
             'node_names': node_names,
@@ -566,17 +571,23 @@ def main(config_name: str):
         })
 
     # 2. process two the pipeline adapter
-    adaptation_process = multiprocessing.Process(
-        target=adapter.start_experiment)
+    adaptation_process = threading.Thread(
+        target=adaptation_function, kwargs={
+                'config': config,
+                'accuracies': accuracies
+            })
 
-    # start both processese at the same time
+    # 3. start both processese at the same time
     experiment_process.start()
     adaptation_process.start()
 
-    # finish the experiments
+    # 4. finish the experiments
     experiment_process.join()
     adaptation_process.join()
 
+
+
+    timeout = 20
     print(f'waiting for timeout: {timeout} seconds')
     for _ in tqdm(range(20)):
         time.sleep((timeout)/20)

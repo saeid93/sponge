@@ -88,7 +88,7 @@ class Adapter:
         self.monitoring = Monitoring(
             pipeline_name=self.pipeline_name)
 
-    def start_experiment(self):
+    def start_adaptation(self):
 
         # 0. Check if pipeline is up
         # 1. Use monitoring for periodically checking the status of

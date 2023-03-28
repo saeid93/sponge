@@ -26,10 +26,10 @@ data = np.array(data).flatten()
 
 http_method = 'post'
 
-load = 8
+load = 30
 test_duration = 10
 variant = 0
-platform = 'seldon'
+platform = 'router'
 workload = [load] * test_duration
 data_type = 'image'
 mode = 'equal' # options - step, equal, exponential
