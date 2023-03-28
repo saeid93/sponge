@@ -47,18 +47,6 @@ class Adapter:
             gamma: float,
             num_state_limit: int) -> None:
         """
-        1. Gets the model of the inference pipeline
-        2. Use monitoring for periodically checking the status of
-            the pipeline in terms of load
-        3. Watches the incoming load in the system
-        4. TODO LSTM for predicting the load
-        5. Get the existing pipeline state, batch size, model variant and replicas per
-            each node
-        5. Give the load and pipeline status to the optimizer
-        6. Compare the optimal solutions from the optimzer
-            to the existing pipeline's state
-        7. Use the change config script to change the pipelien to the new config
-
         Args:
             pipeline_name (str): name of the pipeline
             pipeline (Pipeline): pipeline object
@@ -93,13 +81,21 @@ class Adapter:
             pipeline_name=self.pipeline_name)
     def start(self):
 
-        # TODO Adaptation process
-        #      1. Call adapter in a different process
-        #      2. Monitoring the pipeline load (prometheus) in intervals
-        #      3. Running the optimizer
-        #      4. Applying the changes
-
+        # 0. Check if pipeline is up
+        # 1. Use monitoring for periodically checking the status of
+        #     the pipeline in terms of load
+        # 2. Watches the incoming load in the system
+        # 3. TODO LSTM for predicting the load
+        # 4. Get the existing pipeline state, batch size, model variant and replicas per
+        #     each node
+        # 5. Give the load and pipeline status to the optimizer
+        # 6. Compare the optimal solutions from the optimzer
+        #     to the existing pipeline's state
+        # 7. Use the change config script to change the pipelien to the new config
         no_pipeline = False
+        # TODO check if router is up
+        # check_router()
+
         while True:
             time.sleep(self.adaptation_interval)
             rps_series = self.monitoring.monitor()
@@ -125,6 +121,10 @@ class Adapter:
     def output_parser(self, optimizer_output: pd.DataFrame):
         pass
 
+    def check_router():
+        # check if the router is up
+        a = 1
+
 
     def change_config(
             self,
@@ -136,6 +136,7 @@ class Adapter:
         """
 
 
+        # TODO temp
         from kubernetes import client, config
 
         deployment_name = "my-seldon-deployment"

@@ -108,26 +108,12 @@ from experiments.utils.simulation_operations import (
     generate_simulated_pipeline
 )
 
-KEY_CONFIG_FILENAME = 'key_config_mapper.csv'
-NAMESPACE = 'default'
 
-def get_pod_name(node_name: str, orchestrator=False):
-    pod_regex = f"{node_name}.*"
-    pods_list = kube_api.list_namespaced_pod(NAMESPACE)
-    pod_names = []
-    for pod_name in pods_list.items:
-        pod_name=pod_name.metadata.name
-        if orchestrator and re.match(pod_regex, pod_name) and 'svc' in pod_name:
-            return pod_name
-        if re.match(pod_regex, pod_name) and 'svc' not in pod_name:
-            pod_names.append(pod_name)
-    return pod_names
+def setup_pipeline(
+        pipeline_name: str, node_names: str,
+        config: dict, pipeline_path: str,
+        data_type: str):
 
-def experiments(pipeline_name: str, node_names: str,
-                config: dict, pipeline_path: str,
-                data_type: str):
-
-    workload_config = config['workload_config']
     series = config['series']
     metadata = config['metadata']
     timeout = config['timeout']
@@ -186,7 +172,6 @@ def experiments(pipeline_name: str, node_names: str,
         data_type=data_type,
         benchmark_duration=benchmark_duration)
 
-    remove_pipeline(pipeline_name=pipeline_name)
     setup_router_pipeline(
         node_names=node_names,
         pipeline_name=pipeline_name,
@@ -225,10 +210,37 @@ def experiments(pipeline_name: str, node_names: str,
         data_type=data_type,
         pipeline_path=pipeline_path,
         warm_up_duration=warm_up_duration)
+
     print('-'*25 + f'starting load test ' + '-'*25)
     print('\n')
     print('-'*25 + f'starting load test ' + '-'*25)
     print('\n')
+    return experiments_exist, experiment_id
+
+def experiments(
+        pipeline_name: str, node_names: str,
+        config: dict, pipeline_path: str,
+        data_type: str, experiment_id: int):
+
+    series = config['series']
+    mode = config['mode']
+    benchmark_duration = config['benchmark_duration']
+    workload_type = config['workload_type']
+    workload_config = config['workload_config']
+    if workload_type == 'static':
+        loads_to_test = workload_config['loads_to_test']
+        load_duration = workload_config['load_duration']
+    elif workload_type == 'twitter':
+        # loads_to_test = workload_config['loads_to_test']
+        loads_to_test = []
+        for w_config in workload_config:
+            start = w_config['start']
+            end = w_config['end']
+            load_to_test = start + '-' + end
+            loads_to_test.append(load_to_test)
+        workload = twitter_workload_generator(loads_to_test[0])
+        load_duration = len(workload)
+
     if workload_type == 'static':
         workload = [loads_to_test] * load_duration
     data = load_data(data_type, pipeline_path)
@@ -256,10 +268,6 @@ def experiments(pipeline_name: str, node_names: str,
     except UnboundLocalError:
         print('Impossible experiment!')
         print('skipping to the next experiment ...')
-    print(f'waiting for timeout: {timeout} seconds')
-    for _ in tqdm(range(20)):
-        time.sleep((timeout)/20)
-    remove_pipeline(pipeline_name=pipeline_name)
 
 def key_config_mapper(
     pipeline_name: str, node_name: Tuple[str], cpu_request: Tuple[str],
@@ -406,11 +414,6 @@ def save_report(experiment_id: int,
                 'time_throughput': [],
             }
 
-            svc_path = os.path.join(
-                FINAL_RESULTS_PATH,
-                'series', str(series), f"{experiment_id}.txt")
-            svc_pod_name = get_pod_name(
-                node_name=node_name, orchestrator=True)
             cpu_usage_count, time_cpu_usage_count =\
                 prom_client.get_cpu_usage_count(
                     pod_name=node_pod_name, namespace="default",
@@ -460,9 +463,6 @@ def save_report(experiment_id: int,
 
     with open(save_path, "w") as outfile:
         outfile.write(json.dumps(results))
-    os.system(
-        f'kubectl logs -n {namespace} {svc_pod_name} > {svc_path}'
-    )
     print(f'results have been sucessfully saved in:\n{save_path}')
 
 def backup(series):
@@ -531,6 +531,9 @@ def main(config_name: str):
         config = yaml.safe_load(cf)
     with open(ACCURACIES_PATH, 'r') as cf:
         accuracies = yaml.safe_load(cf)
+
+    # timeout variable
+    timeout = config['timeout']
 
     # profiling config
     series = config['series']
@@ -601,6 +604,18 @@ def main(config_name: str):
     # pass adapter to the experiment
     # run two separate processes in the experiments
 
+    # 0. setup pipeline
+    remove_pipeline(pipeline_name=pipeline_name)
+    experiments_exist, experiment_id =\
+        setup_pipeline(
+        pipeline_name=pipeline_name,
+        node_names=node_names,
+        config=config,
+        pipeline_path=pipeline_path,
+        data_type=data_type
+        )
+    
+    # TODO check if experiment exists
 
     # 1. process one the experiment runner
     pipeline_setup_process = multiprocessing.Process(
@@ -610,7 +625,8 @@ def main(config_name: str):
             'node_names': node_names,
             'config': config,
             'pipeline_path': pipeline_path,
-            'data_type': data_type            
+            'data_type': data_type,
+            'experiment_id': experiment_id
         })
 
     # 2. process two the pipeline adapter
@@ -624,6 +640,11 @@ def main(config_name: str):
     # finish the experiments
     pipeline_setup_process.join()
     adaptation_process.join()
+
+    print(f'waiting for timeout: {timeout} seconds')
+    for _ in tqdm(range(20)):
+        time.sleep((timeout)/20)
+    remove_pipeline(pipeline_name=pipeline_name)
 
 if __name__ == "__main__":
     main()
