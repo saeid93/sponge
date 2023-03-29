@@ -75,9 +75,9 @@ repetition: 1
 workload_type: static
 workload_config:
   loads_to_test:
-  - 1
+  # - 1
   # - 5
-  # - 10
+  - 10
   # - 20
   # - 40
   # - 60

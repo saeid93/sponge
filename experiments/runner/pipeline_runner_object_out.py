@@ -17,7 +17,7 @@ import csv
 from tqdm import tqdm
 import shutil
 from barazmoon.twitter import twitter_workload_generator
-import threading
+import multiprocessing
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -139,6 +139,7 @@ def setup_pipeline(
         model='router',
         data_type=data_type,
         pipeline_path=pipeline_path)
+    print('\n')
     print('model warm up ...')
     print('\n')
     warm_up_duration = 10
@@ -149,7 +150,6 @@ def setup_pipeline(
         pipeline_path=pipeline_path,
         warm_up_duration=warm_up_duration)
 
-    print('-'*25 + f'starting load test ' + '-'*25)
     print('\n')
     print('-'*25 + f'starting load test ' + '-'*25)
     print('\n')
@@ -405,7 +405,178 @@ def save_report(experiment_id: int,
 
 def adaptation_function(
         config: Dict[str, Any],
-        accuracies: Dict[str, Any]):
+        accuracies: Dict[str, Any],
+        pipeline):
+
+
+    adaptation_interval = config['adaptation_interval']
+    # timeout variable
+    timeout = config['timeout']
+
+    # profiling config
+    series = config['series']
+    number_tasks = config['number_tasks']
+    profiling_series = config['profiling_series']
+    model_name = config['model_name']
+    task_name = config['task_name']
+    initial_active_model = config['initial_active_model']
+    initial_cpu_allocation = config['initial_cpu_allocation']
+    initial_replica = config['initial_replica']
+    initial_batch = config['initial_batch']
+    scaling_cap = config['scaling_cap']
+    pipeline_name = config['pipeline_name']
+    only_measured_profiles = config['only_measured_profiles']
+    profiling_load = config['profiling_load']
+
+    # pipeline config
+    num_state_limit = config['num_state_limit']
+    optimization_method = config['optimization_method']
+    allocation_mode = config['allocation_mode']
+    threshold = config['threshold']
+    sla_factor = config['sla_factor']
+    accuracy_method = config['accuracy_method']
+    normalize_accuracy = config['normalize_accuracy']
+
+    # pipeline accuracy
+    pipeline_accuracies = accuracies[pipeline_name]
+
+    # optimizer
+    alpha = config['alpha']
+    beta = config['beta']
+    gamma = config['gamma']
+
+    # pipeline = generate_simulated_pipeline(
+    #     number_tasks=number_tasks,
+    #     profiling_series=profiling_series,
+    #     model_names=model_name,
+    #     task_names=task_name,
+    #     initial_active_model=initial_active_model,
+    #     allocation_mode=allocation_mode,
+    #     initial_cpu_allocation=initial_cpu_allocation,
+    #     initial_replica=initial_replica,
+    #     initial_batch=initial_batch,
+    #     threshold=threshold,
+    #     sla_factor=sla_factor,
+    #     accuracy_method=accuracy_method,
+    #     normalize_accuracy=normalize_accuracy,
+    #     pipeline_accuracies=pipeline_accuracies,
+    #     only_measured_profiles=only_measured_profiles,
+    #     profiling_load=profiling_load)
+
+    # should be inside of experiments
+    adapter = Adapter(
+        pipeline_name=pipeline_name,
+        pipeline=pipeline,
+        adaptation_interval=adaptation_interval,
+        optimization_method=optimization_method,
+        allocation_mode=allocation_mode,
+        only_measured_profiles=only_measured_profiles,
+        scaling_cap=scaling_cap,
+        alpha=alpha,
+        beta=beta,
+        gamma=gamma,
+        num_state_limit=num_state_limit
+    )
+    adapter.start_adaptation()
+
+def backup(series):
+    data_path = os.path.join(
+        FINAL_RESULTS_PATH,
+        'series', str(series))
+    backup_path = os.path.join(
+        FINAL_RESULTS_PATH,
+        'series', str(series))
+    setup_obj_store()
+    shutil.copytree(data_path, backup_path)
+
+@click.command()
+@click.option(
+    '--config-name', required=True, type=str, default='video')
+def main(config_name: str):
+    """loading system configs
+
+    Args:
+        config_name (str): configuration for an e2e experiment
+    """
+
+
+
+
+
+
+
+    # ----------- 1. loading system configs -------------
+    # TODO add logs of load changes and config changes
+    config_path = os.path.join(
+        FINAL_CONFIGS_PATH, f"{config_name}.yaml")
+    with open(config_path, 'r') as cf:
+        config = yaml.safe_load(cf)
+    pipeline_name = config['pipeline_name']
+    pipeline_folder_name = config['pipeline_folder_name']
+    node_names = [config['node_name'] for config in config['nodes']]
+    # first node of the pipeline determins the pipeline data_type
+    data_type = config['nodes'][0]['data_type']
+    series = config['series']
+    pipeline_path = os.path.join(
+        PIPLINES_PATH,
+        pipeline_folder_name,
+        'seldon-core-version'
+    )
+
+    dir_path = os.path.join(
+        FINAL_RESULTS_PATH,
+        'series', str(series))
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+        dest_config_path = os.path.join(
+            dir_path,
+            '0.yaml'
+        )
+        shutil.copy(config_path, dest_config_path)
+    else:
+        num_configs = 0
+        # Iterate directory
+        for file in os.listdir(dir_path):
+            # check only text files
+            if file.endswith('.yaml'):
+                num_configs += 1
+        dest_config_path = os.path.join(
+            dir_path,
+            f'{num_configs}.yaml'
+        )
+        shutil.copy(config_path, dest_config_path)
+
+
+
+
+
+
+    # ----------- 2. Running an experiment series -------------
+    # 1. Setup the pipeline
+    # 2. Makes two processes for experiment and adapter
+    # 3. Run both processes at the same time
+    # 4. Join both processes
+
+    # 1. setup pipeline
+    remove_pipeline(pipeline_name=pipeline_name)
+    experiments_exist, experiment_id =\
+        setup_pipeline(
+        pipeline_name=pipeline_name,
+        node_names=node_names,
+        config=config,
+        pipeline_path=pipeline_path,
+        data_type=data_type
+        )
+    with open(config_path, 'r') as cf:
+        config = yaml.safe_load(cf)
+    with open(ACCURACIES_PATH, 'r') as cf:
+        accuracies = yaml.safe_load(cf)
+
+
+
+
+
+# ------------------------
 
 
     adaptation_interval = config['adaptation_interval']
@@ -462,104 +633,18 @@ def adaptation_function(
         only_measured_profiles=only_measured_profiles,
         profiling_load=profiling_load)
 
-    # should be inside of experiments
-    adapter = Adapter(
-        pipeline_name=pipeline_name,
-        pipeline=pipeline,
-        adaptation_interval=adaptation_interval,
-        optimization_method=optimization_method,
-        allocation_mode=allocation_mode,
-        only_measured_profiles=only_measured_profiles,
-        scaling_cap=scaling_cap,
-        alpha=alpha,
-        beta=beta,
-        gamma=gamma,
-        num_state_limit=num_state_limit
-    )
-    adapter.start_adaptation()
 
-def backup(series):
-    data_path = os.path.join(
-        FINAL_RESULTS_PATH,
-        'series', str(series))
-    backup_path = os.path.join(
-        FINAL_RESULTS_PATH,
-        'series', str(series))
-    setup_obj_store()
-    shutil.copytree(data_path, backup_path)
 
-@click.command()
-@click.option(
-    '--config-name', required=True, type=str, default='video')
-def main(config_name: str):
-    """loading system configs
 
-    Args:
-        config_name (str): configuration for an e2e experiment
-    """
-    # ----------- 1. loading system configs -------------
-    # TODO add logs of load changes and config changes
-    config_path = os.path.join(
-        FINAL_CONFIGS_PATH, f"{config_name}.yaml")
-    with open(config_path, 'r') as cf:
-        config = yaml.safe_load(cf)
-    pipeline_name = config['pipeline_name']
-    pipeline_folder_name = config['pipeline_folder_name']
-    node_names = [config['node_name'] for config in config['nodes']]
-    # first node of the pipeline determins the pipeline data_type
-    data_type = config['nodes'][0]['data_type']
-    series = config['series']
-    pipeline_path = os.path.join(
-        PIPLINES_PATH,
-        pipeline_folder_name,
-        'seldon-core-version'
-    )
 
-    dir_path = os.path.join(
-        FINAL_RESULTS_PATH,
-        'series', str(series))
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
-        dest_config_path = os.path.join(
-            dir_path,
-            '0.yaml'
-        )
-        shutil.copy(config_path, dest_config_path)
-    else:
-        num_configs = 0
-        # Iterate directory
-        for file in os.listdir(dir_path):
-            # check only text files
-            if file.endswith('.yaml'):
-                num_configs += 1
-        dest_config_path = os.path.join(
-            dir_path,
-            f'{num_configs}.yaml'
-        )
-        shutil.copy(config_path, dest_config_path)
 
-    # ----------- 2. Running an experiment series -------------
-    # 1. Setup the pipeline
-    # 2. Makes two processes for experiment and adapter
-    # 3. Run both processes at the same time
-    # 4. Join both processes
+# ---------------------
 
-    # 1. setup pipeline
-    remove_pipeline(pipeline_name=pipeline_name)
-    experiments_exist, experiment_id =\
-        setup_pipeline(
-        pipeline_name=pipeline_name,
-        node_names=node_names,
-        config=config,
-        pipeline_path=pipeline_path,
-        data_type=data_type
-        )
-    with open(config_path, 'r') as cf:
-        config = yaml.safe_load(cf)
-    with open(ACCURACIES_PATH, 'r') as cf:
-        accuracies = yaml.safe_load(cf)
 
-    experiment_process = threading.Thread(
+
+
+
+    experiment_process = multiprocessing.Process(
         target=start_experiment,
         kwargs={
             'pipeline_name': pipeline_name,
@@ -570,11 +655,13 @@ def main(config_name: str):
             'experiment_id': experiment_id
         })
 
+
     # 2. process two the pipeline adapter
-    adaptation_process = threading.Thread(
+    adaptation_process = multiprocessing.Process(
         target=adaptation_function, kwargs={
                 'config': config,
-                'accuracies': accuracies
+                'accuracies': accuracies,
+                'pipeline': pipeline
             })
 
     # 3. start both processese at the same time

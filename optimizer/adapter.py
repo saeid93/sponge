@@ -2,6 +2,7 @@ from typing import Dict, Literal
 import time
 from kubernetes import config
 from kubernetes import client
+from typing import List
 import time
 import os
 import sys
@@ -14,18 +15,23 @@ sys.path.append(os.path.normpath(os.path.join(
 from experiments.utils.pipeline_operations import (
     check_node_up
 )
+from experiments.utils.prometheus import PromClient
+prom_client = PromClient()
 
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
-# try:
-#     config.load_kube_config()
-#     kube_config = client.Configuration().get_default_copy()
-# except AttributeError:
-#     kube_config = client.Configuration()
-#     kube_config.assert_hostname = False
-# client.Configuration.set_default(kube_config)
-# kube_api = client.api.core_v1_api.CoreV1Api()
+from kubernetes import config
+from kubernetes import client
+try:
+    config.load_kube_config()
+    kube_config = client.Configuration().get_default_copy()
+except AttributeError:
+    kube_config = client.Configuration()
+    kube_config.assert_hostname = False
+client.Configuration.set_default(kube_config)
+
+kube_custom_api = client.CustomObjectsApi()
 
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
@@ -45,6 +51,7 @@ class Adapter:
             self,
             pipeline_name: str,
             pipeline: Pipeline,
+            node_names: List[str],
             adaptation_interval: int,
             optimization_method: Literal['gurobi', 'brute-force'],
             allocation_mode: Literal['base', 'variable'],
@@ -53,7 +60,8 @@ class Adapter:
             alpha: float,
             beta: float,
             gamma: float,
-            num_state_limit: int) -> None:
+            num_state_limit: int,
+            ) -> None:
         """
         Args:
             pipeline_name (str): name of the pipeline
@@ -70,8 +78,8 @@ class Adapter:
         """
         self.pipeline_name = pipeline_name
         self.pipeline = pipeline
+        self.node_names = node_names
         self.adaptation_interval = adaptation_interval
-        self.lstm = lambda l: l[-1] # TEMP TODO replace with real lstm
         self.optimizer = Optimizer(
             pipeline=pipeline,
             allocation_mode=allocation_mode,
@@ -87,6 +95,7 @@ class Adapter:
         self.num_state_limit = num_state_limit
         self.monitoring = Monitoring(
             pipeline_name=self.pipeline_name)
+        self.predictor = Predictor()
 
     def start_adaptation(self):
 
@@ -94,7 +103,7 @@ class Adapter:
         # 1. Use monitoring for periodically checking the status of
         #     the pipeline in terms of load
         # 2. Watches the incoming load in the system
-        # 3. TODO LSTM for predicting the load
+        # 3. LSTM for predicting the load
         # 4. Get the existing pipeline state, batch size, model variant and replicas per
         #     each node
         # 5. Give the load and pipeline status to the optimizer
@@ -102,13 +111,12 @@ class Adapter:
         #     to the existing pipeline's state
         # 7. Use the change config script to change the pipelien to the new config
         pipeline_up = False
-        # TODO check if router is up
         pipeline_up = check_node_up(node_name='router', silent_mode=True)
 
         while True:
             time.sleep(self.adaptation_interval)
             rps_series = self.monitoring.monitor()
-            predicted_load = self.lstm(rps_series)
+            predicted_load = self.predictor.predict(rps_series)
             optimal = self.optimizer.optimize(
                 optimization_method=self.optimization_method,
                 scaling_cap=self.scaling_cap,
@@ -116,25 +124,65 @@ class Adapter:
                 arrival_rate=predicted_load,
                 num_state_limit=self.num_state_limit
             )
-            new_config = self.output_parser(optimal)
+            new_configs = self.output_parser(optimal)
+            to_apply_config = self.choose_config(new_configs)
+            self.change_config(to_apply_config)
+            pipeline_up = check_node_up(node_name='router', silent_mode=True)
             if not pipeline_up:
-                pipeline_up = check_node_up(node_name='router', silent_mode=True)
-                # TODO check if there is not a pipeline stop wthile
+                print('no pipeline in the system, aborting adaptation process ...')
                 # with the message that the process has ended
                 break
 
-    def extract_config(self):
-        # TODO
-        # 1. Extract existing config from the running pipeline
-        pass
-
     def output_parser(self, optimizer_output: pd.DataFrame):
-        pass
+        new_configs = []
+        for _, row in optimizer_output.iterrows():
+            config = {}
+            for task_id, task_name in enumerate(self.node_names):
+                config[task_name] = {}
+                # config[task_name]['cpu'] = row[f'task_{task_id}_cpu']
+                config[task_name]['replicas'] = int(row[f'task_{task_id}_replicas'])
+                config[task_name]['batch'] = int(row[f'task_{task_id}_batch'])
+                config[task_name]['variant'] = row[f'task_{task_id}_variant']
+            new_configs.append(config)
+        return new_configs
 
-    def check_router():
-        # check if the router is up
-        a = 1
+    def choose_config(self, new_configs):
+        # TODO TEMP workaround
+        # This should be from comparing with the
+        # current config
+        # easiest for now is to choose config with
+        # with the least change from former config
+        current_config = self.extract_config()
+        chosen_config = new_configs[-1]
+        return chosen_config
 
+    def extract_config(self):
+        current_config = {}
+        for node_name in self.node_names:
+            node_config = {}
+            raw_config = kube_custom_api.get_namespaced_custom_object(
+                group="machinelearning.seldon.io",
+                version="v1",
+                namespace=NAMESPACE,
+                plural="seldondeployments",
+                name=node_name)
+            component_config = raw_config['spec']['predictors'][0]['componentSpecs'][0]
+            env_vars = component_config['spec']['containers'][0]['env']
+            replicas = component_config['replicas']
+            cpu = int(component_config[
+                'spec']['containers'][0]['resources']['requests']['cpu'])
+            for env_var in env_vars:
+                if env_var['name'] == 'MODEL_VARIANT':
+                    variant = env_var['value']
+                if env_var['name'] == 'MLSERVER_MODEL_MAX_BATCH_SIZE':
+                    batch = env_var['value']
+            node_config['replicas'] = replicas
+            node_config['variant'] = variant
+            node_config['batch'] = batch
+            # node_config['cpu'] = cpu
+            current_config[node_name] = node_config
+
+        return current_config
 
     def change_config(
             self,
@@ -144,93 +192,58 @@ class Adapter:
         Args:
             config (Dict[str, Dict[str, int]]): _description_
         """
-
-
-        # TODO temp
-        from kubernetes import client, config
-
-        deployment_name = "my-seldon-deployment"
-        namespace = "default"
-
-        config.load_kube_config()
-        api_instance = client.CustomObjectsApi()
-
-        seldon_deployment = api_instance.get_namespaced_custom_object(
-            group="machinelearning.seldon.io",
-            version="v1",
-            namespace=namespace,
-            plural="seldondeployments",
-            name=deployment_name
-        )
-        seldon_deployment["spec"]["predictors"][0]["replicas"] = 3
-        api_instance.replace_namespaced_custom_object(
-            group="machinelearning.seldon.io",
-            version="v1",
-            namespace=namespace,
-            plural="seldondeployments",
-            name=deployment_name,
-            body=seldon_deployment
-        )
-        # checks if the pods are ready each 5 seconds
-        loop_timeout = 5
-        while True:
-            models_loaded, svc_loaded, pipeline_loaded = False, False, False
-            print(f'waited for {loop_timeout} to check if the pods are up')
-            time.sleep(loop_timeout)
-            model_pods = kube_api.list_namespaced_pod(
+        for node_name in self.node_names:
+            deployment_config = kube_custom_api.get_namespaced_custom_object(
+                group="machinelearning.seldon.io",
+                version="v1",
                 namespace=NAMESPACE,
-                label_selector=f"seldon-deployment-id={pipeline_name}")
-            all_model_pods = []
-            all_conainers = []
-            for pod in model_pods.items:
-                if pod.status.phase == "Running":
-                    all_model_pods.append(True)
-                    pod_name = pod.metadata.name
-                    for model_name in model_names:
-                        if model_name in pod_name:
-                            container_name = model_name
-                            break
-                    logs = kube_api.read_namespaced_pod_log(
-                        name=pod.metadata.name,
-                        namespace=NAMESPACE,
-                        container=container_name)
-                    print(logs)
-                    if 'Uvicorn running on http://0.0.0.0:600' in logs:
-                        all_conainers.append(True)
-                    else:
-                        all_conainers.append(False)
-                else:
-                    all_model_pods.append(False)
-            print(f"all_model_pods: {all_model_pods}")
-            if all(all_model_pods):
-                models_loaded = True
-            else: continue
-            print(f"all_containers: {all_conainers}")
-            if all(all_model_pods):
-                pipeline_loaded = True
-            else: continue
-            svc_pods = kube_api.list_namespaced_pod(
+                plural="seldondeployments",
+                name=node_name)
+            deployment_config['spec'][
+                'predictors'][0]['componentSpecs'][0]['replicas'] = config[node_name]['replicas']
+            for env_index, env_var in enumerate(deployment_config['spec'][
+                'predictors'][0][
+                'componentSpecs'][0]['spec']['containers'][0]['env']):
+                if env_var['name'] == 'MODEL_VARIANT':
+                    deployment_config['spec'][
+                                    'predictors'][0][
+                                    'componentSpecs'][0][
+                        'spec']['containers'][0]['env'][env_index]['value'] = config[
+                        node_name]['variant']
+                if env_var['name'] == 'MLSERVER_MODEL_MAX_BATCH_SIZE':
+                    deployment_config['spec'][
+                                    'predictors'][0][
+                                    'componentSpecs'][0][
+                        'spec']['containers'][0]['env'][env_index]['value'] = str(config[
+                        node_name]['batch'])
+            kube_custom_api.replace_namespaced_custom_object(
+                group="machinelearning.seldon.io",
+                version="v1",
                 namespace=NAMESPACE,
-                label_selector=f"seldon-deployment-id={pipeline_name}-{pipeline_name}")
-            for pod in svc_pods.items:
-                if pod.status.phase == "Running":
-                    svc_loaded = True
-                for container_status in pod.status.container_statuses:
-                    if container_status.ready:
-                        pipeline_loaded = True
-                    else: continue
-                else: continue
-            if models_loaded and svc_loaded and pipeline_loaded:
-                print('model container completely loaded!')
-                break
-
+                plural="seldondeployments",
+                name=node_name,
+                body=deployment_config)
 
 class Monitoring:
     def __init__(self, pipeline_name) -> None:
         self.pipeline_name = pipeline_name
-    # TODO get rps recieved at the first model, I think this will be entrance
-    def monitor(self):
-        rps_series = [10, 10, 10]
+    # Get the rps of the router
+    def monitor(self) -> List[int]:
+        duration = 1
+        rate = 15
+        rps_series, _ = prom_client.get_request_per_second(
+            pod_name='router', namespace="default",
+            duration=duration, container='router', rate=15)
         return rps_series
     # if needed to enquire load from multiple
     # replica then simply sum them
+
+
+class Predictor:
+    def __init__(self) -> None:
+        # TODO add the lstm
+        self.model = lambda l: l[-1]
+    
+    def predict(self, series: List[int]):
+        return self.model(series) # TEMP
+
