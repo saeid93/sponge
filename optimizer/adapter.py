@@ -1,4 +1,4 @@
-from typing import Dict, Literal
+from typing import Dict, Literal, Tuple
 import time
 from kubernetes import config
 from kubernetes import client
@@ -7,6 +7,7 @@ import time
 import os
 import sys
 import pandas as pd
+import concurrent.futures
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -126,7 +127,7 @@ class Adapter:
             )
             new_configs = self.output_parser(optimal)
             to_apply_config = self.choose_config(new_configs)
-            self.change_config(to_apply_config)
+            self.change_pipeline_config(to_apply_config)
             pipeline_up = check_node_up(node_name='router', silent_mode=True)
             if not pipeline_up:
                 print('no pipeline in the system, aborting adaptation process ...')
@@ -184,7 +185,7 @@ class Adapter:
 
         return current_config
 
-    def change_config(
+    def change_pipeline_config(
             self,
             config: Dict[str, Dict[str, int]]):
         """change the existing configuration based on the optimizer
@@ -192,37 +193,48 @@ class Adapter:
         Args:
             config (Dict[str, Dict[str, int]]): _description_
         """
-        for node_name in self.node_names:
-            deployment_config = kube_custom_api.get_namespaced_custom_object(
-                group="machinelearning.seldon.io",
-                version="v1",
-                namespace=NAMESPACE,
-                plural="seldondeployments",
-                name=node_name)
-            deployment_config['spec'][
-                'predictors'][0]['componentSpecs'][0]['replicas'] = config[node_name]['replicas']
-            for env_index, env_var in enumerate(deployment_config['spec'][
-                'predictors'][0][
-                'componentSpecs'][0]['spec']['containers'][0]['env']):
-                if env_var['name'] == 'MODEL_VARIANT':
-                    deployment_config['spec'][
-                                    'predictors'][0][
-                                    'componentSpecs'][0][
-                        'spec']['containers'][0]['env'][env_index]['value'] = config[
-                        node_name]['variant']
-                if env_var['name'] == 'MLSERVER_MODEL_MAX_BATCH_SIZE':
-                    deployment_config['spec'][
-                                    'predictors'][0][
-                                    'componentSpecs'][0][
-                        'spec']['containers'][0]['env'][env_index]['value'] = str(config[
-                        node_name]['batch'])
-            kube_custom_api.replace_namespaced_custom_object(
-                group="machinelearning.seldon.io",
-                version="v1",
-                namespace=NAMESPACE,
-                plural="seldondeployments",
-                name=node_name,
-                body=deployment_config)
+        node_names = list(config.keys())
+        node_configs = list(config.values())
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = list(executor.map(
+                self.change_node_config, zip(node_names, node_configs)))
+        return results
+
+    def change_node_config(
+            self,
+            inputs: Tuple[str, Dict[str, int]]):
+        node_name, node_config = inputs
+        deployment_config = kube_custom_api.get_namespaced_custom_object(
+            group="machinelearning.seldon.io",
+            version="v1",
+            namespace=NAMESPACE,
+            plural="seldondeployments",
+            name=node_name)
+        deployment_config['spec'][
+            'predictors'][0]['componentSpecs'][0]['replicas'] = node_config['replicas']
+        for env_index, env_var in enumerate(deployment_config['spec'][
+            'predictors'][0][
+            'componentSpecs'][0]['spec']['containers'][0]['env']):
+            if env_var['name'] == 'MODEL_VARIANT':
+                deployment_config['spec'][
+                                'predictors'][0][
+                                'componentSpecs'][0][
+                    'spec']['containers'][0]['env'][env_index]['value'] =\
+                        node_config['variant']
+            if env_var['name'] == 'MLSERVER_MODEL_MAX_BATCH_SIZE':
+                deployment_config['spec'][
+                                'predictors'][0][
+                                'componentSpecs'][0][
+                    'spec']['containers'][0]['env'][env_index]['value'] =\
+                        str(node_config['batch'])
+        kube_custom_api.replace_namespaced_custom_object(
+            group="machinelearning.seldon.io",
+            version="v1",
+            namespace=NAMESPACE,
+            plural="seldondeployments",
+            name=node_name,
+            body=deployment_config)
+        return True
 
 class Monitoring:
     def __init__(self, pipeline_name) -> None:
