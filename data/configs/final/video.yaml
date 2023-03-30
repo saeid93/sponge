@@ -13,7 +13,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '2'
     memory_request: 2Gi
-    replicas: 3
+    replicas: 2
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -24,7 +24,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '2'
     memory_request: 2Gi
-    replicas: 3
+    replicas: 2
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -32,7 +32,7 @@ nodes:
 # ----------- experiment configs -------------
 
 benchmark_duration: 1
-adaptation_interval: 60
+adaptation_interval: 1
 workload_type: static
 workload_config:
   loads_to_test: 10

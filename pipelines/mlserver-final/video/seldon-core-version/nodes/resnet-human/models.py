@@ -28,7 +28,6 @@ except KeyError as e:
 def decode_from_bin(
     inputs: List[bytes], shapes: List[
         List[int]], dtypes: List[str], default_shape: List[int]) -> List[np.array]:
-    print(f"{shapes}=")
     batch = []
     for input, shape, dtype in zip(inputs, shapes, dtypes):
         buff = memoryview(input)

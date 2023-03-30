@@ -25,8 +25,8 @@ with open(os.path.join(
 data = np.array(data).flatten()
 
 
-load = 50
-test_duration = 10
+load = 10
+test_duration = 3600
 variant = 0
 platform = 'router'
 workload = [load] * test_duration

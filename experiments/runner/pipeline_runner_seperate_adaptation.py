@@ -415,7 +415,7 @@ def backup(series):
     '--config-name', required=True, type=str, default='video')
 @click.option(
     '--type-of', required=True,
-    type=str, default=click.Choice['experiment', 'adaptation'])
+    type=click.Choice(['experiment', 'adaptation']), default='adaptation')
 def main(config_name: str, type_of: str):
     """loading system configs
 

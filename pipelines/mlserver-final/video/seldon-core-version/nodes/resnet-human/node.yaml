@@ -21,7 +21,7 @@ spec:
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://torchhub/resnet/resnet18"
+            - "s3://torchhub/resnet/resnet34"
             - "/opt/mlserver/.torch/hub/checkpoints/"
 
           volumeMounts:
@@ -49,7 +49,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: resnet18
+              value: resnet34
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE

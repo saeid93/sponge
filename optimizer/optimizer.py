@@ -642,27 +642,41 @@ class Optimizer:
         for solution_count in range(model.SolCount):
             model.Params.SolutionNumber = solution_count
             all_vars = {v.varName: v.Xn for v in model.getVars()}
-            i_var_output = {key: value for key, value in all_vars.items() if 'i[' in key}
-            n_var_output = {key: value for key, value in all_vars.items() if 'n[' in key}
-            b_var_output = {key: value for key, value in all_vars.items() if 'b[' in key}
+            i_var_output = {
+                key: round(value)
+                for key, value in all_vars.items() if 'i[' in key}
+            n_var_output = {
+                key: round(value)
+                for key, value in all_vars.items() if 'n[' in key}
+            b_var_output = {
+                key: round(value)
+                for key, value in all_vars.items() if 'b[' in key}
 
             i_output = {} # i_output[stage] <- variant
             for stage in stages:
                 i_output[stage] = {}
                 for variant in stages_variants[stage]:
-                    result = [value for key, value in i_var_output.items() if stage in key and variant in key][0]
+                    result = [
+                        value for key, value in i_var_output.items()
+                        if stage in key and variant in key][0]
                     if result == 1:
                         i_output[stage] = variant
 
             n_output = {} # n_output[stage]
             for stage in stages:
-                result = [value for key, value in n_var_output.items() if stage in key][0]
+                result = [
+                    value
+                    for key, value in n_var_output.items()
+                    if stage in key][0]
                 n_output[stage] = result
 
             if self.only_measured_profiles:
                 b_output = {} # b_output[stage]
                 for stage in stages:
-                    result = [value for key, value in b_var_output.items() if stage in key]
+                    result = [
+                        value
+                        for key, value in b_var_output.items()
+                        if stage in key]
                     for index, batch in enumerate(distinct_batches):
                         if result[index] == 1:
                             b_output[stage] = batch
@@ -670,14 +684,20 @@ class Optimizer:
             else:
                 b_output = {} # b_output[stage]
                 for stage in stages:
-                    result = [value for key, value in b_var_output.items() if stage in key][0]
+                    result = [
+                        value
+                        for key, value in b_var_output.items()
+                        if stage in key][0]
                     b_output[stage] = result
 
             # set models, replication and batch of inference graph
             for task_id, stage in enumerate(stages):
-                self.pipeline.inference_graph[task_id].model_switch(i_output[stage])
-                self.pipeline.inference_graph[task_id].re_scale(n_output[stage])
-                self.pipeline.inference_graph[task_id].change_batch(b_output[stage])
+                self.pipeline.inference_graph[
+                    task_id].model_switch(i_output[stage])
+                self.pipeline.inference_graph[
+                    task_id].re_scale(n_output[stage])
+                self.pipeline.inference_graph[
+                    task_id].change_batch(b_output[stage])
 
             # generate states data
             state = {}
