@@ -48,18 +48,18 @@ async def send_requests(ch, model_name, payload):
 async def model_infer(model_name, request_input):
     try:
         inputs = request_input.outputs[0]
-        logger.info(f'first node {model_name} data extracted!')
+        logger.info(f'second node {model_name} data extracted!')
     except:
         inputs = request_input.inputs[0]
-        logger.info(f'second node {model_name} data extracted!')
+        logger.info(f'first node {model_name} data extracted!')
     payload_input = types.InferenceRequest(
         inputs=[inputs]
     )
     endpoint=f"{model_name}-{model_name}.default.svc.cluster.local:9500"
     async with grpc.aio.insecure_channel(endpoint) as ch:
-        output_one = await send_requests(ch, model_name, payload_input)
+        output = await send_requests(ch, model_name, payload_input)
     inference_response = \
-        converters.ModelInferResponseConverter.to_types(output_one)
+        converters.ModelInferResponseConverter.to_types(output)
     return inference_response
 
 
@@ -73,8 +73,6 @@ class Router(MLModel):
 
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
-        # arrival_time = time.time()
-        # request_input = payload.inputs[0]
         self.request_counter += 1
         logger.info(f"Request counter:\n{self.request_counter}\n")
 

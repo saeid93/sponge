@@ -42,7 +42,6 @@ from experiments.utils.constants import (
 from experiments.utils.obj import setup_obj_store
 
 from optimizer import (
-    Optimizer,
     Adapter
     )
 from experiments.utils.simulation_operations import (
@@ -415,7 +414,7 @@ def backup(series):
 @click.option(
     '--config-name', required=True, type=str, default='video')
 @click.option(
-    '--type-of', required=True, type=str, default='adaptation') # experiment/adatation
+    '--type-of', required=True, type=str, default='experiment') # experiment/adatation
 def main(config_name: str, type_of: str):
     """loading system configs
 

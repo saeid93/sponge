@@ -53,7 +53,7 @@ spec:
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "1"
+              value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS

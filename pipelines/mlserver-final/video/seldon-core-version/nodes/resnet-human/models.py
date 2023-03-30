@@ -28,16 +28,14 @@ except KeyError as e:
 def decode_from_bin(
     inputs: List[bytes], shapes: List[
         List[int]], dtypes: List[str], default_shape: List[int]) -> List[np.array]:
+    print(f"{shapes}=")
     batch = []
     for input, shape, dtype in zip(inputs, shapes, dtypes):
         buff = memoryview(input)
-        try:
+        if len(shapes) == 1:
             array = np.frombuffer(buff, dtype=dtype).reshape(shape)
-        except TypeError: # HACK temp workaround
-            logger.info('missing shape, used default shape')
-            logger.info(default_shape)
-            array = np.frombuffer(buff, dtype=dtype).reshape(default_shape)
-        # array = [array] # TEMP workaround
+        else:
+            array = np.frombuffer(buff, dtype=dtype).reshape(shape[0])
         batch.append(array)
     return batch
 
@@ -114,6 +112,7 @@ class ResnetHuman(MLModel):
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceRequest:
+        # print(payload)
         if self.loaded == False:
             self.load()
         arrival_time = time.time()

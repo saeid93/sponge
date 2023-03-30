@@ -30,6 +30,7 @@ def decode_from_bin(
     inputs: List[bytes], shapes: List[
         List[int]], dtypes: List[str]) -> List[np.array]:
     batch = []
+    print(f"{shapes}=")
     for input, shape, dtype in zip(inputs, shapes, dtypes):
         buff = memoryview(input)
         array = np.frombuffer(buff, dtype=dtype).reshape(shape)
@@ -98,6 +99,7 @@ class Yolo(MLModel):
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
+        # print(payload)
         if self.loaded == False:
             self.load()
         arrival_time = time.time()

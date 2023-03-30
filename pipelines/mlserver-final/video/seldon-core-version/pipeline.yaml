@@ -19,8 +19,8 @@ spec:
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://torchhub/yolov5m"
-            - "/mnt/models/yolov5m"
+            - "s3://torchhub/yolov5n"
+            - "/mnt/models/yolov5n"
           volumeMounts:
           - mountPath: /mnt/models
             name: yolov5-volume
@@ -44,15 +44,15 @@ spec:
             name: yolov5-volume
           env:
             - name: MODEL_PATH
-              value: /mnt/models/yolov5m
+              value: /mnt/models/yolov5n
             - name: MODEL_VARIANT
-              value: yolov5m
+              value: yolov5n
             - name: TRANSFORMERS_CACHE
               value: /opt/mlserver/.cache
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: "10"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
@@ -63,7 +63,7 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
-      replicas: 2
+      replicas: 1
 
     - spec:
         volumes:

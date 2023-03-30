@@ -24,9 +24,8 @@ with open(os.path.join(
     data_shape = data_shape['data_shape']
 data = np.array(data).flatten()
 
-http_method = 'post'
 
-load = 30
+load = 50
 test_duration = 10
 variant = 0
 platform = 'router'
@@ -45,7 +44,7 @@ if platform == 'router':
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == 'mlserver':
     endpoint = "localhost:8081"
-    model = 'yolo'
+    model = 'router'
     metadata = []
 elif platform == 'seldon':
     endpoint = "localhost:32000"

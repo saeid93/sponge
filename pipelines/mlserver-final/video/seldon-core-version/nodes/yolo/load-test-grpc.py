@@ -20,8 +20,8 @@ data = image_loader(PATH, 'input-sample.JPEG')
 data_shape = list(np.array(data).shape)
 data = np.array(data).flatten()
 
-load = 4
-test_duration = 4
+load = 10
+test_duration = 300
 variant = 0
 platform = 'seldon'
 workload = [load] * test_duration
