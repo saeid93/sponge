@@ -32,7 +32,7 @@ nodes:
 # ----------- experiment configs -------------
 
 benchmark_duration: 1
-adaptation_interval: 1
+adaptation_interval: 30
 workload_type: static
 workload_config:
   loads_to_test: 10

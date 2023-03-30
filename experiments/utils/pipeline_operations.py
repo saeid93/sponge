@@ -4,7 +4,7 @@ import time
 import json
 import yaml
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any
 import re
 import numpy as np
 from jinja2 import Environment, FileSystemLoader
@@ -295,22 +295,17 @@ def check_load_test(
         data_type=data_type,
         pipeline_path=pipeline_path)
     loop_timeout = 5
-    ready = False
     while True:
         print(f'waited for {loop_timeout} seconds to check for successful request')
         time.sleep(loop_timeout)
-        try:
-            load_test(
-                pipeline_name=pipeline_name,
-                model=model,
-                data=data,
-                data_type=data_type,
-                workload=[1])
-            ready = True
-        except UnboundLocalError:
-            pass
-        if ready:
-            return ready
+        _, _, response =load_test(
+            pipeline_name=pipeline_name,
+            model=model,
+            data=data,
+            data_type=data_type,
+            workload=[1])
+        if 'failed' not in response[0][0].keys():
+            return True
 
 def warm_up(
         pipeline_name: str, data_type: str, model: str,
@@ -345,7 +340,8 @@ def load_test(
         namespace: str='default',
         no_engine: bool = False,
         mode: str = 'step',
-        benchmark_duration=1):
+        benchmark_duration=1) -> Tuple[
+    int, int, List[List[Dict[str, Any]]]]:
     start_time = time.time()
 
     endpoint = "localhost:32000"
