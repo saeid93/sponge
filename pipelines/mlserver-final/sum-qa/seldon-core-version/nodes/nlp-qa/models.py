@@ -90,14 +90,15 @@ class GeneralNLP(MLModel):
             self.load()
         arrival_time = time.time()
         for request_input in payload.inputs:
-            prev_nodes_times = request_input.parameters.times
-            # HACK workaround for batch size of one
-            if type(prev_nodes_times) == str:
-                logger.info(f"prev_nodes_times:\n{prev_nodes_times}")
-                prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
-            else:
-                prev_nodes_times = list(
-                    map(lambda l: eval(eval(l)[0]), prev_nodes_times))
+            if 'times' in dir(request_input.parameters):
+                prev_nodes_times = request_input.parameters.times
+                # workaround for batch size of one
+                if type(prev_nodes_times) == str:
+                    logger.info(f"prev_nodes_times:\n{prev_nodes_times}")
+                    prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
+                else:
+                    prev_nodes_times = list(
+                        map(lambda l: eval(eval(l)[0]), prev_nodes_times))
             batch_shape = request_input.shape[0]
             X = request_input.data.__root__
             X = list(map(lambda l: l.decode(), X))
@@ -125,13 +126,17 @@ class GeneralNLP(MLModel):
             "serving": serving_time
             }
         }
-        this_node_times = [times] * batch_shape
-        times = []
-        for this_node_time, prev_nodes_time in zip(
-            this_node_times, prev_nodes_times):
-            this_node_time.update(prev_nodes_time)
-            times.append(this_node_time)
-        batch_times = list(map(lambda l: str(l), times))
+
+        if 'times' in dir(request_input.parameters):
+            this_node_times = [times] * batch_shape
+            times = []
+            for this_node_time, prev_nodes_time in zip(
+                this_node_times, prev_nodes_times):
+                this_node_time.update(prev_nodes_time)
+                times.append(this_node_time)
+            batch_times = list(map(lambda l: str(l), times))
+        else:
+            batch_times = [str(times)] * batch_shape
         if self.settings.max_batch_size == 1:
             batch_times = str(batch_times)
 

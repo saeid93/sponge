@@ -27,7 +27,7 @@ request = {
     'outputs': [{'data': 'mister quilter is the apostle of the middle classes and we are glad to welcome his gospel'}]
 }
 
-times = str([str(request['times']['models'])])
+# times = str([str(request['times']['models'])])
 data = request['outputs'][0]['data']
 
 data_shape = [1]

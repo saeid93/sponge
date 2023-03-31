@@ -82,12 +82,13 @@ class GeneralNLP(MLModel):
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
-        arrival_time = time.time()
         if self.loaded == False:
             self.load()
+        arrival_time = time.time()
         for request_input in payload.inputs:
             batch_shape = request_input.shape[0]
-            try:
+            # check if this is a first node load
+            if 'times' in dir(request_input.parameters):
                 prev_nodes_times = request_input.parameters.times
                 if type(prev_nodes_times) == str:
                     logger.info(f"prev_nodes_times:\n{prev_nodes_times}")
@@ -95,14 +96,6 @@ class GeneralNLP(MLModel):
                 else:
                     prev_nodes_times = list(
                         map(lambda l: eval(eval(l)[0]), prev_nodes_times))
-                # X = list(map(
-                #     lambda l: {'question': l, 'context': self.CONTEXT}, X))
-            except SyntaxError:
-                # HACK temp workaroud
-                prev_nodes_times = [{'missing':'missing'}] * batch_shape
-                logger.info('former node missing times')
-            except AttributeError:
-                prev_nodes_times = None
             X = request_input.data.__root__
             X = list(map(lambda l: l.decode(), X))
         logger.info(f"recieved batch len:\n{batch_shape}")
@@ -127,18 +120,16 @@ class GeneralNLP(MLModel):
             "serving": serving_time
             }
         }
-        this_node_times = [times] * batch_shape
-        times = []
-        if prev_nodes_times is not None:
+        if 'times' in dir(request_input.parameters):
+            this_node_times = [times] * batch_shape
+            times = []
             for this_node_time, prev_nodes_time in zip(
                 this_node_times, prev_nodes_times):
                 this_node_time.update(prev_nodes_time)
                 times.append(this_node_time)
+            batch_times = list(map(lambda l: str(l), times))
         else:
-            times = this_node_times
-
-        # HACK workaround for batch size of one
-        batch_times = list(map(lambda l: str(l), times))
+            batch_times = [str(times)] * batch_shape
         if self.settings.max_batch_size == 1:
             batch_times = str(batch_times)
 

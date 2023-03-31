@@ -24,15 +24,15 @@ request = {
 }
 
 
-times = str([str(request['times']['models'])])
+# times = str([str(request['times']['models'])])
 data = request['outputs'][0]['data']
 
 data_shape = [1]
-custom_parameters = {'times': str(times)}
+# custom_parameters = {'times': str(times)}
 data_1 = Data(
     data=data,
-    data_shape=data_shape,
-    custom_parameters=custom_parameters
+    data_shape=data_shape
+    # custom_parameters=custom_parameters
 )
 
 # single node inference

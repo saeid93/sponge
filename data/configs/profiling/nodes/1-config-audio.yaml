@@ -22,13 +22,13 @@ max_batch_time:
   - '1'
 cpu_request:
   - '1'
-  - '2'
+  - '2d'
   - '4'
   - '8'
   # - '16'
   # - '32'
 memory_request:
-  - 10Gi
+  - 8Gi
 replicas:
   - 1
 workload_type: static
@@ -43,8 +43,8 @@ workload_config:
   loads_to_test:
   # - 1
   - 10
-  # - 20
-  - 40
+  - 20
+  # - 40
   load_duration: 30
 # workload_type: twitter
 # workload_config:
