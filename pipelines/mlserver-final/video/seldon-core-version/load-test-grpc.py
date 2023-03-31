@@ -25,8 +25,8 @@ with open(os.path.join(
 data = np.array(data).flatten()
 
 
-load = 10
-test_duration = 3600
+load = 1
+test_duration = 10
 variant = 0
 platform = 'router'
 workload = [load] * test_duration
@@ -125,13 +125,13 @@ import numpy as np
 # plt.show()
 
 # server arrival latency
-model = 'resnet-human'
-server_arrival_latency = []
-for sec_resps in responses:
-    for resp in sec_resps:
-        times = resp['times']
-        server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
-        server_arrival_latency.append(server_recieving_time)
+# model = 'resnet-human'
+# server_arrival_latency = []
+# for sec_resps in responses:
+#     for resp in sec_resps:
+#         times = resp['times']
+#         server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
+#         server_arrival_latency.append(server_recieving_time)
 # fig, ax = plt.subplots()
 # ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
 # ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
@@ -139,4 +139,5 @@ for sec_resps in responses:
 # fig.savefig(f"grpc-compressed-image-{platform}_variant_{variant}-server_recieving_latency-load-{load}-test_duration-{test_duration}.png")
 # plt.show()
 
-print(f"{np.average(server_arrival_latency)}=")
+# print(f"{np.average(server_arrival_latency)}=")
+print(responses)

@@ -7,9 +7,9 @@ import asyncio
 import time
 
 load = 1
-test_duration = 1
+test_duration = 10
 variant = 0
-platform = 'seldon'
+platform = 'router'
 image_name = 'input-sample.JPEG'
 workload = [load] * test_duration
 data_shape = [1]
@@ -27,7 +27,13 @@ data_1 = Data(
 )
 
 # single node inference
-if platform == 'seldon':
+if platform == 'router':
+    endpoint = "localhost:32000"
+    deployment_name = 'router'
+    model = 'router'
+    namespace = "default"
+    metadata = [("seldon", deployment_name), ("namespace", namespace)]
+elif platform == 'seldon':
     endpoint = "localhost:32000"
     deployment_name = 'router'
     model = 'router'
@@ -53,3 +59,4 @@ load_tester = MLServerAsyncGrpc(
 responses = asyncio.run(load_tester.start())
 
 print(f'{(time.time() - start_time):2.2}s spent in total')
+print(responses)

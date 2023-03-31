@@ -30,7 +30,13 @@ data_1 = Data(
 )
 
 # single node inference
-if platform == 'seldon':
+if platform == 'router':
+    endpoint = "localhost:32000"
+    deployment_name = 'router'
+    model = 'router'
+    namespace = "default"
+    metadata = [("seldon", deployment_name), ("namespace", namespace)]
+elif platform == 'seldon':
     endpoint = "localhost:32000"
     deployment_name = 'sum-qa'
     model = None
@@ -60,3 +66,4 @@ load_tester = MLServerAsyncGrpc(
 responses = asyncio.run(load_tester.start())
 
 print(f'{(time.time() - start_time):2.2}s spent in total')
+print(responses)
