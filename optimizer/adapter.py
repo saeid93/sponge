@@ -1,4 +1,4 @@
-from typing import Dict, Literal, Tuple
+from typing import Dict, Literal, Tuple, Union
 import time
 from kubernetes import config
 from kubernetes import client
@@ -111,12 +111,22 @@ class Adapter:
         # 6. Compare the optimal solutions from the optimzer
         #     to the existing pipeline's state
         # 7. Use the change config script to change the pipelien to the new config
+
+        time_interval = 0
+        timestep = 0
         pipeline_up = False
         pipeline_up = check_node_up(node_name='router', silent_mode=True)
-
+        initial_config = self.extract_config()
+        self.monitoring.adaptation_step_report(
+            to_apply_config=initial_config,
+            objective=None,
+            timestep=timestep,
+            time_interval=time_interval)
         while True:
             time.sleep(self.adaptation_interval)
-            rps_series = self.monitoring.monitor()
+            time_interval += self.adaptation_interval
+            timestep += 1
+            rps_series = self.monitoring.rps_monitor()
             predicted_load = self.predictor.predict(rps_series)
             optimal = self.optimizer.optimize(
                 optimization_method=self.optimization_method,
@@ -125,12 +135,20 @@ class Adapter:
                 arrival_rate=predicted_load,
                 num_state_limit=self.num_state_limit
             )
+            objective_value = optimal['objective'][0]
             new_configs = self.output_parser(optimal)
             to_apply_config = self.choose_config(new_configs)
             self.change_pipeline_config(to_apply_config)
-            pipeline_up = check_node_up(node_name='router', silent_mode=True)
+            pipeline_up = check_node_up(
+                node_name='router', silent_mode=True)
+            self.monitoring.adaptation_step_report(
+                to_apply_config=to_apply_config,
+                objective=objective_value,
+                timestep=timestep,
+                time_interval=time_interval)
             if not pipeline_up:
-                print('no pipeline in the system, aborting adaptation process ...')
+                print('no pipeline in the system,'
+                      ' aborting adaptation process ...')
                 # with the message that the process has ended
                 break
 
@@ -140,7 +158,7 @@ class Adapter:
             config = {}
             for task_id, task_name in enumerate(self.node_names):
                 config[task_name] = {}
-                # config[task_name]['cpu'] = row[f'task_{task_id}_cpu']
+                config[task_name]['cpu'] = row[f'task_{task_id}_cpu']
                 config[task_name]['replicas'] = int(row[f'task_{task_id}_replicas'])
                 config[task_name]['batch'] = int(row[f'task_{task_id}_batch'])
                 config[task_name]['variant'] = row[f'task_{task_id}_variant']
@@ -148,7 +166,6 @@ class Adapter:
         return new_configs
 
     def choose_config(self, new_configs):
-        # TODO TEMP workaround
         # This should be from comparing with the
         # current config
         # easiest for now is to choose config with
@@ -167,7 +184,8 @@ class Adapter:
                 namespace=NAMESPACE,
                 plural="seldondeployments",
                 name=node_name)
-            component_config = raw_config['spec']['predictors'][0]['componentSpecs'][0]
+            component_config = raw_config[
+                'spec']['predictors'][0]['componentSpecs'][0]
             env_vars = component_config['spec']['containers'][0]['env']
             replicas = component_config['replicas']
             cpu = int(component_config[
@@ -180,9 +198,8 @@ class Adapter:
             node_config['replicas'] = replicas
             node_config['variant'] = variant
             node_config['batch'] = batch
-            # node_config['cpu'] = cpu
+            node_config['cpu'] = cpu
             current_config[node_name] = node_config
-
         return current_config
 
     def change_pipeline_config(
@@ -211,7 +228,16 @@ class Adapter:
             plural="seldondeployments",
             name=node_name)
         deployment_config['spec'][
-            'predictors'][0]['componentSpecs'][0]['replicas'] = node_config['replicas']
+            'predictors'][0][
+            'componentSpecs'][0]['replicas'] = node_config['replicas']
+        deployment_config['spec'][
+            'predictors'][0]['componentSpecs'][0][
+            'spec']['containers'][0][
+            'resources']['limits']['cpu'] = str(node_config['cpu'])
+        deployment_config['spec'][
+            'predictors'][0]['componentSpecs'][0][
+            'spec']['containers'][0][
+            'resources']['requests']['cpu'] = str(node_config['cpu'])
         for env_index, env_var in enumerate(deployment_config['spec'][
             'predictors'][0][
             'componentSpecs'][0]['spec']['containers'][0]['env']):
@@ -239,16 +265,24 @@ class Adapter:
 class Monitoring:
     def __init__(self, pipeline_name) -> None:
         self.pipeline_name = pipeline_name
+        self.adaptation_report = {}
     # Get the rps of the router
-    def monitor(self) -> List[int]:
+    def rps_monitor(self) -> List[int]:
         duration = 1
         rate = 15
         rps_series, _ = prom_client.get_request_per_second(
             pod_name='router', namespace="default",
-            duration=duration, container='router', rate=15)
+            duration=duration, container='router', rate=rate)
         return rps_series
-    # if needed to enquire load from multiple
-    # replica then simply sum them
+
+    def adaptation_step_report(
+            self,
+            to_apply_config: Dict[str, Dict[str, Union[str, int]]],
+            objective: float, timestep: int, time_interval: int):
+
+        self.adaptation_report[timestep] = to_apply_config
+        self.adaptation_report[timestep]['objective'] = objective
+        self.adaptation_report[timestep]['time_interval'] = time_interval
 
 
 class Predictor:
