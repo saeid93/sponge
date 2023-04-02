@@ -14,7 +14,6 @@ project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
     project_dir, '..')))
 from experiments.utils.pipeline_operations import (
-    check_node_loaded,
     check_node_up
 )
 
@@ -122,7 +121,8 @@ class Adapter:
                 to_apply_config=initial_config,
                 objective=None,
                 timestep=timestep,
-                time_interval=time_interval)
+                time_interval=time_interval,
+                predicted_load=0)
         while True:
             logger.info(
                 f"Waiting {self.adaptation_interval}"
@@ -155,7 +155,8 @@ class Adapter:
                 to_apply_config=to_apply_config,
                 objective=objective_value,
                 timestep=timestep,
-                time_interval=time_interval)
+                time_interval=time_interval,
+                predicted_load=predicted_load)
 
     def output_parser(self, optimizer_output: pd.DataFrame):
         new_configs = []
@@ -284,11 +285,14 @@ class Monitoring:
     def adaptation_step_report(
             self,
             to_apply_config: Dict[str, Dict[str, Union[str, int]]],
-            objective: float, timestep: int, time_interval: int):
+            objective: float, timestep: int,
+            time_interval: int, predicted_load: int):
 
-        self.adaptation_report[timestep] = to_apply_config
+        self.adaptation_report[timestep] = {}
+        self.adaptation_report[timestep]['config'] = to_apply_config
         self.adaptation_report[timestep]['objective'] = objective
         self.adaptation_report[timestep]['time_interval'] = time_interval
+        self.adaptation_report[timestep]['predicted_load'] = predicted_load
 
 
 class Predictor:

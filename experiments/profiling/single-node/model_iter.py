@@ -14,8 +14,6 @@ from kubernetes import config
 from kubernetes import client
 from tqdm import tqdm
 import shutil
-from plogger.info import Prettylogger.infoer
-pp = Prettylogger.infoer(indent=4)
 from barazmoon.twitter import twitter_workload_generator
 
 # get an absolute path to the directory that contains parent files
@@ -375,16 +373,6 @@ def save_report(experiment_id: int,
             f'kubectl logs -n {namespace} {svc_pod_name} > {svc_path}'
         )
     logger.info(f'results have been sucessfully saved in:\n{save_path}')
-
-def backup(series):
-    data_path = os.path.join(
-        NODE_PROFILING_RESULTS_PATH,
-        'series', str(series))
-    backup_path = os.path.join(
-        OBJ_NODE_PROFILING_RESULTS_PATH,
-        'series', str(series))
-    setup_obj_store()
-    shutil.copytree(data_path, backup_path)
 
 @click.command()
 @click.option(
