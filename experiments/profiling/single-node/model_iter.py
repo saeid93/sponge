@@ -14,15 +14,15 @@ from kubernetes import config
 from kubernetes import client
 from tqdm import tqdm
 import shutil
-from pprint import PrettyPrinter
-pp = PrettyPrinter(indent=4)
+from plogger.info import Prettylogger.infoer
+pp = Prettylogger.infoer(indent=4)
 from barazmoon.twitter import twitter_workload_generator
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
     project_dir, '..', '..', '..')))
-from experiments.utils.prometheus import PromClient
+
 from experiments.utils.pipeline_operations import (
     load_data,
     warm_up,
@@ -38,16 +38,11 @@ from experiments.utils.constants import (
     OBJ_NODE_PROFILING_RESULTS_PATH,
     KEY_CONFIG_FILENAME
 )
-from experiments.utils.obj import setup_obj_store
+
+from experiments.utils.prometheus import PromClient
 prom_client = PromClient()
-try:
-    config.load_kube_config()
-    kube_config = client.Configuration().get_default_copy()
-except AttributeError:
-    kube_config = client.Configuration()
-    kube_config.assert_hostname = False
-client.Configuration.set_default(kube_config)
-kube_api = client.api.core_v1_api.CoreV1Api()
+
+from experiments.utils import logger
 
 def experiments(pipeline_name: str, node_name: str,
                 config: dict, node_path: str, data_type: str):
@@ -101,10 +96,10 @@ def experiments(pipeline_name: str, node_name: str,
                             #     for num_thread in num_threads:
                             for load in loads_to_test:
                                 # for rep in range(repetition):
-                                print('-'*25\
+                                logger.info('-'*25\
                                     + f' starting repetition experiment ' +\
                                         '-'*25)
-                                print('\n')
+                                logger.info('\n')
                                 experiments_exist, experiment_id = key_config_mapper(
                                     pipeline_name=pipeline_name,
                                     node_name=node_name,
@@ -140,16 +135,16 @@ def experiments(pipeline_name: str, node_name: str,
                                         num_interop_threads=cpu_request,
                                         num_threads=cpu_request
                                     )
-                                    print('Checking if the model is up ...')
-                                    print('\n')
+                                    logger.info('Checking if the model is up ...')
+                                    logger.info('\n')
                                     # check if the model is up or not
                                     check_load_test(
                                         pipeline_name=node_name,
                                         model=node_name,
                                         data_type=data_type,
                                         pipeline_path=node_path)
-                                    print('model warm up ...')
-                                    print('\n')
+                                    logger.info('model warm up ...')
+                                    logger.info('\n')
                                     warm_up_duration = 10
                                     warm_up(
                                         pipeline_name=node_name,
@@ -157,8 +152,8 @@ def experiments(pipeline_name: str, node_name: str,
                                         data_type=data_type,
                                         pipeline_path=node_path,
                                         warm_up_duration=warm_up_duration)
-                                    print('-'*25 + f'starting load test ' + '-'*25)
-                                    print('\n')
+                                    logger.info('-'*25 + f'starting load test ' + '-'*25)
+                                    logger.info('\n')
                                     if workload_type == 'static':
                                         workload = [load] * load_duration
                                     data = load_data(
@@ -176,8 +171,8 @@ def experiments(pipeline_name: str, node_name: str,
                                                 namespace='default',
                                                 no_engine=no_engine,
                                                 benchmark_duration=benchmark_duration)
-                                        print('-'*25 + 'saving the report' + '-'*25)
-                                        print('\n')
+                                        logger.info('-'*25 + 'saving the report' + '-'*25)
+                                        logger.info('\n')
                                         save_report(
                                             experiment_id=experiment_id,
                                             responses = responses,
@@ -187,15 +182,15 @@ def experiments(pipeline_name: str, node_name: str,
                                             series=series,
                                             no_engine=no_engine)
                                     except UnboundLocalError:
-                                        print('Impossible experiment!')
-                                        print('skipping to the next experiment ...')
-                                    print(f'waiting for timeout: {timeout} seconds')
+                                        logger.info('Impossible experiment!')
+                                        logger.info('skipping to the next experiment ...')
+                                    logger.info(f'waiting for timeout: {timeout} seconds')
                                     for _ in tqdm(range(20)):
                                         time.sleep((timeout)/20)
                                     remove_pipeline(pipeline_name=node_name)
                                 else:
-                                    print('experiment with the same set of varialbes already exists')
-                                    print('skipping to the next experiment ...')
+                                    logger.info('experiment with the same set of varialbes already exists')
+                                    logger.info('skipping to the next experiment ...')
                                     continue
 
 def key_config_mapper(
@@ -379,7 +374,7 @@ def save_report(experiment_id: int,
         os.system(
             f'kubectl logs -n {namespace} {svc_pod_name} > {svc_path}'
         )
-    print(f'results have been sucessfully saved in:\n{save_path}')
+    logger.info(f'results have been sucessfully saved in:\n{save_path}')
 
 def backup(series):
     data_path = os.path.join(

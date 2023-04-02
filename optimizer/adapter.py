@@ -1,9 +1,9 @@
 from typing import Dict, Literal, Tuple, Union
 import time
+import tqdm
 from kubernetes import config
 from kubernetes import client
 from typing import List
-import time
 import os
 import sys
 import pandas as pd
@@ -14,13 +14,12 @@ project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
     project_dir, '..')))
 from experiments.utils.pipeline_operations import (
+    check_node_loaded,
     check_node_up
 )
+
 from experiments.utils.prometheus import PromClient
 prom_client = PromClient()
-
-from pprint import PrettyPrinter
-pp = PrettyPrinter(indent=4)
 
 from kubernetes import config
 from kubernetes import client
@@ -45,6 +44,7 @@ from optimizer import (
 from experiments.utils.constants import (
     NAMESPACE
 )
+from experiments.utils import logger
 from optimizer.optimizer import Optimizer
 
 class Adapter:
@@ -115,15 +115,27 @@ class Adapter:
         time_interval = 0
         timestep = 0
         pipeline_up = False
-        pipeline_up = check_node_up(node_name='router', silent_mode=True)
-        initial_config = self.extract_config()
-        self.monitoring.adaptation_step_report(
-            to_apply_config=initial_config,
-            objective=None,
-            timestep=timestep,
-            time_interval=time_interval)
+        pipeline_up = check_node_up(node_name='router')
+        if pipeline_up:
+            initial_config = self.extract_config()
+            self.monitoring.adaptation_step_report(
+                to_apply_config=initial_config,
+                objective=None,
+                timestep=timestep,
+                time_interval=time_interval)
         while True:
-            time.sleep(self.adaptation_interval)
+            logger.info(
+                f"Waiting {self.adaptation_interval}"
+                " to make next descision")
+            for _ in tqdm.tqdm(range(self.adaptation_interval)):
+                time.sleep(1)
+            pipeline_up = check_node_up(node_name='router')
+            if not pipeline_up:
+                logger.info(
+                    'no pipeline in the system,'
+                    ' aborting adaptation process ...')
+                # with the message that the process has ended
+                break
             time_interval += self.adaptation_interval
             timestep += 1
             rps_series = self.monitoring.rps_monitor()
@@ -139,18 +151,11 @@ class Adapter:
             new_configs = self.output_parser(optimal)
             to_apply_config = self.choose_config(new_configs)
             self.change_pipeline_config(to_apply_config)
-            pipeline_up = check_node_up(
-                node_name='router', silent_mode=True)
             self.monitoring.adaptation_step_report(
                 to_apply_config=to_apply_config,
                 objective=objective_value,
                 timestep=timestep,
                 time_interval=time_interval)
-            if not pipeline_up:
-                print('no pipeline in the system,'
-                      ' aborting adaptation process ...')
-                # with the message that the process has ended
-                break
 
     def output_parser(self, optimizer_output: pd.DataFrame):
         new_configs = []
@@ -159,7 +164,8 @@ class Adapter:
             for task_id, task_name in enumerate(self.node_names):
                 config[task_name] = {}
                 config[task_name]['cpu'] = row[f'task_{task_id}_cpu']
-                config[task_name]['replicas'] = int(row[f'task_{task_id}_replicas'])
+                config[task_name]['replicas'] = int(
+                    row[f'task_{task_id}_replicas'])
                 config[task_name]['batch'] = int(row[f'task_{task_id}_batch'])
                 config[task_name]['variant'] = row[f'task_{task_id}_variant']
             new_configs.append(config)

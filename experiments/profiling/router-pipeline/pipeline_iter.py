@@ -19,7 +19,7 @@ from barazmoon.twitter import twitter_workload_generator
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
     project_dir, '..', '..', '..')))
-from experiments.utils.prometheus import PromClient
+
 from experiments.utils.pipeline_operations import (
     load_data,
     warm_up,
@@ -27,8 +27,7 @@ from experiments.utils.pipeline_operations import (
     load_test,
     remove_pipeline,
     setup_router_pipeline,
-    get_pod_name,
-    setup_router)
+    get_pod_name)
 from experiments.utils.constants import (
     PIPLINES_PATH,
     PIPELINE_PROFILING_CONFIGS_PATH,
@@ -36,9 +35,11 @@ from experiments.utils.constants import (
     OBJ_PIPELINE_PROFILING_RESULTS_PATH,
     KEY_CONFIG_FILENAME
 )
-from experiments.utils.obj import setup_obj_store
+
+from experiments.utils.prometheus import PromClient
 prom_client = PromClient()
 
+from experiments.utils import logger
 
 def experiments(pipeline_name: str, node_names: str,
                 config: dict, pipeline_path: str,
@@ -106,10 +107,10 @@ def experiments(pipeline_name: str, node_names: str,
                     for memory_request in memory_requests:
                         for replica in replicas:
                             for load in loads_to_test:
-                                print('-'*25\
+                                logger.info('-'*25\
                                     + f' starting repetition experiment ' +\
                                         '-'*25)
-                                print('\n')
+                                logger.info('\n')
                                 experiments_exist, experiment_id = key_config_mapper(
                                     pipeline_name=pipeline_name,
                                     node_name=node_names,
@@ -146,16 +147,16 @@ def experiments(pipeline_name: str, node_names: str,
                                         num_threads=cpu_request
                                     )
 
-                                    print('Checking if the model is up ...')
-                                    print('\n')
+                                    logger.info('Checking if the model is up ...')
+                                    logger.info('\n')
                                     # check if the model is up or not
                                     check_load_test(
                                         pipeline_name='router',
                                         model='router',
                                         data_type=data_type,
                                         pipeline_path=pipeline_path)
-                                    print('model warm up ...')
-                                    print('\n')
+                                    logger.info('model warm up ...')
+                                    logger.info('\n')
                                     warm_up_duration = 10
                                     warm_up(
                                         pipeline_name='router',
@@ -163,10 +164,10 @@ def experiments(pipeline_name: str, node_names: str,
                                         data_type=data_type,
                                         pipeline_path=pipeline_path,
                                         warm_up_duration=warm_up_duration)
-                                    print('-'*25 + f'starting load test ' + '-'*25)
-                                    print('\n')
-                                    print('-'*25 + f'starting load test ' + '-'*25)
-                                    print('\n')
+                                    logger.info('-'*25 + f'starting load test ' + '-'*25)
+                                    logger.info('\n')
+                                    logger.info('-'*25 + f'starting load test ' + '-'*25)
+                                    logger.info('\n')
                                     if workload_type == 'static':
                                         workload = [load] * load_duration
                                     data = load_data(data_type, pipeline_path)
@@ -181,8 +182,8 @@ def experiments(pipeline_name: str, node_names: str,
                                                 mode=mode,
                                                 namespace='default',
                                                 benchmark_duration=benchmark_duration)
-                                        print('-'*25 + 'saving the report' + '-'*25)
-                                        print('\n')
+                                        logger.info('-'*25 + 'saving the report' + '-'*25)
+                                        logger.info('\n')
                                         save_report(
                                             experiment_id=experiment_id,
                                             responses=responses,
@@ -192,15 +193,15 @@ def experiments(pipeline_name: str, node_names: str,
                                             end_time_experiment=end_time_experiment,
                                             series=series)
                                     except UnboundLocalError:
-                                        print('Impossible experiment!')
-                                        print('skipping to the next experiment ...')
-                                    print(f'waiting for timeout: {timeout} seconds')
+                                        logger.info('Impossible experiment!')
+                                        logger.info('skipping to the next experiment ...')
+                                    logger.info(f'waiting for timeout: {timeout} seconds')
                                     for _ in tqdm(range(20)):
                                         time.sleep((timeout)/20)
                                     remove_pipeline(pipeline_name=pipeline_name)
                                 else:
-                                    print('experiment with the same set of varialbes already exists')
-                                    print('skipping to the next experiment ...')
+                                    logger.info('experiment with the same set of varialbes already exists')
+                                    logger.info('skipping to the next experiment ...')
                                     continue
 
 def key_config_mapper(
@@ -411,7 +412,7 @@ def save_report(experiment_id: int,
     # os.system(
     #     f'kubectl logs -n {namespace} {svc_pod_name} > {svc_path}'
     # )
-    print(f'results have been sucessfully saved in:\n{save_path}')
+    logger.info(f'results have been sucessfully saved in:\n{save_path}')
 
 def backup(series):
     data_path = os.path.join(
@@ -420,7 +421,6 @@ def backup(series):
     backup_path = os.path.join(
         OBJ_PIPELINE_PROFILING_RESULTS_PATH,
         'series', str(series))
-    setup_obj_store()
     shutil.copytree(data_path, backup_path)
 
 @click.command()

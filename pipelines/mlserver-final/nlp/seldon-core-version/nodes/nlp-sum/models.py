@@ -10,7 +10,6 @@ from mlserver.types import (
     Parameters)
 from mlserver import MLModel
 from transformers import pipeline
-from typing import List, Dict
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']

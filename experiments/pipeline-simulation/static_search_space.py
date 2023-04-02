@@ -5,8 +5,8 @@ import os
 import sys
 import shutil
 import yaml
-from pprint import PrettyPrinter
-pp = PrettyPrinter(indent=4)
+from plogger.info import Prettylogger.infoer
+pp = Prettylogger.infoer(indent=4)
 
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
@@ -22,6 +22,8 @@ from experiments.utils.constants import (
     PIPELINE_SIMULATION_RESULTS_PATH,
     ACCURACIES_PATH
 )
+
+from experiments.utils import logger
 
 config_key_mapper = "key_config_mapper.csv"
 
@@ -148,7 +150,7 @@ def main(config_name: str):
             os.path.join(dir_path, 'all-states.csv'), index=False)
         all_states_time = time.time() - all_states_time
         time_file.write(f'all: {all_states_time}\n')
-        print(f"all states time: {all_states_time}")
+        logger.info(f"all states time: {all_states_time}")
     if 'feasible' in generate:
         feasible_time = time.time()
         # all feasibla states
@@ -158,7 +160,7 @@ def main(config_name: str):
             alpha=alpha, beta=beta, gamma=gamma,
             arrival_rate=arrival_rate,
             num_state_limit=num_state_limit)
-        # print(f"{with_constraints = }")
+        # logger.info(f"{with_constraints = }")
         with_constraints.to_markdown(
             os.path.join(
                 dir_path, 'readable-with-constraints.csv'),
@@ -167,7 +169,7 @@ def main(config_name: str):
             os.path.join(dir_path, 'with-constraints.csv'), index=False)
         feasible_time = time.time() - feasible_time
         time_file.write(f'feasible_time: {feasible_time}\n')
-        print(f"with constraint time: {feasible_time}")
+        logger.info(f"with constraint time: {feasible_time}")
     if 'optimal' in generate:
         if optimization_method == 'gurobi':
             optimal_time = time.time()
@@ -178,14 +180,14 @@ def main(config_name: str):
                 alpha=alpha, beta=beta, gamma=gamma,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit)
-            # print(f"{optimal = }")
+            # logger.info(f"{optimal = }")
             optimal.to_markdown(os.path.join(
                 dir_path, 'readable-optimal-gurobi.csv'), index=False)
             optimal.to_csv(os.path.join(
                 dir_path, 'optimal-gurobi.csv'), index=False)
             optimal_time = time.time() - optimal_time
             time_file.write(f'optimal_time_gurobi: {optimal_time}\n')
-            print(f"optimal time gurobi: {optimal_time}")
+            logger.info(f"optimal time gurobi: {optimal_time}")
 
         if optimization_method == 'brute-force':
             optimal_time = time.time()
@@ -196,14 +198,14 @@ def main(config_name: str):
                 alpha=alpha, beta=beta, gamma=gamma,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit)
-            # print(f"{optimal = }")
+            # logger.info(f"{optimal = }")
             optimal.to_markdown(os.path.join(
                 dir_path, 'readable-optimal-brute-force.csv'), index=False)
             optimal.to_csv(os.path.join(
                 dir_path, 'optimal-brute-force.csv'), index=False)
             optimal_time = time.time() - optimal_time
             time_file.write(f'optimal_time_brute_force: {optimal_time}\n')
-            print(f"optimal time brute-force: {optimal_time}")
+            logger.info(f"optimal time brute-force: {optimal_time}")
 
         if optimization_method == 'both':
             optimal_time = time.time()
@@ -214,14 +216,14 @@ def main(config_name: str):
                 alpha=alpha, beta=beta, gamma=gamma,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit)
-            # print(f"{optimal = }")
+            # logger.info(f"{optimal = }")
             optimal.to_markdown(os.path.join(
                 dir_path, 'readable-optimal-brute-force.csv'), index=False)
             optimal.to_csv(os.path.join(
                 dir_path, 'optimal-brute-force.csv'), index=False)
             optimal_time = time.time() - optimal_time
             time_file.write(f'optimal_time_brute_force: {optimal_time}\n')
-            print(f"optimal time brute-force: {optimal_time}")
+            logger.info(f"optimal time brute-force: {optimal_time}")
 
             optimal_time = time.time()
             # optimal states
@@ -231,19 +233,19 @@ def main(config_name: str):
                 alpha=alpha, beta=beta, gamma=gamma,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit)
-            # print(f"{optimal = }")
+            # logger.info(f"{optimal = }")
             optimal.to_markdown(os.path.join(
                 dir_path, 'readable-optimal-gurobi.csv'), index=False)
             optimal.to_csv(os.path.join(
                 dir_path, 'optimal-gurobi.csv'), index=False)
             optimal_time = time.time() - optimal_time
             time_file.write(f'optimal_time_gurobi: {optimal_time}\n')
-            print(f"optimal time gurobi: {optimal_time}")
+            logger.info(f"optimal time gurobi: {optimal_time}")
 
     total_time = time.time() - total_time
     time_file.write(f'total_time: {total_time}')
     time_file.close()
-    print(f"total time spent: {total_time}")
+    logger.info(f"total time spent: {total_time}")
 
 if __name__ == "__main__":
     main()

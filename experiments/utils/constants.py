@@ -23,6 +23,10 @@ ROUTER_PATH = os.path.join(
     'router'
 )
 
+# logging constants
+LOGGING_LEVEL: str = 'info'
+LOG_TO = 'print'
+
 # accuracies files
 ACCURACIES_PATH = os.path.join(CONFIGS_PATH, 'accuracies.yaml')
 
@@ -88,7 +92,7 @@ OBJ_PIPELINE_PROFILING_RESULTS_PATH = os.path.join(
     OBJ_PROFILING_RESULTS_PATH, "pipelines")
 
 # generated baesd on the users' path
-# TODO completely polish and remove unecessary ones
+
 TEMP_MODELS_PATH = os.path.join(DATA_PATH, "model-temp")
 # KUBE_YAMLS_PATH = os.path.join(DATA_PATH, "yamls")
 # PIPELINES_MODELS = os.path.join(DATA_PATH, "pipeline-test-meta")
@@ -153,3 +157,4 @@ def _create_dirs():
 
 # prometheus client
 PROMETHEUS = "http://localhost:30090"
+

@@ -3,17 +3,11 @@ Iterate through all possible combination
 of pipelines
 """
 import os
-import time
 import json
 import yaml
-from typing import Union, Tuple
 import click
 import sys
-import csv
-from tqdm import tqdm
 import shutil
-from barazmoon.twitter import twitter_workload_generator
-import multiprocessing, threading
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -23,18 +17,11 @@ sys.path.append(os.path.normpath(os.path.join(
 from experiments.utils.prometheus import PromClient
 prom_client = PromClient()
 
-from experiments.utils.pipeline_operations import (
-    warm_up,
-    check_load_test,
-    remove_pipeline,
-    setup_router_pipeline)
 from experiments.utils.constants import (
-    PIPLINES_PATH,
     FINAL_CONFIGS_PATH,
     FINAL_RESULTS_PATH,
     ACCURACIES_PATH
 )
-from experiments.utils.obj import setup_obj_store
 
 from optimizer import (
     Adapter
@@ -42,7 +29,6 @@ from optimizer import (
 from experiments.utils.simulation_operations import (
     generate_simulated_pipeline
 )
-
 
 @click.command()
 @click.option(
@@ -59,15 +45,15 @@ def main(config_name: str, type_of: str):
     # ----------- 1. loading system configs -------------
     config_path = os.path.join(
         FINAL_CONFIGS_PATH, f"{config_name}.yaml")
+    with open(config_path, 'r') as cf:
+        config = yaml.safe_load(cf)
+    series = config['series']
     save_path = os.path.join(
         FINAL_RESULTS_PATH,
         'series', str(series), "adaptation_log.json")
-    with open(config_path, 'r') as cf:
-        config = yaml.safe_load(cf)
     pipeline_name = config['pipeline_name']
     node_names = [config['node_name'] for config in config['nodes']]
     adaptation_interval = config['adaptation_interval']
-    series = config['series']
 
     dir_path = os.path.join(
         FINAL_RESULTS_PATH,
@@ -176,8 +162,6 @@ def main(config_name: str, type_of: str):
         adapter.start_adaptation()
         with open(save_path, "w") as outfile:
             outfile.write(json.dumps(adapter.monitoring.adaptation_report))
-
-    remove_pipeline(pipeline_name=pipeline_name)
 
 if __name__ == "__main__":
     main()

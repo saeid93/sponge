@@ -32,11 +32,11 @@ nodes:
 # ----------- experiment configs -------------
 
 benchmark_duration: 1
-adaptation_interval: 5
+adaptation_interval: 20
 workload_type: static
 workload_config:
   loads_to_test: 10
-  load_duration: 3600
+  load_duration: 40
 # workload_type: twitter
 # workload_config:
 #   - start: '3:5:0'

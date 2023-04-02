@@ -7,7 +7,6 @@ import json
 import yaml
 import click
 import sys
-import csv
 import shutil
 from barazmoon.twitter import twitter_workload_generator
 
@@ -29,12 +28,9 @@ from experiments.utils.pipeline_operations import (
 from experiments.utils.constants import (
     PIPLINES_PATH,
     FINAL_CONFIGS_PATH,
-    FINAL_RESULTS_PATH,
-    ACCURACIES_PATH
+    FINAL_RESULTS_PATH
 )
-from experiments.utils.simulation_operations import (
-    generate_simulated_pipeline
-)
+from experiments.utils import logger
 
 def setup_pipeline(
         pipeline_name: str, node_names: str,
@@ -95,17 +91,17 @@ def setup_pipeline(
         num_interop_threads=cpu_requests,
         num_threads=cpu_requests
     )
-    print('Checking if the model is up ...')
-    print('\n')
+    logger.info('Checking if the model is up ...')
+    logger.info('\n')
     # check if the model is up or not
     check_load_test(
         pipeline_name='router',
         model='router',
         data_type=data_type,
         pipeline_path=pipeline_path)
-    print('model warm up ...')
-    print('\n')
-    warm_up_duration = 30
+    logger.info('model warm up ...')
+    logger.info('\n')
+    warm_up_duration = 10
     warm_up(
         pipeline_name='router',
         model='router',
@@ -117,9 +113,9 @@ def experiments(
         config: dict, pipeline_path: str,
         data_type: str):
 
-    print('\n')
-    print('-'*25 + f'starting load test ' + '-'*25)
-    print('\n')
+    logger.info('\n')
+    logger.info('-'*25 + f'starting load test ' + '-'*25)
+    logger.info('\n')
 
     mode = config['mode']
     benchmark_duration = config['benchmark_duration']
@@ -152,8 +148,8 @@ def experiments(
             mode=mode,
             namespace='default',
             benchmark_duration=benchmark_duration)
-    print('-'*25 + 'saving the report' + '-'*25)
-    print('\n')
+    logger.info('-'*25 + 'saving the report' + '-'*25)
+    logger.info('\n')
     results = {
         'responses': responses,
         'start_time_experiment': start_time_experiment,
@@ -178,6 +174,7 @@ def main(config_name: str, type_of: str):
         FINAL_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, 'r') as cf:
         config = yaml.safe_load(cf)
+    series = config['series']
     save_path = os.path.join(
         FINAL_RESULTS_PATH,
         'series', str(series), "results.json")
@@ -186,7 +183,6 @@ def main(config_name: str, type_of: str):
     node_names = [config['node_name'] for config in config['nodes']]
     # first node of the pipeline determins the pipeline data_type
     data_type = config['nodes'][0]['data_type']
-    series = config['series']
     pipeline_path = os.path.join(
         PIPLINES_PATH,
         pipeline_folder_name,
@@ -243,8 +239,6 @@ def main(config_name: str, type_of: str):
 
         # 1. process one the experiment runner
         result = experiments(
-            pipeline_name=pipeline_name,
-            node_names=node_names,
             config=config,
             pipeline_path=pipeline_path,
             data_type=data_type)

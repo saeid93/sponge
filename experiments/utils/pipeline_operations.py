@@ -11,8 +11,6 @@ from jinja2 import Environment, FileSystemLoader
 from PIL import Image
 import asyncio
 from datasets import load_dataset
-from pprint import PrettyPrinter
-pp = PrettyPrinter(indent=4)
 
 from barazmoon import Data
 from barazmoon import MLServerAsyncGrpc
@@ -36,6 +34,8 @@ from experiments.utils.constants import (
     NAMESPACE,
     ROUTER_PATH)
 
+from experiments.utils import logger
+
 def get_pod_name(node_name: str, orchestrator=False):
     pod_regex = f"{node_name}.*"
     pods_list = kube_api.list_namespaced_pod(NAMESPACE)
@@ -54,8 +54,8 @@ def setup_node(
         max_batch_time: str, replica: int, node_path: str, timeout: int,
         use_threading: bool, num_interop_threads: int, num_threads: int,
         no_engine=False):
-    print('-'*25 + ' setting up the node with following config' + '-'*25)
-    print('\n')
+    logger.info('-'*25 + ' setting up the node with following config' + '-'*25)
+    logger.info('\n')
     svc_vars = {
         "name": node_name,
         "cpu_request": cpu_request,
@@ -75,18 +75,18 @@ def setup_node(
         loader=FileSystemLoader(node_path))
     svc_template = environment.get_template('node-template.yaml')
     content = svc_template.render(svc_vars)
-    print(content)
+    logger.info(content)
     command = f"""cat <<EOF | kubectl apply -f -
 {content}
         """
     os.system(command)
-    print('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
-    print('\n')
-    check_node_up(node_name=node_name)
+    logger.info('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
+    logger.info('\n')
+    check_node_loaded(node_name=node_name)
 
 def setup_router(pipeline_name, node_names):
-    print('-'*25 + ' setting up the node with following config' + '-'*25)
-    print('\n')
+    logger.info('-'*25 + ' setting up the node with following config' + '-'*25)
+    logger.info('\n')
     model_lists = str(node_names)
     model_lists = model_lists.replace('\'', '"')
     svc_vars = {
@@ -102,14 +102,14 @@ def setup_router(pipeline_name, node_names):
         loader=FileSystemLoader(ROUTER_PATH))
     svc_template = environment.get_template('node-template.yaml')
     content = svc_template.render(svc_vars)
-    print(content)
+    logger.info(content)
     command = f"""cat <<EOF | kubectl apply -f -
 {content}
         """
     os.system(command)
-    print('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
-    print('\n')
-    check_node_up(node_name='router')
+    logger.info('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
+    logger.info('\n')
+    check_node_loaded(node_name='router')
 
 def setup_seldon_pipeline(
         pipeline_name: str, cpu_request: Tuple[str],
@@ -118,8 +118,8 @@ def setup_seldon_pipeline(
         replica: Tuple[int], use_threading: Tuple[bool],
         num_interop_threads: Tuple[int], num_threads: Tuple[int],
         pipeline_path: str, timeout: int, num_nodes: int):
-    print('-'*25 + ' setting up the node with following config' + '-'*25)
-    print('\n')
+    logger.info('-'*25 + ' setting up the node with following config' + '-'*25)
+    logger.info('\n')
     # TODO add num nodes logic here
     svc_vars = {"name": pipeline_name}
     for node_id in range(num_nodes):
@@ -142,15 +142,15 @@ def setup_seldon_pipeline(
         loader=FileSystemLoader(pipeline_path))
     svc_template = environment.get_template('pipeline-template.yaml')
     content = svc_template.render(svc_vars)
-    print(content)
+    logger.info(content)
     command = f"""cat <<EOF | kubectl apply -f -
 {content}
         """
     os.system(command)
-    print('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
-    print('\n')
-    print('-'*25 + f' model pod {pipeline_name} successfuly set up ' + '-'*25)
-    print('\n')
+    logger.info('-'*25 + f' waiting to make sure the node is up ' + '-'*25)
+    logger.info('\n')
+    logger.info('-'*25 + f' model pod {pipeline_name} successfuly set up ' + '-'*25)
+    logger.info('\n')
     # extract model model container names
     model_container = yaml.safe_load(content)
     model_names = list(
@@ -161,7 +161,7 @@ def setup_seldon_pipeline(
     loop_timeout = 5
     while True:
         models_loaded, svc_loaded, pipeline_loaded = False, False, False
-        print(f'waited for {loop_timeout} to check if the pods are up')
+        logger.info(f'waited for {loop_timeout} to check if the pods are up')
         time.sleep(loop_timeout)
         model_pods = kube_api.list_namespaced_pod(
             namespace=NAMESPACE,
@@ -180,18 +180,18 @@ def setup_seldon_pipeline(
                     name=pod.metadata.name,
                     namespace=NAMESPACE,
                     container=container_name)
-                print(logs)
+                logger.info(logs)
                 if 'Uvicorn running on http://0.0.0.0:600' in logs:
                     all_conainers.append(True)
                 else:
                     all_conainers.append(False)
             else:
                 all_model_pods.append(False)
-        print(f"all_model_pods: {all_model_pods}")
+        logger.info(f"all_model_pods: {all_model_pods}")
         if all(all_model_pods):
             models_loaded = True
         else: continue
-        print(f"all_containers: {all_conainers}")
+        logger.info(f"all_containers: {all_conainers}")
         if all(all_model_pods):
             pipeline_loaded = True
         else: continue
@@ -207,7 +207,7 @@ def setup_seldon_pipeline(
                 else: continue
             else: continue
         if models_loaded and svc_loaded and pipeline_loaded:
-            print('model container completely loaded!')
+            logger.info('model container completely loaded!')
             break
 
 def setup_router_pipeline(
@@ -218,8 +218,8 @@ def setup_router_pipeline(
         use_threading: Tuple[bool], num_interop_threads: Tuple[int],
         num_threads: Tuple[int], pipeline_path: str,
         timeout: int, num_nodes: int):
-    print('-'*25 + ' setting up the node with following config' + '-'*25)
-    print('\n')
+    logger.info('-'*25 + ' setting up the node with following config' + '-'*25)
+    logger.info('\n')
     # TODO add num nodes logic here
     # svc_vars = {"name": pipeline_name}
     for node_id, node_name in zip(range(num_nodes), node_names):
@@ -296,7 +296,7 @@ def check_load_test(
         pipeline_path=pipeline_path)
     loop_timeout = 5
     while True:
-        print(f'waited for {loop_timeout} seconds to check for successful request')
+        logger.info(f'waited for {loop_timeout} seconds to check for successful request')
         time.sleep(loop_timeout)
         _, _, response =load_test(
             pipeline_name=pipeline_name,
@@ -328,9 +328,9 @@ def remove_pipeline(pipeline_name: str):
     os.system(f"kubectl delete deployments --all -n default")
     os.system(f"kubectl delete replicaset --all -n default")
     os.system(f"kubectl delete pods --all -n default")
-    os.system("kubectl get services | grep -v \"kubernetes\" | awk \'{print $1}\' | xargs kubectl delete service -n default")
-    print('-'*50 + f' pipeline {pipeline_name} successfuly removed ' + '-'*50)
-    print('\n')
+    os.system("kubectl get services | grep -v kubernetes | awk \'{print $1}\' | xargs kubectl delete service -n default")
+    logger.info('-'*50 + f' pipeline {pipeline_name} successfuly removed ' + '-'*50)
+    logger.info('\n')
 
 def load_test(
         pipeline_name: str, data_type: str,
@@ -367,10 +367,10 @@ def load_test(
             response['outputs'] = []
     return start_time, end_time, responses
 
-def check_node_up(node_name: str, silent_mode: bool=False) -> bool:
+def check_node_loaded(node_name: str, silent_mode: bool=False) -> bool:
     if not silent_mode:
-        print('-'*25 + f' model pod {node_name} successfuly set up ' + '-'*25)
-        print('\n')
+        logger.info('-'*25 + f' model pod {node_name} successfuly set up ' + '-'*25)
+        logger.info('\n')
     # checks if the pods are ready each 5 seconds
     loop_timeout = 5
     while True:
@@ -389,7 +389,7 @@ def check_node_up(node_name: str, silent_mode: bool=False) -> bool:
                     namespace=NAMESPACE,
                     container=node_name)
                 if not silent_mode:
-                    print(logs)
+                    logger.info(logs)
                 if 'Uvicorn running on http://0.0.0.0:6000' in logs:
                     all_conainers.append(True)
                 else:
@@ -397,19 +397,25 @@ def check_node_up(node_name: str, silent_mode: bool=False) -> bool:
             else:
                 all_model_pods.append(False)
         if not silent_mode:
-            print(f"all_model_pods: {all_model_pods}")
-        if all(all_model_pods):
+            logger.info(f"all_model_pods: {all_model_pods}")
+        if all(all_model_pods) and all_model_pods != []:
             models_loaded = True
         else: continue
         if not silent_mode:
-            print(f"all_containers: {all_conainers}")
+            logger.info(f"all_containers: {all_conainers}")
         if all(all_model_pods):
             container_loaded = True
         else: continue
         if models_loaded and container_loaded:
             if not silent_mode:
-                print('model container completely loaded!')
+                logger.info('model container completely loaded!')
             return True
         if not silent_mode:
-            print(f'waited for {loop_timeout} to check if the pods are up')
+            logger.info(f'waited for {loop_timeout} to check if the pods are up')
         time.sleep(loop_timeout)
+
+def check_node_up(node_name: str) -> bool:
+    model_pods = kube_api.list_namespaced_pod(
+        namespace=NAMESPACE,
+        label_selector=f"seldon-deployment-id={node_name}")
+    return model_pods.items != []
