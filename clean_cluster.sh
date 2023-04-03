@@ -1,4 +1,3 @@
-kubectl delete seldondeployment {pipeline_name} -n default
 kubectl delete seldondeployment --all -n default
 kubectl delete deployments --all -n default
 kubectl delete replicaset --all -n default
