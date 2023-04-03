@@ -139,7 +139,8 @@ class Adapter:
             time_interval += self.adaptation_interval
             timestep += 1
             rps_series = self.monitoring.rps_monitor()
-            predicted_load = self.predictor.predict(rps_series)
+            predicted_load = round(self.predictor.predict(rps_series))
+            logger.info(f"\nPredicted Load: {predicted_load}\n")
             optimal = self.optimizer.optimize(
                 optimization_method=self.optimization_method,
                 scaling_cap=self.scaling_cap,

@@ -25,7 +25,7 @@ with open(os.path.join(
 data = np.array(data).flatten()
 
 
-load = 1
+load = 10
 test_duration = 10
 variant = 0
 platform = 'router'

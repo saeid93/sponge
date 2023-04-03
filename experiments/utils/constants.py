@@ -86,8 +86,6 @@ OBJ_PIPELINE_SIMULATION_RESULTS_PATH = os.path.join(
     RESULTS_PATH, "pipeline-simulation")
 OBJ_FINAL_RESULTS_PATH = os.path.join(
     OBJ_RESULTS_PATH, "final")
-OBJ_NODE_PROFILING_RESULTS_PATH = os.path.join(
-    OBJ_PROFILING_RESULTS_PATH, "nodes")
 OBJ_PIPELINE_PROFILING_RESULTS_PATH = os.path.join(
     OBJ_PROFILING_RESULTS_PATH, "pipelines")
 
@@ -143,12 +141,6 @@ def _create_dirs():
     if not os.path.exists(OBJ_PROFILING_RESULTS_PATH):
         setup_obj_store()
         os.makedirs(OBJ_PROFILING_RESULTS_PATH)
-    if not os.path.exists(OBJ_NODE_PROFILING_RESULTS_PATH):
-        setup_obj_store()
-        os.makedirs(OBJ_NODE_PROFILING_RESULTS_PATH)
-    if not os.path.exists(OBJ_NODE_PROFILING_RESULTS_PATH):
-        setup_obj_store()
-        os.makedirs(OBJ_NODE_PROFILING_RESULTS_PATH)
     if not os.path.exists(OBJ_PIPELINE_PROFILING_RESULTS_PATH):
         setup_obj_store()
         os.makedirs(OBJ_PIPELINE_PROFILING_RESULTS_PATH)

@@ -36,7 +36,7 @@ adaptation_interval: 20
 workload_type: static
 workload_config:
   loads_to_test: 10
-  load_duration: 40
+  load_duration: 3600
 # workload_type: twitter
 # workload_config:
 #   - start: '3:5:0'
@@ -44,7 +44,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 1
+series: 2
 # pipeline_name: video
 metadata: 'checking the effect of changing all variables under arrival rate 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 number_tasks: 2
