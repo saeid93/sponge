@@ -29,12 +29,13 @@ def decode_from_bin(
     inputs: List[bytes], shapes: List[
         List[int]], dtypes: List[str], default_shape: List[int]) -> List[np.array]:
     batch = []
+    logger.info(f"{shapes}=")
     for input, shape, dtype in zip(inputs, shapes, dtypes):
         buff = memoryview(input)
         if len(shapes) == 1:
             array = np.frombuffer(buff, dtype=dtype).reshape(shape)
         else:
-            array = np.frombuffer(buff, dtype=dtype).reshape(shape[0])
+            array = np.frombuffer(buff, dtype=dtype).reshape(shape)
         batch.append(array)
     return batch
 
