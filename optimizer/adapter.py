@@ -340,11 +340,15 @@ class Predictor:
             self.model = lambda l: sum(l)/len(l)
     
     def predict(self, series: List[int]):
+        series_minutes = []
+        step = 60
+        for i in range(0, len(series), step):
+            series_minutes.append(max(series[i: i+step]))
         if self.predictor_type == 'lstm':
             model_intput = tf.convert_to_tensor(
-                np.array(series).reshape(
+                np.array(series_minutes).reshape(
                 (-1, LSTM_INPUT_SIZE, 1)), dtype=tf.float32)
-            model_output = max(self.lstm.predict(model_intput))
+            model_output = self.model.predict(model_intput)[0][0]
         else:
             model_output = self.model(series)
 

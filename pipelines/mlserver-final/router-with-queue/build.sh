@@ -1,6 +1,6 @@
 REPOS=(
     sdghafouri)
-IMAGE_NAME=router:router
+IMAGE_NAME=router:batch
 mlserver dockerfile --include-dockerignore .
 sed -i 's/seldonio/sdghafouri/g' Dockerfile
 sed -i 's/1.3.0.dev4-slim/custom-slim/g' Dockerfile

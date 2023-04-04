@@ -195,7 +195,7 @@ spec:
               memory: 4Gi
           env:
             - name: MODEL_LISTS
-              value: '["nlp-li", "nlp-sum", "nlp-trans"]'
+              value: '["audio", "nlp-sent"]'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

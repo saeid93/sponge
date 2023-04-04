@@ -85,5 +85,5 @@ accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'reactive' # options: reactive, avg, lstm, max
+predictor_type: 'lstm' # options: reactive, avg, lstm, max
 monitoring_duration: 10 # in minutes
