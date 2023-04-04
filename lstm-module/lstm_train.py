@@ -13,7 +13,9 @@ sys.path.append(os.path.normpath(os.path.join(project_dir, "..")))
 
 from barazmoon.twitter import twitter_workload_generator
 
-from experiments.utils.constants import PROJECT_PATH
+from experiments.utils.constants import (
+    LSTM_PATH,
+    LSTM_INPUT_SIZE)
 
 
 def create_model():
@@ -21,7 +23,7 @@ def create_model():
     LSTM model
     """
     model = Sequential()
-    model.add(Input(shape=(10, 1)))
+    model.add(Input(shape=(LSTM_INPUT_SIZE, 1)))
     model.add(LSTM(25, activation="relu", kernel_regularizer=regularizers.L1(0.00001)))
     model.add(Dense(1))
     return model
@@ -66,9 +68,9 @@ def get_data():
     test_x, test_y = get_x_y(workload_test)
 
     return (
-        tf.convert_to_tensor(np.array(train_x).reshape((-1, 10, 1)), dtype=tf.int32),
+        tf.convert_to_tensor(np.array(train_x).reshape((-1, LSTM_INPUT_SIZE, 1)), dtype=tf.int32),
         tf.convert_to_tensor(np.array(train_y), dtype=tf.int32),
-        tf.convert_to_tensor(np.array(test_x).reshape((-1, 10, 1)), dtype=tf.int32),
+        tf.convert_to_tensor(np.array(test_x).reshape((-1, LSTM_INPUT_SIZE, 1)), dtype=tf.int32),
         tf.convert_to_tensor(np.array(test_y), dtype=tf.int32),
     )
 
@@ -87,9 +89,8 @@ if __name__ == "__main__":
         train_x, train_y, epochs=30, batch_size=64, validation_data=(test_x, test_y)
     )
     predictions = model.predict(test_x)
-    model_path = os.path.join(PROJECT_PATH, "lstm-module", "lstm_saved_model")
     plt.plot(list(range(len(test_y))), list(test_y), label="real values")
     plt.plot(list(range(len(test_y))), list(predictions), label="predictions")
     plt.legend()
     plt.show()
-    model.save(model_path)
+    model.save(LSTM_PATH)

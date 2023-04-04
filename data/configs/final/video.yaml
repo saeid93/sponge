@@ -1,4 +1,4 @@
-# ----------- system configs -------------
+# ----------- pipeline configs -------------
 # pipeline informat
 pipeline_folder_name: video
 pipeline_name: video
@@ -36,7 +36,7 @@ adaptation_interval: 20
 workload_type: static
 workload_config:
   loads_to_test: 10
-  load_duration: 3600
+  load_duration: 7200
 # workload_type: twitter
 # workload_config:
 #   - start: '3:5:0'
@@ -82,3 +82,8 @@ normalize_accuracy: true
 only_measured_profiles: false
 profiling_load: 20
 accuracy_method: sum # [average | sum | multiply]
+
+# ----------- load predictor configs -------------
+
+predictor_type: 'reactive' # options: reactive, avg, lstm, max
+monitoring_duration: 10 # in minutes

@@ -1,6 +1,7 @@
 from typing import Dict, Literal, Tuple, Union
 import time
 import tqdm
+import numpy as np
 from kubernetes import config
 from kubernetes import client
 from typing import List
@@ -8,6 +9,9 @@ import os
 import sys
 import pandas as pd
 import concurrent.futures
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -41,7 +45,9 @@ from optimizer import (
     Pipeline
 )
 from experiments.utils.constants import (
-    NAMESPACE
+    NAMESPACE,
+    LSTM_PATH,
+    LSTM_INPUT_SIZE
 )
 from experiments.utils import logger
 from optimizer.optimizer import Optimizer
@@ -61,6 +67,8 @@ class Adapter:
             beta: float,
             gamma: float,
             num_state_limit: int,
+            monitoring_duration: int,
+            predictor_type: str
             ) -> None:
         """
         Args:
@@ -75,6 +83,8 @@ class Adapter:
             beta (float): resource weight
             gamma (float): batching weight
             num_state_limit (int): cap on the number of optimal states
+            monitoring_duration (int): the monitoring
+                deamon observing duration
         """
         self.pipeline_name = pipeline_name
         self.pipeline = pipeline
@@ -93,9 +103,11 @@ class Adapter:
         self.beta = beta
         self.gamma = gamma
         self.num_state_limit = num_state_limit
+        self.monitoring_duration = monitoring_duration
+        self.predictor_type = predictor_type
         self.monitoring = Monitoring(
             pipeline_name=self.pipeline_name)
-        self.predictor = Predictor()
+        self.predictor = Predictor(predictor_type=self.predictor_type)
 
     def start_adaptation(self):
 
@@ -115,6 +127,8 @@ class Adapter:
         timestep = 0
         pipeline_up = False
         pipeline_up = check_node_up(node_name='router')
+        # TODO add the check of whether enough time has
+        # passed to start adaptation or not
         if pipeline_up:
             initial_config = self.extract_config()
             self.monitoring.adaptation_step_report(
@@ -138,7 +152,8 @@ class Adapter:
                 break
             time_interval += self.adaptation_interval
             timestep += 1
-            rps_series = self.monitoring.rps_monitor()
+            rps_series = self.monitoring.rps_monitor(
+                monitoring_duration=self.monitoring_duration)
             predicted_load = round(self.predictor.predict(rps_series))
             logger.info(f"\nPredicted Load: {predicted_load}\n")
             optimal = self.optimizer.optimize(
@@ -173,13 +188,27 @@ class Adapter:
             new_configs.append(config)
         return new_configs
 
-    def choose_config(self, new_configs):
+    def choose_config(
+            self, new_configs: List[Dict[str, Dict[str, Union[str, int]]]]):
         # This should be from comparing with the
         # current config
         # easiest for now is to choose config with
         # with the least change from former config
         current_config = self.extract_config()
-        chosen_config = new_configs[-1]
+        new_config_socres = []
+        for new_config in new_configs:
+            new_config_score = 0
+            for node_name, new_node_config in new_config.items():
+                for config_knob, config_value in new_node_config.items():
+                    if config_knob == 'variant'and\
+                        config_value != current_config[node_name][config_knob]:
+                        new_config_score -= 1
+                    if config_knob == 'batch' and\
+                        str(config_value) != current_config[node_name][config_knob]:
+                        new_config_score -= 1
+            new_config_socres.append(new_config_score)
+        chosen_config_index = new_config_socres.index(max(new_config_socres))
+        chosen_config = new_configs[chosen_config_index]
         return chosen_config
 
     def extract_config(self):
@@ -274,13 +303,15 @@ class Monitoring:
     def __init__(self, pipeline_name) -> None:
         self.pipeline_name = pipeline_name
         self.adaptation_report = {}
-    # Get the rps of the router
-    def rps_monitor(self) -> List[int]:
-        duration = 1
+    def rps_monitor(self, monitoring_duration: int = 1) -> List[int]:
+        """
+        Get the rps of the router
+        duration in minutes
+        """
         rate = 15
         rps_series, _ = prom_client.get_request_per_second(
             pod_name='router', namespace="default",
-            duration=duration, container='router', rate=rate)
+            duration=monitoring_duration, container='router', rate=rate)
         return rps_series
 
     def adaptation_step_report(
@@ -297,10 +328,25 @@ class Monitoring:
 
 
 class Predictor:
-    def __init__(self) -> None:
-        # TODO add the lstm
-        self.model = lambda l: l[-1]
+    def __init__(self, predictor_type) -> int:
+        self.predictor_type = predictor_type
+        if predictor_type == 'lstm':
+            self.model = load_model(LSTM_PATH)
+        elif predictor_type == 'reactive':
+            self.model = lambda l: l[-1]
+        elif predictor_type == 'max':
+            self.model = lambda l: max(l)
+        elif predictor_type == 'avg':
+            self.model = lambda l: sum(l)/len(l)
     
     def predict(self, series: List[int]):
-        return self.model(series) # TEMP
+        if self.predictor_type == 'lstm':
+            model_intput = tf.convert_to_tensor(
+                np.array(series).reshape(
+                (-1, LSTM_INPUT_SIZE, 1)), dtype=tf.float32)
+            model_output = max(self.lstm.predict(model_intput))
+        else:
+            model_output = self.model(series)
+
+        return model_output
 

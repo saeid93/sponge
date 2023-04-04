@@ -3,9 +3,6 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import os
 import sys
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Input, LSTM, Dense
-from tensorflow.keras import regularizers
 from tensorflow.keras.models import load_model
 
 # get an absolute path to the directory that contains parent files
@@ -15,13 +12,15 @@ sys.path.append(os.path.normpath(os.path.join(
 
 from barazmoon.twitter import twitter_workload_generator
 
-from experiments.utils.constants import PROJECT_PATH
+from experiments.utils.constants import (
+    PROJECT_PATH,
+    LSTM_PATH,
+    LSTM_INPUT_SIZE)
 
 
-model_path = os.path.join(PROJECT_PATH, "lstm-module", "lstm_saved_model")
 fig_path = os.path.join(PROJECT_PATH, 'lstm-module', 'lstm_prediction.png')
 
-model = load_model(model_path)
+model = load_model(LSTM_PATH)
 workload = twitter_workload_generator('1-26')
 workload = list(filter(lambda x: x != 0, workload)) # for removing missing hours
 hour = 60 * 60
@@ -50,7 +49,7 @@ def get_x_y(data):
 test_x, test_y = get_x_y(test_data)
 
 test_x = tf.convert_to_tensor(
-    np.array(test_x).reshape((-1, 10, 1)), dtype=tf.float32)
+    np.array(test_x).reshape((-1, LSTM_INPUT_SIZE, 1)), dtype=tf.float32)
 prediction = model.predict(test_x)
 plt.plot(list(range(len(test_y))), list(test_y), label="real values")
 plt.plot(list(range(len(test_y))), list(prediction), label="predictions")

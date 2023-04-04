@@ -23,9 +23,7 @@ from experiments.utils.constants import (
     ACCURACIES_PATH
 )
 
-from optimizer import (
-    Adapter
-    )
+from optimizer import Adapter
 from experiments.utils.simulation_operations import (
     generate_simulated_pipeline
 )
@@ -134,6 +132,10 @@ def main(config_name: str, type_of: str):
         only_measured_profiles=only_measured_profiles,
         profiling_load=profiling_load)
 
+    # ----------- 3. loading predictor configs -------------
+    monitoring_duration = config['monitoring_duration']
+    predictor_type = config['predictor_type']
+
     # should be inside of experiments
     adapter = Adapter(
         pipeline_name=pipeline_name,
@@ -147,7 +149,9 @@ def main(config_name: str, type_of: str):
         alpha=alpha,
         beta=beta,
         gamma=gamma,
-        num_state_limit=num_state_limit
+        num_state_limit=num_state_limit,
+        monitoring_duration=monitoring_duration,
+        predictor_type=predictor_type
     )
 
 

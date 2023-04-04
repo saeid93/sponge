@@ -52,6 +52,12 @@ FINAL_CONFIGS_PATH = os.path.join(
     CONFIGS_PATH, "final"
 )
 
+# lstm load predictor model path
+LSTM_PATH = os.path.join(
+    DATA_PATH, "lstm"
+)
+LSTM_INPUT_SIZE = 10
+
 # triton folders
 TRITON_PROFILING_PATH = os.path.join(
     PROFILING_CONFIGS_PATH, "triton")
@@ -107,6 +113,8 @@ def _create_dirs():
     #     os.makedirs(PIPELINES_MODELS)
     if not os.path.exists(PIPLINES_PATH):
         os.makedirs(PIPLINES_PATH)
+    if not os.path.exists(LSTM_PATH):
+        os.makedirs(LSTM_PATH)
     if not os.path.exists(CONFIGS_PATH):
         os.makedirs(CONFIGS_PATH)
     if not os.path.exists(PROFILING_CONFIGS_PATH):
