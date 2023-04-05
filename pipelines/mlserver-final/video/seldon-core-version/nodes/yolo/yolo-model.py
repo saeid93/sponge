@@ -80,15 +80,10 @@ class Yolo(MLModel):
             logger.info('Loading the ML models')
             self.device = torch.device(
                 "cuda:0" if torch.cuda.is_available() else "cpu")
-            # torch.hub.set_dir('./cache')
-            # torch.hub.set_dir(os.path.join(os.getcwd(), '/cache'))
             logger.info(f'max_batch_size: {self._settings.max_batch_size}')
             logger.info(f'max_batch_time: {self._settings.max_batch_time}')
-            # self.model = torch.hub.load(os.getenv('MODEL_PATH'), self.MODEL_VARIANT, source="local", pretrained=False)
             self.model = torch.hub.load('ultralytics/yolov5', 'custom',
                                         path=os.path.join(os.getenv('MODEL_PATH'), f"{self.MODEL_VARIANT}.pt"))
-            # state_dict = torch.load(os.path.join(os.getenv('MODEL_PATH'), f"{self.MODEL_VARIANT}.pt"))
-            # self.model.load_state_dict(state_dict, strict=False)
             logger.info('model loaded!')
             self.loaded = True
             logger.info('model loading complete!')
@@ -124,7 +119,6 @@ class Yolo(MLModel):
         logger.info(f"len of the to the model:\n{len(X)}")
         objs = self.model(X)
         output = self.get_cropped(objs)
-        # output: List[Dict] = await self.model(X, self.MODEL_VARIANT)
         logger.info(f"model output:\n{output}")
         serving_time = time.time()
         times = {
@@ -138,11 +132,11 @@ class Yolo(MLModel):
         # TEMP Currently considering only one person per pic, zero index
         person_pics = list(map(lambda l: l['person'][0], output))
         datashape = list(map(lambda l: list(l.shape), person_pics))
-        output_data = list(map(lambda l: l.tobytes(), person_pics)) # TODO
-        if self.settings.max_batch_size == 1:
+        output_data = list(map(lambda l: l.tobytes(), person_pics))
+        if batch_shape == 1:
             batch_times = str(batch_times)
             dtypes = str(dtypes)
-            datashape = str(datashape)
+            datashape = str(datashape) 
         payload = InferenceResponse(
             outputs=[
                 ResponseOutput(
@@ -161,6 +155,8 @@ class Yolo(MLModel):
                 type_of='image'
             )
         )
+        payload_to_print = payload.outputs[0].data
+        logger.info(payload)
         logger.info(f"request counter:\n{self.request_counter}\n")
         logger.info(f"batch counter:\n{self.batch_counter}\n")
         return payload
