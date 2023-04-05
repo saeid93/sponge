@@ -24,17 +24,17 @@ async def request_after_grpc(grpc_stub, payload, metadata):
     return response
 
 # single node mlserver
-endpoint = "localhost:8081"
-model = 'audio'
-metadata = []
+# endpoint = "localhost:8081"
+# model = 'audio'
+# metadata = []
 
 
 # single node seldon+mlserver
-# endpoint = "localhost:32000"
-# deployment_name = 'audio'
-# model = 'audio'
-# namespace = "default"
-# metadata = [("seldon", deployment_name), ("namespace", namespace)]
+endpoint = "localhost:32000"
+deployment_name = 'audio'
+model = 'audio'
+namespace = "default"
+metadata = [("seldon", deployment_name), ("namespace", namespace)]
 
 batch_test = 10
 ds = load_dataset(
@@ -61,7 +61,7 @@ payload = types.InferenceRequest(
 )
 import time
 
-async def mainn():
+async def main():
     t1 = time.time()
     async with grpc.aio.insecure_channel(endpoint) as ch:
 
@@ -90,4 +90,4 @@ async def mainn():
 
     # pp.pprint(responses)
 
-asyncio.run(mainn())
+asyncio.run(main())

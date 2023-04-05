@@ -34,7 +34,7 @@ ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
     "clean",
     split="validation")
-data = ds[0]["audio"]["array"]
+data = ds[0]["audio"]["array"].astype(np.float32)
 data_shape = [len(data)]
 custom_parameters = {'custom_1': 'test_1'}
 data_1 = Data(
@@ -48,7 +48,7 @@ ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
     "clean",
     split="validation")
-data = ds[0]["audio"]["array"]
+data = ds[0]["audio"]["array"].astype(np.float32)
 data_shape = [len(data)]
 custom_parameters = {'custom_2': 'test_2'}
 data_2 = Data(

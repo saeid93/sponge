@@ -9,7 +9,7 @@ import os
 load = 1
 test_duration = 5
 variant = 0
-platform = 'seldon'
+platform = 'router'
 mode = 'equal'
 
 

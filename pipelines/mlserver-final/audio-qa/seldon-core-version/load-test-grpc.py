@@ -11,11 +11,17 @@ import numpy as np
 load = 5
 test_duration = 10
 variant = 0
-platform = 'seldon'
+platform = 'router'
 mode = 'exponential'
 
 # single node inference
-if platform == 'seldon':
+if platform == 'router':
+    endpoint = "localhost:32000"
+    deployment_name = 'router'
+    model = 'router'
+    namespace = "default"
+    metadata = [("seldon", deployment_name), ("namespace", namespace)]
+elif platform == 'seldon':
     endpoint = "localhost:32000"
     deployment_name = 'audio-qa'
     model = None
@@ -34,7 +40,7 @@ ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
     "clean",
     split="validation")
-data = ds[0]["audio"]["array"]
+data = ds[0]["audio"]["array"].astype(np.float32)
 data_shape = [len(data)]
 custom_parameters = {'custom_1': 'test_1'}
 data_1 = Data(
@@ -48,7 +54,7 @@ ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo",
     "clean",
     split="validation")
-data = ds[0]["audio"]["array"]
+data = ds[0]["audio"]["array"].astype(np.float32)
 data_shape = [len(data)]
 custom_parameters = {'custom_2': 'test_2'}
 data_2 = Data(
@@ -87,18 +93,18 @@ responses = responses[3:]
 # responses = responses[3:]
 
 # roundtrip latency
-roundtrip_lat = []
-for sec_resps in responses:
-    for resp in sec_resps:
-        request_times = resp['times']['request']
-        sending_time = request_times['arrival'] - request_times['sending']
-        roundtrip_lat.append(sending_time)
-fig, ax = plt.subplots()
-ax.plot(np.arange(len(roundtrip_lat)), roundtrip_lat)
-ax.set(xlabel='request id', ylabel='roundtrip latency (s)', title=f'roundtrip latency, total time={round((time.time() - start_time))}')
-ax.grid()
-fig.savefig(f"{platform}_variant_{variant}-roundtrip_lat-load-{load}-test_duration-{test_duration}.png")
-plt.show()
+# roundtrip_lat = []
+# for sec_resps in responses:
+#     for resp in sec_resps:
+#         request_times = resp['times']['request']
+#         sending_time = request_times['arrival'] - request_times['sending']
+#         roundtrip_lat.append(sending_time)
+# fig, ax = plt.subplots()
+# ax.plot(np.arange(len(roundtrip_lat)), roundtrip_lat)
+# ax.set(xlabel='request id', ylabel='roundtrip latency (s)', title=f'roundtrip latency, total time={round((time.time() - start_time))}')
+# ax.grid()
+# fig.savefig(f"{platform}_variant_{variant}-roundtrip_lat-load-{load}-test_duration-{test_duration}.png")
+# plt.show()
 
 # # sending time
 # start_times = []
@@ -145,3 +151,4 @@ plt.show()
 
 # print(f"{np.average(server_arrival_latency)}=")
 # print(responses[0][0])
+print(responses)
