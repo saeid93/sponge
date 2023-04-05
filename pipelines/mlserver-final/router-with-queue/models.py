@@ -14,7 +14,7 @@ from mlserver.codecs.string import StringRequestCodec
 from mlserver.codecs.numpy import NumpyRequestCodec
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
-from asyncio import Queue
+import asyncio
 
 try:
     PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
@@ -69,8 +69,13 @@ async def model_infer(model_name, request_input):
         converters.ModelInferResponseConverter.to_types(output)
     return inference_response
 
+
 async def queue_manager(queue, batch_size):
-    pass
+    while True:
+        for i in range(batch_size):
+            pass
+
+
 
 class Router(MLModel):
     async def load(self):
@@ -78,8 +83,9 @@ class Router(MLModel):
         self.request_counter = 0
         logger.info('Router loaded')
         self.loaded = True
-        self.queues = {model_name: Queue() for model_name in MODEL_LISTS}
-        self.queue_managers = []
+        batch_size = 4
+        self.queues = {model_name: asyncio.Queue() for model_name in MODEL_LISTS}
+        self.queue_managers = [asyncio.create_task(self.queues[model_name], batch_size) for model_name in MODEL_LISTS]
         return self.loaded
 
 
