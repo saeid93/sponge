@@ -35,7 +35,7 @@ def decode_from_bin(
         if len(shapes) == 1:
             array = np.frombuffer(buff, dtype=dtype).reshape(shape)
         else:
-            array = np.frombuffer(buff, dtype=dtype).reshape(shape)
+            array = np.frombuffer(buff, dtype=dtype).reshape(shape[0])
         batch.append(array)
     return batch
 
