@@ -316,12 +316,6 @@ def save_report(experiment_id: int,
     # TODO add list of pods in case of replicas
     pod_name = get_pod_name(node_name=node_name)[0]
 
-    if not no_engine:
-        svc_path = os.path.join(
-            NODE_PROFILING_RESULTS_PATH,
-            'series', str(series), f"{experiment_id}.txt")
-        svc_pod_name = get_pod_name(
-            node_name=node_name, orchestrator=True)
     cpu_usage_count, time_cpu_usage_count =\
         prom_client.get_cpu_usage_count(
             pod_name=pod_name, namespace="default",
@@ -367,10 +361,6 @@ def save_report(experiment_id: int,
     with open(save_path, "w") as outfile:
         outfile.write(json.dumps(results))
 
-    if not no_engine:
-        os.system(
-            f'kubectl logs -n {namespace} {svc_pod_name} > {svc_path}'
-        )
     logger.info(f'results have been sucessfully saved in:\n{save_path}')
 
 @click.command()
