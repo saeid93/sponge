@@ -125,7 +125,7 @@ class GeneralAudio(MLModel):
             }
         }
         batch_times = [str(times)] * batch_shape
-        if self.settings.max_batch_size == 1:
+        if batch_shape == 1:
             batch_times = str(batch_times)
         logger.info(f'batch shapes:\n{batch_shape}')
         logger.info(f"batch_times:\n{batch_times}")

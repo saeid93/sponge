@@ -130,7 +130,7 @@ class GeneralNLP(MLModel):
             batch_times = list(map(lambda l: str(l), times))
         else:
             batch_times = [str(times)] * batch_shape
-        if self.settings.max_batch_size == 1:
+        if batch_shape == 1:
             batch_times = str(batch_times)
 
         # processing inference response

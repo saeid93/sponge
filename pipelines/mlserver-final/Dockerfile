@@ -28,7 +28,7 @@ RUN mkdir $(dirname $MLSERVER_ENV_TARBALL); \
     done; \
     chmod -R 776 $(dirname $MLSERVER_ENV_TARBALL)
 
-FROM seldonio/mlserver:1.2.0.dev14-slim
+FROM sdghafouri/mlserver:custom-slim
 SHELL ["/bin/bash", "-c"]
 
 # Copy all potential sources for custom environments
