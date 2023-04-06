@@ -133,7 +133,7 @@ class Yolo(MLModel):
         person_pics = list(map(lambda l: l['person'][0], output))
         datashape = list(map(lambda l: list(l.shape), person_pics))
         output_data = list(map(lambda l: l.tobytes(), person_pics))
-        if batch_shape == 1:
+        if self.settings.max_batch_size == 1:
             batch_times = str(batch_times)
             dtypes = str(dtypes)
             datashape = str(datashape) 

@@ -5,8 +5,8 @@ import os
 import sys
 import shutil
 import yaml
-from plogger.info import Prettylogger.infoer
-pp = Prettylogger.infoer(indent=4)
+from pprint import PrettyPrinter
+pp = PrettyPrinter(indent=4)
 
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(
