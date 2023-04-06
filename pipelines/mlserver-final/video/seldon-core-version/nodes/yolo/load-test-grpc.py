@@ -21,7 +21,7 @@ data_shape = list(np.array(data).shape)
 data = np.array(data).flatten()
 
 load = 10
-test_duration = 300
+test_duration = 10
 variant = 0
 platform = 'seldon'
 workload = [load] * test_duration
