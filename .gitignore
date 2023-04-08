@@ -244,3 +244,5 @@ infass
 !data/configs
 *.lp
 gitignored/
+
+!final-series.yaml

@@ -1,4 +1,4 @@
-series: 78
+series: 85
 series_meta: 'Final profile on: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 pipeline_name: audio-qa
 node_name: audio
@@ -13,39 +13,41 @@ model_variants:
   - facebook-wav2vec2-large-960h
 max_batch_size:
   - '1'
-  # - '2'
-  - '4'
+  - '2'
+  # - '4'
   - '8'
-  - '16'
-  # - '32'
+  # - '16'
+  - '32'
+  - '64'
 max_batch_time:
   - '1'
 cpu_request:
   - '1'
-  - '2d'
+  - '2'
   - '4'
   - '8'
   # - '16'
   # - '32'
 memory_request:
-  - 8Gi
+  - 10Gi
 replicas:
   - 1
 workload_type: static
+benchmark_duration: 1
 use_threading: 'True'
 num_interop_threads:
   - '1'
 num_threads:
   - '1'
-benchmark_duration: 1
 repetition: 1
 workload_config:
   loads_to_test:
-  # - 1
+  - 1
+  # - 5
   - 10
   - 20
   # - 40
-  load_duration: 30
+  load_duration: 60
 # workload_type: twitter
 # workload_config:
 #   - start: '3:5:0'

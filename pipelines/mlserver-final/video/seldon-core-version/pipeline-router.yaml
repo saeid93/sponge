@@ -38,10 +38,10 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '2'
+              cpu: '4'
               memory: 4Gi
             limits:
-              cpu: '2'
+              cpu: '4'
               memory: 4Gi
           volumeMounts:
           - mountPath: /mnt/models
@@ -54,7 +54,7 @@ spec:
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: "1"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
@@ -62,9 +62,9 @@ spec:
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
-              value: "1"
+              value: "4"
             - name: NUM_THREADS
-              value: "1"
+              value: "4"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -73,7 +73,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 2
     graph:
       name: yolo
       type: MODEL
@@ -122,10 +122,10 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '2'
+              cpu: '4'
               memory: 4Gi
             limits:
-              cpu: '2'
+              cpu: '4'
               memory: 4Gi
           volumeMounts:
           - mountPath: /opt/mlserver/.torch/hub/checkpoints
@@ -137,7 +137,7 @@ spec:
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: "1"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
@@ -145,9 +145,9 @@ spec:
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
-              value: "1"
+              value: "4"
             - name: NUM_THREADS
-              value: "1"
+              value: "4"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -163,7 +163,7 @@ spec:
       children: []
     labels:
       sidecar.istio.io/inject: "true"
-    replicas: 1
+    replicas: 2
 
 ---
 apiVersion: machinelearning.seldon.io/v1

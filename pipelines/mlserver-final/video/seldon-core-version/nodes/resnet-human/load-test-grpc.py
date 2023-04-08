@@ -15,8 +15,8 @@ def image_loader(folder_path, image_name):
     #     pass
     return image
 
-load = 20
-test_duration = 1 
+load = 10
+test_duration = 10
 variant = 0
 platform = 'seldon'
 image_name = 'input-sample.JPEG'
@@ -26,7 +26,7 @@ mode = 'equal' # options - step, equal, exponential
 
 PATH = pathlib.Path(__file__).parent.resolve()
 data = image_loader(PATH, 'input-sample.JPEG')
-data_shape = list(np.array(data).shape)
+data_shape = [list(np.array(data).shape)]
 data = np.array(data).flatten()
 
 # single node inference
@@ -41,7 +41,7 @@ elif platform == 'mlserver':
     model = 'resnet-human'
     metadata = []
 
-times = '["{\'node-one\': {\'arrival\': 1672276157.286681, \'serving\': 1672276157.2869108}}"]'
+times = '["{\'yolo\': {\'arrival\': 1680913322.8364007, \'serving\': 1680913322.92951}}"]'
 
 custom_parameters = {'times': str(times)}
 data_1 = Data(
