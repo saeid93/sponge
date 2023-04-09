@@ -1,5 +1,5 @@
 import random
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 import numpy as np
 import pandas as pd
 import gurobipy as gp
@@ -419,7 +419,8 @@ class Optimizer:
         beta: float,
         gamma: float,
         arrival_rate: int,
-        num_state_limit: int) -> pd.DataFrame:
+        num_state_limit: int,
+        baseline_mode: Optional[str] = None) -> pd.DataFrame:
         """generate all the possible states based on profiling data
 
         Args:
@@ -435,7 +436,7 @@ class Optimizer:
                 the pipeline. Defaults to None.
             sla (float, optional): end to end service level agreement
                 of pipeline. Defaults to None.
-
+            baseline: baseline approach [scaling | switch]
         Returns:
             pd.DataFrame: all the states of the pipeline
         """
@@ -579,6 +580,16 @@ class Optimizer:
                 (gp.quicksum(func_l(b[stage], latency_parameters[stage][variant]) * i[stage, variant]\
                     + func_q(b[stage], queue_parameters[stage])
                     for stage in stages for variant in stages_variants[stage]) <= sla), name='latency')
+
+        if baseline_mode == 'scale':
+            model.addConstrs((
+                i[task.name, task.active_variant] == 1\
+                    for task in self.pipeline.inference_graph), name='only-scale-task')
+        elif baseline_mode == 'switch':
+            model.addConstrs((
+                n[task.name] == task.replicas\
+                    for task in self.pipeline.inference_graph), name='only-switch-task')
+
         # one variant constraint
         model.addConstrs(
             (gp.quicksum(
@@ -620,6 +631,7 @@ class Optimizer:
             alpha * accuracy_objective -\
             beta * resource_objective -\
             gamma * batch_objective, GRB.MAXIMIZE)
+
 
         # Parameters for retrieving more than one solution
         model.Params.PoolSearchMode = 2
@@ -767,7 +779,8 @@ class Optimizer:
         alpha: float,
         beta: float,
         gamma: float,
-        arrival_rate: int, num_state_limit: int=None):
+        arrival_rate: int, num_state_limit: int=None,
+        baseline_mode: Optional[str] = None):
 
         if optimization_method == 'brute-force':
             optimal = self.brute_force(
@@ -784,7 +797,8 @@ class Optimizer:
                 beta=beta,
                 gamma=gamma,
                 arrival_rate=arrival_rate,
-                num_state_limit=num_state_limit)
+                num_state_limit=num_state_limit,
+                baseline_mode=baseline_mode)
         else:
             raise ValueError(
                 f'Invalid optimization_method: {optimization_method}')

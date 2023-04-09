@@ -74,6 +74,9 @@ def main(config_name: str):
     beta = config['beta']
     gamma = config['gamma']
 
+    # baselines [only scaling | only switching]
+    baseline_mode = config['baseline_mode']
+
     pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,
         profiling_series=profiling_series,
@@ -179,7 +182,8 @@ def main(config_name: str):
                 scaling_cap=scaling_cap,
                 alpha=alpha, beta=beta, gamma=gamma,
                 arrival_rate=arrival_rate,
-                num_state_limit=num_state_limit)
+                num_state_limit=num_state_limit,
+                baseline_mode=baseline_mode)
             # logger.info(f"{optimal = }")
             optimal.to_markdown(os.path.join(
                 dir_path, 'readable-optimal-gurobi.csv'), index=False)
@@ -232,7 +236,8 @@ def main(config_name: str):
                 scaling_cap=scaling_cap,
                 alpha=alpha, beta=beta, gamma=gamma,
                 arrival_rate=arrival_rate,
-                num_state_limit=num_state_limit)
+                num_state_limit=num_state_limit,
+                baseline_mode=baseline_mode)
             # logger.info(f"{optimal = }")
             optimal.to_markdown(os.path.join(
                 dir_path, 'readable-optimal-gurobi.csv'), index=False)
