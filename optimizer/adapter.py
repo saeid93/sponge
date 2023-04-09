@@ -1,4 +1,4 @@
-from typing import Dict, Literal, Tuple, Union
+from typing import Dict, Literal, Tuple, Union, Optional
 import time
 import tqdm
 import numpy as np
@@ -68,7 +68,8 @@ class Adapter:
             gamma: float,
             num_state_limit: int,
             monitoring_duration: int,
-            predictor_type: str
+            predictor_type: str,
+            baseline_mode: Optional[str] = None
             ) -> None:
         """
         Args:
@@ -95,7 +96,8 @@ class Adapter:
             allocation_mode=allocation_mode,
             complete_profile=False,
             only_measured_profiles=only_measured_profiles,
-            random_sample=False
+            random_sample=False,
+            baseline_mode=baseline_mode
         )
         self.optimization_method = optimization_method
         self.scaling_cap = scaling_cap

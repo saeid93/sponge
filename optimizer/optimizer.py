@@ -16,7 +16,8 @@ class Optimizer:
         allocation_mode: str,
         complete_profile: bool,
         only_measured_profiles: bool,
-        random_sample: bool) -> None:
+        random_sample: bool,
+        baseline_mode: Optional[str] = None) -> None:
         """_summary_
 
         Args:
@@ -35,6 +36,7 @@ class Optimizer:
         self.complete_profile = complete_profile
         self.only_measured_profiles = only_measured_profiles
         self.random_sample = random_sample
+        self.baseline_mode = baseline_mode
 
     def accuracy_objective(self) -> float:
         """
@@ -419,8 +421,7 @@ class Optimizer:
         beta: float,
         gamma: float,
         arrival_rate: int,
-        num_state_limit: int,
-        baseline_mode: Optional[str] = None) -> pd.DataFrame:
+        num_state_limit: int) -> pd.DataFrame:
         """generate all the possible states based on profiling data
 
         Args:
@@ -581,11 +582,11 @@ class Optimizer:
                     + func_q(b[stage], queue_parameters[stage])
                     for stage in stages for variant in stages_variants[stage]) <= sla), name='latency')
 
-        if baseline_mode == 'scale':
+        if self.baseline_mode == 'scale':
             model.addConstrs((
                 i[task.name, task.active_variant] == 1\
                     for task in self.pipeline.inference_graph), name='only-scale-task')
-        elif baseline_mode == 'switch':
+        elif self.baseline_mode == 'switch':
             model.addConstrs((
                 n[task.name] == task.replicas\
                     for task in self.pipeline.inference_graph), name='only-switch-task')
@@ -779,8 +780,7 @@ class Optimizer:
         alpha: float,
         beta: float,
         gamma: float,
-        arrival_rate: int, num_state_limit: int=None,
-        baseline_mode: Optional[str] = None):
+        arrival_rate: int, num_state_limit: int=None):
 
         if optimization_method == 'brute-force':
             optimal = self.brute_force(
@@ -797,8 +797,7 @@ class Optimizer:
                 beta=beta,
                 gamma=gamma,
                 arrival_rate=arrival_rate,
-                num_state_limit=num_state_limit,
-                baseline_mode=baseline_mode)
+                num_state_limit=num_state_limit)
         else:
             raise ValueError(
                 f'Invalid optimization_method: {optimization_method}')

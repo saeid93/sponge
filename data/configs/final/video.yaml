@@ -81,6 +81,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: false
 profiling_load: 20
+baseline_mode: switch # [switch | scale | sum]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------

@@ -114,6 +114,9 @@ def main(config_name: str, type_of: str):
     beta = config['beta']
     gamma = config['gamma']
 
+    # baselines [only scaling | only switching]
+    baseline_mode = config['baseline_mode']
+
     pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,
         profiling_series=profiling_series,
@@ -151,7 +154,8 @@ def main(config_name: str, type_of: str):
         gamma=gamma,
         num_state_limit=num_state_limit,
         monitoring_duration=monitoring_duration,
-        predictor_type=predictor_type
+        predictor_type=predictor_type,
+        baseline_mode=baseline_mode
     )
 
 
