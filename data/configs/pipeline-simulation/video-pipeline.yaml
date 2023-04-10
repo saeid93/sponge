@@ -1,4 +1,4 @@
-series: 10
+series: 11
 pipeline_name: video
 series_meta: 'checking the effect of changing all variables under arrival rate 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 number_tasks: 2
@@ -12,8 +12,8 @@ task_name:
   - crop
   - classification
 initial_active_model:
-  - yolov5x
-  - resnet152
+  - yolov5n
+  - resnet18
 initial_cpu_allocation:
   - 1
   - 1
@@ -23,22 +23,23 @@ initial_replica:
 initial_batch:
   - 1
   - 1
-alpha: 0
+alpha: 1
 beta: 1
-gamma: 0
+gamma: 1
 scaling_cap: 100 # maximum possible scaling per nodes
-arrival_rate: 10
+batching_cap: 64
+arrival_rate: 30
 num_state_limit: 1 # number of states
 threshold: 4 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi | both]
 allocation_mode: base # options: [fix | base | variable]
-sla_factor: 10
+sla_factor: 5
 normalize_accuracy: true
 complete_profile: false
-only_measured_profiles: true
+only_measured_profiles: false
 random_sample: false
 profiling_load: 20
-baseline_mode: scale # [switch | scale | sum]
+baseline_mode: null # [switch | scale | sum | null]
 accuracy_method: sum # [average | sum | multiply]
 generate:
   # - all

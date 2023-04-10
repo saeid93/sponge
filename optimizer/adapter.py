@@ -63,6 +63,7 @@ class Adapter:
             allocation_mode: Literal['base', 'variable'],
             only_measured_profiles: bool,
             scaling_cap: int,
+            batching_cap: int,
             alpha: float,
             beta: float,
             gamma: float,
@@ -101,6 +102,7 @@ class Adapter:
         )
         self.optimization_method = optimization_method
         self.scaling_cap = scaling_cap
+        self.batching_cap = batching_cap
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
@@ -161,6 +163,7 @@ class Adapter:
             optimal = self.optimizer.optimize(
                 optimization_method=self.optimization_method,
                 scaling_cap=self.scaling_cap,
+                batching_cap=self.batching_cap,
                 alpha=self.alpha, beta=self.beta, gamma=self.gamma,
                 arrival_rate=predicted_load,
                 num_state_limit=self.num_state_limit

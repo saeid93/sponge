@@ -1,4 +1,5 @@
 import random
+import math
 from typing import Dict, List, Union, Optional
 import numpy as np
 import pandas as pd
@@ -417,6 +418,7 @@ class Optimizer:
     def gurobi_optmizer(
         self,
         scaling_cap: int,
+        batching_cap: int,
         alpha: float,
         beta: float,
         gamma: float,
@@ -451,7 +453,8 @@ class Optimizer:
             variant_names.append(task.variant_names)
             replicas.append(np.arange(1, scaling_cap+1))
             batches.append(task.batches)
-        batching_cap = max(batches[0])
+        if self.only_measured_profiles:
+            batching_cap = max(batches[0])
 
         def func_l(batch, params):
             """using parameters of fitted models
@@ -515,7 +518,6 @@ class Optimizer:
         n_lb = 1
         b_lb = 1
         if self.only_measured_profiles:
-            # TODO change the batching parameteters
             b = model.addVars(
                 gurobi_batches, distinct_batches, name='b',
                 vtype=GRB.BINARY)
@@ -526,6 +528,11 @@ class Optimizer:
             b = model.addVars(
                 gurobi_batches, name='b', vtype=GRB.INTEGER,
                 lb=b_lb, ub=batching_cap)
+            # variables for enforcing only power of 2s
+            batch_sizes = [
+                2**i for i in range(int(math.log2(batching_cap))+1)]
+            batch_size_indicator = model.addVars(
+                stages, batch_sizes, vtype=GRB.BINARY)
         n = model.addVars(
             gurobi_replicas, name='n', vtype=GRB.INTEGER,
             lb=n_lb, ub=scaling_cap)
@@ -581,6 +588,18 @@ class Optimizer:
                 (gp.quicksum(func_l(b[stage], latency_parameters[stage][variant]) * i[stage, variant]\
                     + func_q(b[stage], queue_parameters[stage])
                     for stage in stages for variant in stages_variants[stage]) <= sla), name='latency')
+
+            # Add constraints to ensure that only one value is selected
+            for stage in stages:
+                model.addConstr(gp.quicksum(batch_size_indicator[stage, batch_size] for batch_size in batch_sizes) == 1)
+
+            # Add constraints to enforce the indicator variables
+            for stage in stages:
+                for batch_size in batch_sizes:
+                    model.addConstr(
+                        b[stage] >= batch_size - (max(batch_sizes) - min(batch_sizes)) * (1 - batch_size_indicator[stage, batch_size]))
+                    model.addConstr(
+                        b[stage] <= batch_size + (max(batch_sizes) - min(batch_sizes)) * (1 - batch_size_indicator[stage, batch_size]))
 
         if self.baseline_mode == 'scale':
             model.addConstrs((
@@ -780,7 +799,9 @@ class Optimizer:
         alpha: float,
         beta: float,
         gamma: float,
-        arrival_rate: int, num_state_limit: int=None):
+        arrival_rate: int,
+        num_state_limit: int = None,
+        batching_cap: int = None):
 
         if optimization_method == 'brute-force':
             optimal = self.brute_force(
@@ -793,6 +814,7 @@ class Optimizer:
         elif optimization_method == 'gurobi':
             optimal = self.gurobi_optmizer(
                 scaling_cap=scaling_cap,
+                batching_cap=batching_cap,
                 alpha=alpha,
                 beta=beta,
                 gamma=gamma,

@@ -93,6 +93,7 @@ def main(config_name: str, type_of: str):
     initial_replica = config['initial_replica']
     initial_batch = config['initial_batch']
     scaling_cap = config['scaling_cap']
+    batching_cap = config['batching_cap']
     pipeline_name = config['pipeline_name']
     only_measured_profiles = config['only_measured_profiles']
     profiling_load = config['profiling_load']
@@ -149,15 +150,15 @@ def main(config_name: str, type_of: str):
         allocation_mode=allocation_mode,
         only_measured_profiles=only_measured_profiles,
         scaling_cap=scaling_cap,
+        batching_cap=batching_cap,
         alpha=alpha,
         beta=beta,
         gamma=gamma,
         num_state_limit=num_state_limit,
         monitoring_duration=monitoring_duration,
         predictor_type=predictor_type,
-        baseline_mode=baseline_mode
+        baseline_mode=baseline_mode,
     )
-
 
     # ----------- 3. Running an experiment series -------------
     # 1. Setup the pipeline

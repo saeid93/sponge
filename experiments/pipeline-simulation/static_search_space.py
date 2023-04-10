@@ -49,6 +49,7 @@ def main(config_name: str):
     initial_replica = config['initial_replica']
     initial_batch = config['initial_batch']
     scaling_cap = config['scaling_cap']
+    batching_cap = config['batching_cap']
     pipeline_name = config['pipeline_name']
     complete_profile = config['complete_profile']
     only_measured_profiles = config['only_measured_profiles']
@@ -181,6 +182,7 @@ def main(config_name: str):
             optimal = optimizer.optimize(
                 optimization_method=optimization_method,
                 scaling_cap=scaling_cap,
+                batching_cap=batching_cap,
                 alpha=alpha, beta=beta, gamma=gamma,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit)
@@ -234,6 +236,7 @@ def main(config_name: str):
             optimal = optimizer.optimize(
                 optimization_method='gurobi',
                 scaling_cap=scaling_cap,
+                batching_cap=batching_cap,
                 alpha=alpha, beta=beta, gamma=gamma,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit,
