@@ -56,9 +56,9 @@ spec:
             - name: TASK
               value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "1"
+              value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: "0"
+              value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
             - name: USE_THREADING
@@ -75,7 +75,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 2
+      replicas: 1
     graph:
       name: audio
       type: MODEL

@@ -246,3 +246,7 @@ infass
 gitignored/
 
 !final-series.yaml
+
+# mlserver temporary folders
+.envs
+.metrics
