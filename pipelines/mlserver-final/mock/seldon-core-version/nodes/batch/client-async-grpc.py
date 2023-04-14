@@ -7,25 +7,25 @@ import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
 from mlserver.codecs.string import StringRequestCodec
 from mlserver.codecs.string import StringRequestCodec
+
 pp = PrettyPrinter(indent=4)
 from datasets import load_dataset
 import mlserver.types as types
 import json
 import asyncio
 
-async def request_after_grpc(grpc_stub, payload, metadata):
 
+async def request_after_grpc(grpc_stub, payload, metadata):
     await asyncio.sleep(0.001)
 
-    response = await grpc_stub.ModelInfer(
-        request=payload,
-        metadata=metadata)
+    response = await grpc_stub.ModelInfer(request=payload, metadata=metadata)
 
     return response
 
+
 # single node mlserver
 endpoint = "localhost:8081"
-model = 'batch'
+model = "batch"
 metadata = []
 
 
@@ -38,13 +38,12 @@ metadata = []
 
 batch_test = 25
 ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
+    "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
+)
 
 input_data = ds[0]["audio"]["array"]
 data_shape = [len(input_data)]
-custom_parameters = {'custom_2': 'test_2'}
+custom_parameters = {"custom_2": "test_2"}
 payload = types.InferenceRequest(
     inputs=[
         types.RequestInput(
@@ -53,18 +52,17 @@ payload = types.InferenceRequest(
             datatype="BYTES",
             data=[input_data.tobytes()],
             parameters=types.Parameters(
-                dtype='f4',
-                datashape=str(data_shape),
-                **custom_parameters),
+                dtype="f4", datashape=str(data_shape), **custom_parameters
+            ),
         )
     ]
 )
 import time
 
+
 async def main():
     t1 = time.time()
     async with grpc.aio.insecure_channel(endpoint) as ch:
-
         inference_request_g = converters.ModelInferRequestConverter.from_types(
             payload, model_name=model, model_version=None
         )
@@ -72,7 +70,12 @@ async def main():
         grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
         t2 = time.time()
 
-        tasks = [asyncio.ensure_future(request_after_grpc(grpc_stub, inference_request_g, metadata)) for _ in range(batch_test)]
+        tasks = [
+            asyncio.ensure_future(
+                request_after_grpc(grpc_stub, inference_request_g, metadata)
+            )
+            for _ in range(batch_test)
+        ]
         print(f"creation time: {time.time() - t2}")
         responses = await asyncio.gather(*tasks)
         # raw_jsons = list(map(
@@ -89,5 +92,6 @@ async def main():
     #     lambda raw_json: json.loads(raw_json[0]), raw_jsons))
 
     pp.pprint(responses)
+
 
 asyncio.run(main())

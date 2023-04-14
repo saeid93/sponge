@@ -19,8 +19,12 @@ model.addConstr(gp.quicksum(indicators[val] for val in values) == 1)
 
 # Add constraints to enforce the indicator variables
 for val in values:
-    model.addConstr(selected >= val - (max(values) - min(values)) * (1 - indicators[val]))
-    model.addConstr(selected <= val + (max(values) - min(values)) * (1 - indicators[val]))
+    model.addConstr(
+        selected >= val - (max(values) - min(values)) * (1 - indicators[val])
+    )
+    model.addConstr(
+        selected <= val + (max(values) - min(values)) * (1 - indicators[val])
+    )
 
 # Set the objective function
 model.setObjective(-1 * selected, gp.GRB.MINIMIZE)
@@ -30,5 +34,5 @@ model.optimize()
 
 # Print the solution
 for val in values:
-    print(val, '=', indicators[val].x)
-print('selected =', selected.x)
+    print(val, "=", indicators[val].x)
+print("selected =", selected.x)

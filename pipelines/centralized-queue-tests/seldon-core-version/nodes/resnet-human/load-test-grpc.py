@@ -7,54 +7,53 @@ import pathlib
 from PIL import Image
 import numpy as np
 
+
 def image_loader(folder_path, image_name):
-    image = Image.open(
-        os.path.join(folder_path, image_name))
+    image = Image.open(os.path.join(folder_path, image_name))
     # if there was a need to filter out only color images
     # if image.mode == 'RGB':
     #     pass
     return image
 
+
 load = 10
 test_duration = 10
 variant = 0
-platform = 'router'
-image_name = 'input-sample.JPEG'
+platform = "router"
+image_name = "input-sample.JPEG"
 workload = [load] * test_duration
-data_type = 'image'
-mode = 'equal' # options - step, equal, exponential
+data_type = "image"
+mode = "equal"  # options - step, equal, exponential
 
 PATH = pathlib.Path(__file__).parent.resolve()
-data = image_loader(PATH, 'input-sample.JPEG')
+data = image_loader(PATH, "input-sample.JPEG")
 data_shape = list(np.array(data).shape)
 data = np.array(data).flatten()
 
 # single node inference
-if platform == 'router':
+if platform == "router":
     endpoint = "localhost:32000"
-    deployment_name = 'router'
-    model = 'router'
+    deployment_name = "router"
+    model = "router"
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
-elif platform == 'seldon':
+elif platform == "seldon":
     endpoint = "localhost:32000"
-    deployment_name = 'resnet-human'
-    model = 'resnet-human'
+    deployment_name = "resnet-human"
+    model = "resnet-human"
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
-elif platform == 'mlserver':
+elif platform == "mlserver":
     endpoint = "localhost:8081"
-    model = 'resnet-human'
+    model = "resnet-human"
     metadata = []
 
-times = '["{\'node-one\': {\'arrival\': 1672276157.286681, \'serving\': 1672276157.2869108}}"]'
-
-custom_parameters = {'times': str(times)}
-data_1 = Data(
-    data=data,
-    data_shape=data_shape,
-    custom_parameters=custom_parameters
+times = (
+    "[\"{'node-one': {'arrival': 1672276157.286681, 'serving': 1672276157.2869108}}\"]"
 )
+
+custom_parameters = {"times": str(times)}
+data_1 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
 
 # Data list
 data = []
@@ -71,11 +70,12 @@ load_tester = MLServerAsyncGrpc(
     data=data,
     data_shape=data_shape,
     data_type=data_type,
-    benchmark_duration=1)
+    benchmark_duration=1,
+)
 
 responses = asyncio.run(load_tester.start())
 
-print(f'{(time.time() - start_time):2.2}s spent in total')
+print(f"{(time.time() - start_time):2.2}s spent in total")
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -128,14 +128,22 @@ import numpy as np
 server_arrival_latency = []
 for sec_resps in responses:
     for resp in sec_resps:
-        times = resp['times']
-        server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
+        times = resp["times"]
+        server_recieving_time = (
+            times["models"][model]["arrival"] - times["request"]["sending"]
+        )
         server_arrival_latency.append(server_recieving_time)
 fig, ax = plt.subplots()
 ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)
-ax.set(xlabel='request id', ylabel='server arrival latency (s)', title=f'Server recieving latency, total time={round((time.time() - start_time))}')
+ax.set(
+    xlabel="request id",
+    ylabel="server arrival latency (s)",
+    title=f"Server recieving latency, total time={round((time.time() - start_time))}",
+)
 ax.grid()
-fig.savefig(f"grpc-compressed-image-{platform}_variant_{variant}-server_recieving_latency-load-{load}-test_duration-{test_duration}.png")
+fig.savefig(
+    f"grpc-compressed-image-{platform}_variant_{variant}-server_recieving_latency-load-{load}-test_duration-{test_duration}.png"
+)
 plt.show()
 
 print(f"{np.average(server_arrival_latency)}=")

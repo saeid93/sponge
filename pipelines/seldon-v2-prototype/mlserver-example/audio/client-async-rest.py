@@ -3,6 +3,7 @@ import requests
 from pprint import PrettyPrinter
 from mlserver.types import InferenceResponse
 from mlserver.codecs.string import StringRequestCodec
+
 pp = PrettyPrinter(indent=4)
 from transformers import pipeline
 from datasets import load_dataset
@@ -11,7 +12,7 @@ import json
 
 # single node mlserver
 gateway_endpoint = "localhost:8080"
-model = 'audio'
+model = "audio"
 endpoint = f"http://{gateway_endpoint}/v2/models/{model}/infer"
 
 # single node seldon+mlserver
@@ -24,29 +25,28 @@ batch_test = 6
 responses = []
 
 ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
+    "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
+)
 
 input_data = ds[0]["audio"]["array"]
+
 
 def send_requests():
     payload = {
         "inputs": [
             {
-            "name": "array_inputs",
-            "shape": [1, len(input_data)],
-            "datatype": "FP32",
-            "data": input_data.tolist(),
-            "parameters": {
-                "content_type": "np"
-            }
+                "name": "array_inputs",
+                "shape": [1, len(input_data)],
+                "datatype": "FP32",
+                "data": input_data.tolist(),
+                "parameters": {"content_type": "np"},
             }
         ]
     }
     response = requests.post(endpoint, json=payload)
     responses.append(response)
     return response
+
 
 thread_pool = []
 
@@ -58,12 +58,17 @@ for i in range(batch_test):
 for t in thread_pool:
     t.join()
 
-inference_responses = list(map(
-    lambda response: InferenceResponse.parse_raw(response.text), responses))
-raw_jsons = list(map(
-    lambda inference_response: StringRequestCodec.decode_response(
-        inference_response), inference_responses))
-outputs = list(map(
-    lambda raw_json: json.loads(raw_json[0]), raw_jsons))
+inference_responses = list(
+    map(lambda response: InferenceResponse.parse_raw(response.text), responses)
+)
+raw_jsons = list(
+    map(
+        lambda inference_response: StringRequestCodec.decode_response(
+            inference_response
+        ),
+        inference_responses,
+    )
+)
+outputs = list(map(lambda raw_json: json.loads(raw_json[0]), raw_jsons))
 
 pp.pprint(outputs)

@@ -17,26 +17,23 @@ from tritonclient.utils import InferenceServerException
 from tritonclient.utils import triton_to_np_dtype
 
 request = {
-    'times': {
-        'models': {
-            'nlp-trans': {
-                'arrival': 1672276157.286681,
-                'serving': 1672276157.2869108
-                }
-            }
-        },
-    'model_name': 'nlp-trans',
+    "times": {
+        "models": {
+            "nlp-trans": {"arrival": 1672276157.286681, "serving": 1672276157.2869108}
+        }
+    },
+    "model_name": "nlp-trans",
 }
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
-with open(os.path.join(PATH, 'input-sample.txt'), 'r') as openfile:
+with open(os.path.join(PATH, "input-sample.txt"), "r") as openfile:
     data = openfile.read()
 
-times = str([str(request['times']['models'])])
+times = str([str(request["times"]["models"])])
 
 data_shape = [1]
-custom_parameters = {'times': str(times)}
+custom_parameters = {"times": str(times)}
 # data_1 = Data(
 #     data=data,
 #     data_shape=data_shape,
@@ -51,9 +48,9 @@ else:
 
 
 class UserData:
-
     def __init__(self):
         self._completed_requests = queue.Queue()
+
 
 def completion_callback(user_data, result, error):
     # passing error raise and handling out
@@ -64,7 +61,7 @@ client = grpcclient
 
 data_shape = [1]
 data = [
-    '''
+    """
         After decades as a martial arts practitioner and runner, Wes \"found\" yoga in 2010.
         He came to appreciate that its breadth and depth provide a wonderful ballast to stabilize the body and mind in the fast and technology-oriented lifestyle of today;
         yoga is an antidote to stress and a path to a better understanding of oneself and others.
@@ -78,24 +75,21 @@ data = [
         He's doing the right thing for himself. He's doing the right for the right thing for the right now. He's doing the right thing for the right now.
         He's doing the right for the right now. He's doing the right for the right for the right for the right for the right thing for the right for
         the right for the right for the right for the right thing for the right for the right thing. He's for the right for the right for the right thing.
-    '''
+    """
 ]
 endpoint = "localhost:8081"
-model = 'nlp-sum'
+model = "nlp-sum"
 inputs = [client.InferInput("input_name", data_shape, "BYTES")]
 inputs[0].set_data_from_numpy(np.array([data[0].encode()]))
 user_data = UserData()
 
 try:
-    triton_client = grpcclient.InferenceServerClient(
-                url=endpoint, verbose=False)
+    triton_client = grpcclient.InferenceServerClient(url=endpoint, verbose=False)
 except Exception as e:
     print(f"client creation error {e}")
 
 
 try:
-    triton_client.async_infer(model,
-                            inputs,
-                            partial(completion_callback, user_data))
+    triton_client.async_infer(model, inputs, partial(completion_callback, user_data))
 except Exception as e:
     print(f"send request error {e}")

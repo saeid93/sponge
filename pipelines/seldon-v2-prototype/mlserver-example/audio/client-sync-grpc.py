@@ -19,8 +19,8 @@ pp = PrettyPrinter(indent=4)
 
 # single node seldon+mlserver
 endpoint = "localhost:32000"
-deployment_name = 'audio'
-model = 'audio'
+deployment_name = "audio"
+model = "audio"
 namespace = "default"
 metadata = [("seldon", deployment_name), ("namespace", namespace)]
 grpc_channel = grpc.insecure_channel(endpoint)
@@ -30,11 +30,11 @@ grpc_stub = dataplane.GRPCInferenceServiceStub(grpc_channel)
 batch_test = 6
 
 ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
+    "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
+)
 
 input_data = ds[0]["audio"]["array"]
+
 
 def send_requests():
     inference_request = types.InferenceRequest(
@@ -51,11 +51,10 @@ def send_requests():
     inference_request_g = converters.ModelInferRequestConverter.from_types(
         inference_request, model_name=model, model_version=None
     )
-    response = grpc_stub.ModelInfer(
-        request=inference_request_g,
-        metadata=metadata)
+    response = grpc_stub.ModelInfer(request=inference_request_g, metadata=metadata)
 
     return response
+
 
 thread_pool = []
 

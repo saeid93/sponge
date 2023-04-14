@@ -15,10 +15,10 @@ model.update()
 # constr1 = model.addConstr(z <= 20)
 constr2 = model.addConstr((a == 0) >> (z <= 5))
 
-model.setObjective(z+x+y+a, gp.GRB.MAXIMIZE)
+model.setObjective(z + x + y + a, gp.GRB.MAXIMIZE)
 
 model.update()
 # Solve the model
 model.optimize()
 # model.display()
-model.write('gg1.lp')
+model.write("gg1.lp")
