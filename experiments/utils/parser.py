@@ -65,7 +65,7 @@ class Parser:
                     pass
         return files
 
-    def read_results(self, selected=None):
+    def _read_results(self, selected=None):
         files = self.get_result_file_names()
         results = {}
         for file in files:
@@ -228,7 +228,7 @@ class Parser:
         # if self.type_of == 'node_with_log':
         #     selected = self._get_experiments_with_logs()
         #     log = self._read_logs()
-        results = self.read_results(selected)
+        results = self._read_results(selected)
         final_dataframe = []
         for experiment_id, result in results.items():
             processed_exp = {'experiment_id': int(experiment_id)}
