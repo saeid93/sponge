@@ -11,52 +11,42 @@ import numpy as np
 load = 30
 test_duration = 300
 variant = 0
-platform = 'seldon'
-mode = 'exponential'
+platform = "seldon"
+mode = "exponential"
 
 
 # single node inference
-if platform == 'seldon':
+if platform == "seldon":
     endpoint = "localhost:32000"
-    deployment_name = 'audio'
-    model = 'audio'
+    deployment_name = "audio"
+    model = "audio"
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
-elif platform == 'mlserver':
+elif platform == "mlserver":
     endpoint = "localhost:8081"
-    model = 'audio'
+    model = "audio"
     metadata = []
 
-data_type = 'audio'
+data_type = "audio"
 workload = [load] * test_duration
 
 # Data 1
 ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
+    "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
+)
 data = ds[0]["audio"]["array"].astype(np.float32)
 data_shape = [len(data)]
-custom_parameters = {'custom_1': 'test_1'}
-data_1 = Data(
-    data=data,
-    data_shape=data_shape,
-    custom_parameters=custom_parameters
-)
+custom_parameters = {"custom_1": "test_1"}
+data_1 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
 
 # Data 2
 ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
+    "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
+)
 data = ds[0]["audio"]["array"].astype(np.float32)
 data_shape = [len(data)]
-custom_parameters = {'custom_2': 'test_2'}
-data_2 = Data(
-    data=data,
-    data_shape=data_shape,
-    custom_parameters=custom_parameters
-)
+custom_parameters = {"custom_2": "test_2"}
+data_2 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
 
 # Data list
 data = []
@@ -71,12 +61,13 @@ load_tester = MLServerAsyncGrpc(
     workload=workload,
     model=model,
     data=data,
-    mode=mode, # options - step, equal, exponential
-    data_type=data_type)
+    mode=mode,  # options - step, equal, exponential
+    data_type=data_type,
+)
 
 responses = asyncio.run(load_tester.start())
 
-print(f'{(time.time() - start_time):2.2}s spent in total')
+print(f"{(time.time() - start_time):2.2}s spent in total")
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -130,8 +121,10 @@ import numpy as np
 server_arrival_latency = []
 for sec_resps in responses:
     for resp in sec_resps:
-        times = resp['times']
-        server_recieving_time = times['models'][model]['arrival'] - times['request']['sending']
+        times = resp["times"]
+        server_recieving_time = (
+            times["models"][model]["arrival"] - times["request"]["sending"]
+        )
         server_arrival_latency.append(server_recieving_time)
 # fig, ax = plt.subplots()
 # ax.plot(np.arange(len(server_arrival_latency)), server_arrival_latency)

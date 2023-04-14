@@ -11,57 +11,47 @@ import numpy as np
 load = 5
 test_duration = 10
 variant = 0
-platform = 'router'
-mode = 'exponential'
+platform = "router"
+mode = "exponential"
 
 # single node inference
-if platform == 'router':
+if platform == "router":
     endpoint = "localhost:32000"
-    deployment_name = 'router'
-    model = 'router'
+    deployment_name = "router"
+    model = "router"
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
-elif platform == 'seldon':
+elif platform == "seldon":
     endpoint = "localhost:32000"
-    deployment_name = 'audio-qa'
+    deployment_name = "audio-qa"
     model = None
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
-elif platform == 'mlserver':
+elif platform == "mlserver":
     endpoint = "localhost:8081"
     model = None
     metadata = []
 
-data_type = 'audio'
+data_type = "audio"
 workload = [load] * test_duration
 
 # Data 1
 ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
+    "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
+)
 data = ds[0]["audio"]["array"].astype(np.float32)
 data_shape = [len(data)]
-custom_parameters = {'custom_1': 'test_1'}
-data_1 = Data(
-    data=data,
-    data_shape=data_shape,
-    custom_parameters=custom_parameters
-)
+custom_parameters = {"custom_1": "test_1"}
+data_1 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
 
 # Data 2
 ds = load_dataset(
-    "hf-internal-testing/librispeech_asr_demo",
-    "clean",
-    split="validation")
+    "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
+)
 data = ds[0]["audio"]["array"].astype(np.float32)
 data_shape = [len(data)]
-custom_parameters = {'custom_2': 'test_2'}
-data_2 = Data(
-    data=data,
-    data_shape=data_shape,
-    custom_parameters=custom_parameters
-)
+custom_parameters = {"custom_2": "test_2"}
+data_2 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
 
 # Data list
 data = []
@@ -76,12 +66,13 @@ load_tester = MLServerAsyncGrpc(
     workload=workload,
     model=model,
     data=data,
-    mode=mode, # options - step, equal, exponential
-    data_type=data_type)
+    mode=mode,  # options - step, equal, exponential
+    data_type=data_type,
+)
 
 responses = asyncio.run(load_tester.start())
 
-print(f'{(time.time() - start_time):2.2}s spent in total')
+print(f"{(time.time() - start_time):2.2}s spent in total")
 
 import matplotlib.pyplot as plt
 import numpy as np

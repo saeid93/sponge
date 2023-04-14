@@ -7,21 +7,24 @@ from mlserver.types import (
     InferenceRequest,
     InferenceResponse,
     ResponseOutput,
-    Parameters)
+    Parameters,
+)
 from mlserver import MLModel
 from typing import List
 
 try:
-    PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
-    logger.info(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
+    PREDICTIVE_UNIT_ID = os.environ["PREDICTIVE_UNIT_ID"]
+    logger.info(f"PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}")
 except KeyError as e:
-    PREDICTIVE_UNIT_ID = 'mock'
+    PREDICTIVE_UNIT_ID = "mock"
     logger.info(
-        f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
+        f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}"
+    )
+
 
 def decode_from_bin(
-    inputs: List[bytes], shapes: List[
-        List[int]], dtypes: List[str]) -> List[np.array]:
+    inputs: List[bytes], shapes: List[List[int]], dtypes: List[str]
+) -> List[np.array]:
     batch = []
     for input, shape, dtype in zip(inputs, shapes, dtypes):
         buff = memoryview(input)
@@ -29,9 +32,11 @@ def decode_from_bin(
         batch.append(array)
     return batch
 
+
 def model(inputs: List[np.ndarray]):
-    logger.info(f'unprocessed inputs: {inputs}')
-    return list(map(lambda l: {'text': 'text'}, inputs))
+    logger.info(f"unprocessed inputs: {inputs}")
+    return list(map(lambda l: {"text": "text"}, inputs))
+
 
 class Batch(MLModel):
     async def load(self):

@@ -7,49 +7,48 @@ import pathlib
 from PIL import Image
 import numpy as np
 
+
 def image_loader(folder_path, image_name):
-    image = Image.open(
-        os.path.join(folder_path, image_name))
+    image = Image.open(os.path.join(folder_path, image_name))
     # if there was a need to filter out only color images
     # if image.mode == 'RGB':
     #     pass
     return image
 
+
 load = 10
 test_duration = 5
 variant = 0
-platform = 'seldon'
-image_name = 'input-sample.JPEG'
+platform = "seldon"
+image_name = "input-sample.JPEG"
 workload = [load] * test_duration
-data_type = 'image'
-mode = 'equal' # options - step, equal, exponential
+data_type = "image"
+mode = "equal"  # options - step, equal, exponential
 
 PATH = pathlib.Path(__file__).parent.resolve()
-data = image_loader(PATH, 'input-sample.JPEG')
+data = image_loader(PATH, "input-sample.JPEG")
 # in a list to comply with formating
 data_shape = [list(np.array(data).shape)]
 data = np.array(data).flatten()
 
 # single node inference
-if platform == 'seldon':
+if platform == "seldon":
     endpoint = "localhost:32000"
-    deployment_name = 'resnet-human'
-    model = 'resnet-human'
+    deployment_name = "resnet-human"
+    model = "resnet-human"
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
-elif platform == 'mlserver':
+elif platform == "mlserver":
     endpoint = "localhost:8081"
-    model = 'resnet-human'
+    model = "resnet-human"
     metadata = []
 
-times = '["{\'node-one\': {\'arrival\': 1672276157.286681, \'serving\': 1672276157.2869108}}"]'
-
-custom_parameters = {'times': str(times)}
-data_1 = Data(
-    data=data,
-    data_shape=data_shape,
-    custom_parameters=custom_parameters
+times = (
+    "[\"{'node-one': {'arrival': 1672276157.286681, 'serving': 1672276157.2869108}}\"]"
 )
+
+custom_parameters = {"times": str(times)}
+data_1 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
 
 # Data list
 data = []
@@ -66,11 +65,12 @@ load_tester = MLServerAsyncGrpc(
     data=data,
     data_shape=data_shape,
     data_type=data_type,
-    benchmark_duration=1)
+    benchmark_duration=1,
+)
 
 responses = asyncio.run(load_tester.start())
 
-print(f'{(time.time() - start_time):2.2}s spent in total')
+print(f"{(time.time() - start_time):2.2}s spent in total")
 
 import matplotlib.pyplot as plt
 import numpy as np

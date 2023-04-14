@@ -11,64 +11,72 @@ from mlserver.types import (
     InferenceRequest,
     InferenceResponse,
     ResponseOutput,
-    Parameters)
+    Parameters,
+)
 from mlserver import MLModel
 from typing import List
 
 # TODO balooning has not been implemented yet
 
 try:
-    PREDICTIVE_UNIT_ID = os.environ['PREDICTIVE_UNIT_ID']
-    logger.info(f'PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}')
+    PREDICTIVE_UNIT_ID = os.environ["PREDICTIVE_UNIT_ID"]
+    logger.info(f"PREDICTIVE_UNIT_ID set to: {PREDICTIVE_UNIT_ID}")
 except KeyError as e:
-    PREDICTIVE_UNIT_ID = 'resnet-human'
+    PREDICTIVE_UNIT_ID = "resnet-human"
     logger.info(
-        f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}")
+        f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}"
+    )
+
 
 def decode_from_bin(
-    inputs: List[bytes], shapes: List[
-        List[int]], dtypes: List[str], default_shape: List[int]) -> List[np.array]:
+    inputs: List[bytes],
+    shapes: List[List[int]],
+    dtypes: List[str],
+    default_shape: List[int],
+) -> List[np.array]:
     batch = []
     for input, shape, dtype in zip(inputs, shapes, dtypes):
         buff = memoryview(input)
         try:
             array = np.frombuffer(buff, dtype=dtype).reshape(shape)
-        except TypeError: # HACK temp workaround
-            logger.info('missing shape, used default shape')
+        except TypeError:  # HACK temp workaround
+            logger.info("missing shape, used default shape")
             logger.info(default_shape)
             array = np.frombuffer(buff, dtype=dtype).reshape(default_shape)
         # array = [array] # TEMP workaround
         batch.append(array)
     return batch
 
+
 try:
-    USE_THREADING = os.getenv(
-        "USE_THREADING", 'False').lower() in ('true', '1', 't')
-    logger.info(f'USE_THREADING set to: {USE_THREADING}')
+    USE_THREADING = os.getenv("USE_THREADING", "False").lower() in ("true", "1", "t")
+    logger.info(f"USE_THREADING set to: {USE_THREADING}")
 except KeyError as e:
     USE_THREADING = False
     logger.info(
-        f"USE_THREADING env variable not set, using default value: {USE_THREADING}")
+        f"USE_THREADING env variable not set, using default value: {USE_THREADING}"
+    )
 
 try:
-    NUM_INTEROP_THREADS = int(os.environ['NUM_INTEROP_THREADS'])
-    logger.info(f'NUM_INTEROP_THREADS set to: {NUM_INTEROP_THREADS}')
+    NUM_INTEROP_THREADS = int(os.environ["NUM_INTEROP_THREADS"])
+    logger.info(f"NUM_INTEROP_THREADS set to: {NUM_INTEROP_THREADS}")
 except KeyError as e:
     NUM_INTEROP_THREADS = 1
     logger.info(
-        f"NUM_INTEROP_THREADS env variable not set, using default value: {NUM_INTEROP_THREADS}")
+        f"NUM_INTEROP_THREADS env variable not set, using default value: {NUM_INTEROP_THREADS}"
+    )
 
 try:
-    NUM_THREADS = int(os.environ['NUM_THREADS'])
-    logger.info(f'NUM_THREADS set to: {NUM_THREADS}')
+    NUM_THREADS = int(os.environ["NUM_THREADS"])
+    logger.info(f"NUM_THREADS set to: {NUM_THREADS}")
 except KeyError as e:
     NUM_THREADS = 1
-    logger.info(
-        f"NUM_THREADS env variable not set, using default value: {NUM_THREADS}")
+    logger.info(f"NUM_THREADS env variable not set, using default value: {NUM_THREADS}")
 
 if USE_THREADING:
     torch.set_num_interop_threads(NUM_INTEROP_THREADS)
     torch.set_num_threads(NUM_THREADS)
+
 
 class ResnetHuman(MLModel):
     async def load(self) -> bool:
@@ -77,42 +85,44 @@ class ResnetHuman(MLModel):
         self.batch_counter = 0
         # standard resnet image transformation
         try:
-            self.MODEL_VARIANT = os.environ['MODEL_VARIANT']
-            logger.info(f'MODEL_VARIANT set to: {self.MODEL_VARIANT}')
+            self.MODEL_VARIANT = os.environ["MODEL_VARIANT"]
+            logger.info(f"MODEL_VARIANT set to: {self.MODEL_VARIANT}")
         except KeyError as e:
-            self.MODEL_VARIANT = 'resnet18'
+            self.MODEL_VARIANT = "resnet18"
             logger.info(
-                f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}")
-        logger.info(f'max_batch_size: {self._settings.max_batch_size}')
-        logger.info(f'max_batch_time: {self._settings.max_batch_time}')
+                f"MODEL_VARIANT env variable not set, using default value: {self.MODEL_VARIANT}"
+            )
+        logger.info(f"max_batch_size: {self._settings.max_batch_size}")
+        logger.info(f"max_batch_time: {self._settings.max_batch_time}")
         self.batch_size = self._settings.max_batch_size
-        self.transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(
-            mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225]
-        )])
-        logger.info('Init function complete!')
+        self.transform = transforms.Compose(
+            [
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
+            ]
+        )
+        logger.info("Init function complete!")
         model = {
-            'resnet18': models.resnet18,
-            'resnet34': models.resnet34,
-            'resnet50': models.resnet50,
-            'resnet101': models.resnet101,
-            'resnet152': models.resnet152,
+            "resnet18": models.resnet18,
+            "resnet34": models.resnet34,
+            "resnet50": models.resnet50,
+            "resnet101": models.resnet101,
+            "resnet152": models.resnet152,
         }
-        logger.error('Loading the ML models')
+        logger.error("Loading the ML models")
         # TODO cpu and gpu from env variable
-        self.device = torch.device(
-            "cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         logger.error(f"Loading on gpu is {torch.cuda.is_available()}")
         self.default_shape = [253, 294, 3]
         self.resnet = model[self.MODEL_VARIANT](pretrained=True)
         self.resnet = self.resnet.to(self.device)
         self.resnet.eval()
         self.loaded = True
-        logger.info('model loading complete!')
+        logger.info("model loading complete!")
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceRequest:
@@ -128,16 +138,17 @@ class ResnetHuman(MLModel):
                     prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
                 else:
                     prev_nodes_times = list(
-                        map(lambda l: eval(eval(l)[0]), prev_nodes_times))
+                        map(lambda l: eval(eval(l)[0]), prev_nodes_times)
+                    )
             except SyntaxError:
                 # HACK temp workaroud
-                prev_nodes_times = [{'missing':'missing'}] * batch_shape
-                logger.info('former node missing times')
+                prev_nodes_times = [{"missing": "missing"}] * batch_shape
+                logger.info("former node missing times")
             except AttributeError:
                 prev_nodes_times = None
             # dtypes = request_input.parameters.dtype
             shapes = request_input.parameters.datashape
-            dtypes = batch_shape * ['u1'] # TEMP HACK
+            dtypes = batch_shape * ["u1"]  # TEMP HACK
             # HACK temp workaround for edge case
             if type(shapes) != list:
                 logger.info(shapes)
@@ -152,17 +163,22 @@ class ResnetHuman(MLModel):
             logger.info(f"shapes:\n{shapes}")
             input_data = request_input.data.__root__
             X = decode_from_bin(
-                inputs=input_data, shapes=shapes, dtypes=dtypes,
-                default_shape=self.default_shape)
+                inputs=input_data,
+                shapes=shapes,
+                dtypes=dtypes,
+                default_shape=self.default_shape,
+            )
         received_batch_len = len(X)
         logger.info(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += batch_shape
         self.batch_counter += 1
         # preprocessings
-        converted_images = [Image.fromarray(
-            np.array(image, dtype=np.uint8)) for image in X]
-        X_trans = [self.transform(
-            converted_image) for converted_image in converted_images]
+        converted_images = [
+            Image.fromarray(np.array(image, dtype=np.uint8)) for image in X
+        ]
+        X_trans = [
+            self.transform(converted_image) for converted_image in converted_images
+        ]
         batch = torch.stack(X_trans, axis=0)
 
         out = self.resnet(batch)
@@ -172,17 +188,13 @@ class ResnetHuman(MLModel):
         output = image_net_class.tolist()
         logger.info(f"{image_net_class=}")
         serving_time = time.time()
-        times = {
-            PREDICTIVE_UNIT_ID: {
-            "arrival": arrival_time,
-            "serving": serving_time
-            }
-        }
+        times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
         this_node_times = [times] * batch_shape
         times = []
         if prev_nodes_times is not None:
             for this_node_time, prev_nodes_time in zip(
-                this_node_times, prev_nodes_times):
+                this_node_times, prev_nodes_times
+            ):
                 this_node_time.update(prev_nodes_time)
                 times.append(this_node_time)
         else:
@@ -201,15 +213,11 @@ class ResnetHuman(MLModel):
                     shape=[batch_shape],
                     datatype="INT32",
                     data=output,
-                    parameters=Parameters(
-                        times=batch_times,
-                        content_type='np'
-                    ),
-            )],
+                    parameters=Parameters(times=batch_times, content_type="np"),
+                )
+            ],
             model_name=self.name,
-            parameters=Parameters(
-                type_of='int'
-            )
+            parameters=Parameters(type_of="int"),
         )
         logger.info(f"request counter:\n{self.request_counter}\n")
         logger.info(f"batch counter:\n{self.batch_counter}\n")

@@ -7,31 +7,39 @@ import json
 import yaml
 from json import JSONDecodeError
 
+
 class Parser:
-    def __init__(self, series_path,
-                 config_key_mapper,
-                 model_name,
-                 second_node=False, type_of='node') -> None:
+    def __init__(
+        self,
+        series_path,
+        config_key_mapper,
+        model_name,
+        second_node=False,
+        type_of="node",
+    ) -> None:
         self.series_path = series_path
         self.config_path = os.path.join(series_path, config_key_mapper)
         self.model_name = model_name
         self.second_node = second_node
         self.type_of = type_of
-        legal_types = ['node', 'pipeline', 'node_with_log']
+        legal_types = ["node", "pipeline", "node_with_log"]
         if type_of not in legal_types:
-            raise ValueError(f'Invalid type: {type_of}')
-        if type_of == 'pipeline':
-            self.node_orders = list(map(
-                lambda l: l['node_name'],
-                list(self.load_configs().values())[0]['nodes']))
+            raise ValueError(f"Invalid type: {type_of}")
+        if type_of == "pipeline":
+            self.node_orders = list(
+                map(
+                    lambda l: l["node_name"],
+                    list(self.load_configs().values())[0]["nodes"],
+                )
+            )
 
     def load_configs(self) -> Dict[str, Dict[str, Any]]:
         config_files = {}
         for file in os.listdir(self.series_path):
             # check only text files
-            if file.endswith('.yaml'):
+            if file.endswith(".yaml"):
                 config_path = os.path.join(self.series_path, file)
-                with open(config_path, 'r') as cf:
+                with open(config_path, "r") as cf:
                     config = yaml.safe_load(cf)
                 config_files[file] = config
         return config_files
@@ -42,13 +50,13 @@ class Parser:
 
     def get_experiment_detail(self, experiment_id: int):
         key_config_mapper = self.key_config_mapper()
-        return key_config_mapper[
-            key_config_mapper["experiment_id"]==experiment_id]
+        return key_config_mapper[key_config_mapper["experiment_id"] == experiment_id]
 
     def _get_experiments_with_logs(self):
         key_config_mapper = self.key_config_mapper()
         experiments_with_logs = key_config_mapper[
-            key_config_mapper['no_engine']==False]['experiment_id'].tolist()
+            key_config_mapper["no_engine"] == False
+        ]["experiment_id"].tolist()
         return experiments_with_logs
 
     def get_result_file_names(self):
@@ -73,9 +81,7 @@ class Parser:
             name = file.split(".")[0].split("/")[-1]
             if selected is not None:
                 if int(name) in selected:
-                    full_path = os.path.join(
-                        self.series_path, file
-                    )
+                    full_path = os.path.join(self.series_path, file)
                     json_file = open(full_path)
                     try:
                         results[name] = json.load(json_file)
@@ -83,15 +89,13 @@ class Parser:
                         pass
                         # print('excepted-1!')
             else:
-                full_path = os.path.join(
-                    self.series_path, file
-                )
+                full_path = os.path.join(self.series_path, file)
                 json_file = open(full_path)
                 try:
                     results[name] = json.load(json_file)
                 except JSONDecodeError:
                     pass
-                    # print('excepted-1!')                
+                    # print('excepted-1!')
         return results
 
     def flatten_results(self, per_second_latencies):
@@ -112,68 +116,69 @@ class Parser:
         model_latencies = []
         model_to_client_latencies = []
         latencies = {
-            'client_to_model_latencies': [],
-            'model_latencies': [],
-            'model_to_client_latencies': [] 
+            "client_to_model_latencies": [],
+            "model_latencies": [],
+            "model_to_client_latencies": [],
         }
         timeout_count = 0
         for result in results:
             try:
-                times = result['times']
-                request_times = times['request']
-                model_times = times['models'][self.model_name]
-                client_to_model_latency =\
-                    model_times['arrival'] - request_times['sending']
-                model_latency =\
-                    model_times['serving'] - model_times['arrival']
-                model_to_client_latency =\
-                    request_times['arrival'] - model_times['serving']
+                times = result["times"]
+                request_times = times["request"]
+                model_times = times["models"][self.model_name]
+                client_to_model_latency = (
+                    model_times["arrival"] - request_times["sending"]
+                )
+                model_latency = model_times["serving"] - model_times["arrival"]
+                model_to_client_latency = (
+                    request_times["arrival"] - model_times["serving"]
+                )
                 client_to_model_latencies.append(client_to_model_latency)
                 model_latencies.append(model_latency)
                 model_to_client_latencies.append(model_to_client_latency)
                 latencies = {
-                    'client_to_model_latencies': client_to_model_latencies,
-                    'model_latencies': model_latencies,
-                    'model_to_client_latencies': model_to_client_latencies
+                    "client_to_model_latencies": client_to_model_latencies,
+                    "model_latencies": model_latencies,
+                    "model_to_client_latencies": model_to_client_latencies,
                 }
             except KeyError:
                 timeout_count += 1
         return latencies, timeout_count
 
-    def _pipeline_latency_calculator(
-        self, results: Dict[Dict, Any]):
+    def _pipeline_latency_calculator(self, results: Dict[Dict, Any]):
         latencies = {
-            'client_to_pipeline_latencies': [],
-            'pipeline_to_client_latencies': [] 
+            "client_to_pipeline_latencies": [],
+            "pipeline_to_client_latencies": [],
         }
         # client_to_pipeline_latencies = []
         # model_to_pipeline_latencies = []
         for index, model in enumerate(self.node_orders):
-            latencies[f'task_{index}_model_latencies'] = []
+            latencies[f"task_{index}_model_latencies"] = []
             if index < len(self.node_orders) - 1:
-                latencies[f'task_{index}_to_task_{index+1}_latencies'] = []
+                latencies[f"task_{index}_to_task_{index+1}_latencies"] = []
         timeout_count = 0
         for result in results:
             try:
-                times = result['times']
-                request_times = times['request']
+                times = result["times"]
+                request_times = times["request"]
                 # model_times = times['models'][self.model_name]
-                model_times = times['models']
+                model_times = times["models"]
                 for index, model in enumerate(self.node_orders):
                     if index == 0:
-                        latencies['client_to_pipeline_latencies'].append(
-                            model_times[model]['arrival'] - request_times['sending']
-                            )
-                    if index == len(self.node_orders) - 1:
-                        latencies['pipeline_to_client_latencies'].append(
-                            request_times['arrival'] - model_times[model]['serving']
+                        latencies["client_to_pipeline_latencies"].append(
+                            model_times[model]["arrival"] - request_times["sending"]
                         )
-                    latencies[f'task_{index}_model_latencies'].append(
-                        model_times[model]['serving'] - model_times[model]['arrival']
+                    if index == len(self.node_orders) - 1:
+                        latencies["pipeline_to_client_latencies"].append(
+                            request_times["arrival"] - model_times[model]["serving"]
+                        )
+                    latencies[f"task_{index}_model_latencies"].append(
+                        model_times[model]["serving"] - model_times[model]["arrival"]
                     )
                     if index < len(self.node_orders) - 1:
-                        latencies[f'task_{index}_to_task_{index+1}_latencies'].append(
-                            model_times[self.node_orders[index+1]]['arrival'] - model_times[model]['serving']
+                        latencies[f"task_{index}_to_task_{index+1}_latencies"].append(
+                            model_times[self.node_orders[index + 1]]["arrival"]
+                            - model_times[model]["serving"]
                         )
             except KeyError:
                 timeout_count += 1
@@ -181,45 +186,45 @@ class Parser:
 
     def latency_calculator(self, results: Dict[Dict, Any], log=None):
         """symmetric input meaning:
-            per each input at the first node of the pipeline
-            we only have one output going to the second node of the
-            pipeline
+        per each input at the first node of the pipeline
+        we only have one output going to the second node of the
+        pipeline
         """
-        if self.type_of == 'node':
+        if self.type_of == "node":
             return self._node_latency_calculator(results)
         # if self.type_of == 'node_with_log':
         #     return self._node_latency_calculator_with_log(results, log)
-        elif self.type_of == 'pipeline':
+        elif self.type_of == "pipeline":
             return self._pipeline_latency_calculator(results)
 
     def metric_summary(self, metric, values):
         summary = {}
         if values != [] and values != None:
             try:
-                summary[f'{metric}_avg'] = np.average(values)
+                summary[f"{metric}_avg"] = np.average(values)
             except TypeError:
                 pass
                 # print('excepted-2!')
-            summary[f'{metric}_p99'] = np.percentile(values, 99)
-            summary[f'{metric}_p50'] = np.percentile(values, 50)
-            summary[f'{metric}_var'] = np.var(values)
-            summary[f'{metric}_max'] = max(values)
-            summary[f'{metric}_min'] = min(values)
+            summary[f"{metric}_p99"] = np.percentile(values, 99)
+            summary[f"{metric}_p95"] = np.percentile(values, 95)
+            summary[f"{metric}_p50"] = np.percentile(values, 50)
+            summary[f"{metric}_var"] = np.var(values)
+            summary[f"{metric}_max"] = max(values)
+            summary[f"{metric}_min"] = min(values)
         else:
-            summary[f'{metric}_avg'] = None
-            summary[f'{metric}_p99'] = None
-            summary[f'{metric}_p50'] = None
-            summary[f'{metric}_var'] = None
-            summary[f'{metric}_max'] = None
-            summary[f'{metric}_min'] = None
+            summary[f"{metric}_avg"] = None
+            summary[f"{metric}_p99"] = None
+            summary[f"{metric}_p95"] = None
+            summary[f"{metric}_p50"] = None
+            summary[f"{metric}_var"] = None
+            summary[f"{metric}_max"] = None
+            summary[f"{metric}_min"] = None
         return summary
 
     def latency_summary(self, latencies):
         summary = {}
         for metric_name, values in latencies.items():
-            summary.update(
-                self.metric_summary(
-                    metric=metric_name, values=values))
+            summary.update(self.metric_summary(metric=metric_name, values=values))
         return summary
 
     def result_processing(self):
@@ -231,44 +236,46 @@ class Parser:
         results = self.read_results(selected)
         final_dataframe = []
         for experiment_id, result in results.items():
-            processed_exp = {'experiment_id': int(experiment_id)}
+            processed_exp = {"experiment_id": int(experiment_id)}
             flattened_results = self.flatten_results(
-                results[str(experiment_id)]['responses'])
+                results[str(experiment_id)]["responses"]
+            )
             if log is not None:
                 latencies, timeout_count = self.latency_calculator(
-                    flattened_results, log[experiment_id])
+                    flattened_results, log[experiment_id]
+                )
             else:
                 latencies, timeout_count = self.latency_calculator(
-                    flattened_results, log)                
+                    flattened_results, log
+                )
             latencies = self.latency_summary(latencies)
             processed_exp.update(latencies)
-            processed_exp['start_time'] = time.ctime(
-                result['start_time_experiment'])
-            processed_exp['end_time'] = time.ctime(
-                result['end_time_experiment'])
-            processed_exp['duration'] = round(
-                result['end_time_experiment'] - result[
-                    'start_time_experiment'])
-            processed_exp['timeout_count'] = timeout_count
+            processed_exp["start_time"] = time.ctime(result["start_time_experiment"])
+            processed_exp["end_time"] = time.ctime(result["end_time_experiment"])
+            processed_exp["duration"] = round(
+                result["end_time_experiment"] - result["start_time_experiment"]
+            )
+            processed_exp["timeout_count"] = timeout_count
             skipped_metrics = [
-                'time_cpu_usage_count',
-                'time_cpu_usage_rate',
-                'time_cpu_throttled_count',
-                'time_cpu_throttled_rate',
-                'time_memory_usage',
-                'time_throughput',
-                'responses',
-                'start_time_experiment',
-                'end_time_experiment'   
+                "time_cpu_usage_count",
+                "time_cpu_usage_rate",
+                "time_cpu_throttled_count",
+                "time_cpu_throttled_rate",
+                "time_memory_usage",
+                "time_throughput",
+                "responses",
+                "start_time_experiment",
+                "end_time_experiment",
             ]
-            if self.type_of=='node' or self.type_of=='node_with_log':
+            if self.type_of == "node" or self.type_of == "node_with_log":
                 for metric, values in result.items():
                     if metric in skipped_metrics:
                         continue
-                    processed_exp.update(self.metric_summary(
-                        metric=metric, values=values))
+                    processed_exp.update(
+                        self.metric_summary(metric=metric, values=values)
+                    )
                 final_dataframe.append(processed_exp)
-            elif self.type_of=='pipeline':
+            elif self.type_of == "pipeline":
                 # nodes_order = self._find_node_orders()
                 # for model in self.node_orders:
                 #     for pod_name, pod_values in result[model].items():
@@ -287,9 +294,11 @@ class Parser:
                         for metric, values in pod_values.items():
                             if metric in skipped_metrics:
                                 continue
-                            processed_exp.update(self.metric_summary(
-                                metric=f'task_{index}_{metric}',
-                                values=values))
+                            processed_exp.update(
+                                self.metric_summary(
+                                    metric=f"task_{index}_{metric}", values=values
+                                )
+                            )
                         pod_index += 1
                 final_dataframe.append(processed_exp)
         return pd.DataFrame(final_dataframe)
@@ -297,15 +306,15 @@ class Parser:
     def table_maker(
         self,
         experiment_ids: List[int],
-        metadata_columns: List[str], results_columns: List[str]):
+        metadata_columns: List[str],
+        results_columns: List[str],
+    ):
         # extract full data
         results = self.result_processing()
         metadata = self.key_config_mapper()
         # retrieve rows
-        selected_results = results[results[
-            'experiment_id'].isin(experiment_ids)]
-        selected_metadata = metadata[metadata[
-            'experiment_id'].isin(experiment_ids)]
+        selected_results = results[results["experiment_id"].isin(experiment_ids)]
+        selected_metadata = metadata[metadata["experiment_id"].isin(experiment_ids)]
         merged_results = selected_metadata.merge(selected_results)
         columns = metadata_columns + results_columns
         output = merged_results[columns]
