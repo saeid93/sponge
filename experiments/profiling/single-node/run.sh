@@ -1,7 +1,7 @@
-python model_iter.py --config-name 1-config-audio
-python model_iter.py --config-name 1-config-qa
-python model_iter.py --config-name 2-config-audio
-python model_iter.py --config-name 2-config-sent
+# python model_iter.py --config-name 1-config-audio
+# python model_iter.py --config-name 1-config-qa
+# python model_iter.py --config-name 2-config-audio
+# python model_iter.py --config-name 2-config-sent
 python model_iter.py --config-name 3-config-li
 python model_iter.py --config-name 3-config-sum
 python model_iter.py --config-name 3-config-trans

@@ -16,7 +16,7 @@ def image_loader(folder_path, image_name):
     return image
 
 
-load = 10
+load = 1
 test_duration = 10
 variant = 0
 platform = "seldon"
