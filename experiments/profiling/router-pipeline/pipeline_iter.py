@@ -184,20 +184,27 @@ def experiments(
                                     logger.info("\n")
                                     if workload_type == "static":
                                         workload = [load] * load_duration
-                                    data = load_data(data_type, pipeline_path)
+                                    node_type = "first"
+                                    if pipeline_name == "resnet-human":
+                                        node_type == "second"
+                                    data = load_data(
+                                        data_type=data_type,
+                                        pipeline_path=pipeline_path,
+                                        node_type=node_type,
+                                    )
                                     start_time = time.time()
                                     output_queue = Queue()
                                     try:
                                         kwargs = {
-                                            "pipeline_name": pipeline_name,
-                                            "model": None,
+                                            "pipeline_name": "router",
+                                            "model": "router",
                                             "data_type": data_type,
                                             "data": data,
                                             "workload": workload,
                                             "mode": mode,
                                             "namespace": "default",
                                             "benchmark_duration": benchmark_duration,
-                                            "queue": output_queue
+                                            "queue": output_queue,
                                         }
                                         p = Process(target=load_test, kwargs=kwargs)
                                         p.start()
@@ -205,14 +212,14 @@ def experiments(
                                             time.sleep(1)
                                             if p.is_alive():
                                                 if time.time() - start_time > timeout:
-                                                    print('finished by cap')
+                                                    print("finished by cap")
                                                     start_time_experiment = start_time
                                                     end_time_experiment = time.time()
                                                     responses = []
                                                     p.terminate()
                                                     break
                                             else:
-                                                print('finished on time')
+                                                print("finished on time")
                                                 (
                                                     start_time_experiment,
                                                     end_time_experiment,
@@ -239,9 +246,7 @@ def experiments(
                                             "skipping to the next experiment ..."
                                         )
                                     wait_time = 1
-                                    logger.info(
-                                        f"waiting for: {wait_time} seconds"
-                                    )
+                                    logger.info(f"waiting for: {wait_time} seconds")
                                     for _ in tqdm(range(20)):
                                         time.sleep((wait_time) / 20)
                                     remove_pipeline(pipeline_name=pipeline_name)
