@@ -297,7 +297,7 @@ def load_data(data_type: str, pipeline_path: str):
     elif data_type == "image":
         input_sample_path = os.path.join(pipeline_path, "input-sample.JPEG")
         data = Image.open(input_sample_path)
-        data_shape = list(np.array(data).shape)
+        data_shape = [list(np.array(data).shape)]
         data = np.array(data).flatten()
     data_1 = Data(
         data=data,
@@ -372,9 +372,8 @@ def load_test(
     no_engine: bool = False,
     mode: str = "step",
     benchmark_duration=1,
-    queue: Queue = None
+    queue: Queue = None,
 ) -> Tuple[int, int, List[List[Dict[str, Any]]]]:
-
     start_time = time.time()
 
     endpoint = "localhost:32000"
