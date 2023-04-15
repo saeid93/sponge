@@ -10,10 +10,9 @@ from typing import Union
 import click
 import sys
 import csv
-from kubernetes import config
-from kubernetes import client
 from tqdm import tqdm
 import shutil
+from multiprocessing import Queue, Process
 from barazmoon.twitter import twitter_workload_generator
 
 # get an absolute path to the directory that contains parent files
@@ -130,7 +129,6 @@ def experiments(
                                         max_batch_time=max_batch_time,
                                         replica=replica,
                                         node_path=node_path,
-                                        timeout=timeout,
                                         no_engine=no_engine,
                                         use_threading=use_threading,
                                         # HACK for now we set the number of requests
@@ -166,22 +164,42 @@ def experiments(
                                     data = load_data(
                                         data_type=data_type, pipeline_path=node_path
                                     )
+                                    start_time = time.time()
+                                    output_queue = Queue()
                                     try:
-                                        (
-                                            start_time_experiment,
-                                            end_time_experiment,
-                                            responses,
-                                        ) = load_test(
-                                            pipeline_name=node_name,
-                                            model=node_name,
-                                            data_type=data_type,
-                                            data=data,
-                                            workload=workload,
-                                            mode=mode,
-                                            namespace="default",
-                                            no_engine=no_engine,
-                                            benchmark_duration=benchmark_duration,
-                                        )
+                                        kwargs = {
+                                            "pipeline_name": node_name,
+                                            "model": node_name,
+                                            "data_type": data_type,
+                                            "data": data,
+                                            "workload": workload,
+                                            "mode": mode,
+                                            "namespace": "default",
+                                            "no_engine": no_engine,
+                                            "benchmark_duration": benchmark_duration,
+                                            "queue": output_queue
+                                        }
+                                        p = Process(target=load_test, kwargs=kwargs)
+                                        p.start()
+                                        while True:
+                                            time.sleep(1)
+                                            if p.is_alive():
+                                                if time.time() - start_time > timeout:
+                                                    print('finished by cap')
+                                                    start_time_experiment = start_time
+                                                    end_time_experiment = time.time()
+                                                    responses = []
+                                                    p.terminate()
+                                                    break
+                                            else:
+                                                print('finished on time')
+                                                (
+                                                    start_time_experiment,
+                                                    end_time_experiment,
+                                                    responses,
+                                                ) = output_queue.get()
+                                                p.join()
+                                                break
                                         logger.info(
                                             "-" * 25 + "saving the report" + "-" * 25
                                         )
@@ -200,11 +218,12 @@ def experiments(
                                         logger.info(
                                             "skipping to the next experiment ..."
                                         )
+                                    wait_time = 1
                                     logger.info(
-                                        f"waiting for timeout: {timeout} seconds"
+                                        f"waiting for: {wait_time} seconds"
                                     )
                                     for _ in tqdm(range(20)):
-                                        time.sleep((timeout) / 20)
+                                        time.sleep((wait_time) / 20)
                                     remove_pipeline(pipeline_name=node_name)
                                 else:
                                     logger.info(
@@ -440,7 +459,7 @@ def save_report(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="5-config-resnet-human")
+@click.option("--config-name", required=True, type=str, default="test")
 def main(config_name: str):
     config_path = os.path.join(NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, "r") as cf:
