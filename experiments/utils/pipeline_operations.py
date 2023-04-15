@@ -276,7 +276,7 @@ def setup_router_pipeline(
     setup_router(pipeline_name=pipeline_name, node_names=node_names)
 
 
-def load_data(data_type: str, pipeline_path: str):
+def load_data(data_type: str, pipeline_path: str, node_type: str='first'):
     if data_type == "audio":
         ds = load_dataset(
             "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
@@ -295,7 +295,10 @@ def load_data(data_type: str, pipeline_path: str):
     elif data_type == "image":
         input_sample_path = os.path.join(pipeline_path, "input-sample.JPEG")
         data = Image.open(input_sample_path)
-        data_shape = [list(np.array(data).shape)]
+        if node_type == 'first':
+            data_shape = list(np.array(data).shape)
+        elif node_type == 'second':
+            data_shape = [list(np.array(data).shape)]
         data = np.array(data).flatten()
     data_1 = Data(
         data=data,

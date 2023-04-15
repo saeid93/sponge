@@ -161,8 +161,12 @@ def experiments(
                                     logger.info("\n")
                                     if workload_type == "static":
                                         workload = [load] * load_duration
+                                    node_type = 'first'
+                                    if pipeline_name == 'resnet-human':
+                                        node_type == 'second'
                                     data = load_data(
-                                        data_type=data_type, pipeline_path=node_path
+                                        data_type=data_type, pipeline_path=node_path,
+                                        node_type=node_type
                                     )
                                     start_time = time.time()
                                     output_queue = Queue()
