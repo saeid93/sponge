@@ -11,6 +11,7 @@ from jinja2 import Environment, FileSystemLoader
 from PIL import Image
 import asyncio
 from datasets import load_dataset
+from multiprocessing import Queue
 
 from barazmoon import Data
 from barazmoon import MLServerAsyncGrpc
@@ -57,7 +58,6 @@ def setup_node(
     max_batch_time: str,
     replica: int,
     node_path: str,
-    timeout: int,
     use_threading: bool,
     num_interop_threads: int,
     num_threads: int,
@@ -372,7 +372,9 @@ def load_test(
     no_engine: bool = False,
     mode: str = "step",
     benchmark_duration=1,
+    queue: Queue = None
 ) -> Tuple[int, int, List[List[Dict[str, Any]]]]:
+
     start_time = time.time()
 
     endpoint = "localhost:32000"
@@ -397,6 +399,8 @@ def load_test(
     for second_response in responses:
         for response in second_response:
             response["outputs"] = []
+    if queue is not None:
+        queue.put([start_time, end_time, responses])
     return start_time, end_time, responses
 
 
