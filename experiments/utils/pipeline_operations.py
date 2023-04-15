@@ -132,7 +132,6 @@ def setup_seldon_pipeline(
     num_interop_threads: Tuple[int],
     num_threads: Tuple[int],
     pipeline_path: str,
-    timeout: int,
     num_nodes: int,
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
@@ -267,7 +266,6 @@ def setup_router_pipeline(
             max_batch_time=max_batch_time[node_id],
             replica=replica[node_id],
             node_path=node_path,
-            timeout=timeout,
             no_engine=True,
             use_threading=use_threading[node_id],
             # HACK for now we set the number of requests
@@ -369,7 +367,6 @@ def load_test(
     workload: List[int],
     data: List[Data],
     namespace: str = "default",
-    no_engine: bool = False,
     mode: str = "step",
     benchmark_duration=1,
     queue: Queue = None
