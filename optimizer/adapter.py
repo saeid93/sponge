@@ -334,16 +334,18 @@ class Monitoring:
 
 
 class Predictor:
-    def __init__(self, predictor_type) -> int:
+    def __init__(
+            self, predictor_type, backup_predictor:str = 'reactive') -> int:
         self.predictor_type = predictor_type
-        if predictor_type == "lstm":
-            self.model = load_model(LSTM_PATH)
-        elif predictor_type == "reactive":
-            self.model = lambda l: l[-1]
-        elif predictor_type == "max":
-            self.model = lambda l: max(l)
-        elif predictor_type == "avg":
-            self.model = lambda l: sum(l) / len(l)
+        self.backup_predictor = backup_predictor
+        predictors = {
+            'lstm': load_model(LSTM_PATH),
+            'reactive': lambda l: l[-1],
+            'max': lambda l: max(l),
+            'avg': lambda l: max(l) / len(l)
+        }
+        self.model = predictors[predictor_type]
+        self.backup_model = predictors[backup_predictor]
 
     def predict(self, series: List[int]):
         series_minutes = []
@@ -351,6 +353,11 @@ class Predictor:
         for i in range(0, len(series), step):
             series_minutes.append(max(series[i : i + step]))
         if self.predictor_type == "lstm":
+            if len(series_minutes) < LSTM_INPUT_SIZE:
+                logger.info(
+                    'not enough information for lstm'
+                    f' usting backup predictor {self.backup_predictor}')
+                return self.backup_model(series_minutes)
             model_intput = tf.convert_to_tensor(
                 np.array(series_minutes).reshape((-1, LSTM_INPUT_SIZE, 1)),
                 dtype=tf.float32,

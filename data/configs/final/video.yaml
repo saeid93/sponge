@@ -36,11 +36,11 @@ adaptation_interval: 20
 workload_type: static
 workload_config:
   loads_to_test: 10
-  load_duration: 7200
+  load_duration: 1200
 # workload_type: twitter
 # workload_config:
-#   - start: '3:5:0'
-#     end: '3:5:1'
+#   - start: '2:0:0:0'
+#     end: '2:2:0:0'
 
 # ----------- optimizer configs -------------
 
@@ -72,7 +72,8 @@ initial_batch:
 alpha: 1
 beta: 1
 gamma: 1
-scaling_cap: 10 # maximum possible scaling per nodes
+scaling_cap: 100 # maximum possible scaling per nodes
+batching_cap: 64 # maximum possible batching per nodes
 num_state_limit: 1000000 # number of states
 threshold: 4 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
