@@ -133,14 +133,18 @@ class Adapter:
                 predicted_load=0,
             )
         while True:
+            logger.info("-" * 50)
             logger.info(f"Waiting {self.adaptation_interval}" " to make next descision")
+            logger.info("-" * 50)
             for _ in tqdm.tqdm(range(self.adaptation_interval)):
                 time.sleep(1)
             pipeline_up = check_node_up(node_name="router")
             if not pipeline_up:
+                logger.info("-" * 50)
                 logger.info(
                     "no pipeline in the system," " aborting adaptation process ..."
                 )
+                logger.info("-" * 50)
                 # with the message that the process has ended
                 break
             time_interval += self.adaptation_interval
@@ -149,7 +153,9 @@ class Adapter:
                 monitoring_duration=self.monitoring_duration
             )
             predicted_load = round(self.predictor.predict(rps_series))
+            logger.info("-" * 50)
             logger.info(f"\nPredicted Load: {predicted_load}\n")
+            logger.info("-" * 50)
             optimal = self.optimizer.optimize(
                 optimization_method=self.optimization_method,
                 scaling_cap=self.scaling_cap,
@@ -158,11 +164,18 @@ class Adapter:
                 beta=self.beta,
                 gamma=self.gamma,
                 arrival_rate=predicted_load,
+                # arrival_rate=31, # TEMP
                 num_state_limit=self.num_state_limit,
             )
             objective_value = optimal["objective"][0]
             new_configs = self.output_parser(optimal)
+            logger.info("-" * 50)
+            logger.info(f"candidate configs:\n{new_configs}")
+            logger.info("-" * 50)
             to_apply_config = self.choose_config(new_configs)
+            logger.info("-" * 50)
+            logger.info(f"to be applied configs:\n{to_apply_config}")
+            logger.info("-" * 50)
             self.change_pipeline_config(to_apply_config)
             self.monitoring.adaptation_step_report(
                 to_apply_config=to_apply_config,
@@ -334,15 +347,14 @@ class Monitoring:
 
 
 class Predictor:
-    def __init__(
-            self, predictor_type, backup_predictor:str = 'reactive') -> int:
+    def __init__(self, predictor_type, backup_predictor: str = "reactive") -> int:
         self.predictor_type = predictor_type
         self.backup_predictor = backup_predictor
         predictors = {
-            'lstm': load_model(LSTM_PATH),
-            'reactive': lambda l: l[-1],
-            'max': lambda l: max(l),
-            'avg': lambda l: max(l) / len(l)
+            "lstm": load_model(LSTM_PATH),
+            "reactive": lambda l: l[-1],
+            "max": lambda l: max(l),
+            "avg": lambda l: max(l) / len(l),
         }
         self.model = predictors[predictor_type]
         self.backup_model = predictors[backup_predictor]
@@ -354,9 +366,12 @@ class Predictor:
             series_minutes.append(max(series[i : i + step]))
         if self.predictor_type == "lstm":
             if len(series_minutes) < LSTM_INPUT_SIZE:
+                # corner case of bigger output from prometheus
+                series_minutes = series_minutes[-LSTM_INPUT_SIZE:]
                 logger.info(
-                    'not enough information for lstm'
-                    f' usting backup predictor {self.backup_predictor}')
+                    "not enough information for lstm"
+                    f" usting backup predictor {self.backup_predictor}"
+                )
                 return self.backup_model(series_minutes)
             model_intput = tf.convert_to_tensor(
                 np.array(series_minutes).reshape((-1, LSTM_INPUT_SIZE, 1)),

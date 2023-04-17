@@ -12,17 +12,20 @@ class Parser:
     def __init__(
         self,
         series_path,
-        config_key_mapper,
         model_name,
         second_node=False,
+        config_key_mapper: str = None,
         type_of="node",
     ) -> None:
         self.series_path = series_path
-        self.config_path = os.path.join(series_path, config_key_mapper)
+        if config_key_mapper is not None:
+            self.config_path = os.path.join(series_path, config_key_mapper)
+        else:
+            self.config_path = None
         self.model_name = model_name
         self.second_node = second_node
         self.type_of = type_of
-        legal_types = ["node", "pipeline", "node_with_log"]
+        legal_types = ["node", "pipeline"]
         if type_of not in legal_types:
             raise ValueError(f"Invalid type: {type_of}")
         if type_of == "pipeline":
@@ -44,7 +47,7 @@ class Parser:
                 config_files[file] = config
         return config_files
 
-    def key_config_mapper(self):
+    def key_config_mapper(self) -> pd.DataFrame:
         key_config_mapper = pd.read_csv(self.config_path)
         return key_config_mapper
 
@@ -59,7 +62,11 @@ class Parser:
         ]["experiment_id"].tolist()
         return experiments_with_logs
 
-    def get_result_file_names(self):
+    def get_result_file_names(self) -> List[str]:
+        # for final results case
+        if self.config_path == None:
+            return ["0.json"]
+        # for profiling case
         files = []
         key_config_mapper = self.key_config_mapper()
         experiments_keys = list(key_config_mapper["experiment_id"])
@@ -77,7 +84,6 @@ class Parser:
         files = self.get_result_file_names()
         results = {}
         for file in files:
-            # try:
             name = file.split(".")[0].split("/")[-1]
             if selected is not None:
                 if int(name) in selected:
@@ -87,7 +93,6 @@ class Parser:
                         results[name] = json.load(json_file)
                     except JSONDecodeError:
                         pass
-                        # print('excepted-1!')
             else:
                 full_path = os.path.join(self.series_path, file)
                 json_file = open(full_path)
@@ -95,7 +100,6 @@ class Parser:
                     results[name] = json.load(json_file)
                 except JSONDecodeError:
                     pass
-                    # print('excepted-1!')
         return results
 
     def flatten_results(self, per_second_latencies):
@@ -150,8 +154,6 @@ class Parser:
             "client_to_pipeline_latencies": [],
             "pipeline_to_client_latencies": [],
         }
-        # client_to_pipeline_latencies = []
-        # model_to_pipeline_latencies = []
         for index, model in enumerate(self.node_orders):
             latencies[f"task_{index}_model_latencies"] = []
             if index < len(self.node_orders) - 1:
@@ -161,7 +163,6 @@ class Parser:
             try:
                 times = result["times"]
                 request_times = times["request"]
-                # model_times = times['models'][self.model_name]
                 model_times = times["models"]
                 for index, model in enumerate(self.node_orders):
                     if index == 0:
@@ -192,8 +193,6 @@ class Parser:
         """
         if self.type_of == "node":
             return self._node_latency_calculator(results)
-        # if self.type_of == 'node_with_log':
-        #     return self._node_latency_calculator_with_log(results, log)
         elif self.type_of == "pipeline":
             return self._pipeline_latency_calculator(results)
 
@@ -230,9 +229,6 @@ class Parser:
     def result_processing(self):
         log = None
         selected = None
-        # if self.type_of == 'node_with_log':
-        #     selected = self._get_experiments_with_logs()
-        #     log = self._read_logs()
         results = self._read_results(selected)
         final_dataframe = []
         for experiment_id, result in results.items():
@@ -267,7 +263,7 @@ class Parser:
                 "start_time_experiment",
                 "end_time_experiment",
             ]
-            if self.type_of == "node" or self.type_of == "node_with_log":
+            if self.type_of == "node":
                 for metric, values in result.items():
                     if metric in skipped_metrics:
                         continue
@@ -276,30 +272,20 @@ class Parser:
                     )
                 final_dataframe.append(processed_exp)
             elif self.type_of == "pipeline":
-                # nodes_order = self._find_node_orders()
-                # for model in self.node_orders:
-                #     for pod_name, pod_values in result[model].items():
-                #         pod_index = 1
-                #         for metric, values in pod_values.items():
-                #             if metric in skipped_metrics:
-                #                 continue
-                #             processed_exp.update(self.metric_summary(
-                #                 metric=f'{model}_pod{pod_index}_{metric}',
-                #                 values=values))
-                #         pod_index += 1
-                # final_dataframe.append(processed_exp)
-                for index, model in enumerate(self.node_orders):
-                    for pod_name, pod_values in result[model].items():
-                        pod_index = 1
-                        for metric, values in pod_values.items():
-                            if metric in skipped_metrics:
-                                continue
-                            processed_exp.update(
-                                self.metric_summary(
-                                    metric=f"task_{index}_{metric}", values=values
+                # the adapatation capability
+                if self.config_path is not None:
+                    for index, model in enumerate(self.node_orders):
+                        for pod_name, pod_values in result[model].items():
+                            pod_index = 1
+                            for metric, values in pod_values.items():
+                                if metric in skipped_metrics:
+                                    continue
+                                processed_exp.update(
+                                    self.metric_summary(
+                                        metric=f"task_{index}_{metric}", values=values
+                                    )
                                 )
-                            )
-                        pod_index += 1
+                            pod_index += 1
                 final_dataframe.append(processed_exp)
         return pd.DataFrame(final_dataframe)
 
@@ -320,40 +306,48 @@ class Parser:
         output = merged_results[columns]
         return output
 
-    # def _read_logs(self):
-    #     files = self.get_result_file_names()
-    #     results = {}
-    #     to_svc_logs = []
-    #     to_model_logs = []
-    #     for file in files:
-    #         if 'txt' in file:
-    #             name = file.split(".")[0].split("/")[-1]
-    #             full_path = os.path.join(
-    #                 self.series_path, file
-    #             )
-    #             with open(full_path) as f:
-    #                 lines = [line for line in f]
-    #             for line in lines:
-    #                 line = json.loads(line)
-    #                 if line['msg'] == "Predictions called":
-    #                     to_svc_logs.append(line)
-    #                 elif line['msg'] == "Calling HTTP":
-    #                     to_model_logs.append(line)
-    #             to_svc_logs_pd = pd.DataFrame(to_svc_logs)
-    #             to_model_logs_pd = pd.DataFrame(to_model_logs)
-    #             to_svc_logs_ts = to_svc_logs_pd['ts'].tolist()
-    #             to_model_logs_ts = to_model_logs_pd['ts'].tolist()
-    #             to_svc_logs_ts.sort()
-    #             to_model_logs_ts.sort()
-    #             results[name] = {
-    #                 'to_svc_logs': to_svc_logs_ts,
-    #                 'to_model_logs': to_model_logs_ts}
-    #     return results
 
-    # def _find_node_orders(self):
-    #     config = self.load_configs()
-    #     sample_config_key = list(config.keys())[0]
-    #     node_order = list(
-    #         map(lambda l: l['node_name'],
-    #         config[sample_config_key]['nodes']))
-    #     return node_order
+class AdaptationParser:
+    def __init__(
+        self,
+        series_path,
+        model_name,
+    ) -> None:
+        self.series_path = series_path
+        self.loader = Parser(
+            series_path=series_path,
+            config_key_mapper=None,
+            model_name=model_name,
+            type_of="pipeline",
+        )
+
+    def load_configs(self):
+        return self.loader.load_configs()
+
+    def result_processing(self):
+        return self.loader.result_processing()
+
+    def flatten_results(self, per_second_latencies):
+        return self.loader.flatten_results(per_second_latencies)
+
+    def latency_calculator(self, results: Dict[Dict, Any]):
+        return self.loader.latency_calculator(results=results)
+
+    def load_adaptation_log(self) -> Dict[str, Any]:
+        adaptation_file = os.path.join(self.series_path, "adaptation_log.json")
+        with open(adaptation_file, "r") as input_file:
+            adaptation_log = json.load(input_file)
+        return adaptation_log
+
+    def series_changes(self, adaptation_log: Dict[str, Dict[str, Any]]):
+        changes = {}
+        for node_name in self.loader.node_orders:
+            changes[node_name] = {"cpu": [], "replicas": [], "batch": [], "variant": []}
+            for _, state in adaptation_log.items():
+                for metric, _ in state["config"][node_name].items():
+                    if metric == "batch":
+                        value = int(state["config"][node_name][metric])
+                    else:
+                        value = state["config"][node_name][metric]
+                    changes[node_name][metric].append(value)
+        return changes

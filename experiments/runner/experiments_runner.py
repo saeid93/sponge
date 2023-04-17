@@ -182,7 +182,8 @@ def main(config_name: str, type_of: str):
     with open(config_path, "r") as cf:
         config = yaml.safe_load(cf)
     series = config["series"]
-    save_path = os.path.join(FINAL_RESULTS_PATH, "series", str(series), "results.json")
+    # name resuls zero for consistency with the profiling parser
+    save_path = os.path.join(FINAL_RESULTS_PATH, "series", str(series), "0.json")
     pipeline_name = config["pipeline_name"]
     pipeline_folder_name = config["pipeline_folder_name"]
     node_names = [config["node_name"] for config in config["nodes"]]

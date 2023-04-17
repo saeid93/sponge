@@ -759,6 +759,7 @@ class Optimizer:
 
         # Parameters for retrieving more than one solution
         model.Params.PoolSearchMode = 2
+        model.Params.LogToConsole = 0
         # model.Params.PoolSolutions = 10**8
         model.Params.PoolSolutions = num_state_limit
         model.Params.PoolGap = 0.0

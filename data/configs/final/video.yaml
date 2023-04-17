@@ -32,11 +32,11 @@ nodes:
 # ----------- experiment configs -------------
 
 benchmark_duration: 1
-adaptation_interval: 20
+adaptation_interval: 40
 workload_type: static
 workload_config:
   loads_to_test: 10
-  load_duration: 1200
+  load_duration: 1800
 # workload_type: twitter
 # workload_config:
 #   - start: '2:0:0:0'
@@ -82,7 +82,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: false
 profiling_load: 20
-baseline_mode: switch # [switch | scale | sum]
+baseline_mode: null # [switch | scale | sum]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
