@@ -124,7 +124,7 @@ class Adapter:
         # TODO add the check of whether enough time has
         # passed to start adaptation or not
         if pipeline_up:
-            initial_config = self.extract_config()
+            initial_config = self.extract_current_config()
             self.monitoring.adaptation_step_report(
                 to_apply_config=initial_config,
                 objective=None,
@@ -138,6 +138,8 @@ class Adapter:
             logger.info("-" * 50)
             for _ in tqdm.tqdm(range(self.adaptation_interval)):
                 time.sleep(1)
+
+            # check if the pipeline is up
             pipeline_up = check_node_up(node_name="router")
             if not pipeline_up:
                 logger.info("-" * 50)
@@ -147,6 +149,7 @@ class Adapter:
                 logger.info("-" * 50)
                 # with the message that the process has ended
                 break
+
             time_interval += self.adaptation_interval
             timestep += 1
             rps_series = self.monitoring.rps_monitor(
@@ -164,26 +167,50 @@ class Adapter:
                 beta=self.beta,
                 gamma=self.gamma,
                 arrival_rate=predicted_load,
-                # arrival_rate=31, # TEMP
                 num_state_limit=self.num_state_limit,
             )
-            objective_value = optimal["objective"][0]
-            new_configs = self.output_parser(optimal)
-            logger.info("-" * 50)
-            logger.info(f"candidate configs:\n{new_configs}")
-            logger.info("-" * 50)
-            to_apply_config = self.choose_config(new_configs)
-            logger.info("-" * 50)
-            logger.info(f"to be applied configs:\n{to_apply_config}")
-            logger.info("-" * 50)
-            self.change_pipeline_config(to_apply_config)
-            self.monitoring.adaptation_step_report(
-                to_apply_config=to_apply_config,
-                objective=objective_value,
-                timestep=timestep,
-                time_interval=time_interval,
-                predicted_load=predicted_load,
-            )
+            if "objective" in optimal.columns:
+                objective_value = optimal["objective"][0]
+                new_configs = self.output_parser(optimal)
+                logger.info("-" * 50)
+                logger.info(f"candidate configs:\n{new_configs}")
+                logger.info("-" * 50)
+
+                # check if the pipeline is up
+                pipeline_up = check_node_up(node_name="router")
+                if not pipeline_up:
+                    logger.info("-" * 50)
+                    logger.info(
+                        "no pipeline in the system," " aborting adaptation process ..."
+                    )
+                    logger.info("-" * 50)
+                    # with the message that the process has ended
+                    break
+
+                to_apply_config = self.choose_config(new_configs)
+                logger.info("-" * 50)
+                logger.info(f"to be applied configs:\n{to_apply_config}")
+                logger.info("-" * 50)
+                self.change_pipeline_config(to_apply_config)
+                self.monitoring.adaptation_step_report(
+                    to_apply_config=to_apply_config,
+                    objective=objective_value,
+                    timestep=timestep,
+                    time_interval=time_interval,
+                    predicted_load=predicted_load,
+                )
+            else:
+                logger.info(
+                    "optimizer couldn't find any optimal solution"
+                    "the pipeline will stay the same"
+                )
+                self.monitoring.adaptation_step_report(
+                    to_apply_config=self.extract_current_config(),
+                    objective=None,
+                    timestep=timestep,
+                    time_interval=time_interval,
+                    predicted_load=predicted_load,
+                )
 
     def output_parser(self, optimizer_output: pd.DataFrame):
         new_configs = []
@@ -203,7 +230,7 @@ class Adapter:
         # current config
         # easiest for now is to choose config with
         # with the least change from former config
-        current_config = self.extract_config()
+        current_config = self.extract_current_config()
         new_config_socres = []
         for new_config in new_configs:
             new_config_score = 0
@@ -224,10 +251,11 @@ class Adapter:
         chosen_config = new_configs[chosen_config_index]
         return chosen_config
 
-    def extract_config(self):
+    def extract_current_config(self) -> List[Dict[str, Dict[str, Union[str, int]]]]:
         current_config = {}
         for node_name in self.node_names:
             node_config = {}
+            # TODO check if it exists before extracting the config
             raw_config = kube_custom_api.get_namespaced_custom_object(
                 group="machinelearning.seldon.io",
                 version="v1",
@@ -322,7 +350,7 @@ class Monitoring:
         duration in minutes
         """
         rate = 15
-        rps_series, _ = prom_client.get_request_per_second(
+        rps_series, _ = prom_client.get_input_rps(
             pod_name="router",
             namespace="default",
             duration=monitoring_duration,

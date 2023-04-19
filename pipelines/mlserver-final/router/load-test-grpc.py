@@ -8,8 +8,8 @@ import time
 import numpy as np
 import mlserver.types as types
 
-load = 1
-test_duration = 1
+load = 10
+test_duration = 600
 variant = 0
 platform = "seldon"
 mode = "exponential"

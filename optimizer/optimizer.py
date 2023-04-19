@@ -903,7 +903,7 @@ class Optimizer:
         arrival_rate: int,
         num_state_limit: int = None,
         batching_cap: int = None,
-    ):
+    ) -> pd.DataFrame:
         if optimization_method == "brute-force":
             optimal = self.brute_force(
                 scaling_cap=scaling_cap,

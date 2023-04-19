@@ -1,5 +1,5 @@
-# adapted from https://github.com/park-project/park/blob/master/park/logger.py
 import logging
+import inspect
 from .constants import LOGGING_LEVEL, LOG_TO
 
 if LOGGING_LEVEL == "debug":
@@ -13,10 +13,7 @@ elif LOGGING_LEVEL == "error":
 else:
     raise ValueError("Unknown logging level " + LOGGING_LEVEL)
 
-# log_format = '%(asctime)s,%(msecs)d %(levelname)-8s' +\
-#      ' [%(filename)s:%(lineno)d] %(message)s'
-
-log_format = " [%(filename)s:%(lineno)d] %(message)s"
+log_format = " %(asctime)s [%(levelname)s] [%(filename)s:%(lineno)d] %(message)s"
 
 if LOG_TO == "print":
     logging.basicConfig(format=log_format, datefmt="%Y-%m-%d:%H:%M:%S", level=level)

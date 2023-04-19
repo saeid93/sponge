@@ -12,7 +12,7 @@ from mlserver.codecs.string import StringRequestCodec
 from mlserver.codecs.numpy import NumpyRequestCodec
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
-
+import mlserver
 
 try:
     PREDICTIVE_UNIT_ID = os.environ["PREDICTIVE_UNIT_ID"]
@@ -61,10 +61,15 @@ class Router(MLModel):
         self.loaded = False
         self.request_counter = 0
         logger.info("Router loaded")
+        mlserver.register(
+            name="input_requests",
+            description="Measuring number of input requests")
         self.loaded = True
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
+        mlserver.log(input_requests=1)
+
         self.request_counter += 1
         logger.info(f"Request counter:\n{self.request_counter}\n")
 
