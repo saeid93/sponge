@@ -23,7 +23,7 @@ platform = "seldon"
 image_name = "input-sample.JPEG"
 workload = [load] * test_duration
 data_type = "image"
-mode = "equal"  # options - step, equal, exponential
+mode = "exponential"  # options - step, equal, exponential
 
 PATH = pathlib.Path(__file__).parent.resolve()
 data = image_loader(PATH, "input-sample.JPEG")
@@ -42,10 +42,14 @@ elif platform == "mlserver":
     model = "resnet-human"
     metadata = []
 
-times = "[\"{'yolo': {'arrival': 1680913322.8364007, 'serving': 1680913322.92951}}\"]"
+# times = "[\"{'yolo': {'arrival': 1680913322.8364007, 'serving': 1680913322.92951}}\"]"
 
-custom_parameters = {"times": str(times)}
-data_1 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
+# custom_parameters = {"times": str(times)}
+data_1 = Data(
+    data=data,
+    data_shape=data_shape
+    # custom_parameters=custom_parameters
+    )
 
 # Data list
 data = []

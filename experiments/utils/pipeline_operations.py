@@ -299,7 +299,10 @@ def load_data(data_type: str, pipeline_path: str, node_type: str = "first"):
             data_shape = list(np.array(data).shape)
         elif node_type == "second":
             data_shape = [list(np.array(data).shape)]
+        else:
+            raise ValueError(f"Invalid data type: {node_type}")
         data = np.array(data).flatten()
+    # custom_parameters =  "[\"{'yolo': {'arrival': 1680913322.8364007, 'serving': 1680913322.92951}}\"]"
     data_1 = Data(
         data=data,
         data_shape=data_shape
@@ -313,7 +316,12 @@ def load_data(data_type: str, pipeline_path: str, node_type: str = "first"):
 
 
 def check_load_test(pipeline_name: str, data_type: str, pipeline_path: str, model: str):
-    data = load_data(data_type=data_type, pipeline_path=pipeline_path)
+    node_type = "first"
+    if pipeline_name == "resnet-human":
+        node_type = "second"
+    data = load_data(
+        data_type=data_type, pipeline_path=pipeline_path, node_type=node_type
+    )
     loop_timeout = 5
     while True:
         logger.info(
@@ -338,8 +346,11 @@ def warm_up(
     pipeline_path: str,
     warm_up_duration: int,
 ):
+    node_type = "first"
+    if pipeline_name == "resnet-human":
+        node_type = "second"
     workload = [1] * warm_up_duration
-    data = load_data(data_type=data_type, pipeline_path=pipeline_path)
+    data = load_data(data_type=data_type, pipeline_path=pipeline_path, node_type=node_type)
     load_test(
         pipeline_name=pipeline_name,
         model=model,

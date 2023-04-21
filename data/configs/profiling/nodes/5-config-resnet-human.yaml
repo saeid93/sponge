@@ -1,9 +1,9 @@
-series: 94
+series: 95
 series_meta: 'test for the queue 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 pipeline_name: video
 node_name: resnet-human
 data_type: image
-timeout: 180
+timeout: 120
 mode: exponential
 model_variants:
   - resnet18
