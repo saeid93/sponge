@@ -17,11 +17,11 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '2'
-              memory: 4Gi
+              cpu: '4'
+              memory: 8Gi
             limits:
-              cpu: '2'
-              memory: 4Gi
+              cpu: '16'
+              memory: 16Gi
           env:
             - name: MODEL_LISTS
               value: '["yolo", "resnet-human"]'

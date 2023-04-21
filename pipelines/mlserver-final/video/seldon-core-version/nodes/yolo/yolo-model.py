@@ -128,7 +128,7 @@ class Yolo(MLModel):
         logger.info(f"len of the to the model:\n{len(X)}")
         objs = self.model(X)
         output = self.get_cropped(objs)
-        logger.info(f"model output:\n{output}")
+        # logger.info(f"model output:\n{output}")
         serving_time = time.time()
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
         batch_times = [str(times)] * batch_shape
@@ -156,7 +156,7 @@ class Yolo(MLModel):
             model_name=self.name,
             parameters=Parameters(type_of="image"),
         )
-        payload_to_print = payload.outputs[0].data
+        # payload_to_print = payload.outputs[0].data
         logger.info(payload)
         logger.info(f"request counter:\n{self.request_counter}\n")
         logger.info(f"batch counter:\n{self.batch_counter}\n")

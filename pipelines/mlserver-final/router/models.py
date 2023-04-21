@@ -62,8 +62,8 @@ class Router(MLModel):
         self.request_counter = 0
         logger.info("Router loaded")
         mlserver.register(
-            name="input_requests",
-            description="Measuring number of input requests")
+            name="input_requests", description="Measuring number of input requests"
+        )
         self.loaded = True
         return self.loaded
 
