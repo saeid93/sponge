@@ -2,6 +2,7 @@ import subprocess
 import os
 import sys
 import time
+from barazmoon.twitter import twitter_workload_generator
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
