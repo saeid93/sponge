@@ -3,7 +3,7 @@ series_meta: 'checking effect of batch size,\n cpu type: Intel(R) Xeon(R) Gold 6
 pipeline_name: sum-qa
 node_name: nlp-qa
 data_type: text
-timeout: 180
+timeout: 120
 mode: step
 model_variants:
   - deepset-roberta-base-squad2

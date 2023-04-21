@@ -250,3 +250,4 @@ gitignored/
 # mlserver temporary folders
 .envs
 .metrics
+lstm_saved_model

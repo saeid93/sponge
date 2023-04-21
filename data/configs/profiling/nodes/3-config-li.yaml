@@ -3,7 +3,7 @@ series_meta: testing static trace
 pipeline_name: nlp
 node_name: nlp-li
 data_type: text
-timeout: 180
+timeout: 120
 mode: step
 model_variants:
   - dinalzein-xlm-roberta-base-finetuned-language-identification

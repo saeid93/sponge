@@ -162,8 +162,8 @@ def experiments(
                                     if workload_type == "static":
                                         workload = [load] * load_duration
                                     node_type = "first"
-                                    if pipeline_name == "resnet-human":
-                                        node_type == "second"
+                                    if node_name == "resnet-human":
+                                        node_type = "second"
                                     data = load_data(
                                         data_type=data_type,
                                         pipeline_path=node_path,
@@ -180,7 +180,7 @@ def experiments(
                                             "workload": workload,
                                             "mode": mode,
                                             "namespace": "default",
-                                            "no_engine": no_engine,
+                                            # "no_engine": no_engine,
                                             "benchmark_duration": benchmark_duration,
                                             "queue": output_queue,
                                         }
@@ -462,7 +462,7 @@ def save_report(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="test")
+@click.option("--config-name", required=True, type=str, default="5-config-resnet-human")
 def main(config_name: str):
     config_path = os.path.join(NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, "r") as cf:

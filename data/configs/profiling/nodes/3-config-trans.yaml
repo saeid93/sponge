@@ -3,7 +3,7 @@ series_meta: testing static trace
 pipeline_name: nlp
 node_name: nlp-trans
 data_type: text
-timeout: 180
+timeout: 120
 mode: exponential
 model_variants:
   - Helsinki-NLP-opus-mt-fr-en
