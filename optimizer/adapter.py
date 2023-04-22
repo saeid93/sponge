@@ -197,6 +197,7 @@ class Adapter:
                     objective=objective_value,
                     timestep=timestep,
                     time_interval=time_interval,
+                    monitored_load=rps_series, # TEMP for now passes the whole array but should select only useful information in the future
                     predicted_load=predicted_load,
                 )
             else:
@@ -349,7 +350,7 @@ class Monitoring:
         Get the rps of the router
         duration in minutes
         """
-        rate = 15
+        rate = 2
         rps_series, _ = prom_client.get_input_rps(
             pod_name="router",
             namespace="default",
@@ -365,12 +366,14 @@ class Monitoring:
         objective: float,
         timestep: int,
         time_interval: int,
+        monitored_load: List[int],
         predicted_load: int,
     ):
         self.adaptation_report[timestep] = {}
         self.adaptation_report[timestep]["config"] = to_apply_config
         self.adaptation_report[timestep]["objective"] = objective
         self.adaptation_report[timestep]["time_interval"] = time_interval
+        self.adaptation_report[timestep]["monitored_load"] = monitored_load
         self.adaptation_report[timestep]["predicted_load"] = predicted_load
 
 

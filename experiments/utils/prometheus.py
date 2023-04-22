@@ -75,7 +75,7 @@ class PromClient:
         return self.prom_response_postprocess(response)
 
     def get_input_rps(self, pod_name, namespace, container, duration, rate=120):
-        query = f"irate(model_infer_request_duration_count{{pod=~'{pod_name}.*', namespace='{namespace}', container='{container}'}}[{rate}s])[{duration}m:1s]"
+        query = f"rate(input_requests_count{{pod=~'{pod_name}.*', namespace='{namespace}', container='{container}'}}[{rate}s])[{duration}m:1s]"
         response = requests.get(PROMETHEUS + "/api/v1/query", params={"query": query})
         return self.prom_response_postprocess(response)
 
