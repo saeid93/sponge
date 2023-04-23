@@ -340,14 +340,31 @@ class AdaptationParser:
         return adaptation_log
 
     def series_changes(self, adaptation_log: Dict[str, Dict[str, Any]]):
-        changes = {}
+        changes = {
+            "time_interval": [],
+            "objective": [],
+            "monitored_load": [],
+            "predicted_load": [],
+            "nodes": {},
+            "total_load": []
+        }
         for node_name in self.loader.node_orders:
-            changes[node_name] = {"cpu": [], "replicas": [], "batch": [], "variant": []}
-            for _, state in adaptation_log.items():
+            changes["nodes"][node_name] = {
+                "cpu": [],
+                "replicas": [],
+                "batch": [],
+                "variant": [],
+            }
+        for _, state in adaptation_log.items():
+            changes["time_interval"].append(state["time_interval"])
+            changes["objective"].append(state["objective"])
+            changes["monitored_load"].append(state["monitored_load"])
+            changes["predicted_load"].append(state["predicted_load"])
+            for node_name in self.loader.node_orders:
                 for metric, _ in state["config"][node_name].items():
                     if metric == "batch":
                         value = int(state["config"][node_name][metric])
                     else:
                         value = state["config"][node_name][metric]
-                    changes[node_name][metric].append(value)
+                    changes["nodes"][node_name][metric].append(value)
         return changes

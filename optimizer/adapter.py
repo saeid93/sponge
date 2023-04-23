@@ -4,6 +4,7 @@ import tqdm
 import numpy as np
 from kubernetes import config
 from kubernetes import client
+from kubernetes.client.exceptions import ApiException
 from typing import List
 import os
 import sys
@@ -129,6 +130,7 @@ class Adapter:
                 to_apply_config=initial_config,
                 objective=None,
                 timestep=timestep,
+                monitored_load=[0],
                 time_interval=time_interval,
                 predicted_load=0,
             )
@@ -138,7 +140,7 @@ class Adapter:
             logger.info("-" * 50)
             for _ in tqdm.tqdm(range(self.adaptation_interval)):
                 time.sleep(1)
-
+    
             # check if the pipeline is up
             pipeline_up = check_node_up(node_name="router")
             if not pipeline_up:
@@ -147,6 +149,7 @@ class Adapter:
                     "no pipeline in the system," " aborting adaptation process ..."
                 )
                 logger.info("-" * 50)
+                self.update_sent_loads()
                 # with the message that the process has ended
                 break
 
@@ -155,6 +158,8 @@ class Adapter:
             rps_series = self.monitoring.rps_monitor(
                 monitoring_duration=self.monitoring_duration
             )
+            if rps_series is None:
+                continue
             predicted_load = round(self.predictor.predict(rps_series))
             logger.info("-" * 50)
             logger.info(f"\nPredicted Load: {predicted_load}\n")
@@ -169,8 +174,9 @@ class Adapter:
                 arrival_rate=predicted_load,
                 num_state_limit=self.num_state_limit,
             )
+            # optimal = pd.DataFrame() # TEMP
             if "objective" in optimal.columns:
-                objective_value = optimal["objective"][0]
+                objective = optimal["objective"][0]
                 new_configs = self.output_parser(optimal)
                 logger.info("-" * 50)
                 logger.info(f"candidate configs:\n{new_configs}")
@@ -185,6 +191,7 @@ class Adapter:
                     )
                     logger.info("-" * 50)
                     # with the message that the process has ended
+                    self.update_sent_loads()
                     break
 
                 to_apply_config = self.choose_config(new_configs)
@@ -192,26 +199,41 @@ class Adapter:
                 logger.info(f"to be applied configs:\n{to_apply_config}")
                 logger.info("-" * 50)
                 self.change_pipeline_config(to_apply_config)
-                self.monitoring.adaptation_step_report(
-                    to_apply_config=to_apply_config,
-                    objective=objective_value,
-                    timestep=timestep,
-                    time_interval=time_interval,
-                    monitored_load=rps_series, # TEMP for now passes the whole array but should select only useful information in the future
-                    predicted_load=predicted_load,
-                )
             else:
                 logger.info(
                     "optimizer couldn't find any optimal solution"
                     "the pipeline will stay the same"
                 )
-                self.monitoring.adaptation_step_report(
-                    to_apply_config=self.extract_current_config(),
-                    objective=None,
-                    timestep=timestep,
-                    time_interval=time_interval,
-                    predicted_load=predicted_load,
-                )
+                if not pipeline_up:
+                    logger.info("-" * 50)
+                    logger.info(
+                        "no pipeline in the system," " aborting adaptation process ..."
+                    )
+                    logger.info("-" * 50)
+                    # with the message that the process has ended
+                    self.update_sent_loads()
+                    break
+                try:
+                    to_apply_config = self.extract_current_config()
+                except ApiException:
+                    logger.info("-" * 50)
+                    logger.info(
+                        "no pipeline in the system," " aborting adaptation process ..."
+                    )
+                    logger.info("-" * 50)
+                    # with the message that the process has ended
+                    self.update_sent_loads()
+                    break
+                objective = None
+            
+            self.monitoring.adaptation_step_report(
+                to_apply_config=to_apply_config,
+                objective=objective,
+                timestep=timestep,
+                time_interval=time_interval,
+                monitored_load=rps_series,
+                predicted_load=predicted_load,
+            )
 
     def output_parser(self, optimizer_output: pd.DataFrame):
         new_configs = []
@@ -339,6 +361,16 @@ class Adapter:
         )
         return True
 
+    def update_sent_loads(self) -> None:
+        """extract the entire sent load during the
+            experiment
+        """
+       # get all sent duration
+        monitoring_duration = 1000
+        all_sent_loads = self.monitoring.rps_monitor(
+            monitoring_duration=monitoring_duration
+            )
+        self.monitoring.update_sent_load(all_sent_loads)
 
 class Monitoring:
     def __init__(self, pipeline_name) -> None:
@@ -376,6 +408,8 @@ class Monitoring:
         self.adaptation_report[timestep]["monitored_load"] = monitored_load
         self.adaptation_report[timestep]["predicted_load"] = predicted_load
 
+    def update_sent_load(self, all_sent_loads: List[float]):
+        self.adaptation_report["sent_load"] = all_sent_loads
 
 class Predictor:
     def __init__(self, predictor_type, backup_predictor: str = "reactive") -> int:

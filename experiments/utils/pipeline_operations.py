@@ -350,7 +350,9 @@ def warm_up(
     if pipeline_name == "resnet-human":
         node_type = "second"
     workload = [1] * warm_up_duration
-    data = load_data(data_type=data_type, pipeline_path=pipeline_path, node_type=node_type)
+    data = load_data(
+        data_type=data_type, pipeline_path=pipeline_path, node_type=node_type
+    )
     load_test(
         pipeline_name=pipeline_name,
         model=model,

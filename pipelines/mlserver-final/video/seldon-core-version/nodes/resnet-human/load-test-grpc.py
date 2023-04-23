@@ -49,7 +49,7 @@ data_1 = Data(
     data=data,
     data_shape=data_shape
     # custom_parameters=custom_parameters
-    )
+)
 
 # Data list
 data = []

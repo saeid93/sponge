@@ -33,14 +33,15 @@ nodes:
 
 benchmark_duration: 1
 adaptation_interval: 40
-# workload_type: static
-# workload_config:
-#   loads_to_test: 10
-#   load_duration: 1800
+workload_type: static
+workload_config:
+  loads_to_test: 10
+  load_duration: 1800
 workload_type: twitter
 workload_config:
   - start: '1861900'
-    end: '1863700'
+    end: '1862500'
+    # end: '1863700'
 
 # ----------- optimizer configs -------------
 
@@ -82,7 +83,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: false
 profiling_load: 20
-baseline_mode: switch # [switch | scale | sum]
+baseline_mode: switch # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
