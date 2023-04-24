@@ -17,7 +17,10 @@ from tensorflow.keras.models import load_model
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(project_dir, "..")))
-from experiments.utils.pipeline_operations import check_node_up
+from experiments.utils.pipeline_operations import (
+    check_node_up,
+    get_pod_name
+    )
 
 from experiments.utils.prometheus import PromClient
 
@@ -382,9 +385,13 @@ class Monitoring:
         Get the rps of the router
         duration in minutes
         """
+        # Get the complete router pod name to make
+        # sure it is always getting the latest run
+        # router pod
+        router_pod_name = get_pod_name('router')[0]
         rate = 2
         rps_series, _ = prom_client.get_input_rps(
-            pod_name="router",
+            pod_name=router_pod_name,
             namespace="default",
             duration=monitoring_duration,
             container="router",

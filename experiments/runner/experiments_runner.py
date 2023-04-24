@@ -43,20 +43,22 @@ def setup_pipeline(
     data_type: str,
 ):
     timeout = config["timeout"]
-    workload_type = config["workload_type"]
-    workload_config = config["workload_config"]
-    if workload_type == "static":
-        loads_to_test = workload_config["loads_to_test"]
-    elif workload_type == "twitter":
-        # loads_to_test = workload_config['loads_to_test']
-        loads_to_test = []
-        for w_config in workload_config:
-            start = w_config["start"]
-            end = w_config["end"]
-            load_to_test = start + "-" + end
-            loads_to_test.append(load_to_test)
-        workload = twitter_workload_generator(loads_to_test[0])
-        load_duration = len(workload)
+    # workload_type = config["workload_type"]
+    # workload_config = config["workload_config"]
+    # if workload_type == "static":
+    #     loads_to_test = workload_config["loads_to_test"]
+    # elif workload_type == "twitter":
+    #     damping_factor = config['damping_factor']
+    #     loads_to_test = []
+    #     for w_config in workload_config:
+    #         start = w_config["start"]
+    #         end = w_config["end"]
+    #         load_to_test = start + "-" + end
+    #         loads_to_test.append(load_to_test)
+    #     workload = twitter_workload_generator(
+    #         loads_to_test[0],
+    #         damping_factor=damping_factor)
+        # load_duration = len(workload)
 
     model_variants = []
     max_batch_sizes = []
@@ -126,21 +128,24 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
     benchmark_duration = config["benchmark_duration"]
     workload_type = config["workload_type"]
     workload_config = config["workload_config"]
+
     if workload_type == "static":
         loads_to_test = workload_config["loads_to_test"]
         load_duration = workload_config["load_duration"]
+        workload = [loads_to_test] * load_duration
     elif workload_type == "twitter":
         loads_to_test = []
         for w_config in workload_config:
+            damping_factor = w_config['damping_factor']
             start = w_config["start"]
             end = w_config["end"]
             load_to_test = start + "-" + end
             loads_to_test.append(load_to_test)
-        workload = twitter_workload_generator(loads_to_test[0])
+        workload = twitter_workload_generator(
+            loads_to_test[0],
+            damping_factor=damping_factor)
         load_duration = len(workload)
 
-    if workload_type == "static":
-        workload = [loads_to_test] * load_duration
     data = load_data(data_type, pipeline_path)
     # try:
     start_time_experiment, end_time_experiment, responses = load_test(
