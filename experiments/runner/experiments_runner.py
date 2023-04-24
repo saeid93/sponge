@@ -24,7 +24,7 @@ from experiments.utils.pipeline_operations import (
     check_load_test,
     load_test,
     remove_pipeline,
-    setup_router_pipeline,
+    setup_router_pipeline
 )
 
 from experiments.utils.constants import (
@@ -43,22 +43,6 @@ def setup_pipeline(
     data_type: str,
 ):
     timeout = config["timeout"]
-    # workload_type = config["workload_type"]
-    # workload_config = config["workload_config"]
-    # if workload_type == "static":
-    #     loads_to_test = workload_config["loads_to_test"]
-    # elif workload_type == "twitter":
-    #     damping_factor = config['damping_factor']
-    #     loads_to_test = []
-    #     for w_config in workload_config:
-    #         start = w_config["start"]
-    #         end = w_config["end"]
-    #         load_to_test = start + "-" + end
-    #         loads_to_test.append(load_to_test)
-    #     workload = twitter_workload_generator(
-    #         loads_to_test[0],
-    #         damping_factor=damping_factor)
-        # load_duration = len(workload)
 
     model_variants = []
     max_batch_sizes = []
@@ -98,7 +82,7 @@ def setup_pipeline(
         num_interop_threads=cpu_requests,
         num_threads=cpu_requests,
     )
-    logger.info("Checking if the model is up ...")
+    logger.info(f"Checking if the model is up ...")
     logger.info("\n")
     # check if the model is up or not
     check_load_test(
@@ -107,16 +91,16 @@ def setup_pipeline(
         data_type=data_type,
         pipeline_path=pipeline_path,
     )
-    logger.info("model warm up ...")
-    logger.info("\n")
-    warm_up_duration = 10
-    warm_up(
-        pipeline_name="router",
-        model="router",
-        data_type=data_type,
-        pipeline_path=pipeline_path,
-        warm_up_duration=warm_up_duration,
-    )
+    # logger.info("model warm up ...")
+    # logger.info("\n")
+    # warm_up_duration = 10
+    # warm_up(
+    #     pipeline_name="router",
+    #     model="router",
+    #     data_type=data_type,
+    #     pipeline_path=pipeline_path,
+    #     warm_up_duration=warm_up_duration,
+    # )
 
 
 def experiments(config: dict, pipeline_path: str, data_type: str):
@@ -136,14 +120,14 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
     elif workload_type == "twitter":
         loads_to_test = []
         for w_config in workload_config:
-            damping_factor = w_config['damping_factor']
+            damping_factor = w_config["damping_factor"]
             start = w_config["start"]
             end = w_config["end"]
             load_to_test = start + "-" + end
             loads_to_test.append(load_to_test)
         workload = twitter_workload_generator(
-            loads_to_test[0],
-            damping_factor=damping_factor)
+            loads_to_test[0], damping_factor=damping_factor
+        )
         load_duration = len(workload)
 
     data = load_data(data_type, pipeline_path)

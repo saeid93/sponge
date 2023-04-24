@@ -11,6 +11,7 @@ from jinja2 import Environment, FileSystemLoader
 from PIL import Image
 import asyncio
 from datasets import load_dataset
+import tqdm
 from multiprocessing import Queue
 
 from barazmoon import Data
@@ -253,8 +254,6 @@ def setup_router_pipeline(
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
-    # TODO add num nodes logic here
-    # svc_vars = {"name": pipeline_name}
     for node_id, node_name in zip(range(num_nodes), node_names):
         node_path = os.path.join(pipeline_path, "nodes", node_name)
         setup_node(
@@ -421,9 +420,8 @@ def check_node_loaded(node_name: str, silent_mode: bool = False) -> bool:
         logger.info("-" * 25 + f" model pod {node_name} successfuly set up " + "-" * 25)
         logger.info("\n")
     # checks if the pods are ready each 5 seconds
-    loop_timeout = 5
+    check_interval = 5
     while True:
-        # models_loaded, svc_loaded, container_loaded = False, False, False
         models_loaded, container_loaded = False, False
         model_pods = kube_api.list_namespaced_pod(
             namespace=NAMESPACE, label_selector=f"seldon-deployment-id={node_name}"
@@ -449,20 +447,33 @@ def check_node_loaded(node_name: str, silent_mode: bool = False) -> bool:
         if all(all_model_pods) and all_model_pods != []:
             models_loaded = True
         else:
-            continue
+            if not silent_mode:
+                logger.info(f"waited for {check_interval} to check if the pods are up")
+                for _ in tqdm.tqdm(range(check_interval)):
+                    time.sleep(1)
+            else:
+                time.sleep(check_interval)
         if not silent_mode:
             logger.info(f"all_containers: {all_conainers}")
-        if all(all_model_pods):
+        if all(all_conainers):
             container_loaded = True
         else:
-            continue
+            if not silent_mode:
+                logger.info(f"waited for {check_interval} to check if the pods are up")
+                for _ in tqdm.tqdm(range(check_interval)):
+                    time.sleep(1)
+            else:
+                time.sleep(check_interval)
         if models_loaded and container_loaded:
             if not silent_mode:
                 logger.info("model container completely loaded!")
             return True
         if not silent_mode:
-            logger.info(f"waited for {loop_timeout} to check if the pods are up")
-        time.sleep(loop_timeout)
+            logger.info(f"waited for {check_interval} to check if the pods are up")
+            for _ in tqdm.tqdm(range(check_interval)):
+                time.sleep(1)
+        else:
+            time.sleep(check_interval)
 
 
 def check_node_up(node_name: str) -> bool:
@@ -470,3 +481,9 @@ def check_node_up(node_name: str) -> bool:
         namespace=NAMESPACE, label_selector=f"seldon-deployment-id={node_name}"
     )
     return model_pods.items != []
+
+def is_terminating(node_name: str) -> bool:
+    pods = kube_api.list_namespaced_pod(
+        namespace=NAMESPACE, label_selector=f"seldon-deployment-id={node_name}"
+    )
+    return pods.items[0].status.phase == "Terminating"

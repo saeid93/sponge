@@ -346,7 +346,7 @@ class AdaptationParser:
             "monitored_load": [],
             "predicted_load": [],
             "nodes": {},
-            "total_load": []
+            "total_load": [],
         }
         for node_name in self.loader.node_orders:
             changes["nodes"][node_name] = {
@@ -355,6 +355,8 @@ class AdaptationParser:
                 "batch": [],
                 "variant": [],
             }
+        changes['recieved_load'] = adaptation_log['recieved_load']
+        del adaptation_log['recieved_load']
         for _, state in adaptation_log.items():
             changes["time_interval"].append(state["time_interval"])
             changes["objective"].append(state["objective"])

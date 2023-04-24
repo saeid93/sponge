@@ -19,8 +19,10 @@ project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(project_dir, "..")))
 from experiments.utils.pipeline_operations import (
     check_node_up,
-    get_pod_name
-    )
+    get_pod_name,
+    check_node_loaded,
+    is_terminating
+)
 
 from experiments.utils.prometheus import PromClient
 
@@ -124,26 +126,35 @@ class Adapter:
         time_interval = 0
         timestep = 0
         pipeline_up = False
-        pipeline_up = check_node_up(node_name="router")
-        # TODO add the check of whether enough time has
-        # passed to start adaptation or not
-        if pipeline_up:
-            initial_config = self.extract_current_config()
-            self.monitoring.adaptation_step_report(
-                to_apply_config=initial_config,
-                objective=None,
-                timestep=timestep,
-                monitored_load=[0],
-                time_interval=time_interval,
-                predicted_load=0,
+        while True:
+            check_interval = 5
+            logger.info(
+                f"Waiting for {check_interval} seconds before checking if the pipeline is up ..."
             )
+            for _ in tqdm.tqdm(range(check_interval)):
+                time.sleep(1)
+            pipeline_up = check_node_loaded(node_name="router")
+            terminating = is_terminating(node_name="router")
+            if pipeline_up and not terminating:
+                logger.info(f"Found pipeline, starting adaptation ...")
+                initial_config = self.extract_current_config()
+                self.monitoring.get_router_pod_name()
+                self.monitoring.adaptation_step_report(
+                    to_apply_config=initial_config,
+                    objective=None,
+                    timestep=timestep,
+                    monitored_load=[0],
+                    time_interval=time_interval,
+                    predicted_load=0,
+                )
+                break
         while True:
             logger.info("-" * 50)
             logger.info(f"Waiting {self.adaptation_interval}" " to make next descision")
             logger.info("-" * 50)
             for _ in tqdm.tqdm(range(self.adaptation_interval)):
                 time.sleep(1)
-    
+
             # check if the pipeline is up
             pipeline_up = check_node_up(node_name="router")
             if not pipeline_up:
@@ -152,7 +163,7 @@ class Adapter:
                     "no pipeline in the system," " aborting adaptation process ..."
                 )
                 logger.info("-" * 50)
-                self.update_sent_loads()
+                self.update_recieved_load()
                 # with the message that the process has ended
                 break
 
@@ -194,28 +205,21 @@ class Adapter:
                     )
                     logger.info("-" * 50)
                     # with the message that the process has ended
-                    self.update_sent_loads()
+                    self.update_recieved_load()
                     break
 
                 to_apply_config = self.choose_config(new_configs)
                 logger.info("-" * 50)
                 logger.info(f"to be applied configs:\n{to_apply_config}")
                 logger.info("-" * 50)
-                self.change_pipeline_config(to_apply_config)
+
+                if to_apply_config is not None:
+                    self.change_pipeline_config(to_apply_config)
             else:
                 logger.info(
                     "optimizer couldn't find any optimal solution"
                     "the pipeline will stay the same"
                 )
-                if not pipeline_up:
-                    logger.info("-" * 50)
-                    logger.info(
-                        "no pipeline in the system," " aborting adaptation process ..."
-                    )
-                    logger.info("-" * 50)
-                    # with the message that the process has ended
-                    self.update_sent_loads()
-                    break
                 try:
                     to_apply_config = self.extract_current_config()
                 except ApiException:
@@ -225,10 +229,10 @@ class Adapter:
                     )
                     logger.info("-" * 50)
                     # with the message that the process has ended
-                    self.update_sent_loads()
+                    self.update_recieved_load()
                     break
                 objective = None
-            
+
             self.monitoring.adaptation_step_report(
                 to_apply_config=to_apply_config,
                 objective=objective,
@@ -256,7 +260,10 @@ class Adapter:
         # current config
         # easiest for now is to choose config with
         # with the least change from former config
-        current_config = self.extract_current_config()
+        try:
+            current_config = self.extract_current_config()
+        except ApiException:
+            return None
         new_config_socres = []
         for new_config in new_configs:
             new_config_score = 0
@@ -364,16 +371,17 @@ class Adapter:
         )
         return True
 
-    def update_sent_loads(self) -> None:
+    def update_recieved_load(self) -> None:
         """extract the entire sent load during the
-            experiment
+        experiment
         """
-       # get all sent duration
+        # get all sent duration
         monitoring_duration = 1000
-        all_sent_loads = self.monitoring.rps_monitor(
+        all_recieved_loads = self.monitoring.rps_monitor(
             monitoring_duration=monitoring_duration
-            )
-        self.monitoring.update_sent_load(all_sent_loads)
+        )
+        self.monitoring.update_recieved_load(all_recieved_loads)
+
 
 class Monitoring:
     def __init__(self, pipeline_name) -> None:
@@ -388,16 +396,18 @@ class Monitoring:
         # Get the complete router pod name to make
         # sure it is always getting the latest run
         # router pod
-        router_pod_name = get_pod_name('router')[0]
         rate = 2
         rps_series, _ = prom_client.get_input_rps(
-            pod_name=router_pod_name,
+            pod_name=self.router_pod_name,
             namespace="default",
             duration=monitoring_duration,
             container="router",
             rate=rate,
         )
         return rps_series
+
+    def get_router_pod_name(self):
+        self.router_pod_name = get_pod_name("router")[0]
 
     def adaptation_step_report(
         self,
@@ -415,8 +425,9 @@ class Monitoring:
         self.adaptation_report[timestep]["monitored_load"] = monitored_load
         self.adaptation_report[timestep]["predicted_load"] = predicted_load
 
-    def update_sent_load(self, all_sent_loads: List[float]):
-        self.adaptation_report["sent_load"] = all_sent_loads
+    def update_recieved_load(self, all_recieved_loads: List[float]):
+        self.adaptation_report["recieved_load"] = all_recieved_loads
+
 
 class Predictor:
     def __init__(self, predictor_type, backup_predictor: str = "reactive") -> int:
