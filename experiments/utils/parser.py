@@ -354,10 +354,13 @@ class AdaptationParser:
                 "replicas": [],
                 "batch": [],
                 "variant": [],
+                "latency": [],
+                "accuracy": [],
+                "throughput": [],
             }
-        changes['recieved_load'] = adaptation_log['recieved_load']
-        del adaptation_log['recieved_load']
-        for _, state in adaptation_log.items():
+        changes["recieved_load"] = adaptation_log["metadata"]["recieved_load"]
+        changes["sla"] = adaptation_log["metadata"]["sla"]
+        for _, state in adaptation_log["timesteps"].items():
             changes["time_interval"].append(state["time_interval"])
             changes["objective"].append(state["objective"])
             changes["monitored_load"].append(state["monitored_load"])

@@ -1,4 +1,3 @@
-import os, tarfile
 import bz2
 import json
 from builder_req import build_workload
@@ -33,7 +32,6 @@ def create_workload(day="25"):
                 tweets = json.loads(line)
 
                 if len(tweets) > 0:
-                    json_object = tweets
                     if "created_at" in tweets.keys():
                         time = datetime.datetime.fromtimestamp(
                             int(tweets["timestamp_ms"]) // 1000.0

@@ -482,6 +482,7 @@ def check_node_up(node_name: str) -> bool:
     )
     return model_pods.items != []
 
+
 def is_terminating(node_name: str) -> bool:
     pods = kube_api.list_namespaced_pod(
         namespace=NAMESPACE, label_selector=f"seldon-deployment-id={node_name}"

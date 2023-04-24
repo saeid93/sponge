@@ -24,7 +24,7 @@ from experiments.utils.pipeline_operations import (
     check_load_test,
     load_test,
     remove_pipeline,
-    setup_router_pipeline
+    setup_router_pipeline,
 )
 
 from experiments.utils.constants import (

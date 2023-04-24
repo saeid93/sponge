@@ -1,4 +1,4 @@
-from typing import Dict, Literal, Tuple, Union, Optional
+from typing import Dict, Literal, Tuple, Union, Optional, Any
 import time
 import tqdm
 import numpy as np
@@ -11,6 +11,7 @@ import sys
 import pandas as pd
 import concurrent.futures
 import tensorflow as tf
+from copy import deepcopy
 from tensorflow.keras.models import load_model
 
 
@@ -21,7 +22,7 @@ from experiments.utils.pipeline_operations import (
     check_node_up,
     get_pod_name,
     check_node_loaded,
-    is_terminating
+    is_terminating,
 )
 
 from experiments.utils.prometheus import PromClient
@@ -107,7 +108,9 @@ class Adapter:
         self.num_state_limit = num_state_limit
         self.monitoring_duration = monitoring_duration
         self.predictor_type = predictor_type
-        self.monitoring = Monitoring(pipeline_name=self.pipeline_name)
+        self.monitoring = Monitoring(
+            pipeline_name=self.pipeline_name, sla=self.pipeline.sla
+        )
         self.predictor = Predictor(predictor_type=self.predictor_type)
 
     def start_adaptation(self):
@@ -139,8 +142,18 @@ class Adapter:
                 logger.info(f"Found pipeline, starting adaptation ...")
                 initial_config = self.extract_current_config()
                 self.monitoring.get_router_pod_name()
+
+                to_save_config = self.saving_config_builder(
+                    to_apply_config=deepcopy(initial_config),
+                    node_orders=deepcopy(self.node_names),
+                    stage_wise_latencies=deepcopy(self.pipeline.stage_wise_latencies),
+                    stage_wise_accuracies=deepcopy(self.pipeline.stage_wise_accuracies),
+                    stage_wise_throughputs=deepcopy(
+                        self.pipeline.stage_wise_throughput
+                    ),
+                )
                 self.monitoring.adaptation_step_report(
-                    to_apply_config=initial_config,
+                    to_apply_config=to_save_config,
                     objective=None,
                     timestep=timestep,
                     monitored_load=[0],
@@ -232,9 +245,18 @@ class Adapter:
                     self.update_recieved_load()
                     break
                 objective = None
-
+            if to_apply_config is not None:
+                to_save_config = self.saving_config_builder(
+                    to_apply_config=deepcopy(to_apply_config),
+                    node_orders=deepcopy(self.node_names),
+                    stage_wise_latencies=deepcopy(self.pipeline.stage_wise_latencies),
+                    stage_wise_accuracies=deepcopy(self.pipeline.stage_wise_accuracies),
+                    stage_wise_throughputs=deepcopy(
+                        self.pipeline.stage_wise_throughput
+                    ),
+                )
             self.monitoring.adaptation_step_report(
-                to_apply_config=to_apply_config,
+                to_apply_config=to_save_config,
                 objective=objective,
                 timestep=timestep,
                 time_interval=time_interval,
@@ -382,11 +404,29 @@ class Adapter:
         )
         self.monitoring.update_recieved_load(all_recieved_loads)
 
+    def saving_config_builder(
+        self,
+        to_apply_config: Dict[str, Any],
+        node_orders: List[str],
+        stage_wise_latencies: List[float],
+        stage_wise_accuracies: List[float],
+        stage_wise_throughputs: List[float],
+    ):
+        saving_config = to_apply_config
+        for index, node in enumerate(node_orders):
+            saving_config[node]["latency"] = stage_wise_latencies[index]
+            saving_config[node]["accuracy"] = stage_wise_accuracies[index]
+            saving_config[node]["throughput"] = stage_wise_throughputs[index]
+        return saving_config
+
 
 class Monitoring:
-    def __init__(self, pipeline_name) -> None:
+    def __init__(self, pipeline_name: str, sla: float) -> None:
         self.pipeline_name = pipeline_name
         self.adaptation_report = {}
+        self.adaptation_report["timesteps"] = {}
+        self.adaptation_report["metadata"] = {}
+        self.adaptation_report["metadata"]["sla"] = sla
 
     def rps_monitor(self, monitoring_duration: int = 1) -> List[int]:
         """
@@ -413,20 +453,21 @@ class Monitoring:
         self,
         to_apply_config: Dict[str, Dict[str, Union[str, int]]],
         objective: float,
-        timestep: int,
+        timestep: str,
         time_interval: int,
         monitored_load: List[int],
         predicted_load: int,
     ):
-        self.adaptation_report[timestep] = {}
-        self.adaptation_report[timestep]["config"] = to_apply_config
-        self.adaptation_report[timestep]["objective"] = objective
-        self.adaptation_report[timestep]["time_interval"] = time_interval
-        self.adaptation_report[timestep]["monitored_load"] = monitored_load
-        self.adaptation_report[timestep]["predicted_load"] = predicted_load
+        timestep = int(timestep)
+        self.adaptation_report["timesteps"][timestep] = {}
+        self.adaptation_report["timesteps"][timestep]["config"] = to_apply_config
+        self.adaptation_report["timesteps"][timestep]["objective"] = objective
+        self.adaptation_report["timesteps"][timestep]["time_interval"] = time_interval
+        self.adaptation_report["timesteps"][timestep]["monitored_load"] = monitored_load
+        self.adaptation_report["timesteps"][timestep]["predicted_load"] = predicted_load
 
     def update_recieved_load(self, all_recieved_loads: List[float]):
-        self.adaptation_report["recieved_load"] = all_recieved_loads
+        self.adaptation_report["metadata"]["recieved_load"] = all_recieved_loads
 
 
 class Predictor:
