@@ -1,0 +1,8 @@
+{
+    "name": "queue",
+    "max_batch_size": 1,
+    "implementation": "models.Queue",
+    "parameters": {
+        "uri": "./fakeuri"
+    }
+}
