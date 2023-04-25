@@ -28,17 +28,17 @@ async def send_requests(ch, payload, metadata):
 
 
 # single node mlserver
-# endpoint = "localhost:8081"
-# model = 'router'
-# metadata = []
+endpoint = "localhost:8081"
+model = 'queue'
+metadata = []
 
 
 # single node seldon+mlserver
-endpoint = "localhost:32000"
-deployment_name = "router"
-model = "router"
-namespace = "default"
-metadata = [("seldon", deployment_name), ("namespace", namespace)]
+# endpoint = "localhost:32000"
+# deployment_name = "qeueu"
+# model = "queue"
+# namespace = "default"
+# metadata = [("seldon", deployment_name), ("namespace", namespace)]
 
 batch_test = 5
 ds = load_dataset(

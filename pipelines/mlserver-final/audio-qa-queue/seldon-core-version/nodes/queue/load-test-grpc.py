@@ -8,10 +8,10 @@ import time
 import numpy as np
 import mlserver.types as types
 
-load = 10
-test_duration = 600
+load = 1
+test_duration = 1
 variant = 0
-platform = "seldon"
+platform = "mlserver"
 mode = "exponential"
 
 # INFO this scripts is using https://github.com/reconfigurable-ml-pipeline/load_tester/tree/saeed
@@ -20,13 +20,13 @@ mode = "exponential"
 # single node inference
 if platform == "seldon":
     endpoint = "localhost:32000"
-    deployment_name = "router"
-    model = "router"
+    deployment_name = "queue"
+    model = "queue"
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == "mlserver":
     endpoint = "localhost:8081"
-    model = "router"
+    model = "queue"
     metadata = []
 
 data_type = "audio"
