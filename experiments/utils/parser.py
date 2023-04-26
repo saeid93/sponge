@@ -6,6 +6,7 @@ import time
 import json
 import yaml
 from json import JSONDecodeError
+from copy import deepcopy
 
 
 class Parser:
@@ -110,10 +111,12 @@ class Parser:
         [req_1, req_2, ...]
         """
         flattend_results = []
+        num_each_second_requests = []
         for second_results in per_second_latencies:
+            num_each_second_requests.append(len(second_results))
             for request_result in second_results:
                 flattend_results.append(request_result)
-        return flattend_results
+        return num_each_second_requests, flattend_results
 
     def _node_latency_calculator(self, results: Dict[Dict, Any]):
         client_to_model_latencies = []
@@ -149,7 +152,7 @@ class Parser:
                 timeout_count += 1
         return latencies, timeout_count
 
-    def _pipeline_latency_calculator(self, results: Dict[Dict, Any]):
+    def _pipeline_latency_calculator(self, results: Dict[Dict, Any], keep_lost: bool = False):
         latencies = {
             "client_to_pipeline_latencies": [],
             "pipeline_to_client_latencies": [],
@@ -183,9 +186,16 @@ class Parser:
                         )
             except KeyError:
                 timeout_count += 1
+                if keep_lost:
+                    latencies["client_to_pipeline_latencies"].append(None)
+                    latencies["pipeline_to_client_latencies"].append(None)
+                    for index, model in enumerate(self.node_orders):
+                        latencies[f"task_{index}_model_latencies"].append(None)
+                        if index < len(self.node_orders) - 1:
+                            latencies[f"task_{index}_to_task_{index+1}_latencies"].append(None)
         return latencies, timeout_count
 
-    def latency_calculator(self, results: Dict[Dict, Any], log=None):
+    def latency_calculator(self, results: Dict[Dict, Any], log=None, keep_lost=False):
         """symmetric input meaning:
         per each input at the first node of the pipeline
         we only have one output going to the second node of the
@@ -194,16 +204,16 @@ class Parser:
         if self.type_of == "node":
             return self._node_latency_calculator(results)
         elif self.type_of == "pipeline":
-            return self._pipeline_latency_calculator(results)
+            return self._pipeline_latency_calculator(results, keep_lost=keep_lost)
 
     def metric_summary(self, metric, values):
         summary = {}
+        values = list(filter(lambda x: x is not None, values))
         if values != [] and values != None:
             try:
                 summary[f"{metric}_avg"] = np.average(values)
             except TypeError:
                 pass
-                # print('excepted-2!')
             summary[f"{metric}_p99"] = np.percentile(values, 99)
             summary[f"{metric}_p95"] = np.percentile(values, 95)
             summary[f"{metric}_p50"] = np.percentile(values, 50)
@@ -233,7 +243,7 @@ class Parser:
         final_dataframe = []
         for experiment_id, result in results.items():
             processed_exp = {"experiment_id": int(experiment_id)}
-            flattened_results = self.flatten_results(
+            _, flattened_results = self.flatten_results(
                 results[str(experiment_id)]["responses"]
             )
             if log is not None:
@@ -289,6 +299,36 @@ class Parser:
                 final_dataframe.append(processed_exp)
         return pd.DataFrame(final_dataframe)
 
+    def per_second_result_processing(self):
+        log = None
+        selected = None
+        results = self._read_results(selected)
+        final_dataframe = []
+        for experiment_id, result in results.items():
+            # processed_exp = {"experiment_id": int(experiment_id)}
+            num_request_per_seconds, flattened_results = self.flatten_results(
+                results[str(experiment_id)]["responses"]
+            )
+            latencies, timeout_count = self.latency_calculator(
+                flattened_results, log, keep_lost=True
+            )
+        temp_latency = deepcopy(latencies)
+        per_second_stats = []
+        for i in range(len(num_request_per_seconds)):
+            temp_dict = {}
+            for key in temp_latency:
+                temp_dict[key] = temp_latency[key][:num_request_per_seconds[i]]
+                temp_latency[key] = temp_latency[key][num_request_per_seconds[i]:]
+            per_second_stats.append(temp_dict)
+        stats = []
+        for item in per_second_stats:
+            stats.append(self.latency_summary(item))
+        timeout_per_second = []
+        for item in per_second_stats:
+            num_nones = len(list(filter(lambda x: x is None, item['client_to_pipeline_latencies'])))
+            timeout_per_second.append(num_nones)
+        return timeout_per_second, pd.DataFrame(stats)
+
     def table_maker(
         self,
         experiment_ids: List[int],
@@ -327,6 +367,12 @@ class AdaptationParser:
     def result_processing(self):
         return self.loader.result_processing()
 
+    def per_second_result_processing(self):
+        return self.loader.per_second_result_processing()
+
+    def read_results(self):
+        return self.loader._read_results()
+
     def flatten_results(self, per_second_latencies):
         return self.loader.flatten_results(per_second_latencies)
 
@@ -338,6 +384,25 @@ class AdaptationParser:
         with open(adaptation_file, "r") as input_file:
             adaptation_log = json.load(input_file)
         return adaptation_log
+
+    def points_with_change(self, adaptation_log: Dict[str, Dict[str, Any]]) -> Dict[str, List[bool]]:
+        node_changes = {}
+        for node in self.loader.node_orders:
+            node_changes[node] = []
+        for node in self.loader.node_orders:
+            last_config = {}
+            for _, config in adaptation_log['timesteps'].items():
+                if last_config == {}:
+                    last_config = deepcopy(config['config'][node])
+                    continue
+                for config_knob, config_knob_value in config['config'][node].items():
+                    if last_config[config_knob] != config_knob_value:
+                        node_changes[node].append(True)
+                        break
+                else: # no-break
+                    node_changes[node].append(False)
+                last_config = deepcopy(config['config'][node])
+        return node_changes
 
     def series_changes(self, adaptation_log: Dict[str, Dict[str, Any]]):
         changes = {
