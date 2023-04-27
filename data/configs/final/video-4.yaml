@@ -49,7 +49,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 10
+series: 14
 # pipeline_name: video
 metadata: 'checking the effect of changing all variables under arrival rate 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 number_tasks: 2
@@ -87,7 +87,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: false
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: switch # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------

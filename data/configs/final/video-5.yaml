@@ -49,7 +49,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 10
+series: 15
 # pipeline_name: video
 metadata: 'checking the effect of changing all variables under arrival rate 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
 number_tasks: 2
@@ -92,5 +92,5 @@ accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'max' # [reactive | avg | lstm | max]
+predictor_type: 'reactive' # [reactive | avg | lstm | max]
 monitoring_duration: 10 # in minutes

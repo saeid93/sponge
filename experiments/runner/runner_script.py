@@ -3,9 +3,14 @@ import os
 import sys
 import time
 
-# TODO unifying reading yaml config files for both scripts here here
+# Parse command line arguments
+import argparse
 
-# get an absolute path to the directory that contains parent files
+parser = argparse.ArgumentParser()
+parser.add_argument("--config-name", help="Path to configuration file", required=True)
+args = parser.parse_args()
+
+# Get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(project_dir, "..", "..")))
 from experiments.utils.constants import PROJECT_PATH
@@ -19,13 +24,14 @@ script2_path = os.path.join(runner_folder, "adaptation_runner.py")
 
 
 # Define a function to run each script in a separate subprocess
-def run_script(script_path):
-    return subprocess.Popen(["python", script_path])
+def run_script(script_path, config_name):
+    return subprocess.Popen(["python", script_path, "--config-name", config_name])
 
 
 # Start the two subprocesses
-process1 = run_script(script1_path)
-process2 = run_script(script2_path)
+config_name = args.config_name
+process1 = run_script(script1_path, config_name)
+process2 = run_script(script2_path, config_name)
 
 # Wait for both subprocesses to complete
 while True:

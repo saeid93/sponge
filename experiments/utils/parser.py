@@ -208,7 +208,8 @@ class Parser:
 
     def metric_summary(self, metric, values):
         summary = {}
-        values = list(filter(lambda x: x is not None, values))
+        if values is not None:
+            values = list(filter(lambda x: x is not None, values))
         if values != [] and values != None:
             try:
                 summary[f"{metric}_avg"] = np.average(values)

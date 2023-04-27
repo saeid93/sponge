@@ -33,6 +33,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
+        terminationGracePeriodSeconds: 20
         containers:
         - image: sdghafouri/audio-qa-final:audio
           name: audio
@@ -74,7 +75,14 @@ spec:
             successThreshold: 1
             tcpSocket:
               port: 9000
-            timeoutSeconds: 1
+            timeoutSeconds: 2
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 10
       replicas: 1
     graph:
       name: audio
