@@ -25,8 +25,8 @@ with open(os.path.join(PATH, "input-sample-shape.json"), "r") as openfile:
 data = np.array(data).flatten()
 
 
-load = 10
-test_duration = 300
+load = 50
+test_duration = 30
 variant = 0
 platform = "router"
 workload = [load] * test_duration
@@ -78,6 +78,17 @@ print(f"{(time.time() - start_time):2.2}s spent in total")
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+num_failed = 0
+total = 0
+for second_response in responses:
+    for resp in second_response:
+        if 'failed' in resp.keys():
+            num_failed +=1
+        total += 1
+
+print(f"{num_failed} failed out of total {total}")
+
 
 # # roundtrip latency
 # roundtrip_lat = []
@@ -137,4 +148,4 @@ import numpy as np
 # plt.show()
 
 # print(f"{np.average(server_arrival_latency)}=")
-print(responses)
+# print(responses)

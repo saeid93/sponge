@@ -5,6 +5,9 @@ metadata:
 spec:
   protocol: v2
   name: nlp-li
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 15s
   predictors:
   - name: nlp-li
     annotations:
@@ -31,6 +34,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
+        terminationGracePeriodSeconds: 15
         containers:
         - image: sdghafouri/nlp-final:nlpli
           name: nlp-li
@@ -73,6 +77,13 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 15
       replicas: 1
     graph:
       name: nlp-li

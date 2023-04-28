@@ -5,6 +5,9 @@ metadata:
 spec:
   protocol: v2
   name: yolo
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 15s
   predictors:
   - name: yolo
     annotations:
@@ -32,16 +35,17 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
+        terminationGracePeriodSeconds: 15
         containers:
         - image: sdghafouri/video-final:yolo
           name: yolo
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '4'
+              cpu: '8'
               memory: 4Gi
             limits:
-              cpu: '4'
+              cpu: '8'
               memory: 4Gi
           volumeMounts:
           - mountPath: /mnt/models
@@ -73,6 +77,13 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 15
       replicas: 2
     graph:
       name: yolo
@@ -86,6 +97,9 @@ apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
   name: resnet-human
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 15s
 spec:
   protocol: v2
   name: resnet-human
@@ -116,6 +130,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
+        terminationGracePeriodSeconds: 15
         containers:
         - image: sdghafouri/video-final:resnet-human
           name: resnet-human
@@ -156,6 +171,13 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 15
       replicas: 2
     graph:
       name: resnet-human
@@ -169,6 +191,9 @@ apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
   name: router
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 15s
 spec:
   protocol: v2
   name: router
@@ -187,8 +212,8 @@ spec:
               cpu: '8'
               memory: 8Gi
             limits:
-              cpu: '8'
-              memory: 8Gi
+              cpu: '16'
+              memory: 16Gi
           env:
             - name: MODEL_LISTS
               value: '["yolo", "resnet-human"]'

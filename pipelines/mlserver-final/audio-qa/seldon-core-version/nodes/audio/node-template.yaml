@@ -7,6 +7,9 @@ spec:
   name: {{ name }}
   # annotations:
   #   seldon.io/engine-separate-pod: "true"
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 15s
   predictors:
   - name: {{ name }}
     annotations:
@@ -33,6 +36,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
+        terminationGracePeriodSeconds: 15
         containers:
         - image: sdghafouri/audio-qa-final:audio
           name: audio
@@ -75,6 +79,13 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 15
       replicas: {{ replicas }}
     graph:
       name: audio
