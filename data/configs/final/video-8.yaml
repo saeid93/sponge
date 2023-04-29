@@ -40,12 +40,12 @@ adaptation_interval: 20
 workload_type: twitter
 workload_config:
   - start: '1861900'
-    end: '1862000'
+    # end: '1862000'
     # end: '1862200'
     # end: '1861960'
     # end: '1862500'
     # end: '1863700'
-    # end: '1865100'
+    end: '1865100'
     damping_factor: 3 # [int | null]
 
 # ----------- optimizer configs -------------

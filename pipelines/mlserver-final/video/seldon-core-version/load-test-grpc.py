@@ -25,7 +25,7 @@ with open(os.path.join(PATH, "input-sample-shape.json"), "r") as openfile:
 data = np.array(data).flatten()
 
 
-load = 50
+load = 30
 test_duration = 30
 variant = 0
 platform = "router"
