@@ -39,8 +39,9 @@ adaptation_interval: 20
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1861900'
-    end: '1862000'
+  # - start: '1861900'
+  - start: '1863050'
+    end: '1863200'
     # end: '1862200'
     # end: '1861960'
     # end: '1862500'
@@ -50,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 26
+series: 27
 # pipeline_name: video
-metadata: 'repeat of 13 to check the effect of termination hook'
+metadata: 'repeat of 25 around the peak to check the effect of termination hook'
 number_tasks: 2
 profiling_series:
   - 71
@@ -86,9 +87,9 @@ optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
-only_measured_profiles: true 
+only_measured_profiles: false
 profiling_load: 20
-baseline_mode: null # [switch | scale | null]
+baseline_mode: scale # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
