@@ -7,7 +7,7 @@ spec:
   name: nlp-sent
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: 15s
+      terminationDrainDuration: 30s
   predictors:
   - name: nlp-sent
     annotations:
@@ -35,7 +35,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: 15
+        terminationGracePeriodSeconds: 30
         containers:
         - image: sdghafouri/audio-sent-final:nlpsent
           name: nlp-sent
@@ -84,7 +84,7 @@ spec:
                 command:
                 - /bin/sh
                 - -c
-                - /bin/sleep 15
+                - /bin/sleep 30
       replicas: 2
     graph:
       name: nlp-sent

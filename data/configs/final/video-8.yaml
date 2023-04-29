@@ -46,7 +46,7 @@ workload_config:
     # end: '1862500'
     # end: '1863700'
     end: '1865100'
-    damping_factor: 3 # [int | null]
+    damping_factor: 5 # [int | null]
 
 # ----------- optimizer configs -------------
 

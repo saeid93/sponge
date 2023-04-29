@@ -5,9 +5,9 @@ metadata:
 spec:
   protocol: v2
   name: {{ name }}
-  annotations:
-    proxy.istio.io/config: |
-      terminationDrainDuration: 15s
+  # annotations:
+  #   proxy.istio.io/config: |
+  #     terminationDrainDuration: 30s
   predictors:
   - name: {{ name }}
     annotations:
@@ -35,7 +35,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: 15
+        # terminationGracePeriodSeconds: 30
         containers:
         - image: sdghafouri/video-final:resnet-human
           name: resnet-human
@@ -76,13 +76,13 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                - /bin/sh
-                - -c
-                - /bin/sleep 15
+          # lifecycle:
+          #   preStop:
+          #     exec:
+          #       command:
+          #       - /bin/sh
+          #       - -c
+          #       - /bin/sleep 30
       replicas: {{ replicas }}
     graph:
       name: resnet-human

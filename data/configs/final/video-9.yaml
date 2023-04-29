@@ -47,13 +47,13 @@ workload_config:
     # end: '1862500'
     # end: '1863700'
     # end: '1865100'
-    damping_factor: 3 # [int | null]
+    damping_factor: 8 # [int | null]
 
 # ----------- optimizer configs -------------
 
-series: 27
+series: 31
 # pipeline_name: video
-metadata: 'repeat of 25 around the peak to check the effect of termination hook'
+metadata: 'repeat of 30 around the peak to check the effect without termination hook to check if the error message is the same'
 number_tasks: 2
 profiling_series:
   - 71
