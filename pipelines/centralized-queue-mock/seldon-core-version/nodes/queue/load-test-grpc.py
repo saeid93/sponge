@@ -11,7 +11,7 @@ import mlserver.types as types
 load = 1
 test_duration = 1
 variant = 0
-platform = "mlserver"
+platform = "seldon"
 mode = "exponential"
 
 # INFO this scripts is using https://github.com/reconfigurable-ml-pipeline/load_tester/tree/saeed

@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 31
+series: 33
 # pipeline_name: video
-metadata: 'repeat of 30 around the peak to check the effect without termination hook to check if the error message is the same'
+metadata: 'repeat of 30 around the peak to check the but pushing termination to the extreme of 180s to make sure of root cause'
 number_tasks: 2
 profiling_series:
   - 71

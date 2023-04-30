@@ -40,6 +40,10 @@ class Queue(MLModel):
 
         self.request_counter += 1
         logger.info(f"Request counter:\n{self.request_counter}\n")
+
+        # TODO endpoint to models?
+
+        logger.info(f"payload: {payload}")
         inference_response = InferenceResponse(
             outputs=payload.inputs, model_name=self.name)
         return inference_response
