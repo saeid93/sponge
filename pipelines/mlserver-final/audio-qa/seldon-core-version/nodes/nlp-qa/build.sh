@@ -3,7 +3,7 @@ REPOS=(
 IMAGE_NAME=audio-qa-final:nlpqa
 mlserver dockerfile --include-dockerignore .
 sed -i 's/seldonio/sdghafouri/g' Dockerfile
-sed -i 's/1.3.0.dev4-slim/custom-slim/g' Dockerfile
+sed -i 's/1.3.0.dev15-slim/custom-slim/g' Dockerfile
 DOCKER_BUILDKIT=1 docker build . --tag=$IMAGE_NAME
 for REPO in ${REPOS[@]}
 do

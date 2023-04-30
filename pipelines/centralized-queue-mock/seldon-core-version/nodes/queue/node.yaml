@@ -22,6 +22,9 @@ spec:
             limits:
               cpu: '16'
               memory: 16Gi
+          env:
+            - name: MODEL_NAME
+              value: 'node-one'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
