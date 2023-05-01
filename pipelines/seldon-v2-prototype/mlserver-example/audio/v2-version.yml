@@ -1,9 +1,0 @@
-apiVersion: mlops.seldon.io/v1alpha1
-kind: Model
-metadata:
-  name: audio
-spec:
-  storageUri: "/mnt/models/mlserver/audio"
-  requirements:
-  - mlserver
-  - python
