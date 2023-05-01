@@ -45,7 +45,7 @@ ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
 )
 
-input_data = ds[0]["audio"]["array"][0:100]
+input_data = ds[0]["audio"]["array"][0:10]
 data_shape = [len(input_data)]
 custom_parameters = {"custom_2": "test_2"}
 payload = types.InferenceRequest(

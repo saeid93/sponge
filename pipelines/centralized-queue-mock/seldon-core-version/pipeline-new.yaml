@@ -22,8 +22,49 @@ spec:
             limits:
               cpu: '4'
               memory: 4Gi
-
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
+      replicas: 2
+    graph:
+      name: node-one
+      type: MODEL
+      children: []
+    labels:
+      sidecar.istio.io/inject: "true"
+---
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: queue-one
+spec:
+  protocol: v2
+  name: queue-one
+  predictors:
+  - name: queue-one
+    annotations:
+      seldon.io/no-engine: "true" 
+    componentSpecs:
+    - spec:
+        containers:
+        - image: sdghafouri/with-queue-example:queue
+          name: queue-one
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: '4'
+              memory: 8Gi
+            limits:
+              cpu: '16'
+              memory: 16Gi
           env:
+            - name: MODEL_NAME
+              value: 'node-one'
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
@@ -40,11 +81,12 @@ spec:
             timeoutSeconds: 1
       replicas: 1
     graph:
-      name: node-one
+      name: queue-one
       type: MODEL
       children: []
     labels:
       sidecar.istio.io/inject: "true"
+
 ---
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
@@ -70,14 +112,57 @@ spec:
             limits:
               cpu: '4'
               memory: 4Gi
-
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
+      replicas: 2
+    graph:
+      name: node-two
+      type: MODEL
+      children: []
+    labels:
+      sidecar.istio.io/inject: "true"
+---
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: queue-two
+spec:
+  protocol: v2
+  name: queue-two
+  predictors:
+  - name: queue-two
+    annotations:
+      seldon.io/no-engine: "true" 
+    componentSpecs:
+    - spec:
+        containers:
+        - image: sdghafouri/with-queue-example:queue
+          name: queue-two
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: '4'
+              memory: 8Gi
+            limits:
+              cpu: '16'
+              memory: 16Gi
           env:
+            - name: MODEL_NAME
+              value: 'node-two'
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
+            - name: LAST_NODE
+              value: 'True'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -88,12 +173,11 @@ spec:
             timeoutSeconds: 1
       replicas: 1
     graph:
-      name: node-two
+      name: queue-two
       type: MODEL
       children: []
     labels:
       sidecar.istio.io/inject: "true"
-
 ---
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
@@ -121,7 +205,7 @@ spec:
               memory: 16Gi
           env:
             - name: MODEL_LISTS
-              value: '["node-one", "node-two"]'
+              value: '["queue-one", "queue-two"]'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

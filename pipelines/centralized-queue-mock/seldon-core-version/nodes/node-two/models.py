@@ -37,18 +37,27 @@ class NodeTwo(MLModel):
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
+        logger.info(f"payload: {payload}")
         for request_input in payload.inputs:
             # check if this is a first node load
             if "times" in dir(request_input.parameters):
                 prev_nodes_times = request_input.parameters.times
                 # workaround for batch size of one
                 if type(prev_nodes_times) == str:
-                    logger.info(f"prev_nodes_times:\n{prev_nodes_times}")
-                    prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
-                else:
+                    logger.info(f"prev_nodes_times before:\n{prev_nodes_times}")
+                    prev_nodes_times = eval(prev_nodes_times)
                     prev_nodes_times = list(
                         map(lambda l: eval(eval(l)[0]), prev_nodes_times)
                     )
+                    logger.info(f"prev_nodes_times after:\n{prev_nodes_times}")
+                    # prev_nodes_times = [eval(eval(prev_nodes_times)[0])]
+                # else:
+                    # prev_nodes_times = eval(prev_nodes_times)
+                    # prev_nodes_times = list(
+                    #     map(lambda l: eval(eval(l)[0]), prev_nodes_times)
+                    # )
+                    # prev_nodes_times = list(
+                    #     map(lambda l: eval(eval(l)[0]), prev_nodes_times))
             batch_shape = request_input.shape[0]
             X = request_input.data.__root__
             X = list(map(lambda l: l.decode(), X))
@@ -70,6 +79,9 @@ class NodeTwo(MLModel):
         serving_time = time.time()
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
 
+        # logger.info(f"This node times: {this_node_time}")
+        # logger.info(f"Prev node times: {prev_nodes_times}")
+
         if "times" in dir(request_input.parameters):
             this_node_times = [times] * batch_shape
             times = []
@@ -81,8 +93,9 @@ class NodeTwo(MLModel):
             batch_times = list(map(lambda l: str(l), times))
         else:
             batch_times = [str(times)] * batch_shape
-        if self.settings.max_batch_size == 1:
-            batch_times = str(batch_times)
+        # if self.settings.max_batch_size == 1:
+        #     batch_times = str(batch_times)
+        batch_times = str(batch_times)
 
         # processing inference response
         output_data = list(map(lambda l: l.encode("utf8"), output))

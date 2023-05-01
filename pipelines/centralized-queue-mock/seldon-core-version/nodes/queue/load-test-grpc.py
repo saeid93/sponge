@@ -8,8 +8,8 @@ import time
 import numpy as np
 import mlserver.types as types
 
-load = 1
-test_duration = 1
+load = 10
+test_duration = 10
 variant = 0
 platform = "seldon"
 mode = "exponential"
@@ -20,8 +20,8 @@ mode = "exponential"
 # single node inference
 if platform == "seldon":
     endpoint = "localhost:32000"
-    deployment_name = "queue"
-    model = "queue"
+    deployment_name = "router"
+    model = "router"
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == "mlserver":
@@ -36,7 +36,7 @@ workload = [load] * test_duration
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
 )
-data = ds[0]["audio"]["array"]
+data = ds[0]["audio"]["array"][0:5]
 data_shape = [len(data)]
 custom_parameters = {"custom_1": "test_1"}
 data_1 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
@@ -45,7 +45,7 @@ data_1 = Data(data=data, data_shape=data_shape, custom_parameters=custom_paramet
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
 )
-data = ds[0]["audio"]["array"]
+data = ds[0]["audio"]["array"][0:5]
 data_shape = [len(data)]
 custom_parameters = {"custom_2": "test_2"}
 data_2 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)

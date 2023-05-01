@@ -58,24 +58,27 @@ class NodeOne(MLModel):
             self.TASK = "automatic-speech-recognition"
             logger.info(f"TASK env variable not set, using default value: {self.TASK}")
         logger.info("Loading the ML models")
-        logger.error(f"max_batch_size: {self._settings.max_batch_size}")
-        logger.error(f"max_batch_time: {self._settings.max_batch_time}")
+        logger.info(f"max_batch_size: {self._settings.max_batch_size}")
+        logger.info(f"max_batch_time: {self._settings.max_batch_time}")
         self.model = dummy_model
         self.loaded = True
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         arrival_time = time.time()
+        logger.info(f"payload\n: {payload}")
         for request_input in payload.inputs:
-            dtypes = request_input.parameters.dtype
-            shapes = request_input.parameters.datashape
+            dtypes: List[str] = eval(request_input.parameters.dtype)
+            logger.info(f"dtypes: {dtypes}")
+            shapes: List[str] = request_input.parameters.datashape
+            logger.info(f"dtypes: {shapes}")
             batch_shape = request_input.shape[0]
             # batch one edge case
             if type(shapes) != list:
                 shapes = [shapes]
             input_data = request_input.data.__root__
             logger.info(f"shapes:\n{shapes}")
-            shapes = list(map(lambda l: eval(l), shapes))
+            shapes = list(map(lambda l: eval(l), eval(shapes[0])))
             X = decode_from_bin(inputs=input_data, shapes=shapes, dtypes=dtypes)
         received_batch_len = len(X)
         logger.info(f"recieved batch len:\n{received_batch_len}")
@@ -94,8 +97,10 @@ class NodeOne(MLModel):
         serving_time = time.time()
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
         batch_times = [str(times)] * batch_shape
-        if self.settings.max_batch_size == 1:
-            batch_times = str(batch_times)
+        # if self.settings.max_batch_size == 1:
+        #     batch_times = str(batch_times)
+        # if self.settings.max_batch_size == 1:
+        batch_times = str(batch_times)
         logger.info(f"batch shapes:\n{batch_shape}")
         logger.info(f"batch_times:\n{batch_times}")
 
@@ -114,6 +119,7 @@ class NodeOne(MLModel):
             model_name=self.name,
             parameters=Parameters(type_of="text"),
         )
+        logger.info(f"batch times: {batch_times}")
         logger.info(f"request counter:\n{self.request_counter}\n")
         logger.info(f"batch counter:\n{self.batch_counter}\n")
         return payload

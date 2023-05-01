@@ -31,7 +31,7 @@ except KeyError as e:
     raise ValueError(f"MODEL_LISTS env variable not set!")
 
 
-async def send_requests(ch, model_name, payload):
+async def send_requests(ch, model_name, payload: InferenceRequest):
     grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
 
     inference_request_g = converters.ModelInferRequestConverter.from_types(
@@ -41,7 +41,7 @@ async def send_requests(ch, model_name, payload):
     return response
 
 
-async def model_infer(model_name, request_input):
+async def model_infer(model_name, request_input: InferenceRequest):
     try:
         inputs = request_input.outputs[0]
         logger.info(f"second node {model_name} data extracted!")

@@ -12,7 +12,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/with-queue-example:node-one
+        - image: sdghafouri/with-queue-example:router
           name: router
           imagePullPolicy: Always
           resources:
@@ -24,7 +24,7 @@ spec:
               memory: 16Gi
           env:
             - name: MODEL_LISTS
-              value: '["node-one", "node-two"]'
+              value: '["queue-one", "queue-two"]'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

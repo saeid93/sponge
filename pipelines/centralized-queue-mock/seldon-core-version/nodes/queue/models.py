@@ -1,10 +1,11 @@
 import os
-import time
 from mlserver import MLModel
-import json
 from mlserver.logging import logger
 from mlserver.types import InferenceRequest, InferenceResponse
 from mlserver import MLModel
+from typing import List
+import mlserver.types as types
+import grpc
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
 import mlserver
@@ -24,8 +25,15 @@ try:
 except KeyError as e:
     raise ValueError("No model is assigned to this queue")
 
+try:
+    LAST_NODE = bool(os.environ["LAST_NODE"])
+    logger.info(f"LAST_NODE set to: {LAST_NODE}")
+except KeyError as e:
+    LAST_NODE = False
+    logger.info(
+        f"LAST_NODE env variable not set, using default value: {LAST_NODE}")
 
-async def send_requests(ch, model_name, payload):
+async def send_requests(ch, model_name, payload: InferenceRequest):
     grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
 
     inference_request_g = converters.ModelInferRequestConverter.from_types(
@@ -34,12 +42,24 @@ async def send_requests(ch, model_name, payload):
     response = await grpc_stub.ModelInfer(request=inference_request_g, metadata=[])
     return response
 
+async def model_infer(model_name, request_input: InferenceRequest) -> InferenceResponse:
+    try:
+        inputs = request_input.outputs[0]
+        logger.info(f"second node {model_name} data extracted!")
+    except:
+        inputs = request_input.inputs[0]
+        logger.info(f"first node {model_name} data extracted!")
+    payload_input = types.InferenceRequest(inputs=[inputs])
+    endpoint = f"{model_name}-{model_name}.default.svc.cluster.local:9500"
+    async with grpc.aio.insecure_channel(endpoint) as ch:
+        output = await send_requests(ch, model_name, payload_input)
+    inference_response = converters.ModelInferResponseConverter.to_types(output)
+    return inference_response
 
 class Queue(MLModel):
     async def load(self):
         self.loaded = False
         self.request_counter = 0
-        logger.info("Router loaded")
         mlserver.register(
             name="input_requests", description="Measuring number of input requests"
         )
@@ -54,12 +74,49 @@ class Queue(MLModel):
 
         # TODO endpoint to models?
 
-        logger.info(f"payload: {payload}")
-        inference_response = InferenceResponse(
-            outputs=payload.inputs, model_name=self.name)
+        logger.info(f"first payload: {payload}")
+        # inference_response = InferenceResponse(
+        #     outputs=payload.inputs, model_name=self.name)
+        try:
+            # only image and audio model has this attributes
+            if type(payload.inputs[0].parameters.dtype) == str:
+                # TODO change to .shape
+                payload.inputs[0].parameters.datashape = str([payload.inputs[0].parameters.datashape])
+                payload.inputs[0].parameters.dtype = str([payload.inputs[0].parameters.dtype])
+            else:
+                payload.inputs[0].parameters.datashape = str(payload.inputs[0].parameters.datashape)
+                payload.inputs[0].parameters.dtype = str(payload.inputs[0].parameters.dtype)
+        except AttributeError:
+            pass
+        try:
+            if type(payload.inputs[0].parameters.times) == str:
+                # TODO better way to check
+                logger.info("whehre")
+                payload.inputs[0].parameters.times = str([payload.inputs[0].parameters.times])
+            else:
+                logger.info("whehre-1")
+                payload.inputs[0].parameters.times = str(payload.inputs[0].parameters.times)
+        except AttributeError:
+            pass
+        logger.info(f"second payload: {payload}")
+        output = await model_infer(model_name=MODEL_NAME, request_input=payload)
+        # TODO change to .shape
+        if len(eval(output.outputs[0].parameters.times)) == 1:
+            if LAST_NODE:
+                logger.info("here")
+                pass
+            else:
+                output.outputs[0].parameters.times = str(output.outputs[0].parameters.times)
+                logger.info("here 2")
+        else:
+            output.outputs[0].parameters.times = eval(output.outputs[0].parameters.times)
+            logger.info("here 2")
 
+        logger.info('output:\n')
+        logger.info(output)
+        # inference_response = converters.ModelInferResponseConverter.to_types(output)
         # TODO next model queue size
         # TODO add request to the model here
 
 
-        return inference_response
+        return output
