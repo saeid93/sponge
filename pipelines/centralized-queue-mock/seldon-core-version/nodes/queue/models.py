@@ -79,7 +79,8 @@ class Queue(MLModel):
         #     outputs=payload.inputs, model_name=self.name)
         try:
             # only image and audio model has this attributes
-            if type(payload.inputs[0].parameters.dtype) == str:
+            # if type(payload.inputs[0].parameters.dtype) == str:
+            if payload.inputs[0].shape[0] == 1:
                 # TODO change to .shape
                 payload.inputs[0].parameters.datashape = str([payload.inputs[0].parameters.datashape])
                 payload.inputs[0].parameters.dtype = str([payload.inputs[0].parameters.dtype])
@@ -89,28 +90,24 @@ class Queue(MLModel):
         except AttributeError:
             pass
         try:
-            if type(payload.inputs[0].parameters.times) == str:
-                # TODO better way to check
-                logger.info("whehre")
+            # if type(payload.inputs[0].parameters.times) == str:
+            if payload.inputs[0].shape[0] == 1:
                 payload.inputs[0].parameters.times = str([payload.inputs[0].parameters.times])
             else:
-                logger.info("whehre-1")
                 payload.inputs[0].parameters.times = str(payload.inputs[0].parameters.times)
         except AttributeError:
             pass
         logger.info(f"second payload: {payload}")
         output = await model_infer(model_name=MODEL_NAME, request_input=payload)
         # TODO change to .shape
-        if len(eval(output.outputs[0].parameters.times)) == 1:
+        # if len(eval(output.outputs[0].parameters.times)) == 1:
+        if output.outputs[0].shape[0] == 1:
             if LAST_NODE:
-                logger.info("here")
                 pass
             else:
                 output.outputs[0].parameters.times = str(output.outputs[0].parameters.times)
-                logger.info("here 2")
         else:
             output.outputs[0].parameters.times = eval(output.outputs[0].parameters.times)
-            logger.info("here 2")
 
         logger.info('output:\n')
         logger.info(output)

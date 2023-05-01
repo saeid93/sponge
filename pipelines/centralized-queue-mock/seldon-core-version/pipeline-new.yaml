@@ -30,7 +30,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 2
+      replicas: 1
     graph:
       name: node-one
       type: MODEL
@@ -120,7 +120,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 2
+      replicas: 1
     graph:
       name: node-two
       type: MODEL
