@@ -97,9 +97,6 @@ class NodeOne(MLModel):
         serving_time = time.time()
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
         batch_times = [str(times)] * batch_shape
-        # if self.settings.max_batch_size == 1:
-        #     batch_times = str(batch_times)
-        # if self.settings.max_batch_size == 1:
         batch_times = str(batch_times)
         logger.info(f"batch shapes:\n{batch_shape}")
         logger.info(f"batch_times:\n{batch_times}")

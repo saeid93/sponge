@@ -103,11 +103,23 @@ class Queue(MLModel):
         # if len(eval(output.outputs[0].parameters.times)) == 1:
         if output.outputs[0].shape[0] == 1:
             if LAST_NODE:
-                pass
-            else:
+                logger.info("here 1")
+                if self._settings.max_batch_size == 1:
+                    pass
+                else:
+                    output.outputs[0].parameters.times = eval(output.outputs[0].parameters.times)
+            elif self._settings.max_batch_size == 1:
+                logger.info(f"times:\n{output.outputs[0].parameters.times}\n{type(output.outputs[0].parameters.times)}")
                 output.outputs[0].parameters.times = str(output.outputs[0].parameters.times)
+                logger.info("here 2")
+            else:
+                output.outputs[0].parameters.times = eval(output.outputs[0].parameters.times)
+                # output.outputs[0].parameters.times = str([output.outputs[0].parameters.times])
+                # output.outputs[0].parameters.times = [str(output.outputs[0].parameters.times)]
+                logger.info("here 3")
         else:
             output.outputs[0].parameters.times = eval(output.outputs[0].parameters.times)
+            logger.info("here 4")
 
         logger.info('output:\n')
         logger.info(output)

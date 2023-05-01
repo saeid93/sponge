@@ -40,7 +40,7 @@ model = "router"
 namespace = "default"
 metadata = [("seldon", deployment_name), ("namespace", namespace)]
 
-batch_test = 5
+batch_test = 1
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
 )
@@ -81,3 +81,6 @@ async def main():
 
 
 asyncio.run(main())
+
+
+
