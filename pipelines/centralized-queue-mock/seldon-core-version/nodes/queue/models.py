@@ -71,17 +71,9 @@ class Queue(MLModel):
 
         self.request_counter += 1
         logger.info(f"Request counter:\n{self.request_counter}\n")
-
-        # TODO endpoint to models?
-
-        logger.info(f"first payload: {payload}")
-        # inference_response = InferenceResponse(
-        #     outputs=payload.inputs, model_name=self.name)
         try:
             # only image and audio model has this attributes
-            # if type(payload.inputs[0].parameters.dtype) == str:
             if payload.inputs[0].shape[0] == 1:
-                # TODO change to .shape
                 payload.inputs[0].parameters.datashape = str([payload.inputs[0].parameters.datashape])
                 payload.inputs[0].parameters.dtype = str([payload.inputs[0].parameters.dtype])
             else:
@@ -90,42 +82,26 @@ class Queue(MLModel):
         except AttributeError:
             pass
         try:
-            # if type(payload.inputs[0].parameters.times) == str:
             if payload.inputs[0].shape[0] == 1:
                 payload.inputs[0].parameters.times = str([payload.inputs[0].parameters.times])
             else:
                 payload.inputs[0].parameters.times = str(payload.inputs[0].parameters.times)
         except AttributeError:
             pass
-        logger.info(f"second payload: {payload}")
         output = await model_infer(model_name=MODEL_NAME, request_input=payload)
-        # TODO change to .shape
-        # if len(eval(output.outputs[0].parameters.times)) == 1:
         if output.outputs[0].shape[0] == 1:
             if LAST_NODE:
-                logger.info("here 1")
                 if self._settings.max_batch_size == 1:
                     pass
                 else:
                     output.outputs[0].parameters.times = eval(output.outputs[0].parameters.times)
             elif self._settings.max_batch_size == 1:
-                logger.info(f"times:\n{output.outputs[0].parameters.times}\n{type(output.outputs[0].parameters.times)}")
                 output.outputs[0].parameters.times = str(output.outputs[0].parameters.times)
-                logger.info("here 2")
             else:
                 output.outputs[0].parameters.times = eval(output.outputs[0].parameters.times)
-                # output.outputs[0].parameters.times = str([output.outputs[0].parameters.times])
-                # output.outputs[0].parameters.times = [str(output.outputs[0].parameters.times)]
-                logger.info("here 3")
         else:
             output.outputs[0].parameters.times = eval(output.outputs[0].parameters.times)
-            logger.info("here 4")
 
         logger.info('output:\n')
-        logger.info(output)
-        # inference_response = converters.ModelInferResponseConverter.to_types(output)
-        # TODO next model queue size
-        # TODO add request to the model here
-
 
         return output
