@@ -70,6 +70,7 @@ class Adapter:
         monitoring_duration: int,
         predictor_type: str,
         baseline_mode: Optional[str] = None,
+        central_queue: bool = False
     ) -> None:
         """
         Args:
@@ -112,6 +113,7 @@ class Adapter:
             pipeline_name=self.pipeline_name, sla=self.pipeline.sla
         )
         self.predictor = Predictor(predictor_type=self.predictor_type)
+        self.central_queue = central_queue
 
     def start_adaptation(self):
         # 0. Check if pipeline is up
@@ -333,8 +335,23 @@ class Adapter:
                     batch = env_var["value"]
             node_config["replicas"] = replicas
             node_config["variant"] = variant
-            node_config["batch"] = batch
             node_config["cpu"] = cpu
+            if not self.central_queue:
+                node_config["batch"] = batch
+            else:
+                raw_queue_config = kube_custom_api.get_namespaced_custom_object(
+                    group="machinelearning.seldon.io",
+                    version="v1",
+                    namespace=NAMESPACE,
+                    plural="seldondeployments",
+                    name="queue-"+node_name,
+                )
+                queue_component_config = raw_queue_config["spec"]["predictors"][0]["componentSpecs"][0]
+                queue_env_vars = queue_component_config["spec"]["containers"][0]["env"]
+                for env_var in queue_env_vars:
+                    if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
+                        batch = env_var["value"]
+                node_config["batch"] = batch
             current_config[node_name] = node_config
         return current_config
 
@@ -383,6 +400,23 @@ class Adapter:
                 deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                     "containers"
                 ][0]["env"][env_index]["value"] = str(node_config["batch"])
+        if self.central_queue:
+            queue_deployment_config = kube_custom_api.get_namespaced_custom_object(
+                group="machinelearning.seldon.io",
+                version="v1",
+                namespace=NAMESPACE,
+                plural="seldondeployments",
+                name='queue-'+node_name,
+            )
+            for env_index, env_var in enumerate(
+                queue_deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
+                    "containers"
+                ][0]["env"]
+            ):
+                if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
+                    queue_deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
+                        "containers"
+                    ][0]["env"][env_index]["value"] = str(node_config["batch"])
         kube_custom_api.replace_namespaced_custom_object(
             group="machinelearning.seldon.io",
             version="v1",
@@ -391,6 +425,15 @@ class Adapter:
             name=node_name,
             body=deployment_config,
         )
+        if self.central_queue:
+            kube_custom_api.replace_namespaced_custom_object(
+                group="machinelearning.seldon.io",
+                version="v1",
+                namespace=NAMESPACE,
+                plural="seldondeployments",
+                name='queue-'+node_name,
+                body=queue_deployment_config,
+            ) 
         return True
 
     def update_recieved_load(self) -> None:

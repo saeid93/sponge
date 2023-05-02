@@ -7,7 +7,7 @@ spec:
   name: {{ name }}
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: 30s
+      terminationDrainDuration: 10s
   predictors:
   - name: {{ name }}
     annotations:
@@ -34,7 +34,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: 30
+        terminationGracePeriodSeconds: 10
         containers:
         - image: sdghafouri/nlp-final:nlptrans
           name: nlp-trans
@@ -81,7 +81,7 @@ spec:
                 command:
                 - /bin/sh
                 - -c
-                - /bin/sleep 30
+                - /bin/sleep 10
       replicas: {{ replicas }}
     graph:
       name: nlp-trans

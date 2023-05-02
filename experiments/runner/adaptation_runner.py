@@ -89,6 +89,7 @@ def main(config_name: str, type_of: str):
     pipeline_name = config["pipeline_name"]
     only_measured_profiles = config["only_measured_profiles"]
     profiling_load = config["profiling_load"]
+    central_queue = config["central_queue"]
 
     # pipeline config
     num_state_limit = config["num_state_limit"]
@@ -126,7 +127,7 @@ def main(config_name: str, type_of: str):
         normalize_accuracy=normalize_accuracy,
         pipeline_accuracies=pipeline_accuracies,
         only_measured_profiles=only_measured_profiles,
-        profiling_load=profiling_load,
+        profiling_load=profiling_load
     )
 
     # ----------- 3. loading predictor configs -------------
@@ -151,6 +152,7 @@ def main(config_name: str, type_of: str):
         monitoring_duration=monitoring_duration,
         predictor_type=predictor_type,
         baseline_mode=baseline_mode,
+        central_queue=central_queue
     )
 
     # ----------- 3. Running an experiment series -------------

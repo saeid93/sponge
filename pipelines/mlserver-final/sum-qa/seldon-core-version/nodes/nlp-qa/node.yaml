@@ -7,7 +7,7 @@ spec:
   name: nlp-qa
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: 30s
+      terminationDrainDuration: 10s
   predictors:
   - name: nlp-qa
     annotations:
@@ -35,7 +35,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: 30
+        terminationGracePeriodSeconds: 10
         containers:
         - image: sdghafouri/sum-qa-final:nlpqa
           name: nlp-qa 
@@ -84,7 +84,7 @@ spec:
                 command:
                 - /bin/sh
                 - -c
-                - /bin/sleep 30
+                - /bin/sleep 10
       replicas: 1
     graph:
       name: nlp-qa

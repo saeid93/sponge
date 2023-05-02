@@ -7,7 +7,7 @@ spec:
   name: {{ name }}
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: 180s
+      terminationDrainDuration: 10s
   predictors:
   - name:  {{ name }}
     annotations:
@@ -35,7 +35,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: 180
+        terminationGracePeriodSeconds: 10
         containers:
         - image: sdghafouri/video-centralized:yolo
           name: yolo
@@ -80,7 +80,7 @@ spec:
                 command:
                 - /bin/sh
                 - -c
-                - /bin/sleep 180
+                - /bin/sleep 10
       replicas: {{ replicas }}
     graph:
       name: yolo

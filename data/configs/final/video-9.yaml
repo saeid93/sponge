@@ -9,7 +9,7 @@ nodes:
   - node_name: yolo
     data_type: image
     model_variants: yolov5n
-    max_batch_size: '1'
+    max_batch_size: '8'
     max_batch_time: '1'
     cpu_request: '2'
     memory_request: 2Gi
@@ -20,7 +20,7 @@ nodes:
   - node_name: resnet-human
     data_type: text
     model_variants: resnet18
-    max_batch_size: '1'
+    max_batch_size: '8'
     max_batch_time: '1'
     cpu_request: '2'
     memory_request: 2Gi

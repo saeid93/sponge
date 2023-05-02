@@ -7,7 +7,7 @@ spec:
   name: nlp-li
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: 30s
+      terminationDrainDuration: 10s
   predictors:
   - name: nlp-li
     annotations:
@@ -34,7 +34,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: 30
+        terminationGracePeriodSeconds: 10
         containers:
         - image: sdghafouri/nlp-centralized:nlpli
           name: nlp-li
@@ -79,7 +79,7 @@ spec:
                 command:
                 - /bin/sh
                 - -c
-                - /bin/sleep 30
+                - /bin/sleep 10
       replicas: 1
     graph:
       name: nlp-li
@@ -147,7 +147,7 @@ spec:
   name: nlp-sum
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: 30s
+      terminationDrainDuration: 10s
   predictors:
   - name: nlp-sum
     annotations:
@@ -174,7 +174,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: 30
+        terminationGracePeriodSeconds: 10
         containers:
         - image: sdghafouri/nlp-centralized:nlpsum
           name: nlp-sum
@@ -217,7 +217,7 @@ spec:
                 command:
                 - /bin/sh
                 - -c
-                - /bin/sleep 30
+                - /bin/sleep 10
       replicas: 1
     graph:
       name: nlp-sum
@@ -285,7 +285,7 @@ spec:
   name: nlp-trans
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: 30s
+      terminationDrainDuration: 10s
   predictors:
   - name: nlp-trans
     annotations:
@@ -312,7 +312,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: 30
+        terminationGracePeriodSeconds: 10
         containers:
         - image: sdghafouri/nlp-centralized:nlptrans
           name: nlp-trans
@@ -355,7 +355,7 @@ spec:
                 command:
                 - /bin/sh
                 - -c
-                - /bin/sleep 30
+                - /bin/sleep 10
       replicas: 1
     graph:
       name: nlp-trans
