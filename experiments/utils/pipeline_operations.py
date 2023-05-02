@@ -372,12 +372,13 @@ def setup_central_pipeline(
             num_threads=cpu_request[node_id],
         )
     queue_names = list(map(lambda l: "queue-" + l, node_names))
-    setup_router(pipeline_name=pipeline_name, node_names=queue_names)
     setup_queues(
         node_names=node_names,
         max_batch_sizes=max_batch_size,
         max_batch_times=max_batch_time,
     )
+    setup_router(pipeline_name=pipeline_name, node_names=queue_names)
+
 
 
 def load_data(data_type: str, pipeline_path: str, node_type: str = "first"):

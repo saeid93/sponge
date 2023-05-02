@@ -33,25 +33,25 @@ nodes:
 
 benchmark_duration: 1
 adaptation_interval: 20
-workload_type: static
-workload_config:
-  loads_to_test: 10
-  load_duration: 3600
-# workload_type: twitter
+# workload_type: static
 # workload_config:
-  # - start: '1861900'
+#   loads_to_test: 10
+#   load_duration: 3600
+workload_type: twitter
+workload_config:
+  - start: '1861900'
   # - start: '1863050'
   #   end: '1863200'
     # end: '1862200'
     # end: '1861960'
     # end: '1862500'
     # end: '1863700'
-    # end: '1865100'
-    # damping_factor: 8 # [int | null]
+    end: '1865100'
+    damping_factor: 8 # [int | null]
 
 # ----------- optimizer configs -------------
 
-series: 200
+series: 33
 # pipeline_name: video
 metadata: 'repeat of 30 around the peak to check the but pushing termination to the extreme of 180s to make sure of root cause'
 number_tasks: 2
@@ -99,4 +99,4 @@ monitoring_duration: 10 # in minutes
 
 # ----------- queueing-option -------------
 
-central_queue: true
+central_queue: false
