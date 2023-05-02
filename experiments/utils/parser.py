@@ -152,7 +152,9 @@ class Parser:
                 timeout_count += 1
         return latencies, timeout_count
 
-    def _pipeline_latency_calculator(self, results: Dict[Dict, Any], keep_lost: bool = False):
+    def _pipeline_latency_calculator(
+        self, results: Dict[Dict, Any], keep_lost: bool = False
+    ):
         latencies = {
             "client_to_pipeline_latencies": [],
             "pipeline_to_client_latencies": [],
@@ -192,7 +194,9 @@ class Parser:
                     for index, model in enumerate(self.node_orders):
                         latencies[f"task_{index}_model_latencies"].append(None)
                         if index < len(self.node_orders) - 1:
-                            latencies[f"task_{index}_to_task_{index+1}_latencies"].append(None)
+                            latencies[
+                                f"task_{index}_to_task_{index+1}_latencies"
+                            ].append(None)
         return latencies, timeout_count
 
     def latency_calculator(self, results: Dict[Dict, Any], log=None, keep_lost=False):
@@ -318,15 +322,17 @@ class Parser:
         for i in range(len(num_request_per_seconds)):
             temp_dict = {}
             for key in temp_latency:
-                temp_dict[key] = temp_latency[key][:num_request_per_seconds[i]]
-                temp_latency[key] = temp_latency[key][num_request_per_seconds[i]:]
+                temp_dict[key] = temp_latency[key][: num_request_per_seconds[i]]
+                temp_latency[key] = temp_latency[key][num_request_per_seconds[i] :]
             per_second_stats.append(temp_dict)
         stats = []
         for item in per_second_stats:
             stats.append(self.latency_summary(item))
         timeout_per_second = []
         for item in per_second_stats:
-            num_nones = len(list(filter(lambda x: x is None, item['client_to_pipeline_latencies'])))
+            num_nones = len(
+                list(filter(lambda x: x is None, item["client_to_pipeline_latencies"]))
+            )
             timeout_per_second.append(num_nones)
         return timeout_per_second, pd.DataFrame(stats)
 
@@ -386,23 +392,25 @@ class AdaptationParser:
             adaptation_log = json.load(input_file)
         return adaptation_log
 
-    def points_with_change(self, adaptation_log: Dict[str, Dict[str, Any]]) -> Dict[str, List[bool]]:
+    def points_with_change(
+        self, adaptation_log: Dict[str, Dict[str, Any]]
+    ) -> Dict[str, List[bool]]:
         node_changes = {}
         for node in self.loader.node_orders:
             node_changes[node] = []
         for node in self.loader.node_orders:
             last_config = {}
-            for _, config in adaptation_log['timesteps'].items():
+            for _, config in adaptation_log["timesteps"].items():
                 if last_config == {}:
-                    last_config = deepcopy(config['config'][node])
+                    last_config = deepcopy(config["config"][node])
                     continue
-                for config_knob, config_knob_value in config['config'][node].items():
+                for config_knob, config_knob_value in config["config"][node].items():
                     if last_config[config_knob] != config_knob_value:
                         node_changes[node].append(True)
                         break
-                else: # no-break
+                else:  # no-break
                     node_changes[node].append(False)
-                last_config = deepcopy(config['config'][node])
+                last_config = deepcopy(config["config"][node])
         return node_changes
 
     def series_changes(self, adaptation_log: Dict[str, Dict[str, Any]]):

@@ -129,16 +129,14 @@ class ResnetHuman(MLModel):
             logger.info(f"prev_nodes_times: {prev_nodes_times}")
             logger.info(f"prev_nodes_times types: {type(prev_nodes_times)}")
             prev_nodes_times = eval(prev_nodes_times)
-            prev_nodes_times = list(
-                map(lambda l: eval(eval(l)[0]), prev_nodes_times)
-            )
+            prev_nodes_times = list(map(lambda l: eval(eval(l)[0]), prev_nodes_times))
             shapes = request_input.parameters.datashape
             dtypes = batch_shape * ["u1"]  # TEMP HACK
 
             logger.info(f"input shapes: {shapes}")
             logger.info(f"input shapes type: {type(shapes)}")
             input_data = request_input.data.__root__
-            
+
             shapes = list(map(lambda l: eval(l), eval(shapes)))
             logger.info(f"output shapes:\n{shapes}")
             logger.info(f"shapes:\n{shapes}")
@@ -168,16 +166,17 @@ class ResnetHuman(MLModel):
         image_net_class = np.argmax(percentages, axis=1)
         output = image_net_class.tolist()
         logger.info(f"{image_net_class=}")
-        serving_time = time.time()
-        times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
 
-        # time processing
+        # times processing
         serving_time = time.time()
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
-        batch_times = [str(times)] * batch_shape
+        this_node_times = [times] * batch_shape
+        times = []
+        for this_node_time, prev_nodes_time in zip(this_node_times, prev_nodes_times):
+            this_node_time.update(prev_nodes_time)
+            times.append(this_node_time)
+        batch_times = list(map(lambda l: str(l), times))
         batch_times = str(batch_times)
-        logger.info(f"batch shapes:\n{batch_shape}")
-        logger.info(f"batch_times:\n{batch_times}")
 
         # processing inference response
         payload = InferenceResponse(

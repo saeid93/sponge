@@ -9,7 +9,7 @@ import time
 import numpy as np
 
 load = 1
-test_duration = 10
+test_duration = 1
 variant = 0
 platform = "router"
 mode = "exponential"
@@ -78,7 +78,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Through away initial seconds results
-responses = responses[3:]
+# responses = responses[3:]
 
 # Through away initial seconds results
 # responses = responses[3:]

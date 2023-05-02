@@ -137,7 +137,6 @@ class Yolo(MLModel):
         dtypes = str(dtypes)
         datashape = str(datashape)
 
-
         logger.info(f"output batch times: {batch_times}")
         logger.info(f"output dtpes: {dtypes}")
         logger.info(f"output datashapes: {datashape}")

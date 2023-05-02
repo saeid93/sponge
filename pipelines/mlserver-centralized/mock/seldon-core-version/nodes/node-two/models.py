@@ -19,6 +19,7 @@ except KeyError as e:
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}"
     )
 
+
 class NodeTwo(MLModel):
     async def load(self):
         self.loaded = False
@@ -41,9 +42,7 @@ class NodeTwo(MLModel):
         for request_input in payload.inputs:
             prev_nodes_times = request_input.parameters.times
             prev_nodes_times = eval(prev_nodes_times)
-            prev_nodes_times = list(
-                map(lambda l: eval(eval(l)[0]), prev_nodes_times)
-            )
+            prev_nodes_times = list(map(lambda l: eval(eval(l)[0]), prev_nodes_times))
             batch_shape = request_input.shape[0]
             X = request_input.data.__root__
             X = list(map(lambda l: l.decode(), X))
@@ -67,9 +66,7 @@ class NodeTwo(MLModel):
 
         this_node_times = [times] * batch_shape
         times = []
-        for this_node_time, prev_nodes_time in zip(
-            this_node_times, prev_nodes_times
-        ):
+        for this_node_time, prev_nodes_time in zip(this_node_times, prev_nodes_times):
             this_node_time.update(prev_nodes_time)
             times.append(this_node_time)
         batch_times = list(map(lambda l: str(l), times))

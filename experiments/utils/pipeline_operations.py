@@ -32,7 +32,7 @@ kube_api = client.api.core_v1_api.CoreV1Api()
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(project_dir, "..", "..")))
-from experiments.utils.constants import NAMESPACE, ROUTER_PATH
+from experiments.utils.constants import NAMESPACE, ROUTER_PATH, QUEUE_PATH
 
 from experiments.utils import logger
 
@@ -66,21 +66,36 @@ def setup_node(
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
-    svc_vars = {
-        "name": node_name,
-        "cpu_request": cpu_request,
-        "memory_request": memory_request,
-        "cpu_limit": cpu_request,
-        "memory_limit": memory_request,
-        "model_variant": model_variant,
-        "max_batch_size": max_batch_size,
-        "max_batch_time": max_batch_time,
-        "replicas": replica,
-        "no_engine": str(no_engine),
-        "use_threading": use_threading,
-        "num_interop_threads": num_interop_threads,
-        "num_threads": num_threads,
-    }
+    if max_batch_size is None and max_batch_time is None:
+        svc_vars = {
+            "name": node_name,
+            "cpu_request": cpu_request,
+            "memory_request": memory_request,
+            "cpu_limit": cpu_request,
+            "memory_limit": memory_request,
+            "model_variant": model_variant,
+            "replicas": replica,
+            "no_engine": str(no_engine),
+            "use_threading": use_threading,
+            "num_interop_threads": num_interop_threads,
+            "num_threads": num_threads,
+        }
+    else:
+        svc_vars = {
+            "name": node_name,
+            "cpu_request": cpu_request,
+            "memory_request": memory_request,
+            "cpu_limit": cpu_request,
+            "memory_limit": memory_request,
+            "model_variant": model_variant,
+            "max_batch_size": max_batch_size,
+            "max_batch_time": max_batch_time,
+            "replicas": replica,
+            "no_engine": str(no_engine),
+            "use_threading": use_threading,
+            "num_interop_threads": num_interop_threads,
+            "num_threads": num_threads,
+        }
     environment = Environment(loader=FileSystemLoader(node_path))
     svc_template = environment.get_template("node-template.yaml")
     content = svc_template.render(svc_vars)
@@ -119,6 +134,51 @@ def setup_router(pipeline_name, node_names):
     logger.info("-" * 25 + f" waiting to make sure the node is up " + "-" * 25)
     logger.info("\n")
     check_node_loaded(node_name="router")
+
+
+def setup_queues(node_names, max_batch_sizes, max_batch_times):
+    # TODO
+    # in a for loop
+    for node_index, model_name in enumerate(node_names):
+        last_node = 'True' if node_index+1 == len(model_name) else 'False'
+        max_batch_size = max_batch_sizes[node_index]
+        max_batch_time = max_batch_times[node_index]
+        setup_queue(
+            model_name=model_name,
+            max_batch_size=max_batch_size,
+            max_batch_time=max_batch_time,
+            last_node=last_node
+        )
+
+
+def setup_queue(model_name, max_batch_size, max_batch_time, last_node):
+    # TODO
+    # in a for loop
+    logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
+    logger.info("\n")
+    svc_vars = {
+        "max_batch_size": max_batch_size,
+        "max_batch_time": max_batch_time,
+        "cpu_request": 4,
+        "memory_request": "8Gi",
+        "cpu_limit": 16,
+        "memory_limit": "16Gi",
+        "replicas": 1,
+        "model_name": model_name,
+        "last_node": last_node
+    }
+    environment = Environment(loader=FileSystemLoader(QUEUE_PATH))
+    svc_template = environment.get_template("node-template.yaml")
+    content = svc_template.render(svc_vars)
+    logger.info(content)
+    command = f"""cat <<EOF | kubectl apply -f -
+{content}
+        """
+    os.system(command)
+    logger.info("-" * 25 + f" waiting to make sure the node is up " + "-" * 25)
+    logger.info("\n")
+    check_node_loaded(node_name="queue-"+model_name)
+
 
 
 def setup_seldon_pipeline(
@@ -273,6 +333,51 @@ def setup_router_pipeline(
             num_threads=cpu_request[node_id],
         )
     setup_router(pipeline_name=pipeline_name, node_names=node_names)
+
+
+def setup_central_pipeline(
+    pipeline_name: str,
+    node_names: List[str],
+    cpu_request: Tuple[str],
+    memory_request: Tuple[str],
+    model_variant: Tuple[str],
+    max_batch_size: Tuple[str],
+    max_batch_time: Tuple[str],
+    replica: Tuple[int],
+    use_threading: Tuple[bool],
+    num_interop_threads: Tuple[int],
+    num_threads: Tuple[int],
+    pipeline_path: str,
+    timeout: int,
+    num_nodes: int,
+):
+    logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
+    logger.info("\n")
+    for node_id, node_name in zip(range(num_nodes), node_names):
+        node_path = os.path.join(pipeline_path, "nodes", node_name)
+        setup_node(
+            node_name=node_name,
+            cpu_request=cpu_request[node_id],
+            memory_request=memory_request[node_id],
+            model_variant=model_variant[node_id],
+            max_batch_size=None,
+            max_batch_time=None,
+            replica=replica[node_id],
+            node_path=node_path,
+            no_engine=True,
+            use_threading=use_threading[node_id],
+            # HACK for now we set the number of requests
+            # proportional to the the number threads
+            num_interop_threads=cpu_request[node_id],
+            num_threads=cpu_request[node_id],
+        )
+    queue_names = list(map(lambda l: "queue-" + l, node_names))
+    setup_router(pipeline_name=pipeline_name, node_names=queue_names)
+    setup_queues(
+        node_names=node_names,
+        max_batch_sizes=max_batch_size,
+        max_batch_times=max_batch_time,
+    )
 
 
 def load_data(data_type: str, pipeline_path: str, node_type: str = "first"):

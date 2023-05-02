@@ -73,8 +73,8 @@ num_failed = 0
 total = 0
 for second_response in responses:
     for resp in second_response:
-        if 'failed' in resp.keys():
-            num_failed +=1
+        if "failed" in resp.keys():
+            num_failed += 1
         total += 1
 
 print(f"{num_failed} failed out of total {total}")

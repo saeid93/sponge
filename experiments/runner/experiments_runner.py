@@ -25,6 +25,7 @@ from experiments.utils.pipeline_operations import (
     load_test,
     remove_pipeline,
     setup_router_pipeline,
+    setup_central_pipeline,
 )
 
 from experiments.utils.constants import (
@@ -43,6 +44,7 @@ def setup_pipeline(
     data_type: str,
 ):
     timeout = config["timeout"]
+    central_queue = config["central_queue"]
 
     model_variants = []
     max_batch_sizes = []
@@ -64,24 +66,44 @@ def setup_pipeline(
         num_iterop_threads.append(node_config["num_interop_threads"])
         num_threads.append(node_config["num_threads"])
 
-    setup_router_pipeline(
-        node_names=node_names,
-        pipeline_name=pipeline_name,
-        cpu_request=cpu_requests,
-        memory_request=memory_requests,
-        model_variant=model_variants,
-        max_batch_size=max_batch_sizes,
-        max_batch_time=max_batch_times,
-        replica=replicas,
-        pipeline_path=pipeline_path,
-        timeout=timeout,
-        num_nodes=len(config["nodes"]),
-        use_threading=use_threading,
-        # HACK for now we set the number of requests
-        # proportional to the the number threads
-        num_interop_threads=cpu_requests,
-        num_threads=cpu_requests,
-    )
+    if central_queue:
+        setup_central_pipeline(
+            node_names=node_names,
+            pipeline_name=pipeline_name,
+            cpu_request=cpu_requests,
+            memory_request=memory_requests,
+            model_variant=model_variants,
+            max_batch_size=max_batch_sizes,
+            max_batch_time=max_batch_times,
+            replica=replicas,
+            pipeline_path=pipeline_path,
+            timeout=timeout,
+            num_nodes=len(config["nodes"]),
+            use_threading=use_threading,
+            # HACK for now we set the number of requests
+            # proportional to the the number threads
+            num_interop_threads=cpu_requests,
+            num_threads=cpu_requests,
+        )
+    else:
+        setup_router_pipeline(
+            node_names=node_names,
+            pipeline_name=pipeline_name,
+            cpu_request=cpu_requests,
+            memory_request=memory_requests,
+            model_variant=model_variants,
+            max_batch_size=max_batch_sizes,
+            max_batch_time=max_batch_times,
+            replica=replicas,
+            pipeline_path=pipeline_path,
+            timeout=timeout,
+            num_nodes=len(config["nodes"]),
+            use_threading=use_threading,
+            # HACK for now we set the number of requests
+            # proportional to the the number threads
+            num_interop_threads=cpu_requests,
+            num_threads=cpu_requests,
+        )
     logger.info(f"Checking if the model is up ...")
     logger.info("\n")
     # check if the model is up or not
@@ -153,7 +175,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-8")
+@click.option("--config-name", required=True, type=str, default="video-9")
 @click.option(
     "--type-of",
     required=True,

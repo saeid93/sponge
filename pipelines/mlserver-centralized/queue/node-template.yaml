@@ -1,19 +1,19 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: queue-'{{ model_name }}'
+  name: queue-{{ model_name }}
 spec:
   protocol: v2
-  name: queue-'{{ model_name }}'
+  name: queue-{{ model_name }}
   predictors:
-  - name: queue-'{{ model_name }}'
+  - name: queue-{{ model_name }}
     annotations:
       seldon.io/no-engine: "true" 
     componentSpecs:
     - spec:
         containers:
         - image: sdghafouri/queue:queue
-          name: queue-'{{ model_name }}'
+          name: queue-{{ model_name }}
           imagePullPolicy: Always
           resources:
             requests:
@@ -24,9 +24,15 @@ spec:
               memory: '{{ memory_limit }}'
           env:
             - name: MODEL_NAME
-              value: '{{ model_name }}'
+              value: {{ model_name }}
             - name: LAST_NODE
               value: '{{ last_node }}'
+            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+              value: '{{ max_batch_size }}'
+            - name: MLSERVER_MODEL_MAX_BATCH_TIME
+              value: '{{ max_batch_time }}'
+            - name: MLSERVER_PARALLEL_WORKERS
+              value: "0"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -37,7 +43,7 @@ spec:
             timeoutSeconds: 1
       replicas: 1
     graph:
-      name: queue-'{{ model_name }}'
+      name: queue-{{ model_name }}
       type: MODEL
       children: []
     labels:

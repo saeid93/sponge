@@ -95,9 +95,7 @@ class GeneralNLP(MLModel):
             logger.info(f"prev_nodes_times: {prev_nodes_times}")
             logger.info(f"prev_nodes_times types: {type(prev_nodes_times)}")
             prev_nodes_times = eval(prev_nodes_times)
-            prev_nodes_times = list(
-                map(lambda l: eval(eval(l)[0]), prev_nodes_times)
-            )
+            prev_nodes_times = list(map(lambda l: eval(eval(l)[0]), prev_nodes_times))
             batch_shape = request_input.shape[0]
             X = request_input.data.__root__
             X = list(map(lambda l: l.decode(), X))
@@ -120,9 +118,7 @@ class GeneralNLP(MLModel):
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
         this_node_times = [times] * batch_shape
         times = []
-        for this_node_time, prev_nodes_time in zip(
-            this_node_times, prev_nodes_times
-        ):
+        for this_node_time, prev_nodes_time in zip(this_node_times, prev_nodes_times):
             this_node_time.update(prev_nodes_time)
             times.append(this_node_time)
         batch_times = list(map(lambda l: str(l), times))

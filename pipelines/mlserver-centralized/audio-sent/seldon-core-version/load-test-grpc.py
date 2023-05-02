@@ -8,8 +8,8 @@ import json
 import time
 import numpy as np
 
-load = 5
-test_duration = 10
+load = 10
+test_duration = 3
 variant = 0
 platform = "seldon"
 mode = "exponential"
@@ -142,4 +142,4 @@ print(responses)
 # plt.show()
 
 # print(f"{np.average(server_arrival_latency)}=")
-# print(responses[0][0])
+# print(responses)

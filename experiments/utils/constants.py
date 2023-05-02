@@ -10,7 +10,8 @@ NAMESPACE = "default"
 # base DATA folder path and object sore path
 DATA_PATH = os.path.join(PROJECT_PATH, "data")
 OBJ_DATA_PATH = os.path.join(OBJ_PATH, "data")
-PIPELINES_FOLDER = "mlserver-final"
+# PIPELINES_FOLDER = "mlserver-final"
+PIPELINES_FOLDER = "mlserver-centralized"
 
 # configs path
 PIPLINES_PATH = os.path.join(PROJECT_PATH, "pipelines", PIPELINES_FOLDER)
@@ -18,6 +19,9 @@ CONFIGS_PATH = os.path.join(DATA_PATH, "configs")
 
 # router path
 ROUTER_PATH = os.path.join(PIPLINES_PATH, "router")
+
+# router path
+QUEUE_PATH = os.path.join(PIPLINES_PATH, "queue")
 
 # logging constants
 LOGGING_LEVEL: str = "info"

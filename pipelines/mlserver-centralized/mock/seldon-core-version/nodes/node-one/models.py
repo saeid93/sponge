@@ -32,11 +32,12 @@ def decode_from_bin(
         batch.append(array)
     return batch
 
+
 def dummy_model(inputs: List[np.array]):
-    """mimicing mapping list of arrays to list of texts outputs
-    """
+    """mimicing mapping list of arrays to list of texts outputs"""
     output = list(map(lambda l: {"text": "This is output"}, inputs))
     return output
+
 
 class NodeOne(MLModel):
     async def load(self):

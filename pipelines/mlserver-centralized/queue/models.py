@@ -29,8 +29,8 @@ try:
     logger.info(f"LAST_NODE set to: {LAST_NODE}")
 except KeyError as e:
     LAST_NODE = False
-    logger.info(
-        f"LAST_NODE env variable not set, using default value: {LAST_NODE}")
+    logger.info(f"LAST_NODE env variable not set, using default value: {LAST_NODE}")
+
 
 async def send_requests(ch, model_name, payload: InferenceRequest):
     grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
@@ -40,6 +40,7 @@ async def send_requests(ch, model_name, payload: InferenceRequest):
     )
     response = await grpc_stub.ModelInfer(request=inference_request_g, metadata=[])
     return response
+
 
 async def model_infer(model_name, request_input: InferenceRequest) -> InferenceResponse:
     try:
@@ -54,6 +55,7 @@ async def model_infer(model_name, request_input: InferenceRequest) -> InferenceR
         output = await send_requests(ch, model_name, payload_input)
     inference_response = converters.ModelInferResponseConverter.to_types(output)
     return inference_response
+
 
 class Queue(MLModel):
     async def load(self):
@@ -77,20 +79,32 @@ class Queue(MLModel):
             if payload.inputs[0].shape[0] == 1:
                 # logger.info("here")
                 # logger.info(f'datashape: {payload.inputs[0].parameters.datashape}')
-                payload.inputs[0].parameters.datashape = str([payload.inputs[0].parameters.datashape])
-                payload.inputs[0].parameters.dtype = str([payload.inputs[0].parameters.dtype])
+                payload.inputs[0].parameters.datashape = str(
+                    [payload.inputs[0].parameters.datashape]
+                )
+                payload.inputs[0].parameters.dtype = str(
+                    [payload.inputs[0].parameters.dtype]
+                )
             else:
                 # logger.info("there")
                 # logger.info(f'datashape: {payload.inputs[0].parameters.datashape}')
-                payload.inputs[0].parameters.datashape = str(payload.inputs[0].parameters.datashape)
-                payload.inputs[0].parameters.dtype = str(payload.inputs[0].parameters.dtype)
+                payload.inputs[0].parameters.datashape = str(
+                    payload.inputs[0].parameters.datashape
+                )
+                payload.inputs[0].parameters.dtype = str(
+                    payload.inputs[0].parameters.dtype
+                )
         except AttributeError:
             pass
         try:
             if payload.inputs[0].shape[0] == 1:
-                payload.inputs[0].parameters.times = str([payload.inputs[0].parameters.times])
+                payload.inputs[0].parameters.times = str(
+                    [payload.inputs[0].parameters.times]
+                )
             else:
-                payload.inputs[0].parameters.times = str(payload.inputs[0].parameters.times)
+                payload.inputs[0].parameters.times = str(
+                    payload.inputs[0].parameters.times
+                )
         except AttributeError:
             pass
 
@@ -102,13 +116,21 @@ class Queue(MLModel):
                 if self._settings.max_batch_size == 1:
                     pass
                 else:
-                    output.outputs[0].parameters.times = eval(output.outputs[0].parameters.times)
+                    output.outputs[0].parameters.times = eval(
+                        output.outputs[0].parameters.times
+                    )
             elif self._settings.max_batch_size == 1:
-                output.outputs[0].parameters.times = str(output.outputs[0].parameters.times)
+                output.outputs[0].parameters.times = str(
+                    output.outputs[0].parameters.times
+                )
             else:
-                output.outputs[0].parameters.times = eval(output.outputs[0].parameters.times)
+                output.outputs[0].parameters.times = eval(
+                    output.outputs[0].parameters.times
+                )
         else:
-            output.outputs[0].parameters.times = eval(output.outputs[0].parameters.times)
+            output.outputs[0].parameters.times = eval(
+                output.outputs[0].parameters.times
+            )
 
         # TODO refactor!
         try:
@@ -117,11 +139,17 @@ class Queue(MLModel):
                     if self._settings.max_batch_size == 1:
                         pass
                     else:
-                        output.outputs[0].parameters.datashape = eval(output.outputs[0].parameters.datashape)
+                        output.outputs[0].parameters.datashape = eval(
+                            output.outputs[0].parameters.datashape
+                        )
                 else:
-                    output.outputs[0].parameters.datashape = str(output.outputs[0].parameters.datashape)
+                    output.outputs[0].parameters.datashape = str(
+                        output.outputs[0].parameters.datashape
+                    )
             else:
-                output.outputs[0].parameters.datashape = eval(output.outputs[0].parameters.datashape)
+                output.outputs[0].parameters.datashape = eval(
+                    output.outputs[0].parameters.datashape
+                )
         except AttributeError:
             pass
 

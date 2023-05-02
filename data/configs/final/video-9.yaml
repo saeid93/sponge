@@ -13,7 +13,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '2'
     memory_request: 2Gi
-    replicas: 4
+    replicas: 1
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -24,7 +24,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '2'
     memory_request: 2Gi
-    replicas: 4
+    replicas: 1
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 33
+series: 100
 # pipeline_name: video
 metadata: 'repeat of 30 around the peak to check the but pushing termination to the extreme of 180s to make sure of root cause'
 number_tasks: 2
@@ -96,3 +96,7 @@ accuracy_method: sum # [average | sum | multiply]
 
 predictor_type: 'max' # [reactive | avg | lstm | max]
 monitoring_duration: 10 # in minutes
+
+# ----------- queueing-option -------------
+
+central_queue: true
