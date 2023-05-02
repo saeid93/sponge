@@ -7,4 +7,5 @@
 # python runner_script.py --config-name video-7
 # python runner_script.py --config-name video-8
 # sleep 20
-python runner_script.py --config-name video-9
+python runner_script.py --config-name video-11
+python runner_script.py --config-name video-12
