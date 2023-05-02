@@ -28,7 +28,7 @@ from experiments.utils.simulation_operations import generate_simulated_pipeline
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video")
+@click.option("--config-name", required=True, type=str, default="video-9")
 @click.option(
     "--type-of",
     required=True,

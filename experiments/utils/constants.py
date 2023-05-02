@@ -11,16 +11,17 @@ NAMESPACE = "default"
 DATA_PATH = os.path.join(PROJECT_PATH, "data")
 OBJ_DATA_PATH = os.path.join(OBJ_PATH, "data")
 # PIPELINES_FOLDER = "mlserver-final"
-PIPELINES_FOLDER = "mlserver-centralized"
+# PIPELINES_FOLDER = "mlserver-centralized"
 
-# configs path
-PIPLINES_PATH = os.path.join(PROJECT_PATH, "pipelines", PIPELINES_FOLDER)
+# pipelines path
+# PIPLINES_PATH = os.path.join(PROJECT_PATH, "pipelines", PIPELINES_FOLDER)
+PIPLINES_PATH = os.path.join(PROJECT_PATH, "pipelines")
 CONFIGS_PATH = os.path.join(DATA_PATH, "configs")
 
 # router path
 ROUTER_PATH = os.path.join(PIPLINES_PATH, "router")
 
-# router path
+# queue path
 QUEUE_PATH = os.path.join(PIPLINES_PATH, "queue")
 
 # logging constants
@@ -91,8 +92,8 @@ def _create_dirs():
     #     os.makedirs(KUBE_YAMLS_PATH)
     # if not os.path.exists(PIPELINES_MODELS):
     #     os.makedirs(PIPELINES_MODELS)
-    if not os.path.exists(PIPLINES_PATH):
-        os.makedirs(PIPLINES_PATH)
+    # if not os.path.exists(PIPLINES_PATH):
+    #     os.makedirs(PIPLINES_PATH)
     if not os.path.exists(LSTM_PATH):
         os.makedirs(LSTM_PATH)
     if not os.path.exists(CONFIGS_PATH):

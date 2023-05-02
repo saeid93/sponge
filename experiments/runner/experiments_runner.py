@@ -198,10 +198,12 @@ def main(config_name: str, type_of: str):
     pipeline_name = config["pipeline_name"]
     pipeline_folder_name = config["pipeline_folder_name"]
     node_names = [config["node_name"] for config in config["nodes"]]
+    central_queue = config["central_queue"]
     # first node of the pipeline determins the pipeline data_type
+    pipeline_type = 'mlserver-centralized' if central_queue else 'mlserver-final'
     data_type = config["nodes"][0]["data_type"]
     pipeline_path = os.path.join(
-        PIPLINES_PATH, pipeline_folder_name, "seldon-core-version"
+        PIPLINES_PATH, pipeline_type, pipeline_folder_name, "seldon-core-version"
     )
 
     dir_path = os.path.join(FINAL_RESULTS_PATH, "series", str(series))
