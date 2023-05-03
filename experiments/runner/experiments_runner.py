@@ -45,6 +45,7 @@ def setup_pipeline(
 ):
     timeout = config["timeout"]
     central_queue = config["central_queue"]
+    distrpution_time = config["distrpution_time"]
 
     model_variants = []
     max_batch_sizes = []
@@ -84,6 +85,7 @@ def setup_pipeline(
             # proportional to the the number threads
             num_interop_threads=cpu_requests,
             num_threads=cpu_requests,
+            distrpution_time=distrpution_time,
         )
     else:
         setup_router_pipeline(
@@ -103,6 +105,7 @@ def setup_pipeline(
             # proportional to the the number threads
             num_interop_threads=cpu_requests,
             num_threads=cpu_requests,
+            distrpution_time=distrpution_time,
         )
     logger.info(f"Checking if the model is up ...")
     logger.info("\n")
@@ -175,7 +178,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-9")
+@click.option("--config-name", required=True, type=str, default="video-14")
 @click.option(
     "--type-of",
     required=True,
@@ -200,7 +203,7 @@ def main(config_name: str, type_of: str):
     node_names = [config["node_name"] for config in config["nodes"]]
     central_queue = config["central_queue"]
     # first node of the pipeline determins the pipeline data_type
-    pipeline_type = 'mlserver-centralized' if central_queue else 'mlserver-final'
+    pipeline_type = "mlserver-centralized" if central_queue else "mlserver-final"
     data_type = config["nodes"][0]["data_type"]
     pipeline_path = os.path.join(
         PIPLINES_PATH, pipeline_type, pipeline_folder_name, "seldon-core-version"

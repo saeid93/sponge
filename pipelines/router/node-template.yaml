@@ -5,12 +5,16 @@ metadata:
 spec:
   protocol: v2
   name: router
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: {{ distrpution_time }}s
   predictors:
   - name: router
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
+        terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
         - image: sdghafouri/router:router
           name: router
@@ -33,6 +37,13 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep {{ distrpution_time }}
       replicas: {{ replicas }}
     graph:
       name: router

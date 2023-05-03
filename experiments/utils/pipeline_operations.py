@@ -62,6 +62,7 @@ def setup_node(
     use_threading: bool,
     num_interop_threads: int,
     num_threads: int,
+    distrpution_time: int,
     no_engine=False,
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
@@ -76,6 +77,7 @@ def setup_node(
             "model_variant": model_variant,
             "replicas": replica,
             "no_engine": str(no_engine),
+            "distrpution_time": distrpution_time,
             "use_threading": use_threading,
             "num_interop_threads": num_interop_threads,
             "num_threads": num_threads,
@@ -91,6 +93,7 @@ def setup_node(
             "max_batch_size": max_batch_size,
             "max_batch_time": max_batch_time,
             "replicas": replica,
+            "distrpution_time": distrpution_time,
             "no_engine": str(no_engine),
             "use_threading": use_threading,
             "num_interop_threads": num_interop_threads,
@@ -109,7 +112,7 @@ def setup_node(
     check_node_loaded(node_name=node_name)
 
 
-def setup_router(pipeline_name, node_names):
+def setup_router(pipeline_name: str, node_names: List[str], distrpution_time: int):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
     model_lists = str(node_names)
@@ -121,6 +124,7 @@ def setup_router(pipeline_name, node_names):
         "cpu_limit": 16,
         "memory_limit": "16Gi",
         "replicas": 1,
+        "distrpution_time": distrpution_time,
         "model_lists": model_lists,
     }
     environment = Environment(loader=FileSystemLoader(ROUTER_PATH))
@@ -136,22 +140,34 @@ def setup_router(pipeline_name, node_names):
     check_node_loaded(node_name="router")
 
 
-def setup_queues(node_names, max_batch_sizes, max_batch_times):
+def setup_queues(
+    node_names: List[str],
+    max_batch_sizes: int,
+    max_batch_times: int,
+    distrpution_time: int,
+):
     # TODO
     # in a for loop
     for node_index, model_name in enumerate(node_names):
-        last_node = 'True' if node_index+1 == len(model_name) else 'False'
+        last_node = "True" if node_index + 1 == len(model_name) else "False"
         max_batch_size = max_batch_sizes[node_index]
         max_batch_time = max_batch_times[node_index]
         setup_queue(
             model_name=model_name,
             max_batch_size=max_batch_size,
             max_batch_time=max_batch_time,
-            last_node=last_node
+            last_node=last_node,
+            distrpution_time=distrpution_time,
         )
 
 
-def setup_queue(model_name, max_batch_size, max_batch_time, last_node):
+def setup_queue(
+    model_name: str,
+    max_batch_size: int,
+    max_batch_time: int,
+    last_node: bool,
+    distrpution_time: int,
+):
     # TODO
     # in a for loop
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
@@ -164,8 +180,9 @@ def setup_queue(model_name, max_batch_size, max_batch_time, last_node):
         "cpu_limit": 16,
         "memory_limit": "16Gi",
         "replicas": 1,
+        "distrpution_time": distrpution_time,
         "model_name": model_name,
-        "last_node": last_node
+        "last_node": last_node,
     }
     environment = Environment(loader=FileSystemLoader(QUEUE_PATH))
     svc_template = environment.get_template("node-template.yaml")
@@ -177,8 +194,7 @@ def setup_queue(model_name, max_batch_size, max_batch_time, last_node):
     os.system(command)
     logger.info("-" * 25 + f" waiting to make sure the node is up " + "-" * 25)
     logger.info("\n")
-    check_node_loaded(node_name="queue-"+model_name)
-
+    check_node_loaded(node_name="queue-" + model_name)
 
 
 def setup_seldon_pipeline(
@@ -311,6 +327,7 @@ def setup_router_pipeline(
     pipeline_path: str,
     timeout: int,
     num_nodes: int,
+    distrpution_time: int,
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
@@ -331,8 +348,13 @@ def setup_router_pipeline(
             # proportional to the the number threads
             num_interop_threads=cpu_request[node_id],
             num_threads=cpu_request[node_id],
+            distrpution_time=distrpution_time,
         )
-    setup_router(pipeline_name=pipeline_name, node_names=node_names)
+    setup_router(
+        pipeline_name=pipeline_name,
+        node_names=node_names,
+        distrpution_time=distrpution_time,
+    )
 
 
 def setup_central_pipeline(
@@ -350,6 +372,7 @@ def setup_central_pipeline(
     pipeline_path: str,
     timeout: int,
     num_nodes: int,
+    distrpution_time: int,
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
@@ -370,15 +393,20 @@ def setup_central_pipeline(
             # proportional to the the number threads
             num_interop_threads=cpu_request[node_id],
             num_threads=cpu_request[node_id],
+            distrpution_time=distrpution_time,
         )
     queue_names = list(map(lambda l: "queue-" + l, node_names))
     setup_queues(
         node_names=node_names,
         max_batch_sizes=max_batch_size,
         max_batch_times=max_batch_time,
+        distrpution_time=distrpution_time,
     )
-    setup_router(pipeline_name=pipeline_name, node_names=queue_names)
-
+    setup_router(
+        pipeline_name=pipeline_name,
+        node_names=queue_names,
+        distrpution_time=distrpution_time,
+    )
 
 
 def load_data(data_type: str, pipeline_path: str, node_type: str = "first"):

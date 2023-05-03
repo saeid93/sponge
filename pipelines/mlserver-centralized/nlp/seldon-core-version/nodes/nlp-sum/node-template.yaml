@@ -5,6 +5,9 @@ metadata:
 spec:
   protocol: v2
   name: {{ name }}
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: {{ distrpution_time }}s
   predictors:
   - name: {{ name }}
     annotations:
@@ -31,6 +34,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
+        terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
         - image: sdghafouri/nlp-centralized:nlpsum
           name: nlp-sum 
@@ -67,6 +71,13 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep {{ distrpution_time }}
       replicas: {{ replicas }}
     graph:
       name: nlp-sum

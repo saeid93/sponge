@@ -5,12 +5,16 @@ metadata:
 spec:
   protocol: v2
   name: queue-{{ model_name }}
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: {{ distrpution_time }}s
   predictors:
   - name: queue-{{ model_name }}
     annotations:
       seldon.io/no-engine: "true" 
     componentSpecs:
     - spec:
+        terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
         - image: sdghafouri/queue:queue
           name: queue-{{ model_name }}
@@ -41,6 +45,13 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep {{ distrpution_time }}
       replicas: 1
     graph:
       name: queue-{{ model_name }}

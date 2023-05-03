@@ -70,7 +70,7 @@ class Adapter:
         monitoring_duration: int,
         predictor_type: str,
         baseline_mode: Optional[str] = None,
-        central_queue: bool = False
+        central_queue: bool = False,
     ) -> None:
         """
         Args:
@@ -344,9 +344,11 @@ class Adapter:
                     version="v1",
                     namespace=NAMESPACE,
                     plural="seldondeployments",
-                    name="queue-"+node_name,
+                    name="queue-" + node_name,
                 )
-                queue_component_config = raw_queue_config["spec"]["predictors"][0]["componentSpecs"][0]
+                queue_component_config = raw_queue_config["spec"]["predictors"][0][
+                    "componentSpecs"
+                ][0]
                 queue_env_vars = queue_component_config["spec"]["containers"][0]["env"]
                 for env_var in queue_env_vars:
                     if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
@@ -406,17 +408,19 @@ class Adapter:
                 version="v1",
                 namespace=NAMESPACE,
                 plural="seldondeployments",
-                name='queue-'+node_name,
+                name="queue-" + node_name,
             )
             for env_index, env_var in enumerate(
-                queue_deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
-                    "containers"
-                ][0]["env"]
+                queue_deployment_config["spec"]["predictors"][0]["componentSpecs"][0][
+                    "spec"
+                ]["containers"][0]["env"]
             ):
                 if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
-                    queue_deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
-                        "containers"
-                    ][0]["env"][env_index]["value"] = str(node_config["batch"])
+                    queue_deployment_config["spec"]["predictors"][0]["componentSpecs"][
+                        0
+                    ]["spec"]["containers"][0]["env"][env_index]["value"] = str(
+                        node_config["batch"]
+                    )
         kube_custom_api.replace_namespaced_custom_object(
             group="machinelearning.seldon.io",
             version="v1",
@@ -431,9 +435,9 @@ class Adapter:
                 version="v1",
                 namespace=NAMESPACE,
                 plural="seldondeployments",
-                name='queue-'+node_name,
+                name="queue-" + node_name,
                 body=queue_deployment_config,
-            ) 
+            )
         return True
 
     def update_recieved_load(self) -> None:

@@ -7,7 +7,7 @@ spec:
   name: {{ name }}
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: 10s
+      terminationDrainDuration: {{ distrpution_time }}s
   predictors:
   - name: {{ name }}
     annotations:
@@ -35,7 +35,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: 10
+        terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
         - image: sdghafouri/video-final:resnet-human
           name: resnet-human
@@ -82,7 +82,7 @@ spec:
                 command:
                 - /bin/sh
                 - -c
-                - /bin/sleep 10
+                - /bin/sleep {{ distrpution_time }}
       replicas: {{ replicas }}
     graph:
       name: resnet-human
