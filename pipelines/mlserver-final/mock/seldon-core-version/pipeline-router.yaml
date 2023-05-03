@@ -1,41 +1,19 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: audio
+  name: node-one
 spec:
   protocol: v2
-  name: audio
-  # annotations:
-  #   seldon.io/engine-separate-pod: "true"
+  name: node-one
   predictors:
-  - name: audio
+  - name: node-one
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
-        volumes:
-        - name: classifier-provision-location
-          emptyDir: {}
-
-        initContainers:
-        - name: classifier-model-initializer
-          image: seldonio/rclone-storage-initializer:1.16.0-dev
-          imagePullPolicy: IfNotPresent
-          args:
-            - "s3://huggingface/automatic-speech-recognition/facebook-s2t-small-librispeech-asr"
-            - "/mnt/models/facebook-s2t-small-librispeech-asr"
-
-          volumeMounts:
-          - mountPath: /mnt/models
-            name: classifier-provision-location
-
-          envFrom:
-          - secretRef:
-              name: seldon-rclone-secret
-
         containers:
-        - image: sdghafouri/audio-qa-final:audio
-          name: audio
+        - image: sdghafouri/mock-final:node-one
+          name: node-one
           imagePullPolicy: Always
           resources:
             requests:
@@ -44,117 +22,6 @@ spec:
             limits:
               cpu: '4'
               memory: 4Gi
-          volumeMounts:
-          - mountPath: /mnt/models
-            name: classifier-provision-location
-
-          env:
-            - name: MODEL_VARIANT
-              value: /mnt/models/facebook-s2t-small-librispeech-asr
-            # - name: TRANSFORMERS_CACHE
-            #   value: /opt/mlserver/.cache
-            - name: TASK
-              value: automatic-speech-recognition
-            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
-            - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: "0"
-            - name: MLSERVER_PARALLEL_WORKERS
-              value: "0"
-            - name: USE_THREADING
-              value: "True"
-            - name: NUM_INTEROP_THREADS
-              value: "4"
-            - name: NUM_THREADS
-              value: "4"
-          readinessProbe:
-            failureThreshold: 3
-            initialDelaySeconds: 0
-            periodSeconds: 1
-            successThreshold: 1
-            tcpSocket:
-              port: 9000
-            timeoutSeconds: 1
-      replicas: 2
-    graph:
-      name: audio
-      type: MODEL
-      children: []
-    labels:
-      sidecar.istio.io/inject: "true"
----
-apiVersion: machinelearning.seldon.io/v1
-kind: SeldonDeployment
-metadata:
-  name: nlp-qa
-spec:
-  protocol: v2
-  name: nlp-qa
-  # annotations:
-  #   seldon.io/engine-separate-pod: "true"
-  predictors:
-  - name: nlp-qa
-    annotations:
-      seldon.io/no-engine: "true" 
-    componentSpecs:
-
-    - spec:
-        volumes:
-        - name: classifier-provision-location
-          emptyDir: {}
-
-        initContainers:
-        - name: classifier-model-initializer
-          image: seldonio/rclone-storage-initializer:1.16.0-dev
-          imagePullPolicy: IfNotPresent
-          args:
-            - "s3://huggingface/question-answering/distilbert-base-cased-distilled-squad"
-            - "/mnt/models/distilbert-base-cased-distilled-squad"
-
-          volumeMounts:
-          - mountPath: /mnt/models
-            name: classifier-provision-location
-
-          envFrom:
-          - secretRef:
-              name: seldon-rclone-secret
-
-        containers:
-        - image: sdghafouri/audio-qa-final:nlpqa
-          name: nlp-qa 
-          imagePullPolicy: Always
-          resources:
-            requests:
-              cpu: '4'
-              memory: 4Gi
-            limits:
-              cpu: '4'
-              memory: 4Gi
-          volumeMounts:
-          - mountPath: /mnt/models
-            name: classifier-provision-location
-
-          env:
-            - name: MODEL_VARIANT
-              value: /mnt/models/distilbert-base-cased-distilled-squad
-            # - name: TRANSFORMERS_CACHE
-            #   value: /opt/mlserver/.cache
-            - name: TASK
-              value: question-answering
-            - name: CONTEXT
-              value: default
-            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
-            - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: "1"
-            - name: MLSERVER_PARALLEL_WORKERS
-              value: "0"
-            - name: USE_THREADING
-              value: "True"
-            - name: NUM_INTEROP_THREADS
-              value: "4"
-            - name: NUM_THREADS
-              value: "4"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -165,12 +32,51 @@ spec:
             timeoutSeconds: 1
       replicas: 1
     graph:
-      name: nlp-qa
+      name: node-one
       type: MODEL
       children: []
     labels:
       sidecar.istio.io/inject: "true"
-
+---
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: node-two
+spec:
+  protocol: v2
+  name: node-two
+  predictors:
+  - name: node-two
+    annotations:
+      seldon.io/no-engine: "true"
+    componentSpecs:
+    - spec:
+        containers:
+        - image: sdghafouri/mock-final:node-two
+          name: node-two
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: '4'
+              memory: 4Gi
+            limits:
+              cpu: '4'
+              memory: 4Gi
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
+      replicas: 1
+    graph:
+      name: node-two
+      type: MODEL
+      children: []
+    labels:
+      sidecar.istio.io/inject: "true"
 ---
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
@@ -191,14 +97,14 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '2'
-              memory: 4Gi
+              cpu: '4'
+              memory: 8Gi
             limits:
-              cpu: '2'
-              memory: 4Gi
+              cpu: '16'
+              memory: 16Gi
           env:
             - name: MODEL_LISTS
-              value: '["audio", "nlp-qa"]'
+              value: '["node-one", "node-two"]'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

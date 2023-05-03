@@ -1,5 +1,6 @@
 import os
 import time
+from typing import Dict
 from mlserver import MLModel
 import json
 from mlserver.logging import logger
@@ -7,8 +8,6 @@ from mlserver.types import InferenceRequest, InferenceResponse
 from mlserver import MLModel
 import mlserver.types as types
 import grpc
-from mlserver.codecs.string import StringRequestCodec
-from mlserver.codecs.numpy import NumpyRequestCodec
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
 import mlserver
@@ -68,12 +67,24 @@ class Router(MLModel):
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         mlserver.log(input_requests=1)
+        logger.info(f"payload in:\n{payload}")
+        arrival_time = time.time()
 
         self.request_counter += 1
         logger.info(f"Request counter:\n{self.request_counter}\n")
 
         output = payload
         for model_name in MODEL_LISTS:
+            logger.info(f"{model_name} input:\n{output}")
             logger.info(f"Getting inference responses {model_name}")
             output = await model_infer(model_name=model_name, request_input=output)
+            logger.info(f"{model_name} output:\n{output}")
+
+        serving_time = time.time()
+        times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
+        model_times: Dict = eval(eval(output.outputs[0].parameters.times)[0])
+        model_times.update(times)
+        output_times = str([str(model_times)])
+        output.outputs[0].parameters.times = output_times
+
         return output

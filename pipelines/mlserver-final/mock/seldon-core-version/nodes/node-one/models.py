@@ -51,6 +51,7 @@ class NodeOne(MLModel):
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
+        logger.info(f"payload:\n{payload}")
         arrival_time = time.time()
         for request_input in payload.inputs:
             dtypes = request_input.parameters.dtype

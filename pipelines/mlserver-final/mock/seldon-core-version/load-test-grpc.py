@@ -8,7 +8,7 @@ import json
 import time
 import numpy as np
 
-load = 5
+load = 10
 test_duration = 10
 variant = 0
 platform = "router"
@@ -39,18 +39,20 @@ workload = [load] * test_duration
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
 )
-data = ds[0]["audio"]["array"].astype(np.float32)
+data = ds[0]["audio"]["array"].astype(np.float32)[:10]
 data_shape = [len(data)]
-custom_parameters = {"custom_1": "test_1"}
+# custom_parameters = {"custom_1": "test_1"}
+custom_parameters = {"times": "{'mock': {'arrival': 1683142250.7904468, 'serving': 1683142250.7919898}}"}
 data_1 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
 
 # Data 2
 ds = load_dataset(
     "hf-internal-testing/librispeech_asr_demo", "clean", split="validation"
 )
-data = ds[0]["audio"]["array"].astype(np.float32)
+data = ds[0]["audio"]["array"].astype(np.float32)[:10]
 data_shape = [len(data)]
-custom_parameters = {"custom_2": "test_2"}
+# custom_parameters = {"custom_2": "test_2"}
+custom_parameters = {"times": "{'mock': {'arrival': 1683142250.7904468, 'serving': 1683142250.7919898}}"}
 data_2 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
 
 # Data list
@@ -78,7 +80,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Through away initial seconds results
-responses = responses[3:]
+# responses = responses[3:]
 
 # Through away initial seconds results
 # responses = responses[3:]

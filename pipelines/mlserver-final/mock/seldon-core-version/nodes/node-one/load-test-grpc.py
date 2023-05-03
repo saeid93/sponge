@@ -45,6 +45,7 @@ ds = load_dataset(
 data = ds[0]["audio"]["array"]
 data_shape = [len(data)]
 custom_parameters = {"custom_2": "test_2"}
+
 data_2 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
 
 # Data list
@@ -62,6 +63,7 @@ load_tester = MLServerAsyncGrpc(
     data=data,
     mode=mode,  # options - step, equal, exponential
     data_type=data_type,
+    
 )
 
 responses = asyncio.run(load_tester.start())
