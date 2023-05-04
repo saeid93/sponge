@@ -126,7 +126,7 @@ class Parser:
             "client_to_model_latencies": [],
             "model_latencies": [],
             "model_to_client_latencies": [],
-            "e2e_latencies": []
+            "e2e_latencies": [],
         }
         timeout_count = 0
         for result in results:
@@ -149,7 +149,7 @@ class Parser:
                     "client_to_model_latencies": client_to_model_latencies,
                     "model_latencies": model_latencies,
                     "model_to_client_latencies": model_to_client_latencies,
-                    "e2e_latencies": e2e_latencies
+                    "e2e_latencies": e2e_latencies,
                 }
 
             except KeyError:
@@ -160,8 +160,49 @@ class Parser:
         self, results: Dict[Dict, Any], keep_lost: bool = False
     ):
         latencies = {
+            "client_to_pipeline_latencies": [],
+            "pipeline_to_client_latencies": [],
+        }
+        for index, model in enumerate(self.node_orders):
+            latencies[f"task_{index}_model_latencies"] = []
+            if index < len(self.node_orders) - 1:
+                latencies[f"task_{index}_to_task_{index+1}_latencies"] = []
+        timeout_count = 0
+        for result in results:
+            try:
+                times = result["times"]
+                request_times = times["request"]
+                model_times = times["models"]
+                for index, model in enumerate(self.node_orders):
+                    if index == 0:
+                        latencies["client_to_pipeline_latencies"].append(
+                            model_times[model]["arrival"] - request_times["sending"]
+                        )
+                    if index == len(self.node_orders) - 1:
+                        latencies["pipeline_to_client_latencies"].append(
+                            request_times["arrival"] - model_times[model]["serving"]
+                        )
+                    latencies[f"task_{index}_model_latencies"].append(
+                        model_times[model]["serving"] - model_times[model]["arrival"]
+                    )
+                    if index < len(self.node_orders) - 1:
+                        latencies[f"task_{index}_to_task_{index+1}_latencies"].append(
+                            model_times[self.node_orders[index + 1]]["arrival"]
+                            - model_times[model]["serving"]
+                        )
+            except KeyError:
+                timeout_count += 1
+                if keep_lost:
+                    for latency_item, _ in latencies.items():
+                        latencies[latency_item].append(None)
+        return latencies, timeout_count
+
+    def _router_pipeline_latency_calculator(
+        self, results: Dict[Dict, Any], keep_lost: bool = False
+    ):
+        latencies = {
             "client_to_router_latencies": [],
-            f"router_to_task_0_latencies": []
+            f"router_to_task_0_latencies": [],
         }
 
         for index, model in enumerate(self.node_orders):
@@ -214,51 +255,6 @@ class Parser:
                         latencies[latency_item].append(None)
         return latencies, timeout_count
 
-    def _router_pipeline_latency_calculator(
-        self, results: Dict[Dict, Any], keep_lost: bool = False
-    ):
-        latencies = {
-            "client_to_pipeline_latencies": [],
-            "pipeline_to_client_latencies": [],
-            "e2e_latencies": []
-        }
-        for index, model in enumerate(self.node_orders):
-            latencies[f"task_{index}_model_latencies"] = []
-            if index < len(self.node_orders) - 1:
-                latencies[f"task_{index}_to_task_{index+1}_latencies"] = []
-        timeout_count = 0
-        for result in results:
-            try:
-                times = result["times"]
-                request_times = times["request"]
-                model_times = times["models"]
-                latencies["e2e_latencies"].append(
-                    request_times["arrival"] - request_times["sending"]
-                )
-                for index, model in enumerate(self.node_orders):
-                    if index == 0:
-                        latencies["client_to_pipeline_latencies"].append(
-                            model_times[model]["arrival"] - request_times["sending"]
-                        )
-                    if index == len(self.node_orders) - 1:
-                        latencies["pipeline_to_client_latencies"].append(
-                            request_times["arrival"] - model_times[model]["serving"]
-                        )
-                    latencies[f"task_{index}_model_latencies"].append(
-                        model_times[model]["serving"] - model_times[model]["arrival"]
-                    )
-                    if index < len(self.node_orders) - 1:
-                        latencies[f"task_{index}_to_task_{index+1}_latencies"].append(
-                            model_times[self.node_orders[index + 1]]["arrival"]
-                            - model_times[model]["serving"]
-                        )
-            except KeyError:
-                timeout_count += 1
-                if keep_lost:
-                    for latency_item, _ in latencies.items():
-                        latencies[latency_item].append(None)
-        return latencies, timeout_count
-
     def latency_calculator(self, results: Dict[Dict, Any], log=None, keep_lost=False):
         """symmetric input meaning:
         per each input at the first node of the pipeline
@@ -270,7 +266,9 @@ class Parser:
         elif self.type_of == "pipeline":
             return self._pipeline_latency_calculator(results, keep_lost=keep_lost)
         elif self.type_of == "router_pipeline":
-            return self._pipeline_latency_calculator(results, keep_lost=keep_lost)
+            return self._router_pipeline_latency_calculator(
+                results, keep_lost=keep_lost
+            )
 
     def metric_summary(self, metric, values):
         summary = {}
