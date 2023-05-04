@@ -42,7 +42,9 @@ ds = load_dataset(
 data = ds[0]["audio"]["array"].astype(np.float32)[:10]
 data_shape = [len(data)]
 # custom_parameters = {"custom_1": "test_1"}
-custom_parameters = {"times": "{'mock': {'arrival': 1683142250.7904468, 'serving': 1683142250.7919898}}"}
+custom_parameters = {
+    "times": "{'mock': {'arrival': 1683142250.7904468, 'serving': 1683142250.7919898}}"
+}
 data_1 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
 
 # Data 2
@@ -52,7 +54,9 @@ ds = load_dataset(
 data = ds[0]["audio"]["array"].astype(np.float32)[:10]
 data_shape = [len(data)]
 # custom_parameters = {"custom_2": "test_2"}
-custom_parameters = {"times": "{'mock': {'arrival': 1683142250.7904468, 'serving': 1683142250.7919898}}"}
+custom_parameters = {
+    "times": "{'mock': {'arrival': 1683142250.7904468, 'serving': 1683142250.7919898}}"
+}
 data_2 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
 
 # Data list

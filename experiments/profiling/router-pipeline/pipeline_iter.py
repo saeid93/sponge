@@ -27,6 +27,7 @@ from experiments.utils.pipeline_operations import (
     load_test,
     remove_pipeline,
     setup_router_pipeline,
+    setup_central_pipeline,
     get_pod_name,
 )
 from experiments.utils.constants import (
@@ -59,6 +60,10 @@ def experiments(
     benchmark_duration = config["benchmark_duration"]
     workload_type = config["workload_type"]
     workload_config = config["workload_config"]
+
+    central_queue = config["central_queue"]
+    distrpution_time = config["distrpution_time"]
+
     if workload_type == "static":
         loads_to_test = workload_config["loads_to_test"]
         load_duration = workload_config["load_duration"]
@@ -113,9 +118,7 @@ def experiments(
                         for replica in replicas:
                             for load in loads_to_test:
                                 logger.info(
-                                    "-" * 25
-                                    + f" starting repetition experiment "
-                                    + "-" * 25
+                                    "-" * 25 + f" starting  experiment " + "-" * 25
                                 )
                                 logger.info("\n")
                                 experiments_exist, experiment_id = key_config_mapper(
@@ -136,24 +139,46 @@ def experiments(
                                     benchmark_duration=benchmark_duration,
                                 )
                                 if not experiments_exist:
-                                    setup_router_pipeline(
-                                        node_names=node_names,
-                                        pipeline_name=pipeline_name,
-                                        cpu_request=cpu_request,
-                                        memory_request=memory_request,
-                                        model_variant=model_variant,
-                                        max_batch_size=max_batch_size,
-                                        max_batch_time=max_batch_time,
-                                        replica=replica,
-                                        pipeline_path=pipeline_path,
-                                        timeout=timeout,
-                                        num_nodes=len(config["nodes"]),
-                                        use_threading=use_threading,
-                                        # HACK for now we set the number of requests
-                                        # proportional to the the number threads
-                                        num_interop_threads=cpu_request,
-                                        num_threads=cpu_request,
-                                    )
+                                    if central_queue:
+                                        setup_central_pipeline(
+                                            node_names=node_names,
+                                            pipeline_name=pipeline_name,
+                                            cpu_request=cpu_request,
+                                            memory_request=memory_request,
+                                            model_variant=model_variant,
+                                            max_batch_size=max_batch_size,
+                                            max_batch_time=max_batch_time,
+                                            replica=replica,
+                                            pipeline_path=pipeline_path,
+                                            timeout=timeout,
+                                            num_nodes=len(config["nodes"]),
+                                            use_threading=use_threading,
+                                            # HACK for now we set the number of requests
+                                            # proportional to the the number threads
+                                            num_interop_threads=cpu_requests,
+                                            num_threads=cpu_requests,
+                                            distrpution_time=distrpution_time,
+                                        )
+                                    else:
+                                        setup_router_pipeline(
+                                            node_names=node_names,
+                                            pipeline_name=pipeline_name,
+                                            cpu_request=cpu_request,
+                                            memory_request=memory_request,
+                                            model_variant=model_variant,
+                                            max_batch_size=max_batch_size,
+                                            max_batch_time=max_batch_time,
+                                            replica=replica,
+                                            pipeline_path=pipeline_path,
+                                            timeout=timeout,
+                                            num_nodes=len(config["nodes"]),
+                                            use_threading=use_threading,
+                                            # HACK for now we set the number of requests
+                                            # proportional to the the number threads
+                                            num_interop_threads=cpu_request,
+                                            num_threads=cpu_request,
+                                            distrpution_time=distrpution_time,
+                                        )
 
                                     logger.info("Checking if the model is up ...")
                                     logger.info("\n")
@@ -206,29 +231,43 @@ def experiments(
                                             "benchmark_duration": benchmark_duration,
                                             "queue": output_queue,
                                         }
-                                        p = Process(target=load_test, kwargs=kwargs)
-                                        p.start()
-                                        while True:
-                                            time.sleep(1)
-                                            if p.is_alive():
-                                                if time.time() - start_time > timeout:
-                                                    print("finished by cap")
-                                                    start_time_experiment = start_time
-                                                    end_time_experiment = time.time()
-                                                    responses = []
-                                                    p.terminate()
-                                                    break
-                                            else:
-                                                print("finished on time")
-                                                (
-                                                    start_time_experiment,
-                                                    end_time_experiment,
-                                                    responses,
-                                                ) = output_queue.get()
-                                                p.join()
-                                                break
-                                        logger.info(
-                                            "-" * 25 + "saving the report" + "-" * 25
+                                        # p = Process(target=load_test, kwargs=kwargs)
+                                        # p.start()
+                                        # while True:
+                                        #     time.sleep(1)
+                                        #     if p.is_alive():
+                                        #         if time.time() - start_time > timeout:
+                                        #             print("finished by cap")
+                                        #             start_time_experiment = start_time
+                                        #             end_time_experiment = time.time()
+                                        #             responses = []
+                                        #             p.terminate()
+                                        #             break
+                                        #     else:
+                                        #         print("finished on time")
+                                        #         (
+                                        #             start_time_experiment,
+                                        #             end_time_experiment,
+                                        #             responses,
+                                        #         ) = output_queue.get()
+                                        #         p.join()
+                                        #         break
+                                        # logger.info(
+                                        #     "-" * 25 + "saving the report" + "-" * 25
+                                        # )
+                                        (
+                                            start_time_experiment,
+                                            end_time_experiment,
+                                            responses,
+                                        ) = load_test(
+                                            pipeline_name="router",
+                                            model="router",
+                                            data_type=data_type,
+                                            data=data,
+                                            workload=workload,
+                                            mode=mode,
+                                            namespace="default",
+                                            benchmark_duration=benchmark_duration,
                                         )
                                         logger.info("\n")
                                         save_report(
@@ -534,14 +573,20 @@ def main(config_name: str):
     config_path = os.path.join(PIPELINE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, "r") as cf:
         config = yaml.safe_load(cf)
+
+    series = config["series"]
     pipeline_name = config["pipeline_name"]
     pipeline_folder_name = config["pipeline_folder_name"]
     node_names = [config["node_name"] for config in config["nodes"]]
+
     # first node of the pipeline determins the pipeline data_type
     data_type = config["nodes"][0]["data_type"]
-    series = config["series"]
+
+    # pipeline path based on pipeline type [central | distributed] queues
+    central_queue = config["central_queue"]
+    pipeline_type = "mlserver-centralized" if central_queue else "mlserver-final"
     pipeline_path = os.path.join(
-        PIPLINES_PATH, pipeline_folder_name, "seldon-core-version"
+        PIPLINES_PATH, pipeline_type, pipeline_folder_name, "seldon-core-version"
     )
 
     dir_path = os.path.join(PIPELINE_PROFILING_RESULTS_PATH, "series", str(series))

@@ -63,7 +63,6 @@ load_tester = MLServerAsyncGrpc(
     data=data,
     mode=mode,  # options - step, equal, exponential
     data_type=data_type,
-    
 )
 
 responses = asyncio.run(load_tester.start())

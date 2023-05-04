@@ -1,6 +1,6 @@
-series: 1
+series: 4
 metadata: 'pipeline benchmarking'
-timeout: 1
+timeout: 70
 pipeline_folder_name: video
 pipeline_name: video
 mode: exponential
@@ -9,23 +9,23 @@ nodes:
     data_type: image
     model_variants:
       - yolov5n
-      - yolov5s
-      - yolov5m
+      # - yolov5s
+      # - yolov5m
       # - yolov5l
       # - yolov5x
     max_batch_size:
       - '1'
       # - '2'
-      - '4'
+      # - '4'
       # - '8'
-      - '16'
+      # - '16'
       # - '32'
     max_batch_time:
       - '1'
     cpu_request:
       - '1'
-      - '2'
-      - '4'
+      # - '2'
+      # - '4'
       # - '8'
       # - '16'
       # - '32'
@@ -33,8 +33,8 @@ nodes:
       - 10Gi
     replicas:
       - 1
-      - 2
-      - 4
+      # - 2
+      # - 4
     use_threading: 'True'
     num_interop_threads:
       - '1'
@@ -44,30 +44,30 @@ nodes:
     data_type: text
     model_variants:
       - resnet18
-      - resnet34
-      - resnet50
+      # - resnet34
+      # - resnet50
       # - resnet101
       # - resnet152
     max_batch_size:
-      - '1'
+      # - '1'
       # - '2'
       - '4'
       # - '8'
-      - '16'
+      # - '16'
     max_batch_time:
       - '1'
     cpu_request:
       - '1'
-      - '2'
-      - '4'
+      # - '2'
+      # - '4'
       # - '8'
       # - '16'
     memory_request:
       - 10Gi
     replicas:
       - 1
-      - 2
-      - 4
+      # - 2
+      # - 4
     use_threading: 'True'
     num_interop_threads:
       - '1'
@@ -81,7 +81,7 @@ workload_config:
   # - 1
   # - 5
   - 10
-  - 30
+  # - 30
   # - 40
   # - 60
   # - 80
@@ -90,3 +90,6 @@ workload_config:
 # workload_config:
 #   - start: '3:5:0'
 #     end: '3:5:1'
+
+central_queue: true
+distrpution_time: 15
