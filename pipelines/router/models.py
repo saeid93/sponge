@@ -67,7 +67,7 @@ class Router(MLModel):
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         mlserver.log(input_requests=1)
-        logger.info(f"payload in:\n{payload}")
+        # logger.info(f"payload in:\n{payload}")
         arrival_time = time.time()
 
         self.request_counter += 1
@@ -75,10 +75,10 @@ class Router(MLModel):
 
         output = payload
         for model_name in MODEL_LISTS:
-            logger.info(f"{model_name} input:\n{output}")
+            # logger.info(f"{model_name} input:\n{output}")
             logger.info(f"Getting inference responses {model_name}")
             output = await model_infer(model_name=model_name, request_input=output)
-            logger.info(f"{model_name} output:\n{output}")
+            # logger.info(f"{model_name} output:\n{output}")
 
         serving_time = time.time()
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}

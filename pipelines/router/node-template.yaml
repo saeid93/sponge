@@ -29,6 +29,9 @@ spec:
           env:
             - name: MODEL_LISTS
               value: '{{ model_lists }}'
+            # router should be multi-process to sustain througput
+            - name: MLSERVER_PARALLEL_WORKERS
+              value: "8"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

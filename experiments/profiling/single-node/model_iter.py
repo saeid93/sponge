@@ -55,6 +55,9 @@ def experiments(
     series_meta = config["series_meta"]
     workload_type = config["workload_type"]
     workload_config = config["workload_config"]
+
+    distrpution_time = config["distrpution_time"]
+
     if workload_type == "static":
         loads_to_test = workload_config["loads_to_test"]
         load_duration = workload_config["load_duration"]
@@ -135,6 +138,7 @@ def experiments(
                                         # proportional to the the number threads
                                         num_interop_threads=cpu_request,
                                         num_threads=cpu_request,
+                                        distrpution_time=distrpution_time
                                     )
                                     logger.info("Checking if the model is up ...")
                                     logger.info("\n")
@@ -462,7 +466,7 @@ def save_report(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="5-config-resnet-human")
+@click.option("--config-name", required=True, type=str, default="5-config-yolo")
 def main(config_name: str):
     config_path = os.path.join(NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, "r") as cf:
@@ -471,8 +475,15 @@ def main(config_name: str):
     node_name = config["node_name"]
     data_type = config["data_type"]
     series = config["series"]
+
+    # pipeline path based on pipeline type [central | distributed] queues
+    central_queue = config["central_queue"]
+    pipeline_type = "mlserver-centralized" if central_queue else "mlserver-final"
+    pipeline_path = os.path.join(
+        PIPLINES_PATH, pipeline_type, pipeline_name, "seldon-core-version"
+    )
     node_path = os.path.join(
-        PIPLINES_PATH, pipeline_name, "seldon-core-version", "nodes", node_name
+        pipeline_path, "nodes", node_name
     )
 
     dir_path = os.path.join(NODE_PROFILING_RESULTS_PATH, "series", str(series))

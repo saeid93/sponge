@@ -7,5 +7,5 @@
 # python model_iter.py --config-name 3-config-trans
 # python model_iter.py --config-name 4-config-qa
 # python model_iter.py --config-name 4-config-sum
-python model_iter.py --config-name 5-config-resnet-human
+# python model_iter.py --config-name 5-config-resnet-human
 python model_iter.py --config-name 5-config-yolo

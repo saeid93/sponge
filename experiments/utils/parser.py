@@ -365,19 +365,18 @@ class Parser:
                 final_dataframe.append(processed_exp)
         return pd.DataFrame(final_dataframe)
 
-    def per_second_result_processing(self):
+    def per_second_result_processing(self, experiment_id=0):
         log = None
         selected = None
         results = self._read_results(selected)
-        final_dataframe = []
-        for experiment_id, result in results.items():
-            # processed_exp = {"experiment_id": int(experiment_id)}
-            num_request_per_seconds, flattened_results = self.flatten_results(
-                results[str(experiment_id)]["responses"]
-            )
-            latencies, timeout_count = self.latency_calculator(
-                flattened_results, log, keep_lost=True
-            )
+        # for experiment_id, result in results.items():
+        # processed_exp = {"experiment_id": int(experiment_id)}
+        num_request_per_seconds, flattened_results = self.flatten_results(
+            results[str(experiment_id)]["responses"]
+        )
+        latencies, _ = self.latency_calculator(
+            flattened_results, log, keep_lost=True
+        )
         temp_latency = deepcopy(latencies)
         per_second_stats = []
         for i in range(len(num_request_per_seconds)):

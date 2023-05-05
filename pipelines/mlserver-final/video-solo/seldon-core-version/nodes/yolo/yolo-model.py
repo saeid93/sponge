@@ -157,7 +157,7 @@ class Yolo(MLModel):
             parameters=Parameters(type_of="image"),
         )
         # payload_to_print = payload.outputs[0].data
-        # logger.info(payload)
+        logger.info(payload)
         logger.info(f"request counter:\n{self.request_counter}\n")
         logger.info(f"batch counter:\n{self.batch_counter}\n")
         return payload
