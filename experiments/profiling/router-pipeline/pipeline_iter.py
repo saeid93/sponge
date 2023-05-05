@@ -70,11 +70,14 @@ def experiments(
     elif workload_type == "twitter":
         loads_to_test = []
         for w_config in workload_config:
+            damping_factor = w_config["damping_factor"]
             start = w_config["start"]
             end = w_config["end"]
             load_to_test = start + "-" + end
             loads_to_test.append(load_to_test)
-        workload = twitter_workload_generator(loads_to_test[0])
+        workload = twitter_workload_generator(
+            loads_to_test[0], damping_factor=damping_factor
+        )
         load_duration = len(workload)
 
     model_variants = []
@@ -568,7 +571,7 @@ def backup(series):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video")
+@click.option("--config-name", required=True, type=str, default="video-1")
 def main(config_name: str):
     config_path = os.path.join(PIPELINE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, "r") as cf:

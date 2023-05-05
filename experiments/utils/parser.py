@@ -122,6 +122,7 @@ class Parser:
         client_to_model_latencies = []
         model_latencies = []
         model_to_client_latencies = []
+        e2e_latencies = []
         latencies = {
             "client_to_model_latencies": [],
             "model_latencies": [],
@@ -141,7 +142,7 @@ class Parser:
                 model_to_client_latency = (
                     request_times["arrival"] - model_times["serving"]
                 )
-                e2e_latencies = request_times["arrival"] - request_times["sending"]
+                e2e_latencies.append(request_times["arrival"] - request_times["sending"])
                 client_to_model_latencies.append(client_to_model_latency)
                 model_latencies.append(model_latency)
                 model_to_client_latencies.append(model_to_client_latency)
@@ -390,9 +391,14 @@ class Parser:
             stats.append(self.latency_summary(item))
         timeout_per_second = []
         for item in per_second_stats:
-            num_nones = len(
-                list(filter(lambda x: x is None, item["client_to_pipeline_latencies"]))
-            )
+            if self.type_of == 'pipeline':
+                num_nones = len(
+                    list(filter(lambda x: x is None, item["client_to_pipeline_latencies"]))
+                )
+            if self.type_of == "router_pipeline":
+                num_nones = len(
+                    list(filter(lambda x: x is None, item["client_to_router_latencies"]))
+                ) 
             timeout_per_second.append(num_nones)
         return timeout_per_second, pd.DataFrame(stats)
 
@@ -415,13 +421,13 @@ class Parser:
 
 
 class AdaptationParser:
-    def __init__(self, series_path, model_name) -> None:
+    def __init__(self, series_path, model_name, type_of) -> None:
         self.series_path = series_path
         self.loader = Parser(
             series_path=series_path,
             config_key_mapper=None,
             model_name=model_name,
-            type_of="pipeline",
+            type_of=type_of,
         )
 
     def load_configs(self):

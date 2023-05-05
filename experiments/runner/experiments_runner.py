@@ -203,7 +203,7 @@ def main(config_name: str, type_of: str):
     node_names = [config["node_name"] for config in config["nodes"]]
 
     # first node of the pipeline determins the pipeline data_type
-    central_queue = config["central_queue"]
+    data_type = config["nodes"][0]["data_type"]
 
     # pipeline path based on pipeline type [central | distributed] queues
     central_queue = config["central_queue"]
