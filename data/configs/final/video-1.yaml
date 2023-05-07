@@ -39,19 +39,21 @@ adaptation_interval: 20
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1861900'
+  # - start: '1861900'
+  - start: '1863050'
+    end: '1863200'
     # end: '1862200'
     # end: '1861960'
     # end: '1862500'
     # end: '1863700'
-    end: '1865100'
-    damping_factor: 3 # [int | null]
+    # end: '1865100'
+    damping_factor: 8 # [int | null]
 
 # ----------- optimizer configs -------------
 
-series: 18
+series: 61
 # pipeline_name: video
-metadata: 'checking the effect of changing all variables under arrival rate 1,\n cpu type: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz'
+metadata: 'repeat of 60 to make sure havent effect this'
 number_tasks: 2
 profiling_series:
   - 71
@@ -74,7 +76,7 @@ initial_replica:
 initial_batch:
   - 1
   - 1
-alpha: 1
+alpha: 0
 beta: 1
 gamma: 0
 scaling_cap: 100 # maximum possible scaling per nodes
@@ -87,10 +89,18 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: false
 profiling_load: 20
-baseline_mode: null # [switch | scale | null]
+baseline_mode: scale # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
 predictor_type: 'max' # [reactive | avg | lstm | max]
 monitoring_duration: 10 # in minutes
+
+# ----------- queueing-option -------------
+
+central_queue: true
+
+# ----------- distruption time -------------
+
+distrpution_time: 30

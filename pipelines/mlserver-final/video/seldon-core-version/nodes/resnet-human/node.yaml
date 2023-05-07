@@ -35,6 +35,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
+
         terminationGracePeriodSeconds: 10
         containers:
         - image: sdghafouri/video-final:resnet-human

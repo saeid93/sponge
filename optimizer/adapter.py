@@ -552,4 +552,4 @@ class Predictor:
         else:
             model_output = self.model(series)
 
-        return 2 * model_output
+        return model_output

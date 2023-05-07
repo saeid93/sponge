@@ -1,4 +1,4 @@
-series: 25
+series: 5
 metadata: 'repeat 20 with 4 router'
 timeout: 70
 pipeline_folder_name: video

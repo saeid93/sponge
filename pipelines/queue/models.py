@@ -8,6 +8,18 @@ import grpc
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
 import mlserver
+import logging
+
+
+# Create a FileHandler object and set its level
+log_file_path = "./my_logs.log"
+file_handler = logging.FileHandler(log_file_path)
+file_handler.setLevel(logging.DEBUG)
+
+
+# Add the file handler to the logger
+logger = logging.getLogger()
+logger.addHandler(file_handler)
 
 try:
     PREDICTIVE_UNIT_ID = os.environ["PREDICTIVE_UNIT_ID"]
@@ -22,6 +34,7 @@ try:
     MODEL_NAME = os.environ["MODEL_NAME"]
     logger.info(f"MODEL_NAME set to: {MODEL_NAME}")
 except KeyError as e:
+    # MODEL_NAME = "ddd"
     raise ValueError("No model is assigned to this queue")
 
 try:
@@ -30,6 +43,7 @@ try:
 except KeyError as e:
     LAST_NODE = False
     logger.info(f"LAST_NODE env variable not set, using default value: {LAST_NODE}")
+
 
 
 async def send_requests(ch, model_name, payload: InferenceRequest):
