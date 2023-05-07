@@ -64,6 +64,7 @@ def setup_node(
     num_threads: int,
     distrpution_time: int,
     no_engine=False,
+    debug_mode=False,
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
@@ -112,9 +113,16 @@ def setup_node(
     check_node_loaded(node_name=node_name)
 
 
-def setup_router(pipeline_name: str, node_names: List[str], distrpution_time: int):
+def setup_router(
+    pipeline_name: str,
+    node_names: List[str],
+    distrpution_time: int,
+    debug_mode: bool = False,
+):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
+    if debug_mode:
+        node_names = list(map(lambda l: f"{l}-debug", node_names))
     model_lists = str(node_names)
     model_lists = model_lists.replace("'", '"')
     svc_vars = {
@@ -127,7 +135,8 @@ def setup_router(pipeline_name: str, node_names: List[str], distrpution_time: in
         "distrpution_time": distrpution_time,
         "model_lists": model_lists,
     }
-    environment = Environment(loader=FileSystemLoader(ROUTER_PATH))
+    router_path = f"{ROUTER_PATH}-debug" if debug_mode else ROUTER_PATH
+    environment = Environment(loader=FileSystemLoader(router_path))
     svc_template = environment.get_template("node-template.yaml")
     content = svc_template.render(svc_vars)
     logger.info(content)
@@ -145,6 +154,7 @@ def setup_queues(
     max_batch_sizes: int,
     max_batch_times: int,
     distrpution_time: int,
+    debug_mode: bool = False,
 ):
     # TODO
     # in a for loop
@@ -158,6 +168,7 @@ def setup_queues(
             max_batch_time=max_batch_time,
             last_node=last_node,
             distrpution_time=distrpution_time,
+            debug_mode=debug_mode,
         )
 
 
@@ -167,11 +178,13 @@ def setup_queue(
     max_batch_time: int,
     last_node: bool,
     distrpution_time: int,
+    debug_mode: bool = False,
 ):
     # TODO
     # in a for loop
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
+    model_name = f"{model_name}-debug" if debug_mode else model_name
     svc_vars = {
         "max_batch_size": max_batch_size,
         "max_batch_time": max_batch_time,
@@ -184,7 +197,8 @@ def setup_queue(
         "model_name": model_name,
         "last_node": last_node,
     }
-    environment = Environment(loader=FileSystemLoader(QUEUE_PATH))
+    queue_path = f"{QUEUE_PATH}-debug" if debug_mode else QUEUE_PATH
+    environment = Environment(loader=FileSystemLoader(queue_path))
     svc_template = environment.get_template("node-template.yaml")
     content = svc_template.render(svc_vars)
     logger.info(content)
@@ -328,6 +342,7 @@ def setup_router_pipeline(
     timeout: int,
     num_nodes: int,
     distrpution_time: int,
+    debug_mode: bool = False,
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
@@ -349,11 +364,13 @@ def setup_router_pipeline(
             num_interop_threads=cpu_request[node_id],
             num_threads=cpu_request[node_id],
             distrpution_time=distrpution_time,
+            debug_mode=debug_mode,
         )
     setup_router(
         pipeline_name=pipeline_name,
         node_names=node_names,
         distrpution_time=distrpution_time,
+        debug_mode=debug_mode,
     )
 
 
@@ -373,10 +390,12 @@ def setup_central_pipeline(
     timeout: int,
     num_nodes: int,
     distrpution_time: int,
+    debug_mode: bool = False,
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
     for node_id, node_name in zip(range(num_nodes), node_names):
+        node_name = f"{node_name}-debug" if debug_mode else node_name
         node_path = os.path.join(pipeline_path, "nodes", node_name)
         setup_node(
             node_name=node_name,
@@ -401,11 +420,13 @@ def setup_central_pipeline(
         max_batch_sizes=max_batch_size,
         max_batch_times=max_batch_time,
         distrpution_time=distrpution_time,
+        debug_mode=debug_mode,
     )
     setup_router(
         pipeline_name=pipeline_name,
         node_names=queue_names,
         distrpution_time=distrpution_time,
+        debug_mode=debug_mode,
     )
 
 

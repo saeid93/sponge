@@ -138,7 +138,7 @@ def experiments(
                                         # proportional to the the number threads
                                         num_interop_threads=cpu_request,
                                         num_threads=cpu_request,
-                                        distrpution_time=distrpution_time
+                                        distrpution_time=distrpution_time,
                                     )
                                     logger.info("Checking if the model is up ...")
                                     logger.info("\n")
@@ -482,9 +482,7 @@ def main(config_name: str):
     pipeline_path = os.path.join(
         PIPLINES_PATH, pipeline_type, pipeline_name, "seldon-core-version"
     )
-    node_path = os.path.join(
-        pipeline_path, "nodes", node_name
-    )
+    node_path = os.path.join(pipeline_path, "nodes", node_name)
 
     dir_path = os.path.join(NODE_PROFILING_RESULTS_PATH, "series", str(series))
     if not os.path.exists(dir_path):

@@ -45,7 +45,6 @@ except KeyError as e:
     logger.info(f"LAST_NODE env variable not set, using default value: {LAST_NODE}")
 
 
-
 async def send_requests(ch, model_name, payload: InferenceRequest):
     grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
 

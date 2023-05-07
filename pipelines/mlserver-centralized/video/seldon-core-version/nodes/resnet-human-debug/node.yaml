@@ -1,15 +1,15 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: resnet-human
+  name: resnet-human-debug
 spec:
   protocol: v2
-  name: resnet-human
+  name: resnet-human-debug
   annotations:
     proxy.istio.io/config: |
       terminationDrainDuration: 10s
   predictors:
-  - name: resnet-human
+  - name: resnet-human-debug
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
@@ -42,7 +42,7 @@ spec:
         terminationGracePeriodSeconds: 10
         containers:
         - image: sdghafouri/video-centralized:resnet-human-debug
-          name: resnet-human
+          name: resnet-human-debug
           imagePullPolicy: Always
           resources:
             requests:
@@ -95,7 +95,7 @@ spec:
                 - /bin/sleep 10
       replicas: 1
     graph:
-      name: resnet-human
+      name: resnet-human-debug
       type: MODEL
       children: []
     labels:

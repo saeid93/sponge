@@ -71,6 +71,7 @@ class Adapter:
         predictor_type: str,
         baseline_mode: Optional[str] = None,
         central_queue: bool = False,
+        debug_mode: bool = False
     ) -> None:
         """
         Args:
@@ -92,6 +93,7 @@ class Adapter:
         self.pipeline = pipeline
         self.node_names = node_names
         self.adaptation_interval = adaptation_interval
+        self.debug_mode = debug_mode
         self.optimizer = Optimizer(
             pipeline=pipeline,
             allocation_mode=allocation_mode,
@@ -313,6 +315,7 @@ class Adapter:
         for node_name in self.node_names:
             node_config = {}
             # TODO check if it exists before extracting the config
+            node_name = f"{node_name}-debug" if self.debug_mode else self.debug_mode
             raw_config = kube_custom_api.get_namespaced_custom_object(
                 group="machinelearning.seldon.io",
                 version="v1",
@@ -461,6 +464,7 @@ class Adapter:
     ):
         saving_config = to_apply_config
         for index, node in enumerate(node_orders):
+            node = f"{node}-debug" if self.debug_mode else self.debug_mode
             saving_config[node]["latency"] = stage_wise_latencies[index]
             saving_config[node]["accuracy"] = stage_wise_accuracies[index]
             saving_config[node]["throughput"] = stage_wise_throughputs[index]

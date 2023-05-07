@@ -16,12 +16,10 @@ try:
     logger.info(f"POD_NAME set to: {POD_NAME}")
 except KeyError as e:
     POD_NAME = "resnet-human"
-    logger.info(
-        f"POD_NAME env variable not set, using default value: {POD_NAME}"
-    )
+    logger.info(f"POD_NAME env variable not set, using default value: {POD_NAME}")
 
 # File number of files in the folder
-num_files = int(len(os.listdir("./logs"))/2)
+num_files = int(len(os.listdir("./logs")) / 2)
 
 # Add the file handler to mlserver logs
 log_file_path = f"./logs/{num_files}_log_{POD_NAME}.log"
@@ -63,7 +61,6 @@ try:
 except KeyError as e:
     LAST_NODE = False
     logger.info(f"LAST_NODE env variable not set, using default value: {LAST_NODE}")
-
 
 
 async def send_requests(ch, model_name, payload: InferenceRequest):

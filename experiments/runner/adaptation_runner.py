@@ -28,7 +28,7 @@ from experiments.utils.simulation_operations import generate_simulated_pipeline
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-9")
+@click.option("--config-name", required=True, type=str, default="video-1")
 @click.option(
     "--type-of",
     required=True,
@@ -103,6 +103,9 @@ def main(config_name: str, type_of: str):
     # pipeline accuracy
     pipeline_accuracies = accuracies[pipeline_name]
 
+    # whether if it is in debug mode or not with contaienrs logs
+    debug_mode = config["debug_mode"]
+
     # optimizer
     alpha = config["alpha"]
     beta = config["beta"]
@@ -127,7 +130,7 @@ def main(config_name: str, type_of: str):
         normalize_accuracy=normalize_accuracy,
         pipeline_accuracies=pipeline_accuracies,
         only_measured_profiles=only_measured_profiles,
-        profiling_load=profiling_load,
+        profiling_load=profiling_load
     )
 
     # ----------- 3. loading predictor configs -------------
@@ -153,6 +156,7 @@ def main(config_name: str, type_of: str):
         predictor_type=predictor_type,
         baseline_mode=baseline_mode,
         central_queue=central_queue,
+        debug_mode=debug_mode
     )
 
     # ----------- 3. Running an experiment series -------------

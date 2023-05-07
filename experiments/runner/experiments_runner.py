@@ -42,6 +42,7 @@ def setup_pipeline(
     config: dict,
     pipeline_path: str,
     data_type: str,
+    debug_mode: bool = False,
 ):
     timeout = config["timeout"]
     central_queue = config["central_queue"]
@@ -86,6 +87,7 @@ def setup_pipeline(
             num_interop_threads=cpu_requests,
             num_threads=cpu_requests,
             distrpution_time=distrpution_time,
+            debug_mode=debug_mode,
         )
     else:
         setup_router_pipeline(
@@ -106,6 +108,7 @@ def setup_pipeline(
             num_interop_threads=cpu_requests,
             num_threads=cpu_requests,
             distrpution_time=distrpution_time,
+            debug_mode=debug_mode,
         )
     logger.info(f"Checking if the model is up ...")
     logger.info("\n")
@@ -178,7 +181,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-14")
+@click.option("--config-name", required=True, type=str, default="video-1")
 @click.option(
     "--type-of",
     required=True,
@@ -204,6 +207,9 @@ def main(config_name: str, type_of: str):
 
     # first node of the pipeline determins the pipeline data_type
     data_type = config["nodes"][0]["data_type"]
+
+    # whether if it is in debug mode or not with contaienrs logs
+    debug_mode = config["debug_mode"]
 
     # pipeline path based on pipeline type [central | distributed] queues
     central_queue = config["central_queue"]
@@ -250,6 +256,7 @@ def main(config_name: str, type_of: str):
             config=config,
             pipeline_path=pipeline_path,
             data_type=data_type,
+            debug_mode=debug_mode,
         )
 
         # 1. process one the experiment runner

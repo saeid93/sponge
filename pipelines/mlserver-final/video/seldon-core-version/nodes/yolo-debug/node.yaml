@@ -1,15 +1,15 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: yolo
+  name: yolo-debug
 spec:
   protocol: v2
-  name: yolo
+  name: yolo-debug
   annotations:
     proxy.istio.io/config: |
       terminationDrainDuration: 30s
   predictors:
-  - name: yolo
+  - name: yolo-debug
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
@@ -42,7 +42,7 @@ spec:
         terminationGracePeriodSeconds: 30
         containers:
         - image: sdghafouri/video-final:yolo-debug
-          name: yolo
+          name: yolo-debug
           imagePullPolicy: Always
           resources:
             requests:
@@ -97,7 +97,7 @@ spec:
                 - /bin/sleep 30
       replicas: 1
     graph:
-      name: yolo
+      name: yolo-debug
       type: MODEL
       children: []
     labels:

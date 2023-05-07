@@ -42,7 +42,7 @@ spec:
         terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
         - image: sdghafouri/video-centralized:resnet-human-debug
-          name: resnet-human
+          name: resnet-human-debug
           imagePullPolicy: Always
           resources:
             requests:
@@ -92,7 +92,7 @@ spec:
                 - /bin/sleep {{ distrpution_time }}
       replicas: {{ replicas }}
     graph:
-      name: resnet-human
+      name: resnet-human-debug
       type: MODEL
       children: []
     labels:

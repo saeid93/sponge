@@ -142,7 +142,9 @@ class Parser:
                 model_to_client_latency = (
                     request_times["arrival"] - model_times["serving"]
                 )
-                e2e_latencies.append(request_times["arrival"] - request_times["sending"])
+                e2e_latencies.append(
+                    request_times["arrival"] - request_times["sending"]
+                )
                 client_to_model_latencies.append(client_to_model_latency)
                 model_latencies.append(model_latency)
                 model_to_client_latencies.append(model_to_client_latency)
@@ -374,9 +376,7 @@ class Parser:
         num_request_per_seconds, flattened_results = self.flatten_results(
             results[str(experiment_id)]["responses"]
         )
-        latencies, _ = self.latency_calculator(
-            flattened_results, log, keep_lost=True
-        )
+        latencies, _ = self.latency_calculator(flattened_results, log, keep_lost=True)
         temp_latency = deepcopy(latencies)
         per_second_stats = []
         for i in range(len(num_request_per_seconds)):
@@ -390,14 +390,20 @@ class Parser:
             stats.append(self.latency_summary(item))
         timeout_per_second = []
         for item in per_second_stats:
-            if self.type_of == 'pipeline':
+            if self.type_of == "pipeline":
                 num_nones = len(
-                    list(filter(lambda x: x is None, item["client_to_pipeline_latencies"]))
+                    list(
+                        filter(
+                            lambda x: x is None, item["client_to_pipeline_latencies"]
+                        )
+                    )
                 )
             if self.type_of == "router_pipeline":
                 num_nones = len(
-                    list(filter(lambda x: x is None, item["client_to_router_latencies"]))
-                ) 
+                    list(
+                        filter(lambda x: x is None, item["client_to_router_latencies"])
+                    )
+                )
             timeout_per_second.append(num_nones)
         return timeout_per_second, pd.DataFrame(stats)
 
