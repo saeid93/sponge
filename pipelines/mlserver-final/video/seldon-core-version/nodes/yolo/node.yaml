@@ -54,11 +54,11 @@ spec:
             - name: MODEL_PATH
               value: /mnt/models/yolov5m
             - name: MODEL_VARIANT
-              value: yolov5m
+              value: yolov5n
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "10"
+              value: "1"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
@@ -66,7 +66,7 @@ spec:
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
-              value: "5"
+              value: "1"
             - name: NUM_THREADS
               value: "1"
           readinessProbe:
