@@ -41,17 +41,17 @@ workload_type: twitter
 workload_config:
   # - start: '1861900'
   - start: '1863050'
-    # end: '1863200'
+    end: '1863200'
     # end: '1862200'
     # end: '1861960'
     # end: '1862500'
     # end: '1863700'
-    end: '1865100'
+    # end: '1865100'
     damping_factor: 8 # [int | null]
 
 # ----------- optimizer configs -------------
 
-series: 62
+series: 64
 # pipeline_name: video
 metadata: 'repeat of 61 with debug mode to see the results'
 number_tasks: 2
@@ -110,4 +110,4 @@ distrpution_time: 10
 debug_mode: true
 
 # ----------- simulation mode -------------
-simulation_mode: false
+simulation_mode: true

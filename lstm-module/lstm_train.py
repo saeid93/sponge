@@ -50,8 +50,9 @@ def get_data():
     """
     read the dataset
     """
+    last_day = 21 * 24 * 60 * 60
     # load the per second RPS of the Twitter dataset
-    workload = twitter_workload_generator("1-26")
+    workload = twitter_workload_generator(f"{0}-{last_day}")
     workload = list(filter(lambda x: x != 0, workload))
 
     # Twitter dataset is for 21 days

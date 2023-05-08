@@ -211,6 +211,11 @@ def main(config_name: str, type_of: str):
     # whether if it is in debug mode or not with contaienrs logs
     debug_mode = config["debug_mode"]
 
+    # whether to use the simulation mode or not
+    simulation_mode = config["simulation_mode"]
+    if simulation_mode:
+        raise ValueError("wrong config chosen, this is a simulation config")
+
     # pipeline path based on pipeline type [central | distributed] queues
     central_queue = config["central_queue"]
     pipeline_type = "mlserver-centralized" if central_queue else "mlserver-final"
