@@ -26,5 +26,15 @@ For setting infrastructure refer to accompanying repo [infrastructure](https://g
 2. **Load tester** code is available at [load_tester](https://github.com/reconfigurable-ml-pipeline/load_tester) repository.
 3. **Forked MLServer** [MLServer](https://github.com/SeldonIO/MLServer) is a production ready ML Serving platform, due to some modification we needed to make in this project we use a [forked version](https://github.com/saeid93/MLServer) of it
 
+# Prerequisite
+1. Install the forked MLServer, in the root folder of it do:
+```
+pip install -e .
+```
+2. Install the barAzmoon library for load testing, in the root folder of the `saeed` branch:
+```
+pip install -e .
+```
+
 # Setup project Steps
 coming soon ...
