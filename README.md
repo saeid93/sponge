@@ -29,11 +29,19 @@ For setting infrastructure refer to accompanying repo [infrastructure](https://g
 # Prerequisite
 1. Install the forked MLServer, in the root folder of it do:
 ```
-pip install -e .
+make install-dev
 ```
 2. Install the barAzmoon library for load testing, in the root folder of the `saeed` branch:
 ```
 pip install -e .
+```
+3. Install depandancies of the project:
+```
+pip install -r requirements.txt
+```
+4. Go to the lstm-module and train the lstm NN:
+```
+python lstm_train.py
 ```
 
 # Setup project Steps
