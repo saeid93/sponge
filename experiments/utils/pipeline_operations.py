@@ -135,8 +135,7 @@ def setup_router(
         "distrpution_time": distrpution_time,
         "model_lists": model_lists,
     }
-    router_path = f"{ROUTER_PATH}-debug" if debug_mode else ROUTER_PATH
-    environment = Environment(loader=FileSystemLoader(router_path))
+    environment = Environment(loader=FileSystemLoader(ROUTER_PATH))
     svc_template = environment.get_template("node-template.yaml")
     content = svc_template.render(svc_vars)
     logger.info(content)
@@ -395,8 +394,8 @@ def setup_central_pipeline(
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
     for node_id, node_name in zip(range(num_nodes), node_names):
-        node_name = f"{node_name}-debug" if debug_mode else node_name
-        node_path = os.path.join(pipeline_path, "nodes", node_name)
+        node_sub_path = f"{node_name}-debug" if debug_mode else node_name
+        node_path = os.path.join(pipeline_path, "nodes", node_sub_path)
         setup_node(
             node_name=node_name,
             cpu_request=cpu_request[node_id],

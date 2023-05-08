@@ -42,7 +42,7 @@ spec:
         terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
         - image: sdghafouri/video-centralized:yolo-debug
-          name: yolo-debug
+          name: yolo
           imagePullPolicy: Always
           resources:
             requests:
@@ -93,7 +93,7 @@ spec:
                 - /bin/sleep {{ distrpution_time }}
       replicas: {{ replicas }}
     graph:
-      name: yolo-debug
+      name: yolo
       type: MODEL
       children: []
     labels:
