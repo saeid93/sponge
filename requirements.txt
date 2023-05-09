@@ -59,3 +59,4 @@ torchvision
 sentencepiece
 torchaudio
 gorubipy
+tabulate

@@ -5,6 +5,7 @@ pipeline_folder_name: video
 pipeline_name: video
 mode: exponential
 nodes:
+
   - node_name: yolo
     data_type: image
     model_variants:
@@ -40,6 +41,7 @@ nodes:
       - '1'
     num_threads:
       - '1'
+
   - node_name: resnet-human
     data_type: text
     model_variants:

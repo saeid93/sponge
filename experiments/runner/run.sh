@@ -42,4 +42,5 @@
 # sleep 90
 # python runner_script.py --config-name video-30
 # sleep 90
-python runner_script.py --config-name video-4
+# python runner_script.py --config-name video-4
+python runner_script.py --config-name audio-qa
