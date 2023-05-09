@@ -58,3 +58,4 @@ librosa
 torchvision
 sentencepiece
 torchaudio
+gorubipy

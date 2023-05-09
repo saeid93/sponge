@@ -1,9 +1,9 @@
-series: 10
-series_meta: 'sample for making the analysis notebook'
-timeout: 60
+series: 20
+metadata: 'starting audio-qa'
+timeout: 70
 pipeline_folder_name: audio-qa
-pipeline_name: paper-audio-qa
-prtocol: 'rest'
+pipeline_name: audio-qa
+mode: exponential
 nodes:
   - node_name: audio
     data_type: audio
@@ -67,3 +67,18 @@ workload_config:
   - 10
   # - 20
   load_duration: 60
+
+# workload_type: twitter
+# workload_config:
+#   # - start: '1861900'
+#   - start: '1863050'
+#     end: '1863200'
+#     # end: '1862200'
+#     # end: '1861960'
+#     # end: '1862500'
+#     # end: '1863700'
+#     # end: '1865100'
+#     damping_factor: 8 # [int | null]
+
+central_queue: true
+distrpution_time: 10
