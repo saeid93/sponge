@@ -102,6 +102,10 @@ def make_task_profiles(
                             latency=row["model_latencies_avg"],
                         )
                     )
+            if None in list(map(lambda l: l.latency, measured_profiles)):
+                # skipping unresponsive profiles
+                a = 1
+                continue
             available_model_profiles.append(
                 Model(
                     name=model_variant,

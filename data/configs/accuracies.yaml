@@ -1,29 +1,29 @@
 audio-qa:
   audio:
-    facebook/s2t-small-librispeech-asr: 80
-    facebook/s2t-medium-librispeech-asr: 82
-    facebook/s2t-large-librispeech-asr: 83
-    facebook/wav2vec2-base-960h: 85
-    facebook/wav2vec2-large-960h: 86
+    facebook-s2t-small-librispeech-asr: 80
+    facebook-s2t-medium-librispeech-asr: 82
+    facebook-s2t-large-librispeech-asr: 83
+    facebook-wav2vec2-base-960h: 85
+    facebook-wav2vec2-large-960h: 86
   nlp-qa:
-    deepset/roberta-base-squad2: 80
-    deepset/xlm-roberta-large-squad2: 82
+    deepset-roberta-base-squad2: 80
+    deepset-xlm-roberta-large-squad2: 82
     distilbert-base-cased-distilled-squad: 84
-    deepset/xlm-roberta-base-squad2: 86
+    deepset-xlm-roberta-base-squad2: 86
 audio-sent:
   audio:
-    facebook/s2t-small-librispeech-asr: 80
-    facebook/s2t-medium-librispeech-asr: 82
-    facebook/s2t-large-librispeech-asr: 83
-    facebook/wav2vec2-base-960h: 85
-    facebook/wav2vec2-large-960h: 86
+    facebook-s2t-small-librispeech-asr: 80
+    facebook-s2t-medium-librispeech-asr: 82
+    facebook-s2t-large-librispeech-asr: 83
+    facebook-wav2vec2-base-960h: 85
+    facebook-wav2vec2-large-960h: 86
   nlp-sent:
-    huggingface/distilbert-base-uncased-finetuned-mnli: 60
-    huggingface/prunebert-base-uncased-6-finepruned-w-distil-mnli: 60
+    huggingface-distilbert-base-uncased-finetuned-mnli: 60
+    huggingface-prunebert-base-uncased-6-finepruned-w-distil-mnli: 60
     distilbert-base-uncased-finetuned-sst-2-english: 60
-    Souvikcmsa/BERT_sentiment_analysis: 60
-    Souvikcmsa/SentimentAnalysisDistillBERT: 60
-    Souvikcmsa/Roberta_Sentiment_Analysis: 60
+    Souvikcmsa-BERT_sentiment_analysis: 60
+    Souvikcmsa-SentimentAnalysisDistillBERT: 60
+    Souvikcmsa-Roberta_Sentiment_Analysis: 60
 mock:
   node-1:
     1: 100
@@ -33,54 +33,54 @@ mock:
     2: 100
 nlp:
   nlp-li:
-    dinalzein/xlm-roberta-base-finetuned-language-identification: 60
+    dinalzein-xlm-roberta-base-finetuned-language-identification: 60
   nlp-sum:
-    Helsinki-NLP/opus-mt-fr-en: 60
-    Helsinki-NLP/opus-mt-tc-big-fr-en: 62
+    Helsinki-NLP-opus-mt-fr-en: 60
+    Helsinki-NLP-opus-mt-tc-big-fr-en: 62
   nlp-trans:
-    sshleifer/distilbart-cnn-12-6: 70
-    sshleifer/distilbart-xsum-1-1: 70
-    sshleifer/distill-pegasus-cnn-16-4: 70
-    sshleifer/distill-pegasus-xsum-16-4: 70
-    sshleifer/distilbart-xsum-12-3: 70
-    sshleifer/distilbart-xsum-6-6: 70
-    sshleifer/pegasus-cnn-ft-v2: 70
-    sshleifer/distilbart-cnn-6-6: 70
-    sshleifer/distilbart-xsum-12-6: 70
-    sshleifer/distilbart-cnn-12-3: 70
-    sshleifer/distilbart-xsum-12-1: 70
-    sshleifer/distilbart-xsum-9-6: 70
-    sshleifer/distill-pegasus-xsum-16-8: 70
-    facebook/bart-large-cnn: 70
-    google/roberta2roberta_L-24_bbc: 70
-    google/pegasus-cnn_dailymail: 70
-    google/roberta2roberta_L-24_cnn_daily_mail: 70
-    google/pegasus-large: 70
+    sshleifer-distilbart-cnn-12-6: 70
+    sshleifer-distilbart-xsum-1-1: 70
+    sshleifer-distill-pegasus-cnn-16-4: 70
+    sshleifer-distill-pegasus-xsum-16-4: 70
+    sshleifer-distilbart-xsum-12-3: 70
+    sshleifer-distilbart-xsum-6-6: 70
+    sshleifer-pegasus-cnn-ft-v2: 70
+    sshleifer-distilbart-cnn-6-6: 70
+    sshleifer-distilbart-xsum-12-6: 70
+    sshleifer-distilbart-cnn-12-3: 70
+    sshleifer-distilbart-xsum-12-1: 70
+    sshleifer-distilbart-xsum-9-6: 70
+    sshleifer-distill-pegasus-xsum-16-8: 70
+    facebook-bart-large-cnn: 70
+    google-roberta2roberta_L-24_bbc: 70
+    google-pegasus-cnn_dailymail: 70
+    google-roberta2roberta_L-24_cnn_daily_mail: 70
+    google-pegasus-large: 70
 sum-qa:
   nlp-sum:
-    sshleifer/distilbart-cnn-12-6: 50
-    sshleifer/distilbart-xsum-1-1: 51
-    sshleifer/distill-pegasus-cnn-16-4: 52
-    sshleifer/distill-pegasus-xsum-16-4: 54
-    sshleifer/distilbart-xsum-12-3: 60
-    sshleifer/distilbart-xsum-6-6: 60
-    sshleifer/pegasus-cnn-ft-v2: 60
-    sshleifer/distilbart-cnn-6-6: 60
-    sshleifer/distilbart-xsum-12-6: 60
-    sshleifer/distilbart-cnn-12-3: 60
-    sshleifer/distilbart-xsum-12-1: 60
-    sshleifer/distilbart-xsum-9-6: 60
-    sshleifer/distill-pegasus-xsum-16-8: 60
-    facebook/bart-large-cnn: 60
-    google/roberta2roberta_L-24_bbc: 60
-    google/pegasus-cnn_dailymail: 60
-    google/roberta2roberta_L-24_cnn_daily_mail: 60
-    google/pegasus-large: 60
+    sshleifer-distilbart-cnn-12-6: 50
+    sshleifer-distilbart-xsum-1-1: 51
+    sshleifer-distill-pegasus-cnn-16-4: 52
+    sshleifer-distill-pegasus-xsum-16-4: 54
+    sshleifer-distilbart-xsum-12-3: 60
+    sshleifer-distilbart-xsum-6-6: 60
+    sshleifer-pegasus-cnn-ft-v2: 60
+    sshleifer-distilbart-cnn-6-6: 60
+    sshleifer-distilbart-xsum-12-6: 60
+    sshleifer-distilbart-cnn-12-3: 60
+    sshleifer-distilbart-xsum-12-1: 60
+    sshleifer-distilbart-xsum-9-6: 60
+    sshleifer-distill-pegasus-xsum-16-8: 60
+    facebook-bart-large-cnn: 60
+    google-roberta2roberta_L-24_bbc: 60
+    google-pegasus-cnn_dailymail: 60
+    google-roberta2roberta_L-24_cnn_daily_mail: 60
+    google-pegasus-large: 60
   nlp-qa:
-    deepset/roberta-base-squad2: 80
-    deepset/xlm-roberta-large-squad2: 82
+    deepset-roberta-base-squad2: 80
+    deepset-xlm-roberta-large-squad2: 82
     distilbert-base-cased-distilled-squad: 84
-    deepset/xlm-roberta-base-squad2: 86
+    deepset-xlm-roberta-base-squad2: 86
 video:
   crop:
     # source https://github.com/ultralytics/yolov5

@@ -20,7 +20,11 @@ audio-qa:
     # F1 score, https://huggingface.co/distilbert-base-cased-distilled-squad#evaluation
     # Training Dataset: SQuAD 1.1, https://huggingface.co/datasets/squad
     # Testset: SQuAD 1.1
+<<<<<<< HEAD
     # TODO evaluate it on SQuAD 2
+=======
+    # TODO
+>>>>>>> 5e44d948c06ab9a67580361f6abbb38c42c56789
     distilbert-base-cased-distilled-squad: 87.1  
 
     # F1 score, https://huggingface.co/deepset/xlm-roberta-base-squad2#performance

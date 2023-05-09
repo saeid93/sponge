@@ -27,7 +27,7 @@ config_key_mapper = "key_config_mapper.csv"
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-pipeline")
+@click.option("--config-name", required=True, type=str, default="audio-qa")
 def main(config_name: str):
     config_path = os.path.join(PIPELINE_SIMULATION_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, "r") as cf:

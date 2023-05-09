@@ -83,8 +83,6 @@ class Model:
         latency_model.fit(train_x, train_y)
         test_y = latency_model.predict(test_x)
         predicted_profiles = []
-        # for index, x, y in zip(range(
-        #     len(self.measured_profiles)), test_x.reshape(-1), test_y.reshape(-1)):
         for index, x, y in zip(
             range(len(all_x)), test_x.reshape(-1), test_y.reshape(-1)
         ):
@@ -105,8 +103,6 @@ class Model:
                         batch=x, latency=y, measured=False, measured_throughput=None
                     )
                 )
-        # HACK continue above hack
-        # profiles: List[Profile] = predicted_profiles + self.measured_profiles
         profiles: List[Profile] = predicted_profiles
         profiles.sort(key=lambda profile: profile.batch)
         return profiles, [latency_model.coef_[0][0], latency_model.intercept_[0]]
