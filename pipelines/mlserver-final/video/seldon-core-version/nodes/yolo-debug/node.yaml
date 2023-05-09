@@ -7,7 +7,7 @@ spec:
   name: yolo-debug
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: 30s
+      terminationDrainDuration: 10s
   predictors:
   - name: yolo-debug
     annotations:
@@ -39,7 +39,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: 30
+        terminationGracePeriodSeconds: 10
         containers:
         - image: sdghafouri/video-final:yolo-debug
           name: yolo-debug
@@ -73,7 +73,7 @@ spec:
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
-              value: "5"
+              value: "1"
             - name: NUM_THREADS
               value: "1"
             - name: POD_NAME
@@ -94,7 +94,7 @@ spec:
                 command:
                 - /bin/sh
                 - -c
-                - /bin/sleep 30
+                - /bin/sleep 10
       replicas: 1
     graph:
       name: yolo-debug

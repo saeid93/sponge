@@ -26,7 +26,7 @@ For setting infrastructure refer to accompanying repo [infrastructure](https://g
 2. **Load tester** code is available at [load_tester](https://github.com/reconfigurable-ml-pipeline/load_tester) repository.
 3. **Forked MLServer** [MLServer](https://github.com/SeldonIO/MLServer) is a production ready ML Serving platform, due to some modification we needed to make in this project we use a [forked version](https://github.com/saeid93/MLServer) of it
 
-# Prerequisite
+# Project Setup Steps
 1. Install the forked MLServer, in the root folder of it do:
 ```
 make install-dev
@@ -39,10 +39,11 @@ pip install -e .
 ```
 pip install -r requirements.txt
 ```
-4. Go to the lstm-module and train the lstm NN:
+4. Go to the parent folder `generate_dirs.py` file and run it to populate necessary data folders:
+```
+python generate_dirs.py
+```
+5. Go to the lstm-module and train the lstm NN:
 ```
 python lstm_train.py
 ```
-
-# Setup project Steps
-coming soon ...

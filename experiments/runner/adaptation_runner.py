@@ -114,6 +114,12 @@ def main(config_name: str, type_of: str):
     # baselines [only scaling | only switching]
     baseline_mode = config["baseline_mode"]
 
+    # predicted load
+    baseline_mode = config["baseline_mode"]
+
+    # load safety margin from the predictor
+    predictor_margin = config["predictor_margin"]
+
     pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,
         profiling_series=profiling_series,
@@ -156,7 +162,8 @@ def main(config_name: str, type_of: str):
         predictor_type=predictor_type,
         baseline_mode=baseline_mode,
         central_queue=central_queue,
-        debug_mode=debug_mode
+        debug_mode=debug_mode,
+        predictor_margin=predictor_margin
     )
 
     # ----------- 3. Running an experiment series -------------

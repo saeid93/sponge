@@ -55,3 +55,6 @@ seaborn
 kubernetes
 soundfile
 librosa
+torchvision
+sentencepiece
+torchaudio

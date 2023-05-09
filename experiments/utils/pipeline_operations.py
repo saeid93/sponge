@@ -192,7 +192,7 @@ def setup_queue(
         "cpu_limit": 16,
         "memory_limit": "16Gi",
         "replicas": 1,
-        "distrpution_time": distrpution_time,
+        "distrpution_time": 120,
         "model_name": model_name,
         "last_node": last_node,
     }

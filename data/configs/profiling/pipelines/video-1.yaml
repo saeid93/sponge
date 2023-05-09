@@ -1,5 +1,5 @@
-series: 5
-metadata: 'repeat 20 with 4 router'
+series: 4
+metadata: 'check the peak config of the 62, 63 and 64 for proving it is the problem of wrong point of time detection and slow response again since it cannot satisfy my assumptions'
 timeout: 70
 pipeline_folder_name: video
 pipeline_name: video
@@ -35,7 +35,7 @@ nodes:
     replicas:
       # - 1
       # - 1
-      - 4
+      - 2
     use_threading: 'True'
     num_interop_threads:
       - '1'
@@ -52,8 +52,8 @@ nodes:
     max_batch_size:
       # - '1'
       # - '2'
-      # - '4'
-      - '8'
+      - '4'
+      # - '8'
       # - '16'
     max_batch_time:
       - '1'
@@ -68,7 +68,7 @@ nodes:
     replicas:
       # - 1
       # - 2
-      - 4
+      - 2
     use_threading: 'True'
     num_interop_threads:
       - '1'

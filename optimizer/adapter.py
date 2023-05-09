@@ -71,7 +71,8 @@ class Adapter:
         predictor_type: str,
         baseline_mode: Optional[str] = None,
         central_queue: bool = False,
-        debug_mode: bool = False
+        debug_mode: bool = False,
+        predictor_margin: int = 100,
     ) -> None:
         """
         Args:
@@ -114,7 +115,7 @@ class Adapter:
         self.monitoring = Monitoring(
             pipeline_name=self.pipeline_name, sla=self.pipeline.sla
         )
-        self.predictor = Predictor(predictor_type=self.predictor_type)
+        self.predictor = Predictor(predictor_type=self.predictor_type, predictor_margin=predictor_margin)
         self.central_queue = central_queue
 
     def start_adaptation(self):
@@ -191,7 +192,7 @@ class Adapter:
             )
             if rps_series is None:
                 continue
-            predicted_load = round(self.predictor.predict(rps_series))
+            predicted_load = self.predictor.predict(rps_series)
             logger.info("-" * 50)
             logger.info(f"\nPredicted Load: {predicted_load}\n")
             logger.info("-" * 50)
@@ -520,7 +521,7 @@ class Monitoring:
 
 
 class Predictor:
-    def __init__(self, predictor_type, backup_predictor: str = "reactive") -> int:
+    def __init__(self, predictor_type, backup_predictor: str = "reactive", predictor_margin: int = 100) -> int:
         self.predictor_type = predictor_type
         self.backup_predictor = backup_predictor
         predictors = {
@@ -531,6 +532,8 @@ class Predictor:
         }
         self.model = predictors[predictor_type]
         self.backup_model = predictors[backup_predictor]
+        self.predictor_margin = predictor_margin
+
 
     def predict(self, series: List[int]):
         series_minutes = []
@@ -554,4 +557,6 @@ class Predictor:
         else:
             model_output = self.model(series)
 
-        return model_output
+        # apply a safety margin to the system
+        predicted_load = round(model_output * (1 + self.predictor_margin/100))
+        return predicted_load
