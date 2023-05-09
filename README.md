@@ -47,3 +47,6 @@ python generate_dirs.py
 ```
 python lstm_train.py
 ```
+# Adding a new pipeline step
+1. Profiling
+2. Finding the best optimization variables with setting the three variables `threshold`, `sla_factor` to approperiate values.
