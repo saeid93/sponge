@@ -16,7 +16,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '2'
     memory_request: 2Gi
-    replicas: 4
+    replicas: 1
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -27,7 +27,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '2'
     memory_request: 2Gi
-    replicas: 4
+    replicas: 1
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
