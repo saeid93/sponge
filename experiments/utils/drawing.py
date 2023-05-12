@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import Dict, List
-# -----
+# ------
 
 def draw_temporal(dict_to_draw: Dict[str, Dict[str, List[int]]], adaptation_interval=None, ylabel="Value", multiple_experiments=False):
     if not multiple_experiments:
