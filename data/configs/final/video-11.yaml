@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 67
+series: 76
 # pipeline_name: video
-metadata: 'repeat of 66 with 30% margin'
+metadata: 'repeat of 67 without central queue'
 number_tasks: 2
 profiling_series:
   - 71
@@ -99,7 +99,7 @@ monitoring_duration: 10 # in minutes
 
 # ----------- queueing-option -------------
 
-central_queue: true
+central_queue: false
 
 # ----------- distruption time -------------
 

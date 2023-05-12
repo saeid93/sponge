@@ -13,7 +13,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '2'
     memory_request: 2Gi
-    replicas: 4
+    replicas: 1
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -24,7 +24,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '2'
     memory_request: 2Gi
-    replicas: 4
+    replicas: 1
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -39,8 +39,8 @@ adaptation_interval: 20
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1863050'
-    end: '1863200'
+  - start: '1862800'
+    end: '1864000'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 65
+series: 69
 # pipeline_name: video
-metadata: 'repeat of 62 with increase of queues to 120s and other to 30s'
+metadata: 'repeat of 66 with ours'
 number_tasks: 2
 profiling_series:
   - 71
@@ -76,7 +76,7 @@ initial_replica:
 initial_batch:
   - 1
   - 1
-alpha: 0
+alpha: 1
 beta: 1
 gamma: 0
 scaling_cap: 100 # maximum possible scaling per nodes
@@ -89,7 +89,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: false
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: switch # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
@@ -113,4 +113,4 @@ debug_mode:  false
 simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
-predictor_margin: 15
+predictor_margin: 0

@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 67
+series: 81
 # pipeline_name: video
-metadata: 'repeat of 66 with 30% margin'
+metadata: 'repeat of 72 without central queue'
 number_tasks: 2
 profiling_series:
   - 71
@@ -76,7 +76,7 @@ initial_replica:
 initial_batch:
   - 1
   - 1
-alpha: 0
+alpha: 1
 beta: 1
 gamma: 0
 scaling_cap: 100 # maximum possible scaling per nodes
@@ -89,7 +89,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: false
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: null # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
@@ -99,7 +99,7 @@ monitoring_duration: 10 # in minutes
 
 # ----------- queueing-option -------------
 
-central_queue: true
+central_queue: false
 
 # ----------- distruption time -------------
 
@@ -107,10 +107,10 @@ distrpution_time: 30
 
 # ----------- distruption time -------------
 # debug mode with complete lgos of containers
-debug_mode:  false
+debug_mode: false
 
 # ----------- simulation mode -------------
 simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
-predictor_margin: 30
+predictor_margin: 0
