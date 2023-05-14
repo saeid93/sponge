@@ -158,6 +158,7 @@ class Adapter:
                     ),
                 )
                 self.monitoring.adaptation_step_report(
+                    change_successful=[False for _ in range(len(self.node_names))],
                     to_apply_config=to_save_config,
                     objective=None,
                     timestep=timestep,
@@ -232,7 +233,8 @@ class Adapter:
                 logger.info("-" * 50)
 
                 if to_apply_config is not None:
-                    self.change_pipeline_config(to_apply_config)
+                    config_change_results  = self.change_pipeline_config(to_apply_config)
+
             else:
                 logger.info(
                     "optimizer couldn't find any optimal solution"
@@ -267,6 +269,7 @@ class Adapter:
                 time_interval=time_interval,
                 monitored_load=rps_series,
                 predicted_load=predicted_load,
+                change_successful=config_change_results
             )
 
     def output_parser(self, optimizer_output: pd.DataFrame):
@@ -424,24 +427,34 @@ class Adapter:
                     ]["spec"]["containers"][0]["env"][env_index]["value"] = str(
                         node_config["batch"]
                     )
-        kube_custom_api.replace_namespaced_custom_object(
-            group="machinelearning.seldon.io",
-            version="v1",
-            namespace=NAMESPACE,
-            plural="seldondeployments",
-            name=node_name,
-            body=deployment_config,
-        )
-        if self.central_queue:
-            kube_custom_api.replace_namespaced_custom_object(
-                group="machinelearning.seldon.io",
-                version="v1",
-                namespace=NAMESPACE,
-                plural="seldondeployments",
-                name="queue-" + node_name,
-                body=queue_deployment_config,
-            )
-        return True
+        number_of_retries = 3
+        for _ in range(3):
+            try:
+                kube_custom_api.replace_namespaced_custom_object(
+                    group="machinelearning.seldon.io",
+                    version="v1",
+                    namespace=NAMESPACE,
+                    plural="seldondeployments",
+                    name=node_name,
+                    body=deployment_config,
+                )
+                if self.central_queue:
+                    kube_custom_api.replace_namespaced_custom_object(
+                        group="machinelearning.seldon.io",
+                        version="v1",
+                        namespace=NAMESPACE,
+                        plural="seldondeployments",
+                        name="queue-" + node_name,
+                        body=queue_deployment_config,
+                    )
+                return True  # Return True if the code execution is successful
+            except ApiException:
+                logger.info("change couldn't take place due to a problem in the K8S API, retrying...")
+                # Retry the code block
+        else: # no-break
+            logger.info(f"change couldn't take place after {number_of_retries} retries")
+            return False  # Return False if all retries fail
+
 
     def update_recieved_load(self) -> None:
         """extract the entire sent load during the
@@ -507,8 +520,10 @@ class Monitoring:
         time_interval: int,
         monitored_load: List[int],
         predicted_load: int,
+        change_successful: List[bool]
     ):
         timestep = int(timestep)
+        self.adaptation_report["change_successful"] = change_successful
         self.adaptation_report["timesteps"][timestep] = {}
         self.adaptation_report["timesteps"][timestep]["config"] = to_apply_config
         self.adaptation_report["timesteps"][timestep]["objective"] = objective

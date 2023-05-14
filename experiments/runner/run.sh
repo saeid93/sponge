@@ -1,32 +1,32 @@
-python runner_script.py --config-name video-1
-sleep 180
-python runner_script.py --config-name video-2
-sleep 180
-python runner_script.py --config-name video-3
-sleep 180
-python runner_script.py --config-name video-4
-sleep 180
-python runner_script.py --config-name video-5
-sleep 180
-python runner_script.py --config-name video-6
-sleep 180
-python runner_script.py --config-name video-7
-sleep 180
-python runner_script.py --config-name video-8
-sleep 180
-python runner_script.py --config-name video-11
-sleep 180
-python runner_script.py --config-name video-12
-sleep 180
-python runner_script.py --config-name video-14
-sleep 180
-python runner_script.py --config-name video-15
-sleep 180
-python runner_script.py --config-name video-16
-sleep 180
-python runner_script.py --config-name video-17
-sleep 180
-python runner_script.py --config-name video-18
+# python runner_script.py --config-name video-1
+# sleep 180
+# python runner_script.py --config-name video-2
+# sleep 180
+# python runner_script.py --config-name video-3
+# sleep 180
+# python runner_script.py --config-name video-4
+# sleep 180
+# python runner_script.py --config-name video-5
+# sleep 180
+# python runner_script.py --config-name video-6
+# sleep 180
+# python runner_script.py --config-name video-7
+# sleep 180
+python runner_script.py --config-name video-9
+# sleep 180
+# python runner_script.py --config-name video-11
+# sleep 180
+# python runner_script.py --config-name video-12
+# sleep 180
+# python runner_script.py --config-name video-14
+# sleep 180
+# python runner_script.py --config-name video-15
+# sleep 180
+# python runner_script.py --config-name video-16
+# sleep 180
+# python runner_script.py --config-name video-17
+# sleep 180
+# python runner_script.py --config-name video-18
 # sleep 90
 # python runner_script.py --config-name video-19
 # sleep 90
