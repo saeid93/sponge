@@ -25,8 +25,8 @@ with open(os.path.join(PATH, "input-sample-shape.json"), "r") as openfile:
 data = np.array(data).flatten()
 
 
-load = 20
-test_duration = 1
+load = 25
+test_duration = 60
 variant = 0
 platform = "router"
 workload = [load] * test_duration
@@ -148,4 +148,4 @@ print(f"{num_failed} failed out of total {total}")
 # plt.show()
 
 # print(f"{np.average(server_arrival_latency)}=")
-print(responses)
+# print(responses)

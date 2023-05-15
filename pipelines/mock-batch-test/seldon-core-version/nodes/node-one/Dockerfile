@@ -28,7 +28,7 @@ RUN mkdir $(dirname $MLSERVER_ENV_TARBALL); \
     done; \
     chmod -R 776 $(dirname $MLSERVER_ENV_TARBALL)
 
-FROM sdghafouri/mlserver:custom-slim
+FROM seldonio/mlserver:1.4.0.dev2-slim
 SHELL ["/bin/bash", "-c"]
 
 # Copy all potential sources for custom environments
@@ -49,8 +49,8 @@ USER root
 RUN ./hack/build-env.sh . && \
     mkdir -p ./envs/base && \
     chown -R 1000:0 ./envs/base && \
-    chmod -R 776 ./envs/base
-RUN microdnf update -y && microdnf install -y git
+    chmod -R 776 ./envs/base && \
+    rm -rf /root/.cache/pip
 USER 1000
 
 # Copy everything else

@@ -405,9 +405,12 @@ class Adapter:
                     "containers"
                 ][0]["env"][env_index]["value"] = node_config["variant"]
             if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
+                # deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
+                #     "containers"
+                # ][0]["env"][env_index]["value"] = str(node_config["batch"])
                 deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                     "containers"
-                ][0]["env"][env_index]["value"] = str(node_config["batch"])
+                ][0]["env"][env_index]["value"] = str(1)
         if self.central_queue:
             queue_deployment_config = kube_custom_api.get_namespaced_custom_object(
                 group="machinelearning.seldon.io",

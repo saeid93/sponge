@@ -1,6 +1,7 @@
 import os
 from mlserver import MLModel
 from mlserver.logging import logger
+from mlserver.settings import ModelSettings
 from mlserver.types import InferenceRequest, InferenceResponse
 from mlserver import MLModel
 import mlserver.types as types
@@ -71,6 +72,9 @@ async def model_infer(model_name, request_input: InferenceRequest) -> InferenceR
 
 
 class Queue(MLModel):
+    def __init__(self, settings: ModelSettings):
+        super().__init__(settings)
+        mlserver.register("batch_request_queue", "counter of request queue batch size")
     async def load(self):
         self.loaded = False
         self.request_counter = 0

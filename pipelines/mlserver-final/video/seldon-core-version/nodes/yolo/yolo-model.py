@@ -89,6 +89,7 @@ class Yolo(MLModel):
             self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
             logger.info(f"max_batch_size: {self._settings.max_batch_size}")
             logger.info(f"max_batch_time: {self._settings.max_batch_time}")
+            # self.model = lambda l: l
             self.model = torch.hub.load(
                 "ultralytics/yolov5",
                 "custom",
