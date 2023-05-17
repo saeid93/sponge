@@ -1,9 +1,9 @@
 REPOS=(
     sdghafouri)
-IMAGE_NAME=mock-batch-test:node-one
+IMAGE_NAME=mock-batch-mine:node-one
 mlserver dockerfile --include-dockerignore .
-# sed -i 's/seldonio/sdghafouri/g' Dockerfile
-# sed -i 's/1.3.0.dev4-slim/custom-1-slim/g' Dockerfile
+sed -i 's/seldonio/sdghafouri/g' Dockerfile
+sed -i 's/1.3.0.dev4-slim/custom-1-slim/g' Dockerfile
 DOCKER_BUILDKIT=1 docker build . --tag=$IMAGE_NAME
 for REPO in ${REPOS[@]}
 do

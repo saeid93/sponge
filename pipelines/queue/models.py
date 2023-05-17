@@ -9,18 +9,10 @@ import grpc
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
 import mlserver
-import logging
+import time
+from typing import Dict, List
 
 
-# Create a FileHandler object and set its level
-log_file_path = "./my_logs.log"
-file_handler = logging.FileHandler(log_file_path)
-file_handler.setLevel(logging.DEBUG)
-
-
-# Add the file handler to the logger
-logger = logging.getLogger()
-logger.addHandler(file_handler)
 
 try:
     PREDICTIVE_UNIT_ID = os.environ["PREDICTIVE_UNIT_ID"]
@@ -72,9 +64,6 @@ async def model_infer(model_name, request_input: InferenceRequest) -> InferenceR
 
 
 class Queue(MLModel):
-    def __init__(self, settings: ModelSettings):
-        super().__init__(settings)
-        mlserver.register("batch_request_queue", "counter of request queue batch size")
     async def load(self):
         self.loaded = False
         self.request_counter = 0
@@ -87,8 +76,8 @@ class Queue(MLModel):
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         batch_size = payload.inputs[0].shape[0]
         logger.info(f"batch_size: {batch_size}")
-        mlserver.log(size_of_queue=batch_size)
-
+        mlserver.log(batch_size=batch_size)
+        arrival_time = time.time()
         self.request_counter += 1
         logger.info(f"Request counter:\n{self.request_counter}\n")
         try:
@@ -169,5 +158,19 @@ class Queue(MLModel):
                 )
         except AttributeError:
             pass
-
+        serving_time = time.time()
+        times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
+        logger.info(output)
+        if output.outputs[0].shape[0] == 1:
+            model_times: Dict = eval(eval(output.outputs[0].parameters.times)[0])
+            model_times.update(times)
+            output_times = str([str(model_times)])
+            output.outputs[0].parameters.times = output_times
+        else:
+            model_times: List[Dict] = list(map(
+                lambda l: eval(l), output.outputs[0].parameters.times))
+            for model_time in model_times:
+                model_time.update(times)
+            output_times = list(map(lambda l: str(l), model_times))
+            output.outputs[0].parameters.times = output_times    
         return output

@@ -7,7 +7,7 @@ import asyncio
 import time
 
 
-load = 10
+load = 5
 test_duration = 1000
 variant = 0
 platform = "seldon"
@@ -132,4 +132,4 @@ print(f"{(time.time() - start_time):2.2}s spent in total")
 # plt.show()
 
 # print(f"{np.average(server_arrival_latency)}=")
-print(responses[0][0])
+# print(responses[0][0])

@@ -10,6 +10,7 @@ from mlserver.types import (
     Parameters,
 )
 from mlserver import MLModel
+from mlserver import metrics
 from typing import List
 
 try:
@@ -20,6 +21,15 @@ except KeyError as e:
     logger.info(
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}"
     )
+
+
+
+
+from prometheus_client import Gauge
+SELDON_MODEL_NAME_LABEL = "model_name"
+SELDON_MODEL_VERSION_LABEL = "model_version"
+
+
 
 
 def decode_from_bin(
@@ -34,6 +44,7 @@ def decode_from_bin(
 
 
 def model(inputs: List[np.ndarray]):
+    time.sleep(1)
     # logger.info(f"unprocessed inputs: {inputs}")
     return list(map(lambda l: {"text": "text"}, inputs))
 
@@ -48,6 +59,14 @@ class NodeOne(MLModel):
         self.batch_counter = 0
         self.model = model
         self.loaded = True
+        logger.info("Router loaded")
+
+
+        self.custom_var = Gauge('my_custom_var', 'Description of gauge')
+
+        metrics.register(
+            name="batching", description="Measuring number of input requests"
+        )
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
@@ -65,6 +84,8 @@ class NodeOne(MLModel):
             shapes = list(map(lambda l: eval(l), shapes))
             X = decode_from_bin(inputs=input_data, shapes=shapes, dtypes=dtypes)
         received_batch_len = len(X)
+        metrics.log(batching=8)
+        self.custom_var.set(13)
         logger.info(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += received_batch_len
         self.batch_counter += 1

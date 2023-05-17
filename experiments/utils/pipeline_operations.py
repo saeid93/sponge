@@ -486,7 +486,7 @@ def check_load_test(pipeline_name: str, data_type: str, pipeline_path: str, mode
             model=model,
             data=data,
             data_type=data_type,
-            workload=[1],
+            workload=[2],
         )
         if "failed" not in response[0][0].keys():
             return True
