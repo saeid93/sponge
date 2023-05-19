@@ -33,6 +33,8 @@ spec:
               value: "0"
             - name: LAST_NODE
               value: 'True'
+            - name: SLA
+              value: "10"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

@@ -90,7 +90,9 @@ class SimAdapter:
         )
         self.predictor = Predictor(predictor_type=self.predictor_type)
 
-    def start_adaptation(self, workload: List[int], initial_config: Dict[str, Dict[str, Union[str, int]]]):
+    def start_adaptation(
+        self, workload: List[int], initial_config: Dict[str, Dict[str, Union[str, int]]]
+    ):
         # 0. Check if pipeline is up
         # 1. Use monitoring for periodically checking the status of
         #     the pipeline in terms of load
@@ -106,8 +108,12 @@ class SimAdapter:
         time_interval = 0
         timestep = 0
         old_config = deepcopy(initial_config)
-        for timestep in range(self.adaptation_interval, len(workload), self.adaptation_interval):
-            rps_series = workload[max(0, timestep-self.monitoring_duration*60):timestep]
+        for timestep in range(
+            self.adaptation_interval, len(workload), self.adaptation_interval
+        ):
+            rps_series = workload[
+                max(0, timestep - self.monitoring_duration * 60) : timestep
+            ]
             self.update_recieved_load(all_recieved_loads=rps_series)
             predicted_load = round(self.predictor.predict(rps_series))
             logger.info("-" * 50)
@@ -162,7 +168,9 @@ class SimAdapter:
             new_configs.append(config)
         return new_configs
 
-    def choose_config(self, new_configs: List[Dict[str, Dict[str, Union[str, int]]]], current_config):
+    def choose_config(
+        self, new_configs: List[Dict[str, Dict[str, Union[str, int]]]], current_config
+    ):
         # This should be from comparing with the
         # current config
         # easiest for now is to choose config with

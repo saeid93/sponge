@@ -136,7 +136,7 @@ def main(config_name: str, type_of: str):
         normalize_accuracy=normalize_accuracy,
         pipeline_accuracies=pipeline_accuracies,
         only_measured_profiles=only_measured_profiles,
-        profiling_load=profiling_load
+        profiling_load=profiling_load,
     )
 
     # ----------- 3. loading predictor configs -------------
@@ -163,7 +163,7 @@ def main(config_name: str, type_of: str):
         baseline_mode=baseline_mode,
         central_queue=central_queue,
         debug_mode=debug_mode,
-        predictor_margin=predictor_margin
+        predictor_margin=predictor_margin,
     )
 
     # ----------- 3. Running an experiment series -------------

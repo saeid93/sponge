@@ -29,7 +29,11 @@ class Parser:
         legal_types = ["node", "pipeline", "router_pipeline", "router_queue_pipeline"]
         if type_of not in legal_types:
             raise ValueError(f"Invalid type: {type_of}")
-        if type_of == "pipeline" or type_of == "router_pipeline" or type_of == "router_queue_pipeline" :
+        if (
+            type_of == "pipeline"
+            or type_of == "router_pipeline"
+            or type_of == "router_queue_pipeline"
+        ):
             self.node_orders = list(
                 map(
                     lambda l: l["node_name"],
@@ -204,18 +208,18 @@ class Parser:
         self, results: Dict[Dict, Any], keep_lost: bool = False
     ):
         latencies = {
-            "client_to_router_latencies": [],
-            f"router_to_task_0_latencies": [],
+            "client_to_router": [],
+            "router_to_task_0": [],
         }
 
         for index, model in enumerate(self.node_orders):
-            latencies[f"task_{index}_model_latencies"] = []
+            latencies[f"task_{index}_model"] = []
             if index < len(self.node_orders) - 1:
-                latencies[f"task_{index}_to_task_{index+1}_latencies"] = []
+                latencies[f"task_{index}_to_task_{index+1}"] = []
 
         latencies[f"task_{len(self.node_orders) - 1}_to_router"] = []
-        latencies["router_to_client_latencies"] = []
-        latencies["e2e_latencies"] = []
+        latencies["router_to_client"] = []
+        latencies["e2e"] = []
 
         timeout_count = 0
         for result in results:
@@ -223,22 +227,22 @@ class Parser:
                 times = result["times"]
                 request_times = times["request"]
                 model_times = times["models"]
-                latencies["client_to_router_latencies"].append(
+                latencies["client_to_router"].append(
                     model_times["router"]["arrival"] - request_times["sending"]
                 )
-                latencies["router_to_client_latencies"].append(
+                latencies["router_to_client"].append(
                     request_times["arrival"] - model_times["router"]["serving"]
                 )
-                latencies["e2e_latencies"].append(
+                latencies["e2e"].append(
                     request_times["arrival"] - request_times["sending"]
                 )
                 for index, model in enumerate(self.node_orders):
                     if index == 0:
-                        latencies["router_to_task_0_latencies"].append(
+                        latencies["router_to_task_0"].append(
                             model_times[model]["arrival"]
                             - model_times["router"]["arrival"]
                         )
-                    latencies[f"task_{index}_model_latencies"].append(
+                    latencies[f"task_{index}_model"].append(
                         model_times[model]["serving"] - model_times[model]["arrival"]
                     )
                     if index == len(self.node_orders) - 1:
@@ -247,7 +251,7 @@ class Parser:
                             - model_times[model]["serving"]
                         )
                     if index < len(self.node_orders) - 1:
-                        latencies[f"task_{index}_to_task_{index+1}_latencies"].append(
+                        latencies[f"task_{index}_to_task_{index+1}"].append(
                             model_times[self.node_orders[index + 1]]["arrival"]
                             - model_times[model]["serving"]
                         )
@@ -262,20 +266,21 @@ class Parser:
         self, results: Dict[Dict, Any], keep_lost: bool = False
     ):
         latencies = {
-            "client_to_router_latencies": [],
-            "router_to_task_0_queue_latencies": []
+            "client_to_router": [],
+            "router_to_task_0_queue": [],
+            "former_router_to_task_0": [],
         }
 
         for index, model in enumerate(self.node_orders):
             latencies[f"task_{index}_queue_to_task_{index}"] = []
-            latencies[f"task_{index}_model_latencies"] = []
+            latencies[f"task_{index}_model"] = []
             latencies[f"task_{index}_to_task_{index}_queue"] = []
             if index < len(self.node_orders) - 1:
-                latencies[f"task_{index}_queue_to_task_{index+1}_queue_latencies"] = []
+                latencies[f"task_{index}_queue_to_task_{index+1}_queue"] = []
 
         latencies[f"task_{len(self.node_orders) - 1}_queue_to_router"] = []
-        latencies["router_to_client_latencies"] = []
-        latencies["e2e_latencies"] = []
+        latencies["router_to_client"] = []
+        latencies["e2e"] = []
 
         timeout_count = 0
         for result in results:
@@ -283,38 +288,48 @@ class Parser:
                 times = result["times"]
                 request_times = times["request"]
                 model_times = times["models"]
-                latencies["client_to_router_latencies"].append(
+                latencies["client_to_router"].append(
                     model_times["router"]["arrival"] - request_times["sending"]
                 )
-                latencies["router_to_client_latencies"].append(
+                latencies["router_to_client"].append(
                     request_times["arrival"] - model_times["router"]["serving"]
                 )
-                latencies["e2e_latencies"].append(
+                latencies["e2e"].append(
                     request_times["arrival"] - request_times["sending"]
                 )
                 for index, model in enumerate(self.node_orders):
                     if index == 0:
-                        latencies["router_to_task_0_queue_latencies"].append(
+                        latencies["router_to_task_0_queue"].append(
                             model_times[f"queue-{model}"]["arrival"]
                             - model_times["router"]["arrival"]
                         )
-                    latencies[f"task_{index}_model_latencies"].append(
+                        latencies["former_router_to_task_0"].append(
+                            model_times[model]["arrival"]
+                            - model_times["router"]["arrival"]
+                        )
+                    latencies[f"task_{index}_model"].append(
                         model_times[model]["serving"] - model_times[model]["arrival"]
                     )
                     latencies[f"task_{index}_queue_to_task_{index}"].append(
-                        model_times[model]["arrival"] - model_times[f"queue-{model}"]["arrival"]
+                        model_times[model]["arrival"]
+                        - model_times[f"queue-{model}"]["arrival"]
                     )
                     latencies[f"task_{index}_to_task_{index}_queue"].append(
-                        model_times[f"queue-{model}"]["serving"] - model_times[model]["serving"]
+                        model_times[f"queue-{model}"]["serving"]
+                        - model_times[model]["serving"]
                     )
                     if index == len(self.node_orders) - 1:
-                        latencies[f"task_{len(self.node_orders) - 1}_queue_to_router"].append(
+                        latencies[
+                            f"task_{len(self.node_orders) - 1}_queue_to_router"
+                        ].append(
                             model_times["router"]["serving"]
                             - model_times[f"queue-{model}"]["serving"]
                         )
                     if index < len(self.node_orders) - 1:
-                        latencies[f"task_{index}_queue_to_task_{index+1}_queue_latencies"].append(
-                            model_times[f"queue-{self.node_orders[index + 1]}"]["arrival"]
+                        latencies[f"task_{index}_queue_to_task_{index+1}_queue"].append(
+                            model_times[f"queue-{self.node_orders[index + 1]}"][
+                                "arrival"
+                            ]
                             - model_times[f"queue-{model}"]["serving"]
                         )
             except KeyError:
@@ -419,7 +434,11 @@ class Parser:
                         self.metric_summary(metric=metric, values=values)
                     )
                 final_dataframe.append(processed_exp)
-            elif self.type_of == "pipeline" or self.type_of == "router_pipeline" or self.type_of == "router_queue_pipeline" :
+            elif (
+                self.type_of == "pipeline"
+                or self.type_of == "router_pipeline"
+                or self.type_of == "router_queue_pipeline"
+            ):
                 # the adapatation capability
                 if self.config_path is not None:
                     for index, model in enumerate(self.node_orders):
@@ -436,6 +455,18 @@ class Parser:
                             pod_index += 1
                 final_dataframe.append(processed_exp)
         return pd.DataFrame(final_dataframe)
+
+    def per_request_result_processing(self, experiment_id=0):
+        log = None
+        selected = None
+        results = self._read_results(selected)
+        # for experiment_id, result in results.items():
+        # processed_exp = {"experiment_id": int(experiment_id)}
+        _, flattened_results = self.flatten_results(
+            results[str(experiment_id)]["responses"]
+        )
+        latencies, _ = self.latency_calculator(flattened_results, log, keep_lost=True)
+        return latencies
 
     def per_second_result_processing(self, experiment_id=0):
         log = None
@@ -462,17 +493,14 @@ class Parser:
         for item in per_second_stats:
             if self.type_of == "pipeline":
                 num_nones = len(
-                    list(
-                        filter(
-                            lambda x: x is None, item["client_to_pipeline_latencies"]
-                        )
-                    )
+                    list(filter(lambda x: x is None, item["client_to_pipeline"]))
                 )
-            if self.type_of == "router_pipeline" or self.type_of == "router_queue_pipeline" :
+            if (
+                self.type_of == "router_pipeline"
+                or self.type_of == "router_queue_pipeline"
+            ):
                 num_nones = len(
-                    list(
-                        filter(lambda x: x is None, item["client_to_router_latencies"])
-                    )
+                    list(filter(lambda x: x is None, item["client_to_router"]))
                 )
             timeout_per_second.append(num_nones)
         return timeout_per_second, pd.DataFrame(stats)

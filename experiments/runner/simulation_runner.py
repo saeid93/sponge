@@ -24,6 +24,7 @@ from experiments.utils.constants import (
 from optimizer import SimAdapter
 from experiments.utils.simulation_operations import generate_simulated_pipeline
 
+
 def find_initial_config(
     node_names: List[str],
     config: dict,
@@ -42,11 +43,12 @@ def find_initial_config(
     config = {}
     for node_index, node_name in enumerate(node_names):
         config[node_name] = {}
-        config[node_name]['replicas'] = int(replicas[node_index])
-        config[node_name]['batch'] = max_batch_sizes[node_index]
-        config[node_name]['cpu'] = int(cpu_requests[node_index])
-        config[node_name]['variant'] = model_variants[node_index]
+        config[node_name]["replicas"] = int(replicas[node_index])
+        config[node_name]["batch"] = max_batch_sizes[node_index]
+        config[node_name]["cpu"] = int(cpu_requests[node_index])
+        config[node_name]["variant"] = model_variants[node_index]
     return config
+
 
 def make_workload(config: dict):
     workload_type = config["workload_type"]
@@ -68,6 +70,7 @@ def make_workload(config: dict):
             loads_to_test[0], damping_factor=damping_factor
         )
     return workload
+
 
 @click.command()
 @click.option("--config-name", required=True, type=str, default="video-2")
@@ -175,7 +178,7 @@ def main(config_name: str, type_of: str):
         normalize_accuracy=normalize_accuracy,
         pipeline_accuracies=pipeline_accuracies,
         only_measured_profiles=only_measured_profiles,
-        profiling_load=profiling_load
+        profiling_load=profiling_load,
     )
 
     # ----------- 3. loading predictor configs -------------

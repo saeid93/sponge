@@ -23,13 +23,10 @@ except KeyError as e:
     )
 
 
-
-
 from prometheus_client import Gauge
+
 SELDON_MODEL_NAME_LABEL = "model_name"
 SELDON_MODEL_VERSION_LABEL = "model_version"
-
-
 
 
 def decode_from_bin(
@@ -61,8 +58,7 @@ class NodeOne(MLModel):
         self.loaded = True
         logger.info("Router loaded")
 
-
-        self.custom_var = Gauge('my_custom_var', 'Description of gauge')
+        self.custom_var = Gauge("my_custom_var", "Description of gauge")
 
         metrics.register(
             name="batching", description="Measuring number of input requests"

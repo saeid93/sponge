@@ -5,12 +5,16 @@ metadata:
 spec:
   protocol: v2
   name: queue-yolo
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 120s
   predictors:
   - name: queue-yolo
     annotations:
       seldon.io/no-engine: "true" 
     componentSpecs:
     - spec:
+        terminationGracePeriodSeconds: 120
         containers:
         - image: sdghafouri/queue:queue
           name: queue-yolo
@@ -26,11 +30,13 @@ spec:
             - name: MODEL_NAME
               value: 'yolo'
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: "4"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "1"
+            - name: SLA
+              value: "5"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -39,6 +45,13 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 120
       replicas: 1
     graph:
       name: queue-yolo
@@ -56,7 +69,7 @@ spec:
   name: yolo
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: 10s
+      terminationDrainDuration: 30s
   predictors:
   - name: yolo
     annotations:
@@ -84,7 +97,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: 10
+        terminationGracePeriodSeconds: 30
         containers:
         - image: sdghafouri/video-centralized:yolo
           name: yolo
@@ -128,7 +141,7 @@ spec:
                 command:
                 - /bin/sh
                 - -c
-                - /bin/sleep 10
+                - /bin/sleep 30
       replicas: 1
     graph:
       name: yolo
@@ -144,12 +157,16 @@ metadata:
 spec:
   protocol: v2
   name: queue-resnet-human
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 120s
   predictors:
   - name: queue-resnet-human
     annotations:
       seldon.io/no-engine: "true" 
     componentSpecs:
     - spec:
+        terminationGracePeriodSeconds: 120
         containers:
         - image: sdghafouri/queue:queue
           name: queue-resnet-human
@@ -165,11 +182,13 @@ spec:
             - name: MODEL_NAME
               value: 'resnet-human'
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "5"
+              value: "4"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "1"
+            - name: SLA
+              value: "5"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -178,6 +197,13 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 120
       replicas: 1
     graph:
       name: queue-resnet-human
@@ -192,7 +218,7 @@ metadata:
   name: resnet-human
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: 10s
+      terminationDrainDuration: 30s
 spec:
   protocol: v2
   name: resnet-human
@@ -223,7 +249,7 @@ spec:
           - secretRef:
               name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: 10
+        terminationGracePeriodSeconds: 30
         containers:
         - image: sdghafouri/video-centralized:resnet-human
           name: resnet-human
@@ -266,7 +292,7 @@ spec:
                 command:
                 - /bin/sh
                 - -c
-                - /bin/sleep 10
+                - /bin/sleep 30
       replicas: 1
     graph:
       name: resnet-human
@@ -282,7 +308,7 @@ metadata:
   name: router
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: 10s
+      terminationDrainDuration: 30s
 spec:
   protocol: v2
   name: router
@@ -292,13 +318,14 @@ spec:
       seldon.io/no-engine: "true" 
     componentSpecs:
     - spec:
+        terminationGracePeriodSeconds: 30
         containers:
         - image: sdghafouri/router:router
           name: router
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '8'
+              cpu: '4'
               memory: 8Gi
             limits:
               cpu: '16'
@@ -308,6 +335,8 @@ spec:
               value: '["queue-yolo", "queue-resnet-human"]'
             - name: MLSERVER_PARALLEL_WORKERS
               value: '1'
+            - name: SLA
+              value: '2'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -316,6 +345,13 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 30
       replicas: 1
     graph:
       name: router

@@ -3,7 +3,12 @@ import numpy as np
 from typing import Dict, List
 
 
-def draw_temporal(dict_to_draw: Dict[str, Dict[str, List[int]]], adaptation_interval=None, ylabel="Value", multiple_experiments=False):
+def draw_temporal(
+    dict_to_draw: Dict[str, Dict[str, List[int]]],
+    adaptation_interval=None,
+    ylabel="Value",
+    multiple_experiments=False,
+):
     if not multiple_experiments:
         num_keys = len(dict_to_draw.keys())
         x_values = range(len(list(dict_to_draw.values())[0]))
@@ -35,7 +40,10 @@ def draw_temporal(dict_to_draw: Dict[str, Dict[str, List[int]]], adaptation_inte
                 for experiment_id, dict_to_draw_exp in dict_to_draw.items():
                     x_values = range(len(list(dict_to_draw_exp.values())[0]))
                     if adaptation_interval is not None:
-                        x_values = [item * adaptation_interval[experiment_id] for item in list(x_values)]
+                        x_values = [
+                            item * adaptation_interval[experiment_id]
+                            for item in list(x_values)
+                        ]
                     axs[i].plot(x_values, dict_to_draw_exp[key], label=experiment_id)
                     axs[i].set_title(key)
                     axs[i].set_ylabel(ylabel=ylabel)
@@ -46,7 +54,10 @@ def draw_temporal(dict_to_draw: Dict[str, Dict[str, List[int]]], adaptation_inte
                 for experiment_id, dict_to_draw_exp in dict_to_draw.items():
                     x_values = range(len(list(dict_to_draw_exp.values())[0]))
                     if adaptation_interval is not None:
-                        x_values = [item * adaptation_interval[experiment_id] for item in list(x_values)]
+                        x_values = [
+                            item * adaptation_interval[experiment_id]
+                            for item in list(x_values)
+                        ]
                     axs.plot(x_values, dict_to_draw_exp[key], label=experiment_id)
                     axs.set_title(key)
                     axs.set_ylabel(ylabel=ylabel)
@@ -55,7 +66,12 @@ def draw_temporal(dict_to_draw: Dict[str, Dict[str, List[int]]], adaptation_inte
     plt.tight_layout()
     plt.show()
 
-def draw_cumulative(dict_to_draw: Dict[str, Dict[str, List[int]]], ylabel="Value", multiple_experiments=False):
+
+def draw_cumulative(
+    dict_to_draw: Dict[str, Dict[str, List[int]]],
+    ylabel="Value",
+    multiple_experiments=False,
+):
     if not multiple_experiments:
         dict_to_draw_cul = {key: sum(value) for key, value in dict_to_draw.items()}
         fig, axs = plt.subplots(figsize=(4, 3))
@@ -63,14 +79,16 @@ def draw_cumulative(dict_to_draw: Dict[str, Dict[str, List[int]]], ylabel="Value
         y_values = list(dict_to_draw_cul.values())
 
         axs.bar(x_values, y_values)
-        axs.set_xlabel('Stage')
+        axs.set_xlabel("Stage")
         axs.set_ylabel(ylabel=ylabel)
         axs.set_xticklabels(x_values)
     else:
         dict_to_draw_cul = {}
         for series, series_dict in dict_to_draw.items():
-            dict_to_draw_cul[series] = {key: sum(
-                list(filter(lambda x: x is not None, value))) for key, value in series_dict.items()}
+            dict_to_draw_cul[series] = {
+                key: sum(list(filter(lambda x: x is not None, value)))
+                for key, value in series_dict.items()
+            }
         fig, axs = plt.subplots(figsize=(4, 3))
         experiments = list(dict_to_draw_cul.keys())
         model_names = list(dict_to_draw_cul[experiments[0]].keys())
@@ -84,12 +102,12 @@ def draw_cumulative(dict_to_draw: Dict[str, Dict[str, List[int]]], ylabel="Value
             x_positions = bar_positions + i * bar_width
             axs.bar(x_positions, y_values, width=bar_width, label=str(experiment))
 
-        axs.set_xlabel('Stage')
+        axs.set_xlabel("Stage")
         axs.set_ylabel(ylabel=ylabel)
-        axs.set_title('Comparison of Experiments')
+        axs.set_title("Comparison of Experiments")
         axs.set_xticks(bar_positions + bar_width * (num_experiments - 1) / 2)
         axs.set_xticklabels(model_names)
-        axs.legend(title='Experiments')
+        axs.legend(title="Experiments")
 
     plt.tight_layout()
     plt.show()

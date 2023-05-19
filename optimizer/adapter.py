@@ -115,7 +115,9 @@ class Adapter:
         self.monitoring = Monitoring(
             pipeline_name=self.pipeline_name, sla=self.pipeline.sla
         )
-        self.predictor = Predictor(predictor_type=self.predictor_type, predictor_margin=predictor_margin)
+        self.predictor = Predictor(
+            predictor_type=self.predictor_type, predictor_margin=predictor_margin
+        )
         self.central_queue = central_queue
 
     def start_adaptation(self):
@@ -233,7 +235,7 @@ class Adapter:
                 logger.info("-" * 50)
 
                 if to_apply_config is not None:
-                    config_change_results  = self.change_pipeline_config(to_apply_config)
+                    config_change_results = self.change_pipeline_config(to_apply_config)
 
             else:
                 logger.info(
@@ -269,7 +271,7 @@ class Adapter:
                 time_interval=time_interval,
                 monitored_load=rps_series,
                 predicted_load=predicted_load,
-                change_successful=config_change_results
+                change_successful=config_change_results,
             )
 
     def output_parser(self, optimizer_output: pd.DataFrame):
@@ -452,12 +454,13 @@ class Adapter:
                     )
                 return True  # Return True if the code execution is successful
             except ApiException:
-                logger.info("change couldn't take place due to a problem in the K8S API, retrying...")
+                logger.info(
+                    "change couldn't take place due to a problem in the K8S API, retrying..."
+                )
                 # Retry the code block
-        else: # no-break
+        else:  # no-break
             logger.info(f"change couldn't take place after {number_of_retries} retries")
             return False  # Return False if all retries fail
-
 
     def update_recieved_load(self) -> None:
         """extract the entire sent load during the
@@ -523,7 +526,7 @@ class Monitoring:
         time_interval: int,
         monitored_load: List[int],
         predicted_load: int,
-        change_successful: List[bool]
+        change_successful: List[bool],
     ):
         timestep = int(timestep)
         self.adaptation_report["change_successful"] = change_successful
@@ -539,7 +542,12 @@ class Monitoring:
 
 
 class Predictor:
-    def __init__(self, predictor_type, backup_predictor: str = "reactive", predictor_margin: int = 100) -> int:
+    def __init__(
+        self,
+        predictor_type,
+        backup_predictor: str = "reactive",
+        predictor_margin: int = 100,
+    ) -> int:
         self.predictor_type = predictor_type
         self.backup_predictor = backup_predictor
         predictors = {
@@ -551,7 +559,6 @@ class Predictor:
         self.model = predictors[predictor_type]
         self.backup_model = predictors[backup_predictor]
         self.predictor_margin = predictor_margin
-
 
     def predict(self, series: List[int]):
         series_minutes = []
@@ -576,5 +583,5 @@ class Predictor:
             model_output = self.model(series)
 
         # apply a safety margin to the system
-        predicted_load = round(model_output * (1 + self.predictor_margin/100))
+        predicted_load = round(model_output * (1 + self.predictor_margin / 100))
         return predicted_load

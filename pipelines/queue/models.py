@@ -1,17 +1,19 @@
 import os
 from mlserver import MLModel
 from mlserver.logging import logger
-from mlserver.settings import ModelSettings
-from mlserver.types import InferenceRequest, InferenceResponse
+from mlserver.types import (
+    InferenceRequest,
+    InferenceResponse,
+    ResponseOutput,
+    Parameters,
+)
 from mlserver import MLModel
-import mlserver.types as types
 import grpc
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
 import mlserver
 import time
 from typing import Dict, List
-
 
 
 try:
@@ -24,10 +26,16 @@ except KeyError as e:
     )
 
 try:
+    SLA = float(os.environ["SLA"])
+    logger.info(f"SLA set to: {SLA}")
+except KeyError as e:
+    SLA = 1000
+    logger.info(f"SLA env variable not set, using default value: {SLA}")
+
+try:
     MODEL_NAME = os.environ["MODEL_NAME"]
     logger.info(f"MODEL_NAME set to: {MODEL_NAME}")
 except KeyError as e:
-    # MODEL_NAME = "ddd"
     raise ValueError("No model is assigned to this queue")
 
 try:
@@ -55,7 +63,7 @@ async def model_infer(model_name, request_input: InferenceRequest) -> InferenceR
     except:
         inputs = request_input.inputs[0]
         logger.info(f"first node {model_name} data extracted!")
-    payload_input = types.InferenceRequest(inputs=[inputs])
+    payload_input = InferenceRequest(inputs=[inputs])
     endpoint = f"{model_name}-{model_name}.default.svc.cluster.local:9500"
     async with grpc.aio.insecure_channel(endpoint) as ch:
         output = await send_requests(ch, model_name, payload_input)
@@ -75,16 +83,51 @@ class Queue(MLModel):
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         batch_size = payload.inputs[0].shape[0]
+        # if PREDICTIVE_UNIT_ID == "queue-resnet-human":
+        #     logger.info(f"payload: {payload}")
         logger.info(f"batch_size: {batch_size}")
         mlserver.log(batch_size=batch_size)
         arrival_time = time.time()
         self.request_counter += 1
         logger.info(f"Request counter:\n{self.request_counter}\n")
+
+        # early exit logic
+        sla_message = f"early exit, sla exceeded on {PREDICTIVE_UNIT_ID}".encode(
+            "utf8"
+                )
+        sla_exceed_payload = InferenceResponse(
+            outputs=[
+                ResponseOutput(
+                    name="sla_violaion",
+                    shape=[batch_size],
+                    datatype="BYTES",
+                    data=[sla_message] * batch_size,
+                )
+            ],
+            model_name=self.name,
+            parameters=Parameters(type_of="text"),
+        )
+        if payload.inputs[0].shape[0] == 1:
+            pipeline_arrival = float(payload.inputs[0].parameters.pipeline_arrival)
+        else:
+            # in the bigger than one it is already a list so
+            # it only need to be serialzed into a string list
+            pipeline_arrival = list(
+                map(lambda l: float(l), payload.inputs[0].parameters.pipeline_arrival)
+            )
+            pipeline_arrival = min(
+                pipeline_arrival
+            )  # TEMP for now we drop entire batch conservitively, maybe shoudl be per request
+
+        # early exit before the model
+        time_so_far = time.time() - pipeline_arrival
+        logger.info(f"time_so_far:\n{time_so_far}")
+        if time_so_far >= SLA:
+            return sla_exceed_payload
+
         try:
             # only image and audio model has this attributes
             if payload.inputs[0].shape[0] == 1:
-                # logger.info("here")
-                # logger.info(f'datashape: {payload.inputs[0].parameters.datashape}')
                 payload.inputs[0].parameters.datashape = str(
                     [payload.inputs[0].parameters.datashape]
                 )
@@ -92,8 +135,6 @@ class Queue(MLModel):
                     [payload.inputs[0].parameters.dtype]
                 )
             else:
-                # logger.info("there")
-                # logger.info(f'datashape: {payload.inputs[0].parameters.datashape}')
                 payload.inputs[0].parameters.datashape = str(
                     payload.inputs[0].parameters.datashape
                 )
@@ -103,24 +144,39 @@ class Queue(MLModel):
         except AttributeError:
             pass
         try:
+            # serialize times into strings to be passable to the next stage
+            # in the batch size of one this is recieved as a list
+            # next step expects a list of strings
+            # so in the batch size of we should make a string of list
             if payload.inputs[0].shape[0] == 1:
                 payload.inputs[0].parameters.times = str(
                     [payload.inputs[0].parameters.times]
                 )
             else:
+                # in the bigger than one it is already a list so
+                # it only need to be serialzed into a string list
                 payload.inputs[0].parameters.times = str(
                     payload.inputs[0].parameters.times
                 )
+        # not all nodes have the times metadata
         except AttributeError:
             pass
 
         output = await model_infer(model_name=MODEL_NAME, request_input=payload)
 
-        # TODO refactor!
+        # early exit after the model
+        time_so_far = time.time() - pipeline_arrival
+        logger.info(f"time_so_far:\n{time_so_far}")
+        if time_so_far >= SLA:
+            logger.info(f"returning results, post model violation:\n{sla_exceed_payload}")
+            return sla_exceed_payload
+
         if output.outputs[0].shape[0] == 1:
             if LAST_NODE:
                 if self._settings.max_batch_size == 1:
                     pass
+                # if it is the last node then the outputs metadata
+                # should be deceralized as a list
                 else:
                     output.outputs[0].parameters.times = eval(
                         output.outputs[0].parameters.times
@@ -138,10 +194,12 @@ class Queue(MLModel):
                 output.outputs[0].parameters.times
             )
 
-        # TODO refactor!
+        # datashpae output descrilizing
         try:
             if output.outputs[0].shape[0] == 1:
                 if LAST_NODE:
+                    # if it is the last node then the outputs metadata
+                    # should be deceralized as a list
                     if self._settings.max_batch_size == 1:
                         pass
                     else:
@@ -156,21 +214,23 @@ class Queue(MLModel):
                 output.outputs[0].parameters.datashape = eval(
                     output.outputs[0].parameters.datashape
                 )
+        # not all pipelines have the datashape metadata
         except AttributeError:
             pass
         serving_time = time.time()
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
-        logger.info(output)
+        # logger.info(output)
         if output.outputs[0].shape[0] == 1:
             model_times: Dict = eval(eval(output.outputs[0].parameters.times)[0])
             model_times.update(times)
             output_times = str([str(model_times)])
             output.outputs[0].parameters.times = output_times
         else:
-            model_times: List[Dict] = list(map(
-                lambda l: eval(l), output.outputs[0].parameters.times))
+            model_times: List[Dict] = list(
+                map(lambda l: eval(l), output.outputs[0].parameters.times)
+            )
             for model_time in model_times:
                 model_time.update(times)
             output_times = list(map(lambda l: str(l), model_times))
-            output.outputs[0].parameters.times = output_times    
+            output.outputs[0].parameters.times = output_times
         return output
