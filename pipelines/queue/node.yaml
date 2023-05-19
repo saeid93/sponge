@@ -33,7 +33,7 @@ spec:
               value: "0"
             - name: LAST_NODE
               value: 'True'
-            - name: SLA
+            - name: DROP_LIMIT
               value: "5"
           readinessProbe:
             failureThreshold: 3

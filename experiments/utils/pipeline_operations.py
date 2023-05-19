@@ -65,6 +65,7 @@ def setup_node(
     distrpution_time: int,
     no_engine=False,
     debug_mode=False,
+    drop_limit=1000
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
@@ -82,6 +83,7 @@ def setup_node(
             "use_threading": use_threading,
             "num_interop_threads": num_interop_threads,
             "num_threads": num_threads,
+            "drop_limit": drop_limit
         }
     else:
         svc_vars = {
@@ -99,6 +101,7 @@ def setup_node(
             "use_threading": use_threading,
             "num_interop_threads": num_interop_threads,
             "num_threads": num_threads,
+            "drop_limit": drop_limit
         }
     environment = Environment(loader=FileSystemLoader(node_path))
     svc_template = environment.get_template("node-template.yaml")
@@ -118,6 +121,7 @@ def setup_router(
     node_names: List[str],
     distrpution_time: int,
     debug_mode: bool = False,
+    drop_limit: int = 1000
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
@@ -134,6 +138,7 @@ def setup_router(
         "replicas": 1,
         "distrpution_time": distrpution_time,
         "model_lists": model_lists,
+        "drop_limit": drop_limit
     }
     environment = Environment(loader=FileSystemLoader(ROUTER_PATH))
     svc_template = environment.get_template("node-template.yaml")
@@ -154,6 +159,7 @@ def setup_queues(
     max_batch_times: int,
     distrpution_time: int,
     debug_mode: bool = False,
+    drop_limit: int = 1000,
 ):
     # TODO
     # in a for loop
@@ -168,6 +174,7 @@ def setup_queues(
             last_node=last_node,
             distrpution_time=distrpution_time,
             debug_mode=debug_mode,
+            drop_limit=drop_limit
         )
 
 
@@ -178,6 +185,7 @@ def setup_queue(
     last_node: bool,
     distrpution_time: int,
     debug_mode: bool = False,
+    drop_limit: int = 1000
 ):
     # TODO
     # in a for loop
@@ -195,6 +203,7 @@ def setup_queue(
         "distrpution_time": 120,
         "model_name": model_name,
         "last_node": last_node,
+        "drop_limit": drop_limit
     }
     queue_path = f"{QUEUE_PATH}-debug" if debug_mode else QUEUE_PATH
     environment = Environment(loader=FileSystemLoader(queue_path))
@@ -390,6 +399,7 @@ def setup_central_pipeline(
     num_nodes: int,
     distrpution_time: int,
     debug_mode: bool = False,
+    drop_limit: int = 1000
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
@@ -412,6 +422,7 @@ def setup_central_pipeline(
             num_interop_threads=cpu_request[node_id],
             num_threads=cpu_request[node_id],
             distrpution_time=distrpution_time,
+            drop_limit=drop_limit
         )
     queue_names = list(map(lambda l: "queue-" + l, node_names))
     setup_queues(
@@ -420,12 +431,14 @@ def setup_central_pipeline(
         max_batch_times=max_batch_time,
         distrpution_time=distrpution_time,
         debug_mode=debug_mode,
+        drop_limit=drop_limit        
     )
     setup_router(
         pipeline_name=pipeline_name,
         node_names=queue_names,
         distrpution_time=distrpution_time,
         debug_mode=debug_mode,
+        drop_limit=drop_limit
     )
 
 

@@ -107,10 +107,13 @@ distrpution_time: 30
 
 # ----------- distruption time -------------
 # debug mode with complete lgos of containers
-debug_mode:  false
+debug_mode: false
 
 # ----------- simulation mode -------------
 simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 30
+
+# ----------- drop interval -------------
+drop_limit: 20

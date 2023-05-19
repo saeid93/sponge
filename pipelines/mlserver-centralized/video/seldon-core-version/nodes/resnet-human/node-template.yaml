@@ -64,8 +64,8 @@ spec:
               value: '{{num_interop_threads}}'
             - name: NUM_THREADS
               value: '{{num_threads}}'
-            - name: SLA
-              value: "5"
+            - name: DROP_LIMIT
+              value: '{{drop_limit}}'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

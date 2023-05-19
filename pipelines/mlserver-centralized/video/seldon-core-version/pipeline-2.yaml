@@ -36,7 +36,7 @@ spec:
             - name: MLSERVER_PARALLEL_WORKERS
               value: "1"
             - name: DROP_LIMIT
-              value: "10"
+              value: "1000"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -128,7 +128,7 @@ spec:
             - name: NUM_THREADS
               value: "1"
             - name: DROP_LIMIT
-              value: "10"
+              value: "1000"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -190,7 +190,7 @@ spec:
             - name: MLSERVER_PARALLEL_WORKERS
               value: "1"
             - name: DROP_LIMIT
-              value: "10"
+              value: "1000"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -281,7 +281,7 @@ spec:
             - name: NUM_THREADS
               value: "1"
             - name: DROP_LIMIT
-              value: "10"
+              value: "1000"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -340,7 +340,7 @@ spec:
             - name: MLSERVER_PARALLEL_WORKERS
               value: '1'
             - name: DROP_LIMIT
-              value: "10"
+              value: "1000"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

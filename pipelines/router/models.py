@@ -27,11 +27,11 @@ except KeyError as e:
     )
 
 try:
-    SLA = float(os.environ["SLA"])
-    logger.info(f"SLA set to: {SLA}")
+    DROP_LIMIT = float(os.environ["DROP_LIMIT"])
+    logger.info(f"DROP_LIMIT set to: {DROP_LIMIT}")
 except KeyError as e:
-    SLA = 1000
-    logger.info(f"SLA env variable not set, using default value: {SLA}")
+    DROP_LIMIT = 1000
+    logger.info(f"DROP_LIMIT env variable not set, using default value: {DROP_LIMIT}")
 
 try:
     MODEL_LISTS: List[str] = json.loads(os.environ["MODEL_LISTS"])
@@ -88,10 +88,10 @@ class Router(MLModel):
         logger.info(f"paramters: {payload.inputs[0].parameters}")
         logger.info(f"Request counter:\n{self.request_counter}\n")
 
-        sla_exceed_payload = InferenceResponse(
+        drop_limit_exceed_payload = InferenceResponse(
             outputs=[
                 ResponseOutput(
-                    name="sla-violation",
+                    name="drop-limit-violation",
                     shape=[1],
                     datatype="BYTES",
                     data=[],
@@ -105,7 +105,7 @@ class Router(MLModel):
         for node_index, model_name in enumerate(MODEL_LISTS):
             logger.info(f"Getting inference responses {model_name}")
             output = await model_infer(model_name=model_name, request_input=output)
-            if output.outputs[0].name == "sla-violation":
+            if output.outputs[0].name == "drop-limit-violation":
                 logger.info(f"previous step:\n{self.decode(output.outputs[0])}")
                 # if "early exit" in self.decode(output.outputs[0]):
                 logger.info(f"early exiting from before")
@@ -117,13 +117,13 @@ class Router(MLModel):
             time_so_far = time.time() - arrival_time
             logger.info(f"{model_name} time_so_far:\n{time_so_far}")
             # TODO add the logic of to drop here
-            if time_so_far >= SLA and node_index + 1 != len(MODEL_LISTS):
-                sla_message = f"early exit, sla exceeded after {model_name.replace('queue-', '')}".encode(
+            if time_so_far >= DROP_LIMIT and node_index + 1 != len(MODEL_LISTS):
+                drop_message = f"early exit, drop limit exceeded after {model_name.replace('queue-', '')}".encode(
                     "utf8"
                 )
                 logger.info("early exit from here")
-                sla_exceed_payload.outputs[0].data = [sla_message]
-                return sla_exceed_payload
+                drop_limit_exceed_payload.outputs[0].data = [drop_message]
+                return drop_limit_exceed_payload
 
         serving_time = time.time()
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}

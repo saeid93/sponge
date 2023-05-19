@@ -28,11 +28,11 @@ except KeyError as e:
     )
 
 try:
-    SLA = float(os.environ["SLA"])
-    logger.info(f"SLA set to: {SLA}")
+    DROP_LIMIT = float(os.environ["DROP_LIMIT"])
+    logger.info(f"DROP_LIMIT set to: {DROP_LIMIT}")
 except KeyError as e:
-    SLA = 1000
-    logger.info(f"SLA env variable not set, using default value: {SLA}")
+    DROP_LIMIT = 1000
+    logger.info(f"DROP_LIMIT env variable not set, using default value: {DROP_LIMIT}")
 
 
 def decode_from_bin(
@@ -157,16 +157,16 @@ class ResnetHuman(MLModel):
             pipeline_arrival = float(request_input.parameters.pipeline_arrival)
 
         # early exit logic
-        sla_message = f"early exit, sla exceeded on {PREDICTIVE_UNIT_ID}".encode(
+        drop_message = f"early exit, drop limit exceeded on {PREDICTIVE_UNIT_ID}".encode(
             "utf8"
                 )
-        sla_exceed_payload = InferenceResponse(
+        drop_limit_exceed_payload = InferenceResponse(
             outputs=[
                 ResponseOutput(
-                    name="sla-violation",
+                    name="drop-limit-violation",
                     shape=[batch_shape],
                     datatype="BYTES",
-                    data=[sla_message] * batch_shape,
+                    data=[drop_message] * batch_shape,
                 )
             ],
             model_name=self.name,
@@ -174,8 +174,8 @@ class ResnetHuman(MLModel):
         )
         time_so_far = time.time() - pipeline_arrival
         logger.info(f"time_so_far:\n{time_so_far}")
-        if time_so_far >= SLA:
-            return sla_exceed_payload
+        if time_so_far >= DROP_LIMIT:
+            return drop_limit_exceed_payload
 
         received_batch_len = len(X)
         logger.info(f"recieved batch len:\n{received_batch_len}")

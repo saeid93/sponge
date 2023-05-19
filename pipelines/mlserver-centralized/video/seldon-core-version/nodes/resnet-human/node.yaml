@@ -68,8 +68,8 @@ spec:
               value: "1"
             - name: NUM_THREADS
               value: "1"
-            - name: SLA
-              value: "5"
+            - name: DROP_LIMIT
+              value: "10"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

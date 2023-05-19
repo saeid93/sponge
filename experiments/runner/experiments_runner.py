@@ -47,6 +47,8 @@ def setup_pipeline(
     timeout = config["timeout"]
     central_queue = config["central_queue"]
     distrpution_time = config["distrpution_time"]
+    drop_limit = config["drop_limit"]
+
 
     model_variants = []
     max_batch_sizes = []
@@ -88,6 +90,7 @@ def setup_pipeline(
             num_threads=cpu_requests,
             distrpution_time=distrpution_time,
             debug_mode=debug_mode,
+            drop_limit=drop_limit
         )
     else:
         setup_router_pipeline(
@@ -108,7 +111,7 @@ def setup_pipeline(
             num_interop_threads=cpu_requests,
             num_threads=cpu_requests,
             distrpution_time=distrpution_time,
-            debug_mode=debug_mode,
+            debug_mode=debug_mode
         )
     logger.info(f"Checking if the model is up ...")
     logger.info("\n")
@@ -181,7 +184,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-1")
+@click.option("--config-name", required=True, type=str, default="video-5")
 @click.option(
     "--type-of",
     required=True,
@@ -261,7 +264,7 @@ def main(config_name: str, type_of: str):
             config=config,
             pipeline_path=pipeline_path,
             data_type=data_type,
-            debug_mode=debug_mode,
+            debug_mode=debug_mode
         )
 
         # 1. process one the experiment runner
