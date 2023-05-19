@@ -163,7 +163,7 @@ class ResnetHuman(MLModel):
         sla_exceed_payload = InferenceResponse(
             outputs=[
                 ResponseOutput(
-                    name="sla_violaion",
+                    name="sla-violation",
                     shape=[batch_shape],
                     datatype="BYTES",
                     data=[sla_message] * batch_shape,

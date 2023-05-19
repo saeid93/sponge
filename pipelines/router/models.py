@@ -85,12 +85,13 @@ class Router(MLModel):
         existing_paramteres = payload.inputs[0].parameters
         payload.inputs[0].parameters = existing_paramteres.copy(update=pipeline_arrival)
         self.request_counter += 1
+        logger.info(f"paramters: {payload.inputs[0].parameters}")
         logger.info(f"Request counter:\n{self.request_counter}\n")
 
         sla_exceed_payload = InferenceResponse(
             outputs=[
                 ResponseOutput(
-                    name="sla_violaion",
+                    name="sla-violation",
                     shape=[1],
                     datatype="BYTES",
                     data=[],
@@ -104,7 +105,7 @@ class Router(MLModel):
         for node_index, model_name in enumerate(MODEL_LISTS):
             logger.info(f"Getting inference responses {model_name}")
             output = await model_infer(model_name=model_name, request_input=output)
-            if output.outputs[0].name == "sla_violaion":
+            if output.outputs[0].name == "sla-violation":
                 logger.info(f"previous step:\n{self.decode(output.outputs[0])}")
                 # if "early exit" in self.decode(output.outputs[0]):
                 logger.info(f"early exiting from before")

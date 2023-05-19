@@ -82,11 +82,9 @@ class Queue(MLModel):
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
-        batch_size = payload.inputs[0].shape[0]
-        # if PREDICTIVE_UNIT_ID == "queue-resnet-human":
-        #     logger.info(f"payload: {payload}")
-        logger.info(f"batch_size: {batch_size}")
-        mlserver.log(batch_size=batch_size)
+        batch_shape = payload.inputs[0].shape[0]
+        logger.info(f"batch_size: {batch_shape}")
+        mlserver.log(batch_size=batch_shape)
         arrival_time = time.time()
         self.request_counter += 1
         logger.info(f"Request counter:\n{self.request_counter}\n")
@@ -98,10 +96,10 @@ class Queue(MLModel):
         sla_exceed_payload = InferenceResponse(
             outputs=[
                 ResponseOutput(
-                    name="sla_violaion",
-                    shape=[batch_size],
+                    name="sla-violation",
+                    shape=[batch_shape],
                     datatype="BYTES",
-                    data=[sla_message] * batch_size,
+                    data=[sla_message] * batch_shape,
                 )
             ],
             model_name=self.name,
@@ -117,7 +115,7 @@ class Queue(MLModel):
             )
             pipeline_arrival = min(
                 pipeline_arrival
-            )  # TEMP for now we drop entire batch conservitively, maybe shoudl be per request
+            )
 
         # early exit before the model
         time_so_far = time.time() - pipeline_arrival
@@ -141,6 +139,7 @@ class Queue(MLModel):
                 payload.inputs[0].parameters.dtype = str(
                     payload.inputs[0].parameters.dtype
                 )
+        # not all nodes have the times metadata
         except AttributeError:
             pass
         try:
@@ -158,9 +157,16 @@ class Queue(MLModel):
                 payload.inputs[0].parameters.times = str(
                     payload.inputs[0].parameters.times
                 )
-        # not all nodes have the times metadata
+        # first nodes do have the times metadata
         except AttributeError:
             pass
+
+        # patch pipeline arrival for the model container
+        pipeline_arrival_models = {"pipeline_arrival": str(pipeline_arrival)}
+        existing_paramteres = payload.inputs[0].parameters
+        logger.info(f"existing parameters: {existing_paramteres}")
+        payload.inputs[0].parameters = existing_paramteres.copy(update=pipeline_arrival_models)
+        logger.info(f"after patching parameters: {payload.inputs[0].parameters}")
 
         output = await model_infer(model_name=MODEL_NAME, request_input=payload)
 
