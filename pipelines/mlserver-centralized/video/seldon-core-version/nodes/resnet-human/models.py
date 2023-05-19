@@ -27,6 +27,13 @@ except KeyError as e:
         f"PREDICTIVE_UNIT_ID env variable not set, using default value: {PREDICTIVE_UNIT_ID}"
     )
 
+try:
+    SLA = float(os.environ["SLA"])
+    logger.info(f"SLA set to: {SLA}")
+except KeyError as e:
+    SLA = 1000
+    logger.info(f"SLA env variable not set, using default value: {SLA}")
+
 
 def decode_from_bin(
     inputs: List[bytes],
@@ -147,6 +154,29 @@ class ResnetHuman(MLModel):
                 dtypes=dtypes,
                 default_shape=self.default_shape,
             )
+            pipeline_arrival = float(request_input.parameters.pipeline_arrival)
+
+        # early exit logic
+        sla_message = f"early exit, sla exceeded on {PREDICTIVE_UNIT_ID}".encode(
+            "utf8"
+                )
+        sla_exceed_payload = InferenceResponse(
+            outputs=[
+                ResponseOutput(
+                    name="sla_violaion",
+                    shape=[batch_shape],
+                    datatype="BYTES",
+                    data=[sla_message] * batch_shape,
+                )
+            ],
+            model_name=self.name,
+            parameters=Parameters(type_of="text"),
+        )
+        time_so_far = time.time() - pipeline_arrival
+        logger.info(f"time_so_far:\n{time_so_far}")
+        if time_so_far >= SLA:
+            return sla_exceed_payload
+
         received_batch_len = len(X)
         logger.info(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += batch_shape

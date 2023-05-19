@@ -66,6 +66,12 @@ if USE_THREADING:
     torch.set_num_interop_threads(NUM_INTEROP_THREADS)
     torch.set_num_threads(NUM_THREADS)
 
+try:
+    SLA = float(os.environ["SLA"])
+    logger.info(f"SLA set to: {SLA}")
+except KeyError as e:
+    SLA = 1000
+    logger.info(f"SLA env variable not set, using default value: {SLA}")
 
 class Yolo(MLModel):
     async def load(self):
@@ -116,6 +122,28 @@ class Yolo(MLModel):
             logger.info(f"shapes:\n{shapes}")
             shapes = list(map(lambda l: eval(l), eval(shapes[0])))
             X = decode_from_bin(inputs=input_data, shapes=shapes, dtypes=dtypes)
+            pipeline_arrival = float(request_input.parameters.pipeline_arrival)
+
+        # early exit logic
+        sla_message = f"early exit, sla exceeded on {PREDICTIVE_UNIT_ID}".encode(
+            "utf8"
+                )
+        sla_exceed_payload = InferenceResponse(
+            outputs=[
+                ResponseOutput(
+                    name="sla_violaion",
+                    shape=[batch_shape],
+                    datatype="BYTES",
+                    data=[sla_message] * batch_shape,
+                )
+            ],
+            model_name=self.name,
+            parameters=Parameters(type_of="text"),
+        )
+        time_so_far = time.time() - pipeline_arrival
+        logger.info(f"time_so_far:\n{time_so_far}")
+        if time_so_far >= SLA:
+            return sla_exceed_payload
 
         received_batch_len = len(X)
         logger.info(f"recieved batch len:\n{received_batch_len}")
