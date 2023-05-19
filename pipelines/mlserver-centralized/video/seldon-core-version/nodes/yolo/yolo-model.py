@@ -115,6 +115,7 @@ class Yolo(MLModel):
             shapes: List[str] = request_input.parameters.datashape
             logger.info(f"dtypes: {shapes}")
             batch_shape = request_input.shape[0]
+            logger.info(f"parameters: {request_input.parameters}")
             # batch one edge case
             if type(shapes) != list:
                 shapes = [shapes]
