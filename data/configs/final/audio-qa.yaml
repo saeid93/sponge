@@ -118,3 +118,7 @@ simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 15
+
+# ----------- teleport mode (only available in real-world experiments) -------------
+teleport_mode: false
+teleport_interval: 10

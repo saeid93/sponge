@@ -23,6 +23,7 @@ from experiments.utils.constants import (
 
 from optimizer import SimAdapter
 from experiments.utils.simulation_operations import generate_simulated_pipeline
+from experiments.utils.workload import make_workload
 
 
 def find_initial_config(
@@ -48,29 +49,6 @@ def find_initial_config(
         config[node_name]["cpu"] = int(cpu_requests[node_index])
         config[node_name]["variant"] = model_variants[node_index]
     return config
-
-
-def make_workload(config: dict):
-    workload_type = config["workload_type"]
-    workload_config = config["workload_config"]
-
-    if workload_type == "static":
-        loads_to_test = workload_config["loads_to_test"]
-        load_duration = workload_config["load_duration"]
-        workload = [loads_to_test] * load_duration
-    elif workload_type == "twitter":
-        loads_to_test = []
-        for w_config in workload_config:
-            damping_factor = w_config["damping_factor"]
-            start = w_config["start"]
-            end = w_config["end"]
-            load_to_test = start + "-" + end
-            loads_to_test.append(load_to_test)
-        workload = twitter_workload_generator(
-            loads_to_test[0], damping_factor=damping_factor
-        )
-    return workload
-
 
 @click.command()
 @click.option("--config-name", required=True, type=str, default="video-2")
@@ -190,6 +168,10 @@ def main(config_name: str, type_of: str):
     if not simulation_mode:
         raise ValueError("wrong config chosen, this is a real experiment config")
 
+    # teleport mode check
+    if config["teleport_mode"] and config["simulation_mode"]:
+        raise ValueError("teleport model is not available in simulation mode")
+
     # should be inside of experiments
     adapter = SimAdapter(
         pipeline_name=pipeline_name,
@@ -210,7 +192,7 @@ def main(config_name: str, type_of: str):
         baseline_mode=baseline_mode,
     )
 
-    workload = make_workload(config=config)
+    _, workload = make_workload(config=config)
 
     # ----------- 3. Running an experiment series -------------
     # 1. Setup the pipeline

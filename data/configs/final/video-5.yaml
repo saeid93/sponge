@@ -120,3 +120,7 @@ drop_limit: 10
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: true
+
+# ----------- teleport mode (only available in real-world experiments) -------------
+teleport_mode: false
+teleport_interval: 10

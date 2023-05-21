@@ -120,6 +120,12 @@ def main(config_name: str, type_of: str):
     # load safety margin from the predictor
     predictor_margin = config["predictor_margin"]
 
+    # teleport mode
+    teleport_mode = config["teleport_mode"]
+    teleport_interval = config["teleport_interval"]
+    if teleport_mode and config["simulation_mode"]:
+        raise ValueError("teleport model is not available in simulation mode")
+
     pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,
         profiling_series=profiling_series,
@@ -164,6 +170,8 @@ def main(config_name: str, type_of: str):
         central_queue=central_queue,
         debug_mode=debug_mode,
         predictor_margin=predictor_margin,
+        teleport_mode=teleport_mode,
+        teleport_interval=teleport_interval
     )
 
     # ----------- 3. Running an experiment series -------------

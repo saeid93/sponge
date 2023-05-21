@@ -73,6 +73,8 @@ class Adapter:
         central_queue: bool = False,
         debug_mode: bool = False,
         predictor_margin: int = 100,
+        teleport_mode: bool = False,
+        teleport_interval: int = 10
     ) -> None:
         """
         Args:

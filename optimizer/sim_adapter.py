@@ -9,7 +9,6 @@ from typing import List
 import os
 import sys
 import pandas as pd
-import concurrent.futures
 import tensorflow as tf
 from copy import deepcopy
 from tensorflow.keras.models import load_model

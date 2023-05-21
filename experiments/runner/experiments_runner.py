@@ -34,6 +34,7 @@ from experiments.utils.constants import (
     FINAL_RESULTS_PATH,
 )
 from experiments.utils import logger
+from experiments.utils.workload import make_workload
 
 
 def setup_pipeline(
@@ -143,26 +144,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
     mode = config["mode"]
     benchmark_duration = config["benchmark_duration"]
-    workload_type = config["workload_type"]
-    workload_config = config["workload_config"]
-
-    if workload_type == "static":
-        loads_to_test = workload_config["loads_to_test"]
-        load_duration = workload_config["load_duration"]
-        workload = [loads_to_test] * load_duration
-    elif workload_type == "twitter":
-        loads_to_test = []
-        for w_config in workload_config:
-            damping_factor = w_config["damping_factor"]
-            start = w_config["start"]
-            end = w_config["end"]
-            load_to_test = start + "-" + end
-            loads_to_test.append(load_to_test)
-        workload = twitter_workload_generator(
-            loads_to_test[0], damping_factor=damping_factor
-        )
-        load_duration = len(workload)
-
+    load_duration, workload = make_workload(workload)
     data = load_data(data_type, pipeline_path)
     # try:
     start_time_experiment, end_time_experiment, responses = load_test(
@@ -256,6 +238,10 @@ def main(config_name: str, type_of: str):
     # 2. Makes two processes for experiment and adapter
     # 3. Run both processes at the same time
     # 4. Join both processes
+
+    # teleport mode
+    if config["teleport_mode"] and config["simulation_mode"]:
+        raise ValueError("teleport model is not available in simulation mode")
 
     # 0. setup pipeline
     if type_of == "experiment":

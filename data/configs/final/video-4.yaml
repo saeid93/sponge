@@ -117,3 +117,7 @@ predictor_margin: 100
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
+
+# ----------- teleport mode (only available in real-world experiments) -------------
+teleport_mode: false
+teleport_interval: 10
