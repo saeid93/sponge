@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 108
+series: 1000
 # pipeline_name: video
-metadata: 'third experiment with the early exit with early exit everywhere on 5 seconds'
+metadata: 'drop_limit=10'
 number_tasks: 2
 profiling_series:
   - 71
@@ -116,4 +116,7 @@ simulation_mode: false
 predictor_margin: 30
 
 # ----------- drop interval -------------
-drop_limit: 20
+drop_limit: 10
+
+# ----------- do a 10 second warm up before starting the experiment -------------
+warm_up: true

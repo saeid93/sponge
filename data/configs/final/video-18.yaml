@@ -114,3 +114,6 @@ simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 100
+
+# ----------- do a 10 second warm up before starting the experiment -------------
+warm_up: false

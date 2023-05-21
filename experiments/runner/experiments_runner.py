@@ -44,10 +44,11 @@ def setup_pipeline(
     data_type: str,
     debug_mode: bool = False,
 ):
-    timeout = config["timeout"]
-    central_queue = config["central_queue"]
-    distrpution_time = config["distrpution_time"]
-    drop_limit = config["drop_limit"]
+    timeout: int = config["timeout"]
+    central_queue: bool = config["central_queue"]
+    distrpution_time: int = config["distrpution_time"]
+    drop_limit: int = config["drop_limit"]
+    warm_upp: bool = config["warm_up"]
 
 
     model_variants = []
@@ -122,16 +123,17 @@ def setup_pipeline(
         data_type=data_type,
         pipeline_path=pipeline_path,
     )
-    # logger.info("model warm up ...")
-    # logger.info("\n")
-    # warm_up_duration = 10
-    # warm_up(
-    #     pipeline_name="router",
-    #     model="router",
-    #     data_type=data_type,
-    #     pipeline_path=pipeline_path,
-    #     warm_up_duration=warm_up_duration,
-    # )
+    if warm_upp:
+        logger.info("model warm up ...")
+        logger.info("\n")
+        warm_up_duration = 10
+        warm_up(
+            pipeline_name="router",
+            model="router",
+            data_type=data_type,
+            pipeline_path=pipeline_path,
+            warm_up_duration=warm_up_duration,
+        )
 
 
 def experiments(config: dict, pipeline_path: str, data_type: str):
