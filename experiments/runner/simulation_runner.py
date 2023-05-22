@@ -50,6 +50,7 @@ def find_initial_config(
         config[node_name]["variant"] = model_variants[node_index]
     return config
 
+
 @click.command()
 @click.option("--config-name", required=True, type=str, default="video-2")
 @click.option(
@@ -126,9 +127,6 @@ def main(config_name: str, type_of: str):
     # pipeline accuracy
     pipeline_accuracies = accuracies[pipeline_name]
 
-    # whether if it is in debug mode or not with contaienrs logs
-    debug_mode = config["debug_mode"]
-
     # optimizer
     alpha = config["alpha"]
     beta = config["beta"]
@@ -139,6 +137,12 @@ def main(config_name: str, type_of: str):
 
     # read the initial config
     initial_config = find_initial_config(config=config, node_names=node_names)
+
+   # reference latency for generating pipeline model
+    reference_latency = config["reference_latency"]  # p99 | avg
+    reference_throughput = config["reference_throughput"]
+    latency_margin = config["latency_margin"]
+    throughput_margin = config["latency_margin"]
 
     pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,
@@ -157,6 +161,10 @@ def main(config_name: str, type_of: str):
         pipeline_accuracies=pipeline_accuracies,
         only_measured_profiles=only_measured_profiles,
         profiling_load=profiling_load,
+        reference_latency=reference_latency,
+        reference_throughput=reference_throughput,
+        latency_margin=latency_margin,
+        throughput_margin=throughput_margin
     )
 
     # ----------- 3. loading predictor configs -------------
@@ -189,7 +197,7 @@ def main(config_name: str, type_of: str):
         num_state_limit=num_state_limit,
         monitoring_duration=monitoring_duration,
         predictor_type=predictor_type,
-        baseline_mode=baseline_mode,
+        baseline_mode=baseline_mode
     )
 
     _, workload = make_workload(config=config)

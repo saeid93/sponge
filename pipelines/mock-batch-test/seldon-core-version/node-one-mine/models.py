@@ -66,7 +66,7 @@ class NodeOne(MLModel):
             if type(shapes) != list:
                 shapes = [shapes]
             input_data = request_input.data.__root__
-            logger.info(f"shapes:\n{shapes}")
+            # logger.info(f"shapes:\n{shapes}")
             shapes = list(map(lambda l: eval(l), shapes))
             X = decode_from_bin(inputs=input_data, shapes=shapes, dtypes=dtypes)
         received_batch_len = len(X)
@@ -74,15 +74,15 @@ class NodeOne(MLModel):
         logger.info(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += received_batch_len
         self.batch_counter += 1
-        logger.info(f"to the model:\n{type(X)}")
-        logger.info(f"type of the to the model:\n{type(X)}")
-        logger.info(f"len of the to the model:\n{len(X)}")
+        # logger.info(f"to the model:\n{type(X)}")
+        # logger.info(f"type of the to the model:\n{type(X)}")
+        # logger.info(f"len of the to the model:\n{len(X)}")
 
         # model part
         output = self.model(X)
-        logger.info(f"unprocessed ouptut: {output}")
+        # logger.info(f"unprocessed ouptut: {output}")
         output = list(map(lambda l: l["text"], output))
-        logger.info(f"model output:\n{output}")
+        # logger.info(f"model output:\n{output}")
 
         # times processing
         serving_time = time.time()
@@ -90,8 +90,8 @@ class NodeOne(MLModel):
         batch_times = [str(times)] * batch_shape
         if self.settings.max_batch_size == 1:
             batch_times = str(batch_times)
-        logger.info(f"batch shapes:\n{batch_shape}")
-        logger.info(f"batch_times:\n{batch_times}")
+        # logger.info(f"batch shapes:\n{batch_shape}")
+        # logger.info(f"batch_times:\n{batch_times}")
 
         # processing inference response
         output_data = list(map(lambda l: l.encode("utf8"), output))

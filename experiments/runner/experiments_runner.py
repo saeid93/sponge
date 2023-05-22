@@ -51,7 +51,6 @@ def setup_pipeline(
     drop_limit: int = config["drop_limit"]
     warm_upp: bool = config["warm_up"]
 
-
     model_variants = []
     max_batch_sizes = []
     max_batch_times = []
@@ -92,7 +91,7 @@ def setup_pipeline(
             num_threads=cpu_requests,
             distrpution_time=distrpution_time,
             debug_mode=debug_mode,
-            drop_limit=drop_limit
+            drop_limit=drop_limit,
         )
     else:
         setup_router_pipeline(
@@ -113,7 +112,7 @@ def setup_pipeline(
             num_interop_threads=cpu_requests,
             num_threads=cpu_requests,
             distrpution_time=distrpution_time,
-            debug_mode=debug_mode
+            debug_mode=debug_mode,
         )
     logger.info(f"Checking if the model is up ...")
     logger.info("\n")
@@ -144,7 +143,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
     mode = config["mode"]
     benchmark_duration = config["benchmark_duration"]
-    load_duration, workload = make_workload(workload)
+    load_duration, workload = make_workload(config=config)
     data = load_data(data_type, pipeline_path)
     # try:
     start_time_experiment, end_time_experiment, responses = load_test(
@@ -168,7 +167,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-5")
+@click.option("--config-name", required=True, type=str, default="video-6")
 @click.option(
     "--type-of",
     required=True,
@@ -252,7 +251,7 @@ def main(config_name: str, type_of: str):
             config=config,
             pipeline_path=pipeline_path,
             data_type=data_type,
-            debug_mode=debug_mode
+            debug_mode=debug_mode,
         )
 
         # 1. process one the experiment runner

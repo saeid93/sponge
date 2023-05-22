@@ -157,9 +157,9 @@ class ResnetHuman(MLModel):
             pipeline_arrival = float(request_input.parameters.pipeline_arrival)
 
         # early exit logic
-        drop_message = f"early exit, drop limit exceeded on {PREDICTIVE_UNIT_ID}".encode(
-            "utf8"
-                )
+        drop_message = (
+            f"early exit, drop limit exceeded on {PREDICTIVE_UNIT_ID}".encode("utf8")
+        )
         drop_limit_exceed_payload = InferenceResponse(
             outputs=[
                 ResponseOutput(

@@ -7,10 +7,10 @@ import asyncio
 import time
 
 
-load = 5
-test_duration = 1000
+load = 10
+test_duration = 10
 variant = 0
-platform = "seldon"
+platform = "mlserver"
 mode = "exponential"
 
 

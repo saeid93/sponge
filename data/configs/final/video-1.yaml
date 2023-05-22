@@ -121,3 +121,9 @@ warm_up: false
 # ----------- teleport mode (only available in real-world experiments) -------------
 teleport_mode: false
 teleport_interval: 10
+
+# ----------- reference latency and throughput -------------
+reference_latency: 'p99' # p99 | avg
+reference_throughput: 'max' # max | p99 | avg
+latency_margin: 0
+throughput_margin: 0

@@ -1,6 +1,7 @@
 from barazmoon.twitter import twitter_workload_generator
 
-def make_workload(config: dict):
+
+def make_workload(config: dict, teleport_interval: int = None):
     workload_type = config["workload_type"]
     workload_config = config["workload_config"]
 
@@ -13,6 +14,8 @@ def make_workload(config: dict):
         for w_config in workload_config:
             damping_factor = w_config["damping_factor"]
             start = w_config["start"]
+            if teleport_interval is not None:
+                start = str(int(start) + teleport_interval)
             end = w_config["end"]
             load_to_test = start + "-" + end
             loads_to_test.append(load_to_test)

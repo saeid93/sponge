@@ -19,7 +19,15 @@ from experiments.utils.parser import Parser
 config_key_mapper = "key_config_mapper.csv"
 
 
-def load_profile(series: int, model_name: str, load: int = 1):
+def load_profile(
+    series: int,
+    model_name: str,
+    reference_latency: str,
+    reference_throughput: str,
+    latency_margin: int = 0,
+    throughput_margin: int = 0,
+    load: int = 1,
+):
     """load a node profile
 
     Args:
@@ -42,17 +50,25 @@ def load_profile(series: int, model_name: str, load: int = 1):
     ]["experiment_id"].tolist()
     metadata_columns = ["model_variant", "cpu_request", "max_batch_size", "load"]
     results_columns = [
-        "throughput_max",
-        "model_latencies_min",
-        "model_latencies_p99",
-        "cpu_usage_count_avg",
-        "model_latencies_avg",
+        f"throughput_{reference_throughput}",
+        f"model_latencies_{reference_latency}",
     ]
     profiling_info = loader.table_maker(
         experiment_ids=experiment_ids,
         metadata_columns=metadata_columns,
         results_columns=results_columns,
     )
+    profiling_info = profiling_info.rename(
+        columns=lambda x: "throughput" if "throughput" in x else x
+    )
+    profiling_info = profiling_info.rename(
+        columns=lambda x: "latency" if "latencies" in x else x
+    )
+
+    # add the margins
+    profiling_info['latency'] = profiling_info['latency'] * ((100+latency_margin)/100)
+    profiling_info['throughput'] = profiling_info['throughput'] * ((100+throughput_margin)/100)
+
     return profiling_info
 
 
@@ -90,8 +106,8 @@ def make_task_profiles(
                     measured_profiles.append(
                         Profile(
                             batch=row["max_batch_size"],
-                            latency=row["model_latencies_avg"],
-                            measured_throughput=row["throughput_max"],
+                            latency=row["latency"],
+                            measured_throughput=row["throughput"],
                         )
                     )
                 else:
@@ -99,12 +115,11 @@ def make_task_profiles(
                     measured_profiles.append(
                         Profile(
                             batch=row["max_batch_size"],
-                            latency=row["model_latencies_avg"],
+                            latency=row["latency"],
                         )
                     )
             if None in list(map(lambda l: l.latency, measured_profiles)):
                 # skipping unresponsive profiles
-                a = 1
                 continue
             available_model_profiles.append(
                 Model(
@@ -135,6 +150,10 @@ def generate_simulated_pipeline(
     pipeline_accuracies: Dict[str, Dict[str, float]],
     only_measured_profiles: bool,
     profiling_load: bool,
+    reference_throughput: str = "max",
+    reference_latency: str = "p99",
+    latency_margin: int = 0,
+    throughput_margin: int = 0,
 ) -> Pipeline:
     """generates simulated version of the pipelines
        profiles
@@ -167,7 +186,13 @@ def generate_simulated_pipeline(
     inference_graph = []
     for i in range(number_tasks):
         profiling_info = load_profile(
-            series=profiling_series[i], model_name=model_names[i], load=profiling_load
+            series=profiling_series[i],
+            model_name=model_names[i],
+            load=profiling_load,
+            reference_latency=reference_latency,
+            reference_throughput=reference_throughput,
+            latency_margin=latency_margin,
+            throughput_margin=throughput_margin,
         )
         available_model_profiles = make_task_profiles(
             profiling_info=profiling_info,

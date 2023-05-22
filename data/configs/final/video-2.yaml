@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 85
+series: 2000
 # pipeline_name: video
 metadata: 'repeat of 67 on UC servers'
 number_tasks: 2
@@ -82,7 +82,7 @@ gamma: 0
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 64 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
-threshold: 4 # RPS threshold for finding the base allocation
+threshold: 3 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
@@ -110,7 +110,7 @@ distrpution_time: 30
 debug_mode:  false
 
 # ----------- simulation mode -------------
-simulation_mode: false
+simulation_mode: true
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 30
@@ -121,3 +121,9 @@ warm_up: false
 # ----------- teleport mode (only available in real-world experiments) -------------
 teleport_mode: false
 teleport_interval: 10
+
+# ----------- reference latency and throughput -------------
+reference_latency: 'p99' # p99 | avg
+reference_throughput: 'max' # max | p99 | avg
+latency_margin: 5
+throughput_margin: 0

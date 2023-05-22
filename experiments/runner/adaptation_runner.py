@@ -25,10 +25,11 @@ from experiments.utils.constants import (
 
 from optimizer import Adapter
 from experiments.utils.simulation_operations import generate_simulated_pipeline
+from experiments.utils.workload import make_workload
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-1")
+@click.option("--config-name", required=True, type=str, default="video-6")
 @click.option(
     "--type-of",
     required=True,
@@ -123,8 +124,16 @@ def main(config_name: str, type_of: str):
     # teleport mode
     teleport_mode = config["teleport_mode"]
     teleport_interval = config["teleport_interval"]
+    if teleport_mode:
+        _, workload = make_workload(config=config, teleport_interval=teleport_interval)
     if teleport_mode and config["simulation_mode"]:
         raise ValueError("teleport model is not available in simulation mode")
+
+   # reference latency for generating pipeline model
+    reference_latency = config["reference_latency"]  # p99 | avg
+    reference_throughput = config["reference_throughput"]
+    latency_margin = config["latency_margin"]
+    throughput_margin = config["latency_margin"]
 
     pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,
@@ -143,6 +152,10 @@ def main(config_name: str, type_of: str):
         pipeline_accuracies=pipeline_accuracies,
         only_measured_profiles=only_measured_profiles,
         profiling_load=profiling_load,
+        reference_latency=reference_latency,
+        reference_throughput=reference_throughput,
+        latency_margin=latency_margin,
+        throughput_margin=throughput_margin
     )
 
     # ----------- 3. loading predictor configs -------------
@@ -171,7 +184,7 @@ def main(config_name: str, type_of: str):
         debug_mode=debug_mode,
         predictor_margin=predictor_margin,
         teleport_mode=teleport_mode,
-        teleport_interval=teleport_interval
+        teleport_interval=teleport_interval,
     )
 
     # ----------- 3. Running an experiment series -------------
@@ -182,7 +195,10 @@ def main(config_name: str, type_of: str):
 
     if type_of == "adaptation":
         # 2. process two the pipeline adapter
-        adapter.start_adaptation()
+        if teleport_mode:
+            adapter.start_adaptation(workload=workload)
+        else:
+            adapter.start_adaptation()
         with open(save_path, "w") as outfile:
             outfile.write(json.dumps(adapter.monitoring.adaptation_report))
 

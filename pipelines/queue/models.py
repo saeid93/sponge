@@ -90,9 +90,9 @@ class Queue(MLModel):
         logger.info(f"Request counter:\n{self.request_counter}\n")
 
         # early exit logic
-        drop_message = f"early exit, drop limit exceeded on {PREDICTIVE_UNIT_ID}".encode(
-            "utf8"
-                )
+        drop_message = (
+            f"early exit, drop limit exceeded on {PREDICTIVE_UNIT_ID}".encode("utf8")
+        )
         drop_limit_exceed_payload = InferenceResponse(
             outputs=[
                 ResponseOutput(
@@ -113,9 +113,7 @@ class Queue(MLModel):
             pipeline_arrival = list(
                 map(lambda l: float(l), payload.inputs[0].parameters.pipeline_arrival)
             )
-            pipeline_arrival = min(
-                pipeline_arrival
-            )
+            pipeline_arrival = min(pipeline_arrival)
 
         # early exit before the model
         time_so_far = time.time() - pipeline_arrival
@@ -165,7 +163,9 @@ class Queue(MLModel):
         pipeline_arrival_models = {"pipeline_arrival": str(pipeline_arrival)}
         existing_paramteres = payload.inputs[0].parameters
         logger.info(f"existing parameters: {existing_paramteres}")
-        payload.inputs[0].parameters = existing_paramteres.copy(update=pipeline_arrival_models)
+        payload.inputs[0].parameters = existing_paramteres.copy(
+            update=pipeline_arrival_models
+        )
         logger.info(f"after patching parameters: {payload.inputs[0].parameters}")
 
         output = await model_infer(model_name=MODEL_NAME, request_input=payload)
@@ -174,7 +174,9 @@ class Queue(MLModel):
         time_so_far = time.time() - pipeline_arrival
         logger.info(f"time_so_far:\n{time_so_far}")
         if time_so_far >= DROP_LIMIT:
-            logger.info(f"returning results, post model violation:\n{drop_limit_exceed_payload}")
+            logger.info(
+                f"returning results, post model violation:\n{drop_limit_exceed_payload}"
+            )
             return drop_limit_exceed_payload
 
         if output.outputs[0].shape[0] == 1:

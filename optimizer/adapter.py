@@ -74,7 +74,7 @@ class Adapter:
         debug_mode: bool = False,
         predictor_margin: int = 100,
         teleport_mode: bool = False,
-        teleport_interval: int = 10
+        teleport_interval: int = 10,
     ) -> None:
         """
         Args:
@@ -121,8 +121,10 @@ class Adapter:
             predictor_type=self.predictor_type, predictor_margin=predictor_margin
         )
         self.central_queue = central_queue
+        self.teleport_mode = teleport_mode
+        self.teleport_interval = teleport_interval
 
-    def start_adaptation(self):
+    def start_adaptation(self, workload=None):
         # 0. Check if pipeline is up
         # 1. Use monitoring for periodically checking the status of
         #     the pipeline in terms of load
@@ -134,7 +136,8 @@ class Adapter:
         # 6. Compare the optimal solutions from the optimzer
         #     to the existing pipeline's state
         # 7. Use the change config script to change the pipelien to the new config
-
+        if workload is not None:  # in teleport mode workload is read from dataset
+            workload_timestep = 0
         time_interval = 0
         timestep = 0
         pipeline_up = False
@@ -177,7 +180,8 @@ class Adapter:
             logger.info("-" * 50)
             for _ in tqdm.tqdm(range(self.adaptation_interval)):
                 time.sleep(1)
-
+            if self.teleport_mode:
+                workload_timestep += self.adaptation_interval
             # check if the pipeline is up
             pipeline_up = check_node_up(node_name="router")
             if not pipeline_up:
@@ -186,15 +190,25 @@ class Adapter:
                     "no pipeline in the system," " aborting adaptation process ..."
                 )
                 logger.info("-" * 50)
-                self.update_recieved_load()
+                if self.teleport_mode:
+                    self.update_recieved_load(rps_series)
+                else:
+                    self.update_recieved_load()
                 # with the message that the process has ended
                 break
 
             time_interval += self.adaptation_interval
             timestep += 1
-            rps_series = self.monitoring.rps_monitor(
-                monitoring_duration=self.monitoring_duration
-            )
+            if self.teleport_mode:
+                rps_series = workload[
+                    max(
+                        0, workload_timestep - self.monitoring_duration * 60
+                    ) : workload_timestep
+                ]
+            else:
+                rps_series = self.monitoring.rps_monitor(
+                    monitoring_duration=self.monitoring_duration
+                )
             if rps_series is None:
                 continue
             predicted_load = self.predictor.predict(rps_series)
@@ -228,7 +242,10 @@ class Adapter:
                     )
                     logger.info("-" * 50)
                     # with the message that the process has ended
-                    self.update_recieved_load()
+                    if self.teleport_mode:
+                        self.update_recieved_load(rps_series)
+                    else:
+                        self.update_recieved_load()
                     break
 
                 to_apply_config = self.choose_config(new_configs)
@@ -464,15 +481,18 @@ class Adapter:
             logger.info(f"change couldn't take place after {number_of_retries} retries")
             return False  # Return False if all retries fail
 
-    def update_recieved_load(self) -> None:
+    def update_recieved_load(self, workload_of_teleport=None) -> None:
         """extract the entire sent load during the
         experiment
         """
         # get all sent duration
         monitoring_duration = 1000
-        all_recieved_loads = self.monitoring.rps_monitor(
-            monitoring_duration=monitoring_duration
-        )
+        if workload_of_teleport is None:
+            all_recieved_loads = self.monitoring.rps_monitor(
+                monitoring_duration=monitoring_duration
+            )
+        else:
+            all_recieved_loads = workload_of_teleport
         self.monitoring.update_recieved_load(all_recieved_loads)
 
     def saving_config_builder(

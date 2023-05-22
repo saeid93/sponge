@@ -251,7 +251,7 @@ class Task:
                 raise ValueError(
                     f"No responsive model profile to threshold {self.threshold}"
                     f" or model sla {self.sla} was found"
-                    f" for model variant {model_variant}"
+                    f" for model variant {model_variant} "
                     "consider either changing the the threshold or "
                     f"sla factor {self.sla_factor}"
                 )
