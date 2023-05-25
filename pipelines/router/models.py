@@ -127,6 +127,7 @@ class Router(MLModel):
 
         serving_time = time.time()
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
+        logger.info(f"times: {output.outputs[0].parameters.times}")
         model_times: Dict = eval(eval(output.outputs[0].parameters.times)[0])
         model_times.update(times)
         output_times = str([str(model_times)])

@@ -26,7 +26,7 @@ data = np.array(data).flatten()
 
 
 load = 30
-test_duration = 10
+test_duration = 1000
 variant = 0
 platform = "router"
 workload = [load] * test_duration

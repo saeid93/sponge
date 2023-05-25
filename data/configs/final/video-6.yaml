@@ -40,7 +40,7 @@ adaptation_interval: 20
 workload_type: twitter
 workload_config:
   - start: '1863000'
-    end: '1863100'
+    end: '1863300'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 1000
+series: 128
 # pipeline_name: video
-metadata: 'repeat of 115 with fixed teleporting monitoring'
+metadata: 'repeat of 126 with 30 second teleport'
 number_tasks: 2
 profiling_series:
   - 71
@@ -107,13 +107,13 @@ distrpution_time: 30
 
 # ----------- distruption time -------------
 # debug mode with complete lgos of containers
-debug_mode: false
+debug_mode:  false
 
 # ----------- simulation mode -------------
 simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
-predictor_margin: 0
+predictor_margin: 30
 
 # ----------- drop interval -------------
 drop_limit: 10000
@@ -130,3 +130,5 @@ reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
 throughput_margin: 0
+
+# ----------- outcome ------------- 

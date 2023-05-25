@@ -62,7 +62,7 @@ spec:
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
-              value: "0"
+              value: "1"
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
@@ -155,7 +155,7 @@ spec:
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
-              value: "0"
+              value: "1"
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
@@ -248,7 +248,7 @@ spec:
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
-              value: "0"
+              value: "1"
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS

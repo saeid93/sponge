@@ -228,10 +228,23 @@ class Queue(MLModel):
         serving_time = time.time()
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
         # logger.info(output)
+        logger.info(f'raw: {output.outputs[0].parameters.times}')
+        # logger.info(f'first eval: {eval(output.outputs[0].parameters.times[0])}')
         if output.outputs[0].shape[0] == 1:
-            model_times: Dict = eval(eval(output.outputs[0].parameters.times)[0])
-            model_times.update(times)
-            output_times = str([str(model_times)])
+            if type(output.outputs[0].parameters.times) == list:
+                model_times: Dict = eval(output.outputs[0].parameters.times[0])
+                # logger.info(f"model times 1: {model_times}")
+                # logger.info(f"model times type 1: {type(model_times)}")
+                model_times.update(times)
+                output_times = [str(model_times)]
+                # logger.info(f"output times 1: {output_times}")
+            else:
+                model_times: Dict = eval(eval(output.outputs[0].parameters.times)[0])
+                model_times.update(times)
+                # logger.info(f"model times 2: {model_times}")
+                # logger.info(f"model times type 2: {type(model_times)}")
+                output_times = str([str(model_times)])
+                # logger.info(f"output times 2: {output_times}")
             output.outputs[0].parameters.times = output_times
         else:
             model_times: List[Dict] = list(

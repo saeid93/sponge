@@ -597,18 +597,21 @@ class AdaptationParser:
                 "accuracy": [],
                 "throughput": [],
             }
-        changes["recieved_load"] = adaptation_log["metadata"]["recieved_load"]
-        changes["sla"] = adaptation_log["metadata"]["sla"]
-        for _, state in adaptation_log["timesteps"].items():
-            changes["time_interval"].append(state["time_interval"])
-            changes["objective"].append(state["objective"])
-            changes["monitored_load"].append(state["monitored_load"])
-            changes["predicted_load"].append(state["predicted_load"])
-            for node_name in self.loader.node_orders:
-                for metric, _ in state["config"][node_name].items():
-                    if metric == "batch":
-                        value = int(state["config"][node_name][metric])
-                    else:
-                        value = state["config"][node_name][metric]
-                    changes["nodes"][node_name][metric].append(value)
+        try: # for backward compatibility with older experiments
+            changes["recieved_load"] = adaptation_log["metadata"]["recieved_load"]
+            changes["sla"] = adaptation_log["metadata"]["sla"]
+            for _, state in adaptation_log["timesteps"].items():
+                changes["time_interval"].append(state["time_interval"])
+                changes["objective"].append(state["objective"])
+                changes["monitored_load"].append(state["monitored_load"])
+                changes["predicted_load"].append(state["predicted_load"])
+                for node_name in self.loader.node_orders:
+                    for metric, _ in state["config"][node_name].items():
+                        if metric == "batch":
+                            value = int(state["config"][node_name][metric])
+                        else:
+                            value = state["config"][node_name][metric]
+                        changes["nodes"][node_name][metric].append(value)
+        except KeyError:
+            pass
         return changes

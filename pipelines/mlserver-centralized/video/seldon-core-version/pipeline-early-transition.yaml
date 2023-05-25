@@ -29,12 +29,16 @@ spec:
           env:
             - name: MODEL_NAME
               value: 'yolo'
+            - name: LAST_NODE
+              value: 'False'
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "8"
+              value: "1"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "1"
+            - name: DROP_LIMIT
+              value: '10000'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -103,10 +107,10 @@ spec:
           resources:
             requests:
               cpu: '1'
-              memory: 4Gi
+              memory: 2Gi
             limits:
               cpu: '1'
-              memory: 4Gi
+              memory: 2Gi
           volumeMounts:
           - mountPath: /mnt/models
             name: yolov5-volume
@@ -118,13 +122,15 @@ spec:
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_PARALLEL_WORKERS
-              value: "0"
+              value: "1"
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
               value: "1"
             - name: NUM_THREADS
               value: "1"
+            - name: DROP_LIMIT
+              value: '10000'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -140,7 +146,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 30
-      replicas: 3
+      replicas: 5
     graph:
       name: yolo
       type: MODEL
@@ -180,11 +186,13 @@ spec:
             - name: MODEL_NAME
               value: 'resnet-human'
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: "4"
+              value: "16"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "1"
+            - name: DROP_LIMIT
+              value: '10000'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -212,13 +220,13 @@ apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
   name: resnet-human
-  annotations:
-    proxy.istio.io/config: |
-      terminationDrainDuration: 30s
 spec:
   protocol: v2
   name: resnet-human
   predictors:
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 30s
   - name: resnet-human
     annotations:
       seldon.io/no-engine: "true"
@@ -253,10 +261,10 @@ spec:
           resources:
             requests:
               cpu: '1'
-              memory: 4Gi
+              memory: 2Gi
             limits:
               cpu: '1'
-              memory: 4Gi
+              memory: 2Gi
           volumeMounts:
           - mountPath: /opt/mlserver/.torch/hub/checkpoints
             name: resnet-volume
@@ -267,13 +275,15 @@ spec:
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
             - name: MLSERVER_PARALLEL_WORKERS
-              value: "0"
+              value: "1"
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
               value: "1"
             - name: NUM_THREADS
               value: "1"
+            - name: DROP_LIMIT
+              value: '10000'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -289,7 +299,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 30
-      replicas: 2
+      replicas: 3
     graph:
       name: resnet-human
       type: MODEL

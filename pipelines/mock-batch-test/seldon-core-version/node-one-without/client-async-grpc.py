@@ -24,17 +24,17 @@ async def request_after_grpc(grpc_stub, payload, metadata):
 
 
 # single node mlserver
-# endpoint = "localhost:8081"
-# model = 'mock'
-# metadata = []
+endpoint = "localhost:8081"
+model = 'node-one'
+metadata = []
 
 
 # single node seldon+mlserver
-endpoint = "localhost:32000"
-deployment_name = "mock"
-model = "mock"
-namespace = "default"
-metadata = [("seldon", deployment_name), ("namespace", namespace)]
+# endpoint = "localhost:32000"
+# deployment_name = "mock"
+# model = "mock"
+# namespace = "default"
+# metadata = [("seldon", deployment_name), ("namespace", namespace)]
 
 batch_test = 10
 ds = load_dataset(
