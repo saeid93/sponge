@@ -179,6 +179,7 @@ class Adapter:
             logger.info(f"Waiting {self.adaptation_interval}" " to make next descision")
             logger.info("-" * 50)
             for _ in tqdm.tqdm(range(self.adaptation_interval)):
+                # if timestep == 0: break # adapt on the begining
                 time.sleep(1)
             if self.teleport_mode:
                 workload_timestep += self.adaptation_interval

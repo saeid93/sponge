@@ -11,7 +11,7 @@ nodes:
     model_variants: yolov5n
     max_batch_size: '1'
     max_batch_time: '1'
-    cpu_request: '2'
+    cpu_request: '1'
     memory_request: 2Gi
     replicas: 1
     use_threading: 'True'
@@ -22,7 +22,7 @@ nodes:
     model_variants: resnet18
     max_batch_size: '1'
     max_batch_time: '1'
-    cpu_request: '2'
+    cpu_request: '1'
     memory_request: 2Gi
     replicas: 1
     use_threading: 'True'
@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 140
+series: 152
 # pipeline_name: video
-metadata: 'a plain run without any addition on short load'
+metadata: 'teleport 10'
 number_tasks: 2
 profiling_series:
   - 71
@@ -122,13 +122,11 @@ drop_limit: 10000
 warm_up: false
 
 # ----------- teleport mode (only available in real-world experiments) -------------
-teleport_mode: false
-teleport_interval: 0
+teleport_mode: true 
+teleport_interval: 10
 
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
 throughput_margin: 0
-
-# ----------- outcome -------------

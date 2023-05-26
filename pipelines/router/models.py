@@ -85,8 +85,8 @@ class Router(MLModel):
         existing_paramteres = payload.inputs[0].parameters
         payload.inputs[0].parameters = existing_paramteres.copy(update=pipeline_arrival)
         self.request_counter += 1
-        logger.info(f"paramters: {payload.inputs[0].parameters}")
-        logger.info(f"Request counter:\n{self.request_counter}\n")
+        # logger.info(f"paramters: {payload.inputs[0].parameters}")
+        # logger.info(f"Request counter:\n{self.request_counter}\n")
 
         drop_limit_exceed_payload = InferenceResponse(
             outputs=[
@@ -103,31 +103,31 @@ class Router(MLModel):
 
         output = payload
         for node_index, model_name in enumerate(MODEL_LISTS):
-            logger.info(f"Getting inference responses {model_name}")
+            # logger.info(f"Getting inference responses {model_name}")
             output = await model_infer(model_name=model_name, request_input=output)
             if output.outputs[0].name == "drop-limit-violation":
-                logger.info(f"previous step:\n{self.decode(output.outputs[0])}")
+                # logger.info(f"previous step:\n{self.decode(output.outputs[0])}")
                 # if "early exit" in self.decode(output.outputs[0]):
-                logger.info(f"early exiting from before")
+                # logger.info(f"early exiting from before")
                 return output
             existing_paramteres = output.outputs[0].parameters
             output.outputs[0].parameters = existing_paramteres.copy(
                 update=pipeline_arrival
             )
             time_so_far = time.time() - arrival_time
-            logger.info(f"{model_name} time_so_far:\n{time_so_far}")
+            # logger.info(f"{model_name} time_so_far:\n{time_so_far}")
             # TODO add the logic of to drop here
             if time_so_far >= DROP_LIMIT and node_index + 1 != len(MODEL_LISTS):
                 drop_message = f"early exit, drop limit exceeded after {model_name.replace('queue-', '')}".encode(
                     "utf8"
                 )
-                logger.info("early exit from here")
+                # logger.info("early exit from here")
                 drop_limit_exceed_payload.outputs[0].data = [drop_message]
                 return drop_limit_exceed_payload
 
         serving_time = time.time()
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
-        logger.info(f"times: {output.outputs[0].parameters.times}")
+        # logger.info(f"times: {output.outputs[0].parameters.times}")
         model_times: Dict = eval(eval(output.outputs[0].parameters.times)[0])
         model_times.update(times)
         output_times = str([str(model_times)])

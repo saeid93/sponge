@@ -63,3 +63,4 @@ torchaudio
 gurobipy
 tabulate
 kubernetes
+yq

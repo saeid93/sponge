@@ -10,7 +10,7 @@ import time
 load = 10
 test_duration = 1
 variant = 0
-platform = "mlserver"
+platform = "seldon"
 mode = "exponential"
 
 

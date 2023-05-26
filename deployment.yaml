@@ -1,0 +1,146 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+#   annotations:
+#     kubectl.kubernetes.io/last-applied-configuration: |
+#       {"apiVersion":"machinelearning.seldon.io/v1","kind":"SeldonDeployment","metadata":{"annotations":{},"name":"yolo","namespace":"default"},"spec":{"annotations":{"proxy.istio.io/config":"terminationDrainDuration: 30s\n"},"name":"yolo","predictors":[{"annotations":{"seldon.io/no-engine":"true"},"componentSpecs":[{"replicas":5,"spec":{"containers":[{"env":[{"name":"MODEL_PATH","value":"/mnt/models/yolov5n"},{"name":"MODEL_VARIANT","value":"yolov5n"},{"name":"TORCH_HOME","value":"/opt/mlserver/.torch"},{"name":"MLSERVER_PARALLEL_WORKERS","value":"0"},{"name":"USE_THREADING","value":"True"},{"name":"NUM_INTEROP_THREADS","value":"1"},{"name":"NUM_THREADS","value":"1"},{"name":"DROP_LIMIT","value":"10000"}],"image":"sdghafouri/video-centralized:yolo","imagePullPolicy":"Always","lifecycle":{"preStop":{"exec":{"command":["/bin/sh","-c","/bin/sleep 30"]}}},"name":"yolo","readinessProbe":{"failureThreshold":3,"initialDelaySeconds":0,"periodSeconds":1,"successThreshold":1,"tcpSocket":{"port":9000},"timeoutSeconds":1},"resources":{"limits":{"cpu":"1","memory":"2Gi"},"requests":{"cpu":"1","memory":"2Gi"}},"volumeMounts":[{"mountPath":"/mnt/models","name":"yolov5-volume"}]}],"initContainers":[{"args":["s3://torchhub/yolo/yolov5n","/mnt/models/yolov5n"],"envFrom":[{"secretRef":{"name":"seldon-rclone-secret"}}],"image":"seldonio/rclone-storage-initializer:1.16.0-dev","imagePullPolicy":"IfNotPresent","name":"classifier-model-initializer","volumeMounts":[{"mountPath":"/mnt/models","name":"yolov5-volume"}]}],"terminationGracePeriodSeconds":30,"volumes":[{"emptyDir":{},"name":"yolov5-volume"}]}}],"graph":{"children":[],"name":"yolo","type":"MODEL"},"labels":{"sidecar.istio.io/inject":"true"},"name":"yolo"}],"protocol":"v2"},"status":{"address":{"url":"http://yolo-yolo.default.svc.cluster.local:9000/v2/models/yolo/infer"},"conditions":[{"lastTransitionTime":"2023-05-26T00:19:24Z","reason":"No Ambassador Mappaings defined","status":"True","type":"AmbassadorMappingsReady"},{"lastTransitionTime":"2023-05-26T00:19:24Z","message":"Deployment has minimum availability.","reason":"MinimumReplicasAvailable","status":"True","type":"DeploymentsReady"},{"lastTransitionTime":"2023-05-26T00:19:08Z","reason":"No HPAs defined","status":"True","type":"HpasReady"},{"lastTransitionTime":"2023-05-26T00:19:08Z","reason":"No KEDA resources defined","status":"True","type":"KedaReady"},{"lastTransitionTime":"2023-05-26T00:19:08Z","reason":"No PDBs defined","status":"True","type":"PdbsReady"},{"lastTransitionTime":"2023-05-26T00:19:24Z","status":"True","type":"Ready"},{"lastTransitionTime":"2023-05-26T00:19:24Z","reason":"All services created","status":"True","type":"ServicesReady"},{"lastTransitionTime":"2023-05-26T00:19:24Z","reason":"All VirtualServices created","status":"True","type":"istioVirtualServicesReady"}],"deploymentStatus":{"yolo-yolo-0-yolo":{"availableReplicas":5,"replicas":5}},"replicas":5,"serviceStatus":{"yolo-yolo":{"grpcEndpoint":"yolo-yolo.default:9500","httpEndpoint":"yolo-yolo.default:9000","svcName":"yolo-yolo"},"yolo-yolo-yolo":{"grpcEndpoint":"yolo-yolo-yolo.default:9500","httpEndpoint":"yolo-yolo-yolo.default:9000","svcName":"yolo-yolo-yolo"}},"state":"Available"}}
+#   creationTimestamp: "2023-05-26T00:35:29Z"
+#   generation: 1
+  name: yolo
+  namespace: default
+  # resourceVersion: "89659"
+  # selfLink: /apis/machinelearning.seldon.io/v1/namespaces/default/seldondeployments/yolo
+  # uid: 2e754cb2-4d6b-4ed1-bde0-d44217c74cd7
+spec:
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 30s
+  name: yolo
+  predictors:
+  - annotations:
+      seldon.io/no-engine: "true"
+    componentSpecs:
+    - replicas: 5
+      spec:
+        containers:
+        - env:
+          - name: MODEL_PATH
+            value: /mnt/models/yolov5n
+          - name: MODEL_VARIANT
+            value: yolov5n
+          - name: TORCH_HOME
+            value: /opt/mlserver/.torch
+          - name: MLSERVER_PARALLEL_WORKERS
+            value: "0"
+          - name: USE_THREADING
+            value: "True"
+          - name: NUM_INTEROP_THREADS
+            value: "1"
+          - name: NUM_THREADS
+            value: "1"
+          - name: DROP_LIMIT
+            value: "10000"
+          image: sdghafouri/video-centralized:yolo
+          imagePullPolicy: Always
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 30
+          name: yolo
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "1"
+              memory: 2Gi
+            requests:
+              cpu: "1"
+              memory: 2Gi
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: yolov5-volume
+        initContainers:
+        - args:
+          - s3://torchhub/yolo/yolov5n
+          - /mnt/models/yolov5n
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          name: classifier-model-initializer
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: yolov5-volume
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir: {}
+          name: yolov5-volume
+    graph:
+      children: []
+      name: yolo
+      type: MODEL
+    labels:
+      sidecar.istio.io/inject: "true"
+    name: yolo
+  protocol: v2
+status:
+  address:
+    url: http://yolo-yolo.default.svc.cluster.local:9000/v2/models/yolo/infer
+  conditions:
+  - lastTransitionTime: "2023-05-26T00:35:58Z"
+    reason: No Ambassador Mappaings defined
+    status: "True"
+    type: AmbassadorMappingsReady
+  - lastTransitionTime: "2023-05-26T00:35:58Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: DeploymentsReady
+  - lastTransitionTime: "2023-05-26T00:35:29Z"
+    reason: No HPAs defined
+    status: "True"
+    type: HpasReady
+  - lastTransitionTime: "2023-05-26T00:35:29Z"
+    reason: No KEDA resources defined
+    status: "True"
+    type: KedaReady
+  - lastTransitionTime: "2023-05-26T00:35:29Z"
+    reason: No PDBs defined
+    status: "True"
+    type: PdbsReady
+  - lastTransitionTime: "2023-05-26T00:35:58Z"
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2023-05-26T00:35:58Z"
+    reason: All services created
+    status: "True"
+    type: ServicesReady
+  - lastTransitionTime: "2023-05-26T00:35:58Z"
+    reason: All VirtualServices created
+    status: "True"
+    type: istioVirtualServicesReady
+  deploymentStatus:
+    yolo-yolo-0-yolo:
+      availableReplicas: 5
+      replicas: 5
+  replicas: 5
+  serviceStatus:
+    yolo-yolo:
+      grpcEndpoint: yolo-yolo.default:9500
+      httpEndpoint: yolo-yolo.default:9000
+      svcName: yolo-yolo
+    yolo-yolo-yolo:
+      grpcEndpoint: yolo-yolo-yolo.default:9500
+      httpEndpoint: yolo-yolo-yolo.default:9000
+      svcName: yolo-yolo-yolo
+  state: Available

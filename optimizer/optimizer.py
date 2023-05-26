@@ -85,14 +85,14 @@ class Optimizer:
     def pipeline_latency_upper_bound(self, stage, variant_name) -> float:
         # maximum number for latency of a node in
         # a pipeline for calculating the M variable
-        max_model_latencies = 0
+        max_model = 0
         inference_graph = deepcopy(self.pipeline.inference_graph)
         for task in inference_graph:
             if task.name == stage:
                 task.model_switch(variant_name)
                 task.change_batch(max(task.batches))
-                max_model_latencies = task.model_latency
-        return max_model_latencies
+                max_model = task.model_latency
+        return max_model
 
     def latency_parameters(
         self, only_measured_profiles
@@ -700,7 +700,15 @@ class Optimizer:
                 ),
                 name="only-switch-task",
             )
-
+        elif self.baseline_mode == "switch-scale":
+            # no batch but ours TODO
+            pass
+        # elif self.baseline_mode == "switch":
+            # only switch TODO
+            # pass
+        # elif self.baseline_mode == "sclae":
+            # only scale TODO
+            # pass
         # one variant constraint
         model.addConstrs(
             (

@@ -123,14 +123,14 @@ class Parser:
         return num_each_second_requests, flattend_results
 
     def _node_latency_calculator(self, results: Dict[Dict, Any]):
-        client_to_model_latencies = []
+        client_to_model = []
         model_latencies = []
-        model_to_client_latencies = []
+        model_to_client = []
         e2e_latencies = []
         latencies = {
-            "client_to_model_latencies": [],
+            "client_to_model": [],
             "model_latencies": [],
-            "model_to_client_latencies": [],
+            "model_to_client": [],
             "e2e_latencies": [],
         }
         timeout_count = 0
@@ -149,13 +149,13 @@ class Parser:
                 e2e_latencies.append(
                     request_times["arrival"] - request_times["sending"]
                 )
-                client_to_model_latencies.append(client_to_model_latency)
+                client_to_model.append(client_to_model_latency)
                 model_latencies.append(model_latency)
-                model_to_client_latencies.append(model_to_client_latency)
+                model_to_client.append(model_to_client_latency)
                 latencies = {
-                    "client_to_model_latencies": client_to_model_latencies,
+                    "client_to_model": client_to_model,
                     "model_latencies": model_latencies,
-                    "model_to_client_latencies": model_to_client_latencies,
+                    "model_to_client": model_to_client,
                     "e2e_latencies": e2e_latencies,
                 }
 
@@ -167,11 +167,11 @@ class Parser:
         self, results: Dict[Dict, Any], keep_lost: bool = False
     ):
         latencies = {
-            "client_to_pipeline_latencies": [],
-            "pipeline_to_client_latencies": [],
+            "client_to_pipeline": [],
+            "pipeline_to_client": [],
         }
         for index, model in enumerate(self.node_orders):
-            latencies[f"task_{index}_model_latencies"] = []
+            latencies[f"task_{index}_model"] = []
             if index < len(self.node_orders) - 1:
                 latencies[f"task_{index}_to_task_{index+1}_latencies"] = []
         timeout_count = 0
@@ -182,14 +182,14 @@ class Parser:
                 model_times = times["models"]
                 for index, model in enumerate(self.node_orders):
                     if index == 0:
-                        latencies["client_to_pipeline_latencies"].append(
+                        latencies["client_to_pipeline"].append(
                             model_times[model]["arrival"] - request_times["sending"]
                         )
                     if index == len(self.node_orders) - 1:
-                        latencies["pipeline_to_client_latencies"].append(
+                        latencies["pipeline_to_client"].append(
                             request_times["arrival"] - model_times[model]["serving"]
                         )
-                    latencies[f"task_{index}_model_latencies"].append(
+                    latencies[f"task_{index}_model"].append(
                         model_times[model]["serving"] - model_times[model]["arrival"]
                     )
                     if index < len(self.node_orders) - 1:

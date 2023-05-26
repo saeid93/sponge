@@ -45,7 +45,7 @@ spec:
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: '{{ max_batch_time }}'
             - name: MLSERVER_PARALLEL_WORKERS
-              value: "1"
+              value: "0"
             - name: POD_NAME
               valueFrom:
                 fieldRef:

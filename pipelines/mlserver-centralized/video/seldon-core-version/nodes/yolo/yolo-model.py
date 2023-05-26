@@ -112,16 +112,16 @@ class Yolo(MLModel):
 
         for request_input in payload.inputs:
             dtypes: List[str] = eval(request_input.parameters.dtype)
-            logger.info(f"dtypes: {dtypes}")
+            # logger.info(f"dtypes: {dtypes}")
             shapes: List[str] = request_input.parameters.datashape
-            logger.info(f"dtypes: {shapes}")
+            # logger.info(f"dtypes: {shapes}")
             batch_shape = request_input.shape[0]
-            logger.info(f"parameters: {request_input.parameters}")
+            # logger.info(f"parameters: {request_input.parameters}")
             # batch one edge case
             if type(shapes) != list:
                 shapes = [shapes]
             input_data = request_input.data.__root__
-            logger.info(f"shapes:\n{shapes}")
+            # logger.info(f"shapes:\n{shapes}")
             shapes = list(map(lambda l: eval(l), eval(shapes[0])))
             X = decode_from_bin(inputs=input_data, shapes=shapes, dtypes=dtypes)
             pipeline_arrival = float(request_input.parameters.pipeline_arrival)
@@ -143,16 +143,16 @@ class Yolo(MLModel):
             parameters=Parameters(type_of="text"),
         )
         time_so_far = time.time() - pipeline_arrival
-        logger.info(f"time_so_far:\n{time_so_far}")
+        # logger.info(f"time_so_far:\n{time_so_far}")
         if time_so_far >= DROP_LIMIT:
             return sla_exceed_payload
 
         received_batch_len = len(X)
-        logger.info(f"recieved batch len:\n{received_batch_len}")
+        # logger.info(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += received_batch_len
         self.batch_counter += 1
-        logger.info(f"type of the to the model:\n{type(X)}")
-        logger.info(f"len of the to the model:\n{len(X)}")
+        # logger.info(f"type of the to the model:\n{type(X)}")
+        # logger.info(f"len of the to the model:\n{len(X)}")
         objs = self.model(X)
         output = self.get_cropped(objs)
         serving_time = time.time()
@@ -167,9 +167,9 @@ class Yolo(MLModel):
         dtypes = str(dtypes)
         datashape = str(datashape)
 
-        logger.info(f"output batch times: {batch_times}")
-        logger.info(f"output dtpes: {dtypes}")
-        logger.info(f"output datashapes: {datashape}")
+        # logger.info(f"output batch times: {batch_times}")
+        # logger.info(f"output dtpes: {dtypes}")
+        # logger.info(f"output datashapes: {datashape}")
 
         payload = InferenceResponse(
             outputs=[
@@ -186,8 +186,8 @@ class Yolo(MLModel):
             model_name=self.name,
             parameters=Parameters(type_of="image"),
         )
-        logger.info(f"request counter:\n{self.request_counter}\n")
-        logger.info(f"batch counter:\n{self.batch_counter}\n")
+        # logger.info(f"request counter:\n{self.request_counter}\n")
+        # logger.info(f"batch counter:\n{self.batch_counter}\n")
         return payload
 
     def get_cropped(self, result):

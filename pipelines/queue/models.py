@@ -59,10 +59,10 @@ async def send_requests(ch, model_name, payload: InferenceRequest):
 async def model_infer(model_name, request_input: InferenceRequest) -> InferenceResponse:
     try:
         inputs = request_input.outputs[0]
-        logger.info(f"second node {model_name} data extracted!")
+        # logger.info(f"second node {model_name} data extracted!")
     except:
         inputs = request_input.inputs[0]
-        logger.info(f"first node {model_name} data extracted!")
+        # logger.info(f"first node {model_name} data extracted!")
     payload_input = InferenceRequest(inputs=[inputs])
     endpoint = f"{model_name}-{model_name}.default.svc.cluster.local:9500"
     async with grpc.aio.insecure_channel(endpoint) as ch:
@@ -83,11 +83,11 @@ class Queue(MLModel):
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         batch_shape = payload.inputs[0].shape[0]
-        logger.info(f"batch_size: {batch_shape}")
+        # logger.info(f"batch_size: {batch_shape}")
         mlserver.log(batch_size=batch_shape)
         arrival_time = time.time()
         self.request_counter += 1
-        logger.info(f"Request counter:\n{self.request_counter}\n")
+        # logger.info(f"Request counter:\n{self.request_counter}\n")
 
         # early exit logic
         drop_message = (
@@ -117,7 +117,7 @@ class Queue(MLModel):
 
         # early exit before the model
         time_so_far = time.time() - pipeline_arrival
-        logger.info(f"time_so_far:\n{time_so_far}")
+        # logger.info(f"time_so_far:\n{time_so_far}")
         if time_so_far >= DROP_LIMIT:
             return drop_limit_exceed_payload
 
@@ -162,17 +162,17 @@ class Queue(MLModel):
         # patch pipeline arrival for the model container
         pipeline_arrival_models = {"pipeline_arrival": str(pipeline_arrival)}
         existing_paramteres = payload.inputs[0].parameters
-        logger.info(f"existing parameters: {existing_paramteres}")
+        # logger.info(f"existing parameters: {existing_paramteres}")
         payload.inputs[0].parameters = existing_paramteres.copy(
             update=pipeline_arrival_models
         )
-        logger.info(f"after patching parameters: {payload.inputs[0].parameters}")
+        # logger.info(f"after patching parameters: {payload.inputs[0].parameters}")
 
         output = await model_infer(model_name=MODEL_NAME, request_input=payload)
 
         # early exit after the model
         time_so_far = time.time() - pipeline_arrival
-        logger.info(f"time_so_far:\n{time_so_far}")
+        # logger.info(f"time_so_far:\n{time_so_far}")
         if time_so_far >= DROP_LIMIT:
             logger.info(
                 f"returning results, post model violation:\n{drop_limit_exceed_payload}"
@@ -228,7 +228,7 @@ class Queue(MLModel):
         serving_time = time.time()
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
         # logger.info(output)
-        logger.info(f'raw: {output.outputs[0].parameters.times}')
+        # logger.info(f'raw: {output.outputs[0].parameters.times}')
         # logger.info(f'first eval: {eval(output.outputs[0].parameters.times[0])}')
         if output.outputs[0].shape[0] == 1:
             if type(output.outputs[0].parameters.times) == list:

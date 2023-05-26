@@ -59,7 +59,7 @@ spec:
             - name: TASK
               value: text-classification
             - name: MLSERVER_PARALLEL_WORKERS
-              value: "1"
+              value: "0"
             - name: USE_THREADING
               value: '{{use_threading}}'
             - name: NUM_INTEROP_THREADS
