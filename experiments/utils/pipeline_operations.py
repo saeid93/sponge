@@ -529,12 +529,12 @@ def warm_up(
 
 
 def remove_pipeline(pipeline_name: str):
-    os.system(f"kubectl delete seldondeployment {pipeline_name} --grace-period=10 -n default")
+    os.system(f"kubectl delete seldondeployment {pipeline_name} -n default")
     # TEMP TODO until fixing the server problem
-    os.system(f"kubectl delete seldondeployment --all --grace-period=10 -n default")
-    os.system(f"kubectl delete deployments --all --grace-period=10 -n default")
-    os.system(f"kubectl delete replicaset --all --grace-period=10 -n default")
-    os.system(f"kubectl delete pods --all --grace-period=10 -n default")
+    os.system(f"kubectl delete seldondeployment --all -n default")
+    os.system(f"kubectl delete deployments --all -n default")
+    os.system(f"kubectl delete replicaset --all -n default")
+    os.system(f"kubectl delete pods --all -n default")
     os.system(
         "kubectl get services | grep -v kubernetes | awk '{print $1}' | xargs kubectl delete service -n default"
     )

@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 152
+series: 153
 # pipeline_name: video
-metadata: 'teleport 10'
+metadata: 'teleport 10 and margin 30%'
 number_tasks: 2
 profiling_series:
   - 71
@@ -113,7 +113,7 @@ debug_mode:  false
 simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
-predictor_margin: 0
+predictor_margin: 30
 
 # ----------- drop interval -------------
 drop_limit: 10000
@@ -130,3 +130,4 @@ reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
 throughput_margin: 0
+

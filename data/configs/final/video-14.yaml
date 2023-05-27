@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 154
+series: 162
 # pipeline_name: video
-metadata: 'teleport 10 and drop 3'
+metadata: 'normal 150 and drop 3'
 number_tasks: 2
 profiling_series:
   - 71
@@ -122,8 +122,8 @@ drop_limit: 3
 warm_up: false
 
 # ----------- teleport mode (only available in real-world experiments) -------------
-teleport_mode: true 
-teleport_interval: 10
+teleport_mode: false 
+teleport_interval: 0
 
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg

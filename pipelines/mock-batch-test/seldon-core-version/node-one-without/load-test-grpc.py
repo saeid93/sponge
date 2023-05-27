@@ -7,7 +7,7 @@ import asyncio
 import time
 
 
-load = 10
+load = 50
 test_duration = 1
 variant = 0
 platform = "seldon"
