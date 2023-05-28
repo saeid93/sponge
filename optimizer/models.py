@@ -81,52 +81,77 @@ class Model:
         # measured data
         # test_x = all_x[~np.isin(all_x, train_x)].reshape(-1, 1)
         test_x = all_x.reshape(-1, 1)
-        poly_features = PolynomialFeatures(degree=2)
-        train_x_poly = poly_features.fit_transform(train_x)
-        test_x_poly = poly_features.transform(test_x)
-
-        latency_model = LinearRegression()
-        latency_model.fit(train_x_poly, train_y)
-
-        test_y = latency_model.predict(test_x_poly)
-
-        predicted_profiles = []
-        for index, x, y in zip(
-            range(len(all_x)), test_x.reshape(-1), test_y.reshape(-1)
-        ):
-            if self.only_measured_profiles:
-                predicted_profiles.append(
+        profiles = []
+        if self.only_measured_profiles:
+            for index, x, y in zip(
+                range(len(all_x)), train_x.reshape(-1), train_y.reshape(-1)
+            ):
+                profiles.append(
                     Profile(
                         batch=x,
-                        latency=y,
+                        latency=self.measured_profiles[index].latency,
                         measured=True,
                         measured_throughput=self.measured_profiles[
                             index
                         ].measured_throughput,
                     )
                 )
-            else:
+            model_parameters = {
+                "coefficients": None,
+                "intercept": None
+            }
+        else:
+
+
+
+            poly_features = PolynomialFeatures(degree=2)
+            train_x_poly = poly_features.fit_transform(train_x)
+            test_x_poly = poly_features.transform(test_x)
+
+            latency_model = LinearRegression()
+            latency_model.fit(train_x_poly, train_y)
+
+            test_y = latency_model.predict(test_x_poly)
+
+            # TODO add a hueristic to remove the <0 latency values
+            # we set polynomial as reference but for small values
+            # polynomial will result into negative values
+            # if there is a negative values in the polynomial results
+            # we fill it with linear model resutls
+            # test_x = all_x.reshape(-1, 1)
+            latency_model_linear = LinearRegression()
+            latency_model_linear.fit(train_x, train_y)
+            test_y_linear = latency_model_linear.predict(test_x)
+
+            for index, lateny in enumerate(test_y):
+                if lateny < 0:
+                    test_y[index] = test_y_linear[index]
+
+            predicted_profiles = []
+            for index, x, y in zip(
+                range(len(all_x)), test_x.reshape(-1), test_y.reshape(-1)
+            ):
                 predicted_profiles.append(
                     Profile(
                         batch=x, latency=y, measured=False, measured_throughput=None
                     )
                 )
-        profiles: List[Profile] = predicted_profiles
-        profiles.sort(key=lambda profile: profile.batch)
+            profiles: List[Profile] = predicted_profiles
+            profiles.sort(key=lambda profile: profile.batch)
 
-        # Extract coefficients and intercept
-        coefficients = latency_model.coef_[0]
-        intercept = latency_model.intercept_
+            # Extract coefficients and intercept
+            coefficients = latency_model.coef_[0]
+            intercept = latency_model.intercept_
 
-        model_parameters = {
-            "coefficients": coefficients,
-            "intercept": intercept,
-            # "x_poly": test_x_poly,
-        }
+            model_parameters = {
+                "coefficients": coefficients,
+                "intercept": intercept
+            }
 
         # HACK only power of twos for now
-        selected_profiles_indices = [2**i - 1 for i in range(int(math.log2(len(profiles))) + 1)]
-        profiles = [profiles[index] for index in selected_profiles_indices if index < len(profiles)]
+        # if not self.only_measured_profiles:
+            selected_profiles_indices = [2**i - 1 for i in range(int(math.log2(len(profiles))) + 1)]
+            profiles = [profiles[index] for index in selected_profiles_indices if index < len(profiles)]
 
         return profiles, model_parameters
 

@@ -87,7 +87,7 @@ optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
-only_measured_profiles: true 
+only_measured_profiles: false 
 profiling_load: 20
 baseline_mode: null # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
