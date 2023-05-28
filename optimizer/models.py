@@ -1,7 +1,9 @@
-from typing import Dict, List
+from typing import Dict, List, Union
 import numpy as np
-from sklearn import linear_model
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
 from copy import deepcopy
+import math
 
 
 class ResourceAllocation:
@@ -61,7 +63,7 @@ class Model:
         self.only_measured_profiles = only_measured_profiles
         self.profiles, self.latency_model_params = self.regression_model()
 
-    def regression_model(self) -> List[Profile]:
+    def regression_model(self) -> Union[List[Profile], Dict[str, float]]:
         """
         interapolate the latency for unknown batch sizes
         """
@@ -79,9 +81,15 @@ class Model:
         # measured data
         # test_x = all_x[~np.isin(all_x, train_x)].reshape(-1, 1)
         test_x = all_x.reshape(-1, 1)
-        latency_model = linear_model.LinearRegression()
-        latency_model.fit(train_x, train_y)
-        test_y = latency_model.predict(test_x)
+        poly_features = PolynomialFeatures(degree=2)
+        train_x_poly = poly_features.fit_transform(train_x)
+        test_x_poly = poly_features.transform(test_x)
+
+        latency_model = LinearRegression()
+        latency_model.fit(train_x_poly, train_y)
+
+        test_y = latency_model.predict(test_x_poly)
+
         predicted_profiles = []
         for index, x, y in zip(
             range(len(all_x)), test_x.reshape(-1), test_y.reshape(-1)
@@ -105,7 +113,22 @@ class Model:
                 )
         profiles: List[Profile] = predicted_profiles
         profiles.sort(key=lambda profile: profile.batch)
-        return profiles, [latency_model.coef_[0][0], latency_model.intercept_[0]]
+
+        # Extract coefficients and intercept
+        coefficients = latency_model.coef_[0]
+        intercept = latency_model.intercept_
+
+        model_parameters = {
+            "coefficients": coefficients,
+            "intercept": intercept,
+            # "x_poly": test_x_poly,
+        }
+
+        # HACK only power of twos for now
+        selected_profiles_indices = [2**i - 1 for i in range(int(math.log2(len(profiles))) + 1)]
+        profiles = [profiles[index] for index in selected_profiles_indices if index < len(profiles)]
+
+        return profiles, model_parameters
 
     @property
     def profiled_batches(self):

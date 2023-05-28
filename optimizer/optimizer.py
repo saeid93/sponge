@@ -105,65 +105,70 @@ class Optimizer:
         # [stage_name][variant]
         # or
         # [stage_name][variant][batch]
-        if only_measured_profiles:
-            model_latencies_parameters = {}
-            inference_graph = deepcopy(self.pipeline.inference_graph)
-            for task in inference_graph:
-                model_latencies_parameters[task.name] = {}
-                for variant_name in task.variant_names:
-                    model_latencies_parameters[task.name][variant_name] = {}
-                    task.model_switch(variant_name)
-                    for batch_size in task.batches:
-                        model_latencies_parameters[task.name][variant_name][
-                            batch_size
-                        ] = {}
-                        task.change_batch(batch_size)
-                        model_latencies_parameters[task.name][variant_name][
-                            batch_size
-                        ] = task.model_latency
-            # extract all batches profiles for filling out missing batches
-            # with very big values to make them consistent for Gurobi
-            batches_profiles = list(
-                map(
-                    lambda l: l,
-                    list(
-                        map(
-                            lambda l: list(l.values()),
-                            list(model_latencies_parameters.values()),
-                        )
-                    ),
-                )
+        # if only_measured_profiles:
+        # HACK for now do this for both measured and unmeasured cases
+        model_latencies_parameters = {}
+        inference_graph = deepcopy(self.pipeline.inference_graph)
+        for task in inference_graph:
+            model_latencies_parameters[task.name] = {}
+            for variant_name in task.variant_names:
+                model_latencies_parameters[task.name][variant_name] = {}
+                task.model_switch(variant_name)
+                for batch_size in task.batches:
+                    model_latencies_parameters[task.name][variant_name][
+                        batch_size
+                    ] = {}
+                    task.change_batch(batch_size)
+                    model_latencies_parameters[task.name][variant_name][
+                        batch_size
+                    ] = task.model_latency
+        # extract all batches profiles for filling out missing batches
+        # with very big values to make them consistent for Gurobi
+        batches_profiles = list(
+            map(
+                lambda l: l,
+                list(
+                    map(
+                        lambda l: list(l.values()),
+                        list(model_latencies_parameters.values()),
+                    )
+                ),
             )
-            all_batches_profiles = []
-            for batch_prfoile in batches_profiles:
-                all_batches_profiles += batch_prfoile
-            distinct_batches = []
-            for model_batch in all_batches_profiles:
-                for batch in model_batch:
-                    if batch not in distinct_batches:
-                        distinct_batches.append(batch)
-            # add the big value for model with missing latency
-            dummy_latency = 1000
-            for stage, variants in model_latencies_parameters.items():
-                for variant_name, variant_profile in variants.items():
-                    for batch in distinct_batches:
-                        if batch not in variant_profile.keys():
-                            model_latencies_parameters[stage][variant_name][
-                                batch
-                            ] = dummy_latency
-        else:
-            model_latencies_parameters = {}
-            inference_graph = deepcopy(self.pipeline.inference_graph)
-            for task in inference_graph:
-                model_latencies_parameters[task.name] = {}
-                for variant_name in task.variant_names:
-                    model_latencies_parameters[task.name][variant_name] = {}
-                    task.model_switch(variant_name)
-                    # for batch_size in task.batches:
-                    # task.change_batch(batch_size)
-                    model_latencies_parameters[task.name][
-                        variant_name
-                    ] = task.latency_model_params
+        )
+        all_batches_profiles = []
+        for batch_prfoile in batches_profiles:
+            all_batches_profiles += batch_prfoile
+        distinct_batches = []
+        for model_batch in all_batches_profiles:
+            for batch in model_batch:
+                if batch not in distinct_batches:
+                    distinct_batches.append(batch)
+        # add the big value for model with missing latency
+        dummy_latency = 1000
+        for stage, variants in model_latencies_parameters.items():
+            for variant_name, variant_profile in variants.items():
+                for batch in distinct_batches:
+                    if batch not in variant_profile.keys():
+                        model_latencies_parameters[stage][variant_name][
+                            batch
+                        ] = dummy_latency
+        # else:
+            # HACK gurobi does not support cubic equations so for now
+            # we will use the same method as only measured profiles to store all the
+            # latency values staticly
+            pass
+            # model_latencies_parameters = {}
+            # inference_graph = deepcopy(self.pipeline.inference_graph)
+            # for task in inference_graph:
+            #     model_latencies_parameters[task.name] = {}
+            #     for variant_name in task.variant_names:
+            #         model_latencies_parameters[task.name][variant_name] = {}
+            #         task.model_switch(variant_name)
+            #         # for batch_size in task.batches:
+            #         # task.change_batch(batch_size)
+            #         model_latencies_parameters[task.name][
+            #             variant_name
+            #         ] = task.latency_model_params
         return model_latencies_parameters
 
     def throughput_parameters(self) -> Dict[str, Dict[str, List[float]]]:
@@ -470,6 +475,7 @@ class Optimizer:
         Returns:
             pd.DataFrame: all the states of the pipeline
         """
+        self.only_measured_profiles = True # HACK for now handle both cases through using pre-calculated profiles
         sla = self.pipeline.sla
         variant_names = []
         replicas = []
@@ -484,7 +490,7 @@ class Optimizer:
         if self.only_measured_profiles:
             batching_cap = max(batches[0])
 
-        def func_l(batch, params):
+        def func_l(batch: int, params: Dict[str, float]) -> float:
             """using parameters of fitted models
 
             Args:
@@ -494,8 +500,17 @@ class Optimizer:
             Returns:
                 latency
             """
+            # HACK gurobi does not support quadratic terms and it seeems
+            # it isn't feasible to use them now so we don't use this for now
             # TODO change this to the model itself
-            latency = params[0] * batch + params[1]
+            coefficients = params["coefficients"]
+            intercept = params["intercept"]
+            latency = (
+                coefficients[2] * (batch**2)
+                + coefficients[1] * batch
+                + coefficients[0]
+                + intercept[0]
+            )
             return latency
 
         def func_q(batch, params):

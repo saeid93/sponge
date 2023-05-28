@@ -110,6 +110,9 @@ class SimAdapter:
         for timestep in range(
             self.adaptation_interval, len(workload), self.adaptation_interval
         ):
+            to_apply_config = None
+            to_save_config = None
+            objective = None
             rps_series = workload[
                 max(0, timestep - self.monitoring_duration * 60) : timestep
             ]

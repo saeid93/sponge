@@ -96,7 +96,7 @@ def draw_temporal_final(
         dicts_to_draw["load"]["predicted_load"],
         label="predicted_load",
     )
-    axs[0].set_ylabel(ylabel='load')
+    axs[0].set_ylabel(ylabel="load")
 
     figure_index = 1
     for metric, metric_to_draw in dicts_to_draw.items():
