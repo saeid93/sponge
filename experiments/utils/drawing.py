@@ -76,7 +76,7 @@ def draw_temporal_final(
     adaptation_interval=None,
     fig_size: int = 10,
 ):
-    num_keys = len(selected_experiments)
+    num_keys = sum(map(lambda l: len(l), selected_experiments.values()))
     _, axs = plt.subplots(
         nrows=num_keys + 1, ncols=1, figsize=(fig_size, num_keys * 2 + 1)
     )

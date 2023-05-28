@@ -494,6 +494,7 @@ class Optimizer:
             Returns:
                 latency
             """
+            # TODO change this to the model itself
             latency = params[0] * batch + params[1]
             return latency
 

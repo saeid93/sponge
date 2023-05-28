@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 169
+series: 170
 # pipeline_name: video
-metadata: 'repeat of 167 with large drop limit to see model times that it seems to be due to wrong profiling'
+metadata: 'repeat of 164 for root cause analysis'
 number_tasks: 2
 profiling_series:
   - 71
@@ -110,7 +110,7 @@ distrpution_time: 30
 debug_mode:  false
 
 # ----------- simulation mode -------------
-simulation_mode: false
+simulation_mode: true
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0
