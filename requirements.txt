@@ -64,3 +64,5 @@ gurobipy
 tabulate
 kubernetes
 yq
+black
+black[jupyter]

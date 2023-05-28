@@ -704,11 +704,11 @@ class Optimizer:
             # no batch but ours TODO
             pass
         # elif self.baseline_mode == "switch":
-            # only switch TODO
-            # pass
+        # only switch TODO
+        # pass
         # elif self.baseline_mode == "sclae":
-            # only scale TODO
-            # pass
+        # only scale TODO
+        # pass
         # one variant constraint
         model.addConstrs(
             (

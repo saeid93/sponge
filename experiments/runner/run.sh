@@ -8,8 +8,8 @@
 # sleep 180
 # python runner_script.py --config-name video-5
 # sleep 60
-# python runner_script.py --config-name video-6
-# sleep 60
+python runner_script.py --config-name video-6
+sleep 60
 # python runner_script.py --config-name video-7
 # sleep 60
 # python runner_script.py --config-name video-8
@@ -22,8 +22,8 @@
 # sleep 60
 # python runner_script.py --config-name video-12
 # sleep 60
-python runner_script.py --config-name video-14
-sleep 60
+# python runner_script.py --config-name video-14
+# sleep 60
 # python runner_script.py --config-name video-15
 # sleep 60
 # python runner_script.py --config-name video-16

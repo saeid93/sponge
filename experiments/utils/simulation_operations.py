@@ -66,8 +66,12 @@ def load_profile(
     )
 
     # add the margins
-    profiling_info['latency'] = profiling_info['latency'] * ((100+latency_margin)/100)
-    profiling_info['throughput'] = profiling_info['throughput'] * ((100+throughput_margin)/100)
+    profiling_info["latency"] = profiling_info["latency"] * (
+        (100 + latency_margin) / 100
+    )
+    profiling_info["throughput"] = profiling_info["throughput"] * (
+        (100 + throughput_margin) / 100
+    )
 
     return profiling_info
 

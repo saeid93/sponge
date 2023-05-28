@@ -129,7 +129,7 @@ def main(config_name: str, type_of: str):
     if teleport_mode and config["simulation_mode"]:
         raise ValueError("teleport model is not available in simulation mode")
 
-   # reference latency for generating pipeline model
+    # reference latency for generating pipeline model
     reference_latency = config["reference_latency"]  # p99 | avg
     reference_throughput = config["reference_throughput"]
     latency_margin = config["latency_margin"]
@@ -155,7 +155,7 @@ def main(config_name: str, type_of: str):
         reference_latency=reference_latency,
         reference_throughput=reference_throughput,
         latency_margin=latency_margin,
-        throughput_margin=throughput_margin
+        throughput_margin=throughput_margin,
     )
 
     # ----------- 3. loading predictor configs -------------

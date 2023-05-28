@@ -138,7 +138,7 @@ def main(config_name: str, type_of: str):
     # read the initial config
     initial_config = find_initial_config(config=config, node_names=node_names)
 
-   # reference latency for generating pipeline model
+    # reference latency for generating pipeline model
     reference_latency = config["reference_latency"]  # p99 | avg
     reference_throughput = config["reference_throughput"]
     latency_margin = config["latency_margin"]
@@ -164,7 +164,7 @@ def main(config_name: str, type_of: str):
         reference_latency=reference_latency,
         reference_throughput=reference_throughput,
         latency_margin=latency_margin,
-        throughput_margin=throughput_margin
+        throughput_margin=throughput_margin,
     )
 
     # ----------- 3. loading predictor configs -------------
@@ -197,7 +197,7 @@ def main(config_name: str, type_of: str):
         num_state_limit=num_state_limit,
         monitoring_duration=monitoring_duration,
         predictor_type=predictor_type,
-        baseline_mode=baseline_mode
+        baseline_mode=baseline_mode,
     )
 
     _, workload = make_workload(config=config)

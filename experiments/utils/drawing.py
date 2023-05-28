@@ -30,10 +30,13 @@ def draw_temporal(
             axs.legend()
 
     else:
+        # extract number of keys
         sample_dict_item_key = list(dict_to_draw.keys())[0]
         sample_dict_item = dict_to_draw[sample_dict_item_key]
         keys_to_draw = sample_dict_item.keys()
         num_keys = len(keys_to_draw)
+
+        # draw this set of keys
         if num_keys > 1:
             fig, axs = plt.subplots(nrows=num_keys, ncols=1, figsize=(10, num_keys * 2))
             for i, key in enumerate(sample_dict_item.keys()):
@@ -66,68 +69,67 @@ def draw_temporal(
     plt.tight_layout()
     plt.show()
 
+
 def draw_temporal_final(
     dicts_to_draw: Dict[str, Dict[str, List[int]]],
+    selected_experiments: Dict[str, List[str]],
     adaptation_interval=None,
-    multiple_experiments=False,
+    fig_size: int = 10,
 ):
-    for ylabel, dict_to_draw in dicts_to_draw.items():
-        if not multiple_experiments:
-            num_keys = len(dict_to_draw.keys())
-            x_values = range(len(list(dict_to_draw.values())[0]))
-            if num_keys > 1:
-                fig, axs = plt.subplots(nrows=num_keys, ncols=1, figsize=(10, num_keys * 2))
-                if adaptation_interval is not None:
-                    x_values = [item * adaptation_interval for item in list(x_values)]
-                for i, key in enumerate(dict_to_draw.keys()):
-                    axs[i].plot(x_values, dict_to_draw[key], label=key)
-                    axs[i].set_title(key)
-                    axs[i].set_ylabel(ylabel=ylabel)
-                    axs[i].legend()
-            else:
-                fig, axs = plt.subplots(figsize=(10, num_keys * 2))
-                key = list(dict_to_draw.keys())[0]
-                axs.plot(x_values, dict_to_draw[key], label=key)
-                axs.set_title(key)
-                axs.set_ylabel(ylabel=ylabel)
-                axs.legend()
+    num_keys = len(selected_experiments)
+    _, axs = plt.subplots(
+        nrows=num_keys + 1, ncols=1, figsize=(fig_size, num_keys * 2 + 1)
+    )
 
-        else:
-            sample_dict_item_key = list(dict_to_draw.keys())[0]
-            sample_dict_item = dict_to_draw[sample_dict_item_key]
-            keys_to_draw = sample_dict_item.keys()
-            num_keys = len(keys_to_draw)
-            if num_keys > 1:
-                fig, axs = plt.subplots(nrows=num_keys, ncols=1, figsize=(10, num_keys * 2))
-                for i, key in enumerate(sample_dict_item.keys()):
-                    for experiment_id, dict_to_draw_exp in dict_to_draw.items():
-                        x_values = range(len(list(dict_to_draw_exp.values())[0]))
-                        if adaptation_interval is not None:
-                            x_values = [
-                                item * adaptation_interval[experiment_id]
-                                for item in list(x_values)
-                            ]
-                        axs[i].plot(x_values, dict_to_draw_exp[key], label=experiment_id)
-                        axs[i].set_title(key)
-                        axs[i].set_ylabel(ylabel=ylabel)
-                        axs[i].legend()
-            else:
-                fig, axs = plt.subplots(figsize=(10, num_keys * 2))
-                for i, key in enumerate(sample_dict_item.keys()):
-                    for experiment_id, dict_to_draw_exp in dict_to_draw.items():
-                        x_values = range(len(list(dict_to_draw_exp.values())[0]))
-                        if adaptation_interval is not None:
-                            x_values = [
-                                item * adaptation_interval[experiment_id]
-                                for item in list(x_values)
-                            ]
-                        axs.plot(x_values, dict_to_draw_exp[key], label=experiment_id)
-                        axs.set_title(key)
-                        axs.set_ylabel(ylabel=ylabel)
-                        axs.legend()
+    axs[0].plot(
+        dicts_to_draw["load"]["recieved_load_x"],
+        dicts_to_draw["load"]["recieved_load"],
+        label="recieved_load",
+    )
+    axs[0].plot(
+        dicts_to_draw["load"]["sent_load_x"],
+        dicts_to_draw["load"]["sent_load"],
+        label="sent_load",
+    )
+    axs[0].plot(
+        dicts_to_draw["load"]["predicted_load_x"],
+        dicts_to_draw["load"]["predicted_load"],
+        label="predicted_load",
+    )
+    axs[0].set_ylabel(ylabel='load')
 
-        plt.tight_layout()
-        plt.show()
+    figure_index = 1
+    for metric, metric_to_draw in dicts_to_draw.items():
+        if metric not in selected_experiments.keys():
+            continue
+        sample_experiment = list(metric_to_draw.keys())[0]
+        metrics = metric_to_draw[sample_experiment]
+        for key in metrics.keys():
+            if key not in selected_experiments[metric]:
+                continue
+            for (
+                experiment_id,
+                dict_to_draw_exp,
+            ) in metric_to_draw.items():  # draw different experiments
+                x_values = range(len(list(dict_to_draw_exp.values())[0]))
+                if adaptation_interval is not None and metric not in [
+                    "measured_latencies"
+                ]:
+                    x_values = [
+                        item * adaptation_interval[experiment_id]
+                        for item in list(x_values)
+                    ]
+                axs[figure_index].plot(
+                    x_values, dict_to_draw_exp[key], label=experiment_id
+                )
+                axs[figure_index].set_title(key)
+                axs[figure_index].set_ylabel(ylabel=metric)
+                axs[figure_index].legend()
+            figure_index += 1
+
+    plt.tight_layout()
+    plt.show()
+
 
 def draw_cumulative(
     dict_to_draw: Dict[str, Dict[str, List[int]]],

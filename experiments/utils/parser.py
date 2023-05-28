@@ -597,7 +597,7 @@ class AdaptationParser:
                 "accuracy": [],
                 "throughput": [],
             }
-        try: # for backward compatibility with older experiments
+        try:  # for backward compatibility with older experiments
             changes["recieved_load"] = adaptation_log["metadata"]["recieved_load"]
             changes["sla"] = adaptation_log["metadata"]["sla"]
             for _, state in adaptation_log["timesteps"].items():

@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 154
+series: 168
 # pipeline_name: video
-metadata: 'teleport 10 and drop 3'
+metadata: 'only switching'
 number_tasks: 2
 profiling_series:
   - 71
@@ -76,7 +76,7 @@ initial_replica:
 initial_batch:
   - 1
   - 1
-alpha: 0
+alpha: 10
 beta: 1
 gamma: 0
 scaling_cap: 100 # maximum possible scaling per nodes
@@ -89,7 +89,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: false
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: switch # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
@@ -122,8 +122,8 @@ drop_limit: 3
 warm_up: false
 
 # ----------- teleport mode (only available in real-world experiments) -------------
-teleport_mode: true 
-teleport_interval: 10
+teleport_mode: false 
+teleport_interval: 0
 
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
@@ -131,3 +131,4 @@ reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
 throughput_margin: 0
 
+outcome: works with accepted results
