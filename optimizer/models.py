@@ -342,20 +342,42 @@ class Task:
         variant_orders = list(self.variants_accuracies.keys())
         base_allocation = {}
         indicator = 0
-        former_varaint_indicator = 0
+        # former_varaint_indicator = 0
         sample_allocation = list(allocation_num_sustains[variant_orders[0]].keys())
         indicator_to_allocation = {key: value for key, value in zip(range(len(sample_allocation)), sample_allocation)}
         for model in variant_orders:
             allocation_num_sustain = allocation_num_sustains[model]
             base_allocation[model] = None
             while base_allocation[model] == None:
-                if allocation_num_sustain[indicator_to_allocation[indicator]] != 0 and indicator >= former_varaint_indicator:
-                    if indicator == 0:
-                        base_allocation[model] = allocation_num_sustain[indicator_to_allocation[indicator]] # to allocation object
+                if indicator > len(sample_allocation):
+                    base_allocation[model] = None
+                    break
+                if model == variant_orders[0]:
+                    if allocation_num_sustain[indicator_to_allocation[indicator]] != 0:
+                        base_allocation[model] = ResourceAllocation(cpu=indicator_to_allocation[indicator])
                     else:
-                        if allocation_num_sustain[indicator_to_allocation[indicator+1]] >  allocation_num_sustain[indicator_to_allocation[indicator+1]]:
-                            indicator += 1
-                        base_allocation[model] = allocation_num_sustain[indicator_to_allocation[indicator]] # to allocation
+                        indicator += 1
+                        continue
+                else:
+                    if indicator == len(sample_allocation) - 1:
+                        base_allocation[model] = None
+                        break
+                    if allocation_num_sustain[indicator_to_allocation[indicator+1]] > allocation_num_sustain[indicator_to_allocation[indicator]]:
+                        indicator += 1
+                    if allocation_num_sustain[indicator_to_allocation[indicator]] == 0:
+                        indicator += 1
+                        continue
+                    else:
+                        base_allocation[model] = ResourceAllocation(cpu=indicator_to_allocation[indicator])
+        for model_variant, allocation in base_allocation.items():
+            if allocation == None:
+                raise ValueError(
+                    f"No responsive model profile to threshold {self.threshold}"
+                    f" or model sla {self.sla} was found"
+                    f" for model variant {model_variant} "
+                    "consider either changing the the threshold or "
+                    f"sla factor {self.sla_factor}"
+                )
         return base_allocation
 
     def set_to_base_allocation(self):
@@ -464,7 +486,7 @@ class Task:
     @property
     def queue_latency_params(self) -> float:
         # TODO add a function to infer queue latency
-        queue_latency_params = 0.25 # TEMP
+        queue_latency_params = 0 # TEMP
         return [queue_latency_params]
 
     @property
