@@ -278,31 +278,84 @@ class Task:
                 if allocation.name == model_variant:
                     models[model_variant].append(allocation)
         base_allocation = {}
+        check_both = {}
+        check_sla = {}
+        check_throughput = {}
         for model_variant, allocations in models.items():
+            check_both[model_variant] = {}
+            check_sla[model_variant] = {}
+            check_throughput[model_variant] = {}
             # finding the minimum allocation that can respond
             # to the threshold
             # the profiles are sorted therefore therefore
             # we iterate from the first profile
+            profiled_batches = allocations[0].profiled_batches
             for allocation in allocations:
+                breaker = False
                 # check if the max batch size throughput
                 # can reponsd to the threshold
-                if (
-                    allocation.profiles[-1].throughput >= self.threshold
-                    and allocation.profiles[-1].throughput >= self.sla
-                ):
-                    base_allocation[model_variant] = deepcopy(
-                        allocation.resource_allocation
-                    )
-                    break
-            else:  # no-break
-                # TODO remove none-working models
-                raise ValueError(
-                    f"No responsive model profile to threshold {self.threshold}"
-                    f" or model sla {self.sla} was found"
-                    f" for model variant {model_variant} "
-                    "consider either changing the the threshold or "
-                    f"sla factor {self.sla_factor}"
-                )
+                check_both[model_variant][allocation.resource_allocation.cpu] = {}
+                check_sla[model_variant][allocation.resource_allocation.cpu] = {}
+                check_throughput[model_variant][allocation.resource_allocation.cpu] = {}
+                # for profile_index in range(len(profiled_batches)-1, -1, -1):
+                for profile_index in range(0, len(profiled_batches)):
+                    if (
+                        allocation.profiles[profile_index].throughput >= self.threshold
+                        and allocation.profiles[profile_index].latency <= self.sla
+                    ):
+                        base_allocation[model_variant] = deepcopy(
+                            allocation.resource_allocation
+                        )
+                        check_both[model_variant][allocation.resource_allocation.cpu][profiled_batches[profile_index]] = True
+                    else:
+                        check_both[model_variant][allocation.resource_allocation.cpu][profiled_batches[profile_index]] = False
+                    if allocation.profiles[profile_index].throughput >= self.threshold:
+                        check_throughput[model_variant][allocation.resource_allocation.cpu][profiled_batches[profile_index]] = True
+                    else:
+                        check_throughput[model_variant][allocation.resource_allocation.cpu][profiled_batches[profile_index]] = False
+                    if allocation.profiles[profile_index].latency <= self.sla:
+                        check_sla[model_variant][allocation.resource_allocation.cpu][profiled_batches[profile_index]] = True
+                    else:
+                        check_sla[model_variant][allocation.resource_allocation.cpu][profiled_batches[profile_index]] = False
+                #         breaker = True
+                #         break
+                # if breaker:
+                #     break
+            # else:  # no-break
+            #     # TODO remove none-working models
+            #     raise ValueError(
+            #         f"No responsive model profile to threshold {self.threshold}"
+            #         f" or model sla {self.sla} was found"
+            #         f" for model variant {model_variant} "
+            #         "consider either changing the the threshold or "
+            #         f"sla factor {self.sla_factor}"
+            #     )
+        allocation_num_sustains = {}
+        for model, allocations in check_both.items():
+            allocation_num_sustains[model] = {}
+            for allocation, batch_can_sustain in allocations.items():
+                allocation_num_sustains[model][allocation] = sum(batch_can_sustain.values())
+                # TODO 1. add node orders
+                # 2. make the heuristic
+                # 3. a test
+                # 4. if worked, document up
+        variant_orders = list(self.variants_accuracies.keys())
+        base_allocation = {}
+        indicator = 0
+        former_varaint_indicator = 0
+        sample_allocation = list(allocation_num_sustains[variant_orders[0]].keys())
+        indicator_to_allocation = {key: value for key, value in zip(range(len(sample_allocation)), sample_allocation)}
+        for model in variant_orders:
+            allocation_num_sustain = allocation_num_sustains[model]
+            base_allocation[model] = None
+            while base_allocation[model] == None:
+                if allocation_num_sustain[indicator_to_allocation[indicator]] != 0 and indicator >= former_varaint_indicator:
+                    if indicator == 0:
+                        base_allocation[model] = allocation_num_sustain[indicator_to_allocation[indicator]] # to allocation object
+                    else:
+                        if allocation_num_sustain[indicator_to_allocation[indicator+1]] >  allocation_num_sustain[indicator_to_allocation[indicator+1]]:
+                            indicator += 1
+                        base_allocation[model] = allocation_num_sustain[indicator_to_allocation[indicator]] # to allocation
         return base_allocation
 
     def set_to_base_allocation(self):
@@ -411,7 +464,7 @@ class Task:
     @property
     def queue_latency_params(self) -> float:
         # TODO add a function to infer queue latency
-        queue_latency_params = 0
+        queue_latency_params = 0.25 # TEMP
         return [queue_latency_params]
 
     @property

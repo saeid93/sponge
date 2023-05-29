@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 170
+series: 4000
 # pipeline_name: video
 metadata: 'repeat of 164 for root cause analysis'
 number_tasks: 2
@@ -87,7 +87,7 @@ optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
-only_measured_profiles: false 
+only_measured_profiles: true 
 profiling_load: 20
 baseline_mode: null # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]

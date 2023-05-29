@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 169
+series: 171
 # pipeline_name: video
-metadata: 'repeat of 167 with large drop limit to see model times that it seems to be due to wrong profiling'
+metadata: 'repeat of 164 after recent changees'
 number_tasks: 2
 profiling_series:
   - 71
@@ -110,13 +110,13 @@ distrpution_time: 30
 debug_mode:  false
 
 # ----------- simulation mode -------------
-simulation_mode: false
+simulation_mode: true
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0
 
 # ----------- drop interval -------------
-drop_limit: 10000
+drop_limit: 3
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
@@ -130,5 +130,3 @@ reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
 throughput_margin: 0
-
-outcome: works with accepted results

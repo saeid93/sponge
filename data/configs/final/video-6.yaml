@@ -53,7 +53,7 @@ workload_config:
 
 series: 168
 # pipeline_name: video
-metadata: 'only switching'
+metadata: 'repeat of 168 after recent changes'
 number_tasks: 2
 profiling_series:
   - 71
@@ -130,5 +130,3 @@ reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
 throughput_margin: 0
-
-outcome: works with accepted results
