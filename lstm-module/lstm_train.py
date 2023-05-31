@@ -15,13 +15,15 @@ from barazmoon.twitter import twitter_workload_generator
 
 from experiments.utils.constants import LSTM_PATH, LSTM_INPUT_SIZE
 
-
+history_seconds = 120
+step = 10
+input_size = history_seconds // step
 def create_model():
     """
     LSTM model
     """
     model = Sequential()
-    model.add(Input(shape=(LSTM_INPUT_SIZE, 1)))
+    model.add(Input(shape=(input_size, 1)))
     model.add(LSTM(25, activation="relu", kernel_regularizer=regularizers.L1(0.00001)))
     model.add(Dense(1))
     return model
@@ -37,12 +39,13 @@ def get_x_y(data):
     """
     x = []
     y = []
-    history_seconds = 600
-    for i in range(0, len(data) - history_seconds, 60):
+    history_seconds = 120
+    step = 10
+    for i in range(0, len(data) - history_seconds, step):
         t = data[i : i + history_seconds]
-        for j in range(0, len(t), 60):
-            x.append(max(t[j : j + 60]))
-        y.append(max(data[i + history_seconds : i + history_seconds + 60]))
+        for j in range(0, len(t), step):
+            x.append(max(t[j : j + step]))
+        y.append(max(data[i + history_seconds : i + history_seconds + step]))
     return x, y
 
 
@@ -68,11 +71,11 @@ def get_data():
 
     return (
         tf.convert_to_tensor(
-            np.array(train_x).reshape((-1, LSTM_INPUT_SIZE, 1)), dtype=tf.int32
+            np.array(train_x).reshape((-1, input_size, 1)), dtype=tf.int32
         ),
         tf.convert_to_tensor(np.array(train_y), dtype=tf.int32),
         tf.convert_to_tensor(
-            np.array(test_x).reshape((-1, LSTM_INPUT_SIZE, 1)), dtype=tf.int32
+            np.array(test_x).reshape((-1, input_size, 1)), dtype=tf.int32
         ),
         tf.convert_to_tensor(np.array(test_y), dtype=tf.int32),
     )

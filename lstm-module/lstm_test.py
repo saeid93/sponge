@@ -12,43 +12,26 @@ sys.path.append(os.path.normpath(os.path.join(project_dir, "..")))
 from barazmoon.twitter import twitter_workload_generator
 
 from experiments.utils.constants import PROJECT_PATH, LSTM_PATH, LSTM_INPUT_SIZE
-
-
+from lstm_train import get_x_y, input_size
 fig_path = os.path.join(PROJECT_PATH, "lstm-module", "lstm_prediction.png")
 
 model = load_model(LSTM_PATH)
-last_day = 26 * 24 * 3600
-workload = twitter_workload_generator(f"0-{last_day}")
-workload = list(filter(lambda x: x != 0, workload))  # for removing missing hours
-hour = 60 * 60
-day = hour * 24
-test_idx = 18 * day
-test_data = workload[test_idx : test_idx + 2 * hour]
-
-
-def get_x_y(data):
-    """
-    For each 60 seconds it taeks the max of last 60 seconds
-    and returns an output with length of len(data)/60 that
-    each entry is the maximum rps in each aggregated 60 seconds
-    x: series of max of every 1 minute
-    y: target of the 10 minutes
-    """
-    x = []
-    y = []
-    history_seconds = 600
-    for i in range(0, len(data) - history_seconds, 60):
-        t = data[i : i + history_seconds]
-        for j in range(0, len(t), 60):
-            x.append(max(t[j : j + 60]))
-        y.append(max(data[i + history_seconds : i + history_seconds + 60]))
-    return x, y
-
+last_day = 21 * 24 * 3600
+# workload = twitter_workload_generator(f"0-{last_day}", damping_factor=5)
+# workload = list(filter(lambda x: x != 0, workload))  # for removing missing hours
+# hour = 60 * 60
+# day = hour * 24
+# test_idx = 18 * day
+# test_data = workload[test_idx : test_idx + 2 * hour]
+start = 1851800
+end = 1853000
+workload = twitter_workload_generator(f"{start}-{end}", damping_factor=5)
+test_data = workload
 
 test_x, test_y = get_x_y(test_data)
 
 test_x = tf.convert_to_tensor(
-    np.array(test_x).reshape((-1, LSTM_INPUT_SIZE, 1)), dtype=tf.float32
+    np.array(test_x).reshape((-1, input_size, 1)), dtype=tf.float32
 )
 prediction = model.predict(test_x)
 plt.plot(list(range(len(test_y))), list(test_y), label="real values")
