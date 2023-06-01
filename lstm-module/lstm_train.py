@@ -13,7 +13,7 @@ sys.path.append(os.path.normpath(os.path.join(project_dir, "..")))
 
 from barazmoon.twitter import twitter_workload_generator
 
-from experiments.utils.constants import LSTM_PATH, LSTM_INPUT_SIZE
+from experiments.utils.constants import LSTM_PATH
 
 history_seconds = 120
 step = 10
@@ -45,7 +45,7 @@ def get_x_y(data):
         t = data[i : i + history_seconds]
         for j in range(0, len(t), step):
             x.append(max(t[j : j + step]))
-        y.append(max(data[i + history_seconds : i + history_seconds + step]))
+        y.append(max(data[i + history_seconds : i + history_seconds + 2 * step]))
     return x, y
 
 
