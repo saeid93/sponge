@@ -17,16 +17,13 @@ fig_path = os.path.join(PROJECT_PATH, "lstm-module", "lstm_prediction.png")
 
 model = load_model(LSTM_PATH)
 last_day = 21 * 24 * 3600
-# workload = twitter_workload_generator(f"0-{last_day}", damping_factor=5)
-# workload = list(filter(lambda x: x != 0, workload))  # for removing missing hours
-# hour = 60 * 60
-# day = hour * 24
-# test_idx = 18 * day
-# test_data = workload[test_idx : test_idx + 2 * hour]
-start = 1851800
-end = 1853000
-workload = twitter_workload_generator(f"{start}-{end}", damping_factor=5)
-test_data = workload
+workload = twitter_workload_generator(f"0-{last_day}", damping_factor=5)
+workload = list(filter(lambda x: x != 0, workload))  # for removing missing hours
+hour = 60 * 60
+day = hour * 24
+test_idx = 18 * day
+test_data = workload[test_idx : test_idx + 2 * hour]
+
 
 test_x, test_y = get_x_y(test_data)
 
