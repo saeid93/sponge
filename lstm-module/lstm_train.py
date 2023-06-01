@@ -13,7 +13,7 @@ sys.path.append(os.path.normpath(os.path.join(project_dir, "..")))
 
 from barazmoon.twitter import twitter_workload_generator
 
-from experiments.utils.constants import LSTM_PATH, LSTM_INPUT_SIZE
+from experiments.utils.constants import LSTM_PATH
 
 history_seconds = 120
 step = 10
