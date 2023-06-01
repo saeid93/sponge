@@ -2,16 +2,14 @@
 # sleep 180
 # python runner_script.py --config-name video-2
 # sleep 180
-# python runner_script.py --config-name video-3
-# sleep 180
-# python runner_script.py --config-name video-4
-# sleep 180
+# python simulation_runner.py --config-name video-3
+# python simulation_runner.py --config-name video-4
 # python runner_script.py --config-name video-5
 # sleep 60
 # python runner_script.py --config-name video-6
 # sleep 60
-# python runner_script.py --config-name video-7
-# sleep 60
+python runner_script.py --config-name video-7
+sleep 60
 # python runner_script.py --config-name video-8
 # sleep 60
 # python runner_script.py --config-name video-9
@@ -24,7 +22,7 @@
 # sleep 60
 # python runner_script.py --config-name video-14
 # sleep 60
-python runner_script.py --config-name video-15
+# python runner_script.py --config-name video-15
 # sleep 60
 # python runner_script.py --config-name video-16
 # sleep 180

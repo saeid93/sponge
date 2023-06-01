@@ -39,8 +39,8 @@ adaptation_interval: 20
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1863000'
-    end: '1863300'
+  - start: '1862800'
+    end: '1864000'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 155
+series: 187
 # pipeline_name: video
-metadata: 'teleport 10 and 30 margin and drop 3'
+metadata: 'repeat of 184 on real-world'
 number_tasks: 2
 profiling_series:
   - 71
@@ -76,9 +76,9 @@ initial_replica:
 initial_batch:
   - 1
   - 1
-alpha: 0
+alpha: 2
 beta: 1
-gamma: 0
+gamma: 10
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 64 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
@@ -87,15 +87,15 @@ optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
-only_measured_profiles: false
+only_measured_profiles: true
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: switch # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
 predictor_type: 'max' # [reactive | avg | lstm | max]
-monitoring_duration: 10 # in minutes
+monitoring_duration: 5 # in minutes
 
 # ----------- queueing-option -------------
 
@@ -113,21 +113,20 @@ debug_mode:  false
 simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
-predictor_margin: 30
+predictor_margin: 0
 
 # ----------- drop interval -------------
-drop_limit: 3
+drop_limit: 10
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
 
 # ----------- teleport mode (only available in real-world experiments) -------------
-teleport_mode: true 
-teleport_interval: 10
+teleport_mode: false 
+teleport_interval: 0
 
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
 throughput_margin: 0
-

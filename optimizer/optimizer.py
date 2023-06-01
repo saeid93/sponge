@@ -115,9 +115,7 @@ class Optimizer:
                 model_latencies_parameters[task.name][variant_name] = {}
                 task.model_switch(variant_name)
                 for batch_size in task.batches:
-                    model_latencies_parameters[task.name][variant_name][
-                        batch_size
-                    ] = {}
+                    model_latencies_parameters[task.name][variant_name][batch_size] = {}
                     task.change_batch(batch_size)
                     model_latencies_parameters[task.name][variant_name][
                         batch_size
@@ -152,7 +150,7 @@ class Optimizer:
                         model_latencies_parameters[stage][variant_name][
                             batch
                         ] = dummy_latency
-        # else:
+            # else:
             # HACK gurobi does not support cubic equations so for now
             # we will use the same method as only measured profiles to store all the
             # latency values staticly
@@ -475,7 +473,9 @@ class Optimizer:
         Returns:
             pd.DataFrame: all the states of the pipeline
         """
-        self.only_measured_profiles = True # HACK for now handle both cases through using pre-calculated profiles
+        self.only_measured_profiles = (
+            True  # HACK for now handle both cases through using pre-calculated profiles
+        )
         sla = self.pipeline.sla
         variant_names = []
         replicas = []

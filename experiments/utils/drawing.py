@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import Dict, List
+from typing import Dict, List, Union
 
 
 def draw_temporal(
@@ -72,11 +72,12 @@ def draw_temporal(
 
 def draw_temporal_final(
     dicts_to_draw: Dict[str, Dict[str, List[int]]],
-    selected_experiments: Dict[str, List[str]],
+    series_names: List[str],
+    selected_experiments: Dict[str, Dict[str, Union[str, List[str]]]],
     adaptation_interval=None,
     fig_size: int = 10,
 ):
-    num_keys = sum(map(lambda l: len(l), selected_experiments.values()))
+    num_keys = sum(map(lambda l: len(l["selection"]), selected_experiments.values()))
     _, axs = plt.subplots(
         nrows=num_keys + 1, ncols=1, figsize=(fig_size, num_keys * 2 + 1)
     )
@@ -105,7 +106,7 @@ def draw_temporal_final(
         sample_experiment = list(metric_to_draw.keys())[0]
         metrics = metric_to_draw[sample_experiment]
         for key in metrics.keys():
-            if key not in selected_experiments[metric]:
+            if key not in selected_experiments[metric]["selection"]:
                 continue
             for (
                 experiment_id,
@@ -120,10 +121,10 @@ def draw_temporal_final(
                         for item in list(x_values)
                     ]
                 axs[figure_index].plot(
-                    x_values, dict_to_draw_exp[key], label=experiment_id
+                    x_values, dict_to_draw_exp[key], label=series_names[experiment_id]
                 )
-                axs[figure_index].set_title(key)
-                axs[figure_index].set_ylabel(ylabel=metric)
+                axs[figure_index].set_title(selected_experiments[metric]['title'])
+                axs[figure_index].set_ylabel(ylabel=selected_experiments[metric]['ylabel'])
                 axs[figure_index].legend()
             figure_index += 1
 
@@ -134,7 +135,9 @@ def draw_temporal_final(
 def draw_cumulative(
     dict_to_draw: Dict[str, Dict[str, List[int]]],
     ylabel="Value",
+    xlabel = "Stage",
     multiple_experiments=False,
+    series_names=None,
 ):
     if not multiple_experiments:
         dict_to_draw_cul = {key: sum(value) for key, value in dict_to_draw.items()}
@@ -164,9 +167,10 @@ def draw_cumulative(
         for i, experiment in enumerate(experiments):
             y_values = list(dict_to_draw_cul[experiment].values())
             x_positions = bar_positions + i * bar_width
-            axs.bar(x_positions, y_values, width=bar_width, label=str(experiment))
+            label = str(experiment) if series_names is None else series_names[experiment]
+            axs.bar(x_positions, y_values, width=bar_width, label=label)
 
-        axs.set_xlabel("Stage")
+        axs.set_xlabel(xlabel=xlabel)
         axs.set_ylabel(ylabel=ylabel)
         axs.set_title("Comparison of Experiments")
         axs.set_xticks(bar_positions + bar_width * (num_experiments - 1) / 2)

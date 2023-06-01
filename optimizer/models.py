@@ -96,14 +96,8 @@ class Model:
                         ].measured_throughput,
                     )
                 )
-            model_parameters = {
-                "coefficients": None,
-                "intercept": None
-            }
+            model_parameters = {"coefficients": None, "intercept": None}
         else:
-
-
-
             poly_features = PolynomialFeatures(degree=2)
             train_x_poly = poly_features.fit_transform(train_x)
             test_x_poly = poly_features.transform(test_x)
@@ -143,15 +137,18 @@ class Model:
             coefficients = latency_model.coef_[0]
             intercept = latency_model.intercept_
 
-            model_parameters = {
-                "coefficients": coefficients,
-                "intercept": intercept
-            }
+            model_parameters = {"coefficients": coefficients, "intercept": intercept}
 
-        # HACK only power of twos for now
-        # if not self.only_measured_profiles:
-            selected_profiles_indices = [2**i - 1 for i in range(int(math.log2(len(profiles))) + 1)]
-            profiles = [profiles[index] for index in selected_profiles_indices if index < len(profiles)]
+            # HACK only power of twos for now
+            # if not self.only_measured_profiles:
+            selected_profiles_indices = [
+                2**i - 1 for i in range(int(math.log2(len(profiles))) + 1)
+            ]
+            profiles = [
+                profiles[index]
+                for index in selected_profiles_indices
+                if index < len(profiles)
+            ]
 
         return profiles, model_parameters
 
@@ -266,7 +263,8 @@ class Task:
             # one will be the one with maximum resource req
             sla = allocation[-1].profiles[0].latency * self.sla_factor
             model_slas[model] = sla
-        task_sla = min(model_slas.values())
+        task_sla = (sum(model_slas.values()) / len(model_slas.values())) * 5
+        # task_sla = min(model_slas.values())
         return task_sla
 
     def find_base_allocation(self) -> Dict[str, ResourceAllocation]:
@@ -306,35 +304,36 @@ class Task:
                         base_allocation[model_variant] = deepcopy(
                             allocation.resource_allocation
                         )
-                        check_both[model_variant][allocation.resource_allocation.cpu][profiled_batches[profile_index]] = True
+                        check_both[model_variant][allocation.resource_allocation.cpu][
+                            profiled_batches[profile_index]
+                        ] = True
                     else:
-                        check_both[model_variant][allocation.resource_allocation.cpu][profiled_batches[profile_index]] = False
+                        check_both[model_variant][allocation.resource_allocation.cpu][
+                            profiled_batches[profile_index]
+                        ] = False
                     if allocation.profiles[profile_index].throughput >= self.threshold:
-                        check_throughput[model_variant][allocation.resource_allocation.cpu][profiled_batches[profile_index]] = True
+                        check_throughput[model_variant][
+                            allocation.resource_allocation.cpu
+                        ][profiled_batches[profile_index]] = True
                     else:
-                        check_throughput[model_variant][allocation.resource_allocation.cpu][profiled_batches[profile_index]] = False
+                        check_throughput[model_variant][
+                            allocation.resource_allocation.cpu
+                        ][profiled_batches[profile_index]] = False
                     if allocation.profiles[profile_index].latency <= self.sla:
-                        check_sla[model_variant][allocation.resource_allocation.cpu][profiled_batches[profile_index]] = True
+                        check_sla[model_variant][allocation.resource_allocation.cpu][
+                            profiled_batches[profile_index]
+                        ] = True
                     else:
-                        check_sla[model_variant][allocation.resource_allocation.cpu][profiled_batches[profile_index]] = False
-                #         breaker = True
-                #         break
-                # if breaker:
-                #     break
-            # else:  # no-break
-            #     # TODO remove none-working models
-            #     raise ValueError(
-            #         f"No responsive model profile to threshold {self.threshold}"
-            #         f" or model sla {self.sla} was found"
-            #         f" for model variant {model_variant} "
-            #         "consider either changing the the threshold or "
-            #         f"sla factor {self.sla_factor}"
-            #     )
+                        check_sla[model_variant][allocation.resource_allocation.cpu][
+                            profiled_batches[profile_index]
+                        ] = False
         allocation_num_sustains = {}
         for model, allocations in check_both.items():
             allocation_num_sustains[model] = {}
             for allocation, batch_can_sustain in allocations.items():
-                allocation_num_sustains[model][allocation] = sum(batch_can_sustain.values())
+                allocation_num_sustains[model][allocation] = sum(
+                    batch_can_sustain.values()
+                )
                 # TODO 1. add node orders
                 # 2. make the heuristic
                 # 3. a test
@@ -344,31 +343,50 @@ class Task:
         indicator = 0
         # former_varaint_indicator = 0
         sample_allocation = list(allocation_num_sustains[variant_orders[0]].keys())
-        indicator_to_allocation = {key: value for key, value in zip(range(len(sample_allocation)), sample_allocation)}
+        indicator_to_allocation = {
+            key: value
+            for key, value in zip(range(len(sample_allocation)), sample_allocation)
+        }
         for model in variant_orders:
             allocation_num_sustain = allocation_num_sustains[model]
             base_allocation[model] = None
+            if model == "yolov5x":
+                a = 2
             while base_allocation[model] == None:
                 if indicator > len(sample_allocation):
                     base_allocation[model] = None
                     break
                 if model == variant_orders[0]:
                     if allocation_num_sustain[indicator_to_allocation[indicator]] != 0:
-                        base_allocation[model] = ResourceAllocation(cpu=indicator_to_allocation[indicator])
+                        base_allocation[model] = ResourceAllocation(
+                            cpu=indicator_to_allocation[indicator]
+                        )
                     else:
                         indicator += 1
                         continue
                 else:
-                    if indicator == len(sample_allocation) - 1:
-                        base_allocation[model] = None
-                        break
-                    if allocation_num_sustain[indicator_to_allocation[indicator+1]] > allocation_num_sustain[indicator_to_allocation[indicator]]:
+                    # if indicator == len(sample_allocation) - 1:
+                    #     base_allocation[model] = None
+                    #     break
+                    if (
+                        indicator != len(sample_allocation) - 1
+                        and allocation_num_sustain[
+                            indicator_to_allocation[indicator + 1]
+                        ]
+                        > allocation_num_sustain[indicator_to_allocation[indicator]]
+                    ):
                         indicator += 1
                     if allocation_num_sustain[indicator_to_allocation[indicator]] == 0:
-                        indicator += 1
-                        continue
+                        if indicator == len(sample_allocation) - 1:
+                            base_allocation[model] = None
+                            break
+                        else:
+                            indicator += 1
+                            continue
                     else:
-                        base_allocation[model] = ResourceAllocation(cpu=indicator_to_allocation[indicator])
+                        base_allocation[model] = ResourceAllocation(
+                            cpu=indicator_to_allocation[indicator]
+                        )
         for model_variant, allocation in base_allocation.items():
             if allocation == None:
                 raise ValueError(
@@ -486,7 +504,7 @@ class Task:
     @property
     def queue_latency_params(self) -> float:
         # TODO add a function to infer queue latency
-        queue_latency_params = 0 # TEMP
+        queue_latency_params = 0  # TEMP
         return [queue_latency_params]
 
     @property

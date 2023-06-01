@@ -135,7 +135,6 @@ class SimAdapter:
             if "objective" in optimal.columns:
                 objective = optimal["objective"][0]
                 new_configs = self.output_parser(optimal)
-
                 to_apply_config = self.choose_config(new_configs, old_config)
             if to_apply_config is not None:
                 to_save_config = self.saving_config_builder(
@@ -177,6 +176,9 @@ class SimAdapter:
         # current config
         # easiest for now is to choose config with
         # with the least change from former config
+        if current_config is None:
+            # if the current config is None just return the first config
+            return new_configs[0]
         new_config_socres = []
         for new_config in new_configs:
             new_config_score = 0

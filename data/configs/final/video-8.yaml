@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 156
+series: 172
 # pipeline_name: video
-metadata: 'normal 150 and 30% margin'
+metadata: 'repeat of working 166 with second bigger model as baseline'
 number_tasks: 2
 profiling_series:
   - 71
@@ -65,8 +65,8 @@ task_name:
   - crop
   - classification
 initial_active_model:
-  - yolov5n
-  - resnet18
+  - yolov5s
+  - resnet34
 initial_cpu_allocation:
   - 1
   - 1
@@ -113,16 +113,16 @@ debug_mode:  false
 simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
-predictor_margin: 30
+predictor_margin: 0
 
 # ----------- drop interval -------------
-drop_limit: 10000
+drop_limit: 3
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
 
 # ----------- teleport mode (only available in real-world experiments) -------------
-teleport_mode: false 
+teleport_mode: false
 teleport_interval: 0
 
 # ----------- reference latency and throughput -------------
@@ -130,4 +130,3 @@ reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
 throughput_margin: 0
-

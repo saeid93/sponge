@@ -28,6 +28,8 @@ from experiments.utils.pipeline_operations import (
     setup_central_pipeline,
 )
 
+from experiments.utils.simulation_operations import generate_simulated_pipeline
+
 from experiments.utils.constants import (
     PIPLINES_PATH,
     FINAL_CONFIGS_PATH,
@@ -48,6 +50,7 @@ def setup_pipeline(
     timeout: int = config["timeout"]
     central_queue: bool = config["central_queue"]
     distrpution_time: int = config["distrpution_time"]
+    
     drop_limit: int = config["drop_limit"]
     warm_upp: bool = config["warm_up"]
 
@@ -167,7 +170,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-6")
+@click.option("--config-name", required=True, type=str, default="video-15")
 @click.option(
     "--type-of",
     required=True,

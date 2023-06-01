@@ -83,7 +83,7 @@ class Queue(MLModel):
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         batch_shape = payload.inputs[0].shape[0]
-        # logger.info(f"batch_size: {batch_shape}")
+        logger.info(f"batch_size: {batch_shape}")
         mlserver.log(batch_size=batch_shape)
         arrival_time = time.time()
         self.request_counter += 1
