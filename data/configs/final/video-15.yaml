@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 4000
+series: 5000
 # pipeline_name: video
-metadata: 'repeat of working 166 in the real world'
+metadata: 'repeat of '
 number_tasks: 2
 profiling_series:
   - 71

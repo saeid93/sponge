@@ -4,10 +4,10 @@
 # sleep 180
 # python simulation_runner.py --config-name video-3
 # python simulation_runner.py --config-name video-4
-# python runner_script.py --config-name video-5
-# sleep 60
-# python runner_script.py --config-name video-6
-# sleep 60
+python runner_script.py --config-name video-5
+sleep 60
+python runner_script.py --config-name video-6
+sleep 60
 python runner_script.py --config-name video-7
 sleep 60
 # python runner_script.py --config-name video-8

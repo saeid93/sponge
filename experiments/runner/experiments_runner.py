@@ -170,7 +170,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-15")
+@click.option("--config-name", required=True, type=str, default="video-5")
 @click.option(
     "--type-of",
     required=True,

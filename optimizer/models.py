@@ -502,12 +502,6 @@ class Task:
         return 0
 
     @property
-    def queue_latency_params(self) -> float:
-        # TODO add a function to infer queue latency
-        queue_latency_params = 0  # TEMP
-        return [queue_latency_params]
-
-    @property
     def queue_latency(self) -> float:
         # TODO TEMP
         queue_latency = 0

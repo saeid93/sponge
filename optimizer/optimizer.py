@@ -225,19 +225,6 @@ class Optimizer:
                 model_accuracies[task.name][variant_name] = task.accuracy
         return model_accuracies
 
-    def queue_parameters(self) -> Dict[str, float]:
-        # queue latencies of all cases nested dictionary
-        # for gorubi solver
-        # [stage_name]
-        queue_latencies = {}
-        inference_graph = deepcopy(self.pipeline.inference_graph)
-        for task in inference_graph:
-            queue_latencies[task.name] = {}
-            for batch_size in task.batches:
-                task.change_batch(batch_size)
-                queue_latencies[task.name] = task.queue_latency_params
-        return queue_latencies
-
     def base_allocations(self):
         # base allocation of all cases nested dictionary
         # for gorubi solver
@@ -513,19 +500,6 @@ class Optimizer:
             )
             return latency
 
-        # def func_q(batch, params):
-        #     """queueing latency
-
-        #     Args:
-        #         batch: batch size
-        #         params: parameters of the linear model
-
-        #     Returns:
-        #         latency
-        #     """
-        #     queue = params[0] * batch
-        #     return queue
-
         def func_q(batch, arrival_rate):
             """queueing latency
 
@@ -536,6 +510,7 @@ class Optimizer:
             Returns:
                 latency
             """
+            if arrival_rate == 0: return 0 # just handling the zero load case
             queue = (batch - 1) / arrival_rate
             return queue
 
@@ -548,7 +523,6 @@ class Optimizer:
 
         # coefficients
         base_allocations = self.base_allocations()
-        queue_parameters = self.queue_parameters()
         accuracy_parameters = self.accuracy_parameters()
         if self.only_measured_profiles:
             distinct_batches, throughput_parameters = self.throughput_parameters()
