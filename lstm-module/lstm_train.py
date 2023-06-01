@@ -45,7 +45,7 @@ def get_x_y(data):
         t = data[i : i + history_seconds]
         for j in range(0, len(t), step):
             x.append(max(t[j : j + step]))
-        y.append(max(data[i + history_seconds : i + history_seconds + step]))
+        y.append(max(data[i + history_seconds : i + history_seconds + 2 * step]))
     return x, y
 
 
