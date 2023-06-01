@@ -513,7 +513,20 @@ class Optimizer:
             )
             return latency
 
-        def func_q(batch, params):
+        # def func_q(batch, params):
+        #     """queueing latency
+
+        #     Args:
+        #         batch: batch size
+        #         params: parameters of the linear model
+
+        #     Returns:
+        #         latency
+        #     """
+        #     queue = params[0] * batch
+        #     return queue
+
+        def func_q(batch, arrival_rate):
             """queueing latency
 
             Args:
@@ -523,7 +536,7 @@ class Optimizer:
             Returns:
                 latency
             """
-            queue = params[0] * batch
+            queue = (batch - 1) / arrival_rate
             return queue
 
         # defining groubipy model for descision problem
@@ -621,7 +634,8 @@ class Optimizer:
                         latency_parameters[stage][variant][batch]
                         * i[stage, variant]
                         * b[stage, batch]
-                        + func_q(b[stage, batch], queue_parameters[stage])
+                        # + func_q(b[stage, batch], queue_parameters[stage])
+                        + func_q(b[stage, batch], arrival_rate)
                         for stage in stages
                         for variant in stages_variants[stage]
                         for batch in distinct_batches
@@ -665,7 +679,8 @@ class Optimizer:
                     gp.quicksum(
                         func_l(b[stage], latency_parameters[stage][variant])
                         * i[stage, variant]
-                        + func_q(b[stage], queue_parameters[stage])
+                        # + func_q(b[stage], queue_parameters[stage])
+                        + func_q(b[stage], arrival_rate)
                         for stage in stages
                         for variant in stages_variants[stage]
                     )
