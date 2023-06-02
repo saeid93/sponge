@@ -44,7 +44,7 @@ actual = []
 for i in range(len(data_x)):
     model = ARIMA(list(data_x[i]), order=(1, 0, 0))
     model_fit = model.fit()
-    pred = int(model_fit.forecast(steps=2)[1])
+    pred = int(model_fit.forecast(steps=2)[1]) # max
     preds.append(pred)
     actual.append(data_y[i])
     if i % 100 == 0:

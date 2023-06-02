@@ -32,7 +32,7 @@ nodes:
 # ----------- experiment configs -------------
 
 benchmark_duration: 1
-adaptation_interval: 5
+adaptation_interval: 1
 # workload_type: static
 # workload_config:
 #   loads_to_test: 10
@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 4000
+series: 4003
 # pipeline_name: video
 metadata: 'repeat of 179 with queue model'
 number_tasks: 2
@@ -129,6 +129,6 @@ teleport_interval: 0
 
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
-reference_throughput: 'max' # max | p99 | avg
+reference_throughput: 'max' # max | p99 | avg | arima
 latency_margin: 0
 throughput_margin: 0

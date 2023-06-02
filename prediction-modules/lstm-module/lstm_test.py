@@ -7,7 +7,7 @@ from tensorflow.keras.models import load_model
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
-sys.path.append(os.path.normpath(os.path.join(project_dir, "..")))
+sys.path.append(os.path.normpath(os.path.join(project_dir, "..", "..")))
 
 from barazmoon.twitter import twitter_workload_generator
 
@@ -24,8 +24,12 @@ hour = 60 * 60
 day = hour * 24
 
 # pick up the untrained part of the dataset
-test_idx = 18 * day
-test_data = workload[test_idx : test_idx + 2 * hour]
+# test_idx = 18 * day
+# test_data = workload[test_idx : test_idx + 2 * hour]
+
+test_idx = 1862800
+test_end = 1863300
+test_data = workload[test_idx : test_end]
 
 test_x, test_y = get_x_y(test_data)
 test_x = tf.convert_to_tensor(

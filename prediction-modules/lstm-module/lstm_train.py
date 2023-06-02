@@ -9,7 +9,7 @@ from tensorflow.keras import regularizers
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
-sys.path.append(os.path.normpath(os.path.join(project_dir, "..")))
+sys.path.append(os.path.normpath(os.path.join(project_dir, "..", "..")))
 
 from barazmoon.twitter import twitter_workload_generator
 
@@ -57,7 +57,8 @@ def get_data():
     """
     last_day = 21 * 24 * 60 * 60
     # load the per second RPS of the Twitter dataset
-    workload = twitter_workload_generator(f"{0}-{last_day}")
+    damping_factor = 8
+    workload = twitter_workload_generator(f"{0}-{last_day}", damping_factor=damping_factor)
     workload = list(filter(lambda x: x != 0, workload))
 
     # Twitter dataset is for 21 days
