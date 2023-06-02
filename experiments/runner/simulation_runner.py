@@ -113,7 +113,6 @@ def main(config_name: str, type_of: str):
     pipeline_name = config["pipeline_name"]
     only_measured_profiles = config["only_measured_profiles"]
     profiling_load = config["profiling_load"]
-    central_queue = config["central_queue"]
 
     # pipeline config
     num_state_limit = config["num_state_limit"]
@@ -170,6 +169,8 @@ def main(config_name: str, type_of: str):
     # ----------- 3. loading predictor configs -------------
     monitoring_duration = config["monitoring_duration"]
     predictor_type = config["predictor_type"]
+    backup_predictor_type = config["backup_predictor_type"]
+    backup_predictor_duration = config["backup_predictor_duration"]
 
     # whether to use the simulation mode or not
     simulation_mode = config["simulation_mode"]
@@ -198,6 +199,8 @@ def main(config_name: str, type_of: str):
         monitoring_duration=monitoring_duration,
         predictor_type=predictor_type,
         baseline_mode=baseline_mode,
+        backup_predictor_type=backup_predictor_type,
+        backup_predictor_duration=backup_predictor_duration,
     )
 
     _, workload = make_workload(config=config)

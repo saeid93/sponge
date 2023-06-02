@@ -50,7 +50,7 @@ def setup_pipeline(
     timeout: int = config["timeout"]
     central_queue: bool = config["central_queue"]
     distrpution_time: int = config["distrpution_time"]
-    
+
     drop_limit: int = config["drop_limit"]
     warm_upp: bool = config["warm_up"]
 
@@ -146,7 +146,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
     mode = config["mode"]
     benchmark_duration = config["benchmark_duration"]
-    load_duration, workload = make_workload(config=config)
+    _, workload = make_workload(config=config)
     data = load_data(data_type, pipeline_path)
     # try:
     start_time_experiment, end_time_experiment, responses = load_test(
@@ -170,7 +170,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-15")
+@click.option("--config-name", required=True, type=str, default="video-5")
 @click.option(
     "--type-of",
     required=True,

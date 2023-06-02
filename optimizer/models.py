@@ -350,8 +350,6 @@ class Task:
         for model in variant_orders:
             allocation_num_sustain = allocation_num_sustains[model]
             base_allocation[model] = None
-            if model == "yolov5x":
-                a = 2
             while base_allocation[model] == None:
                 if indicator > len(sample_allocation):
                     base_allocation[model] = None
@@ -500,12 +498,6 @@ class Task:
         if self.gpu_mode:
             return self.active_model.resource_allocation.gpu * self.replicas
         return 0
-
-    @property
-    def queue_latency_params(self) -> float:
-        # TODO add a function to infer queue latency
-        queue_latency_params = 0  # TEMP
-        return [queue_latency_params]
 
     @property
     def queue_latency(self) -> float:

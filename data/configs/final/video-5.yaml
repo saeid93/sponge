@@ -32,7 +32,7 @@ nodes:
 # ----------- experiment configs -------------
 
 benchmark_duration: 1
-adaptation_interval: 20
+adaptation_interval: 10
 # workload_type: static
 # workload_config:
 #   loads_to_test: 10
@@ -40,7 +40,7 @@ adaptation_interval: 20
 workload_type: twitter
 workload_config:
   - start: '1862800'
-    end: '1864000'
+    end: '1863300'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 185
+series: 4005
 # pipeline_name: video
-metadata: 'repeat of 182 on real world'
+metadata: 'repeat of 179 with queue model'
 number_tasks: 2
 profiling_series:
   - 71
@@ -94,8 +94,10 @@ accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'max' # [reactive | avg | lstm | max]
-monitoring_duration: 5 # in minutes
+predictor_type: 'arima' # [reactive | avg | arima | lstm | max]
+monitoring_duration: 2 # in minutes
+backup_predictor_type: 'max' # [reactive | avg | lstm | max]
+backup_predictor_duration: 2 # in minutes
 
 # ----------- queueing-option -------------
 
@@ -127,6 +129,6 @@ teleport_interval: 0
 
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
-reference_throughput: 'max' # max | p99 | avg
+reference_throughput: 'max' # max | p99 | avg | arima
 latency_margin: 0
 throughput_margin: 0

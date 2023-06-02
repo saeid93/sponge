@@ -67,3 +67,4 @@ yq
 black
 black[jupyter]
 jiwer
+statsmodels

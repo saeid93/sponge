@@ -6,16 +6,11 @@ from jiwer import wer
 
 librispeech_eval = load_dataset("librispeech_asr", "clean", split="test")
 
-model_names = [
-    "facebook/wav2vec2-base-960h",
-    "facebook/wav2vec2-large-960h"
-    
-]
+model_names = ["facebook/wav2vec2-base-960h", "facebook/wav2vec2-large-960h"]
 results = {}
 for model_name in model_names:
     model = Wav2Vec2ForCTC.from_pretrained(model_name).to("cpu")
     processor = Wav2Vec2Processor.from_pretrained(model_name)
-
 
     def map_to_pred(batch):
         input_values = processor(
@@ -29,14 +24,15 @@ for model_name in model_names:
         batch["transcription"] = transcription
         return batch
 
-
     results[model_name] = librispeech_eval.map(
         map_to_pred, batched=True, batch_size=1, remove_columns=["audio"]
     )
 
 for model_name in model_names:
     print(f"{model_name}:")
-    print("WER:", wer(results[model_name]["text"], results[model_name]["transcription"]))
+    print(
+        "WER:", wer(results[model_name]["text"], results[model_name]["transcription"])
+    )
 # from datasets import load_dataset
 # from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 # import soundfile as sf

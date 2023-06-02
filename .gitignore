@@ -253,3 +253,5 @@ gitignored/
 .envs
 .metrics
 lstm_saved_model
+
+lstm_prediction.png

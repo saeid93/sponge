@@ -17,6 +17,10 @@ def make_workload(config: dict, teleport_interval: int = None):
             if teleport_interval is not None:
                 start = str(int(start) + teleport_interval)
             end = w_config["end"]
+            if start > end:
+                raise ValueError(
+                    f"start of workload {start} cannot be larger than {end}"
+                )
             load_to_test = start + "-" + end
             loads_to_test.append(load_to_test)
         workload = twitter_workload_generator(

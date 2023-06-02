@@ -47,7 +47,7 @@ FINAL_CONFIGS_PATH = os.path.join(CONFIGS_PATH, "final")
 
 # lstm load predictor model path
 LSTM_PATH = os.path.join(DATA_PATH, "lstm")
-LSTM_INPUT_SIZE = 10
+LSTM_INPUT_SIZE = 12
 
 # triton folders
 TRITON_PROFILING_PATH = os.path.join(PROFILING_CONFIGS_PATH, "triton")

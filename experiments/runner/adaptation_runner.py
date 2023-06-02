@@ -29,7 +29,7 @@ from experiments.utils.workload import make_workload
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-6")
+@click.option("--config-name", required=True, type=str, default="video-5")
 @click.option(
     "--type-of",
     required=True,

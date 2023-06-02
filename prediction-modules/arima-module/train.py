@@ -34,7 +34,7 @@ train_to_idx = 14 * 24 * 60 * 60
 hour = 60 * 60
 day = hour * 24
 test_idx = 18 * day
-workload = workload[test_idx: test_idx + 2 * hour]
+workload = workload[test_idx : test_idx + 2 * hour]
 data_x, data_y = get_x_y(workload)
 data_x = np.array(data_x).reshape((-1, 12))
 
@@ -42,9 +42,9 @@ preds = []
 actual = []
 
 for i in range(len(data_x)):
-    model = ARIMA(list(data_x[i]), order=(1,0,0))
+    model = ARIMA(list(data_x[i]), order=(1, 0, 0))
     model_fit = model.fit()
-    pred = int(model_fit.forecast(steps=2)[1])
+    pred = int(max(model_fit.forecast(steps=2)))  # max
     preds.append(pred)
     actual.append(data_y[i])
     if i % 100 == 0:
@@ -53,4 +53,4 @@ for i in range(len(data_x)):
 
 plt.plot(list(range(len(preds))), actual, label="actual")
 plt.plot(list(range(len(preds))), preds, label="pred")
-plt.savefig(f"{os.path.dirname(__file__)}/arima.png")
+plt.savefig(f"{os.path.dirname(__file__)}/arima-1.png")
