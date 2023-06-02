@@ -13,7 +13,7 @@ import concurrent.futures
 import tensorflow as tf
 from copy import deepcopy
 from tensorflow.keras.models import load_model
-
+from statsmodels.tsa.arima.model import ARIMA
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -75,6 +75,8 @@ class Adapter:
         predictor_margin: int = 100,
         teleport_mode: bool = False,
         teleport_interval: int = 10,
+        backup_predictor_type: str = "max",
+        backup_predictor_duration: int = 2,
     ) -> None:
         """
         Args:
@@ -97,6 +99,8 @@ class Adapter:
         self.node_names = node_names
         self.adaptation_interval = adaptation_interval
         self.debug_mode = debug_mode
+        self.backup_predictor_type = backup_predictor_type
+        self.backup_predictor_duration = backup_predictor_duration
         self.optimizer = Optimizer(
             pipeline=pipeline,
             allocation_mode=allocation_mode,
@@ -118,7 +122,10 @@ class Adapter:
             pipeline_name=self.pipeline_name, sla=self.pipeline.sla
         )
         self.predictor = Predictor(
-            predictor_type=self.predictor_type, predictor_margin=predictor_margin
+            predictor_type=self.predictor_type,
+            predictor_margin=predictor_margin,
+            backup_predictor_type=self.backup_predictor_type,
+            backup_predictor_duration=self.backup_predictor_duration,
         )
         self.central_queue = central_queue
         self.teleport_mode = teleport_mode
@@ -567,42 +574,45 @@ class Predictor:
     def __init__(
         self,
         predictor_type,
-        backup_predictor: str = "reactive",
+        backup_predictor_type: str = "reactive",
+        backup_predictor_duration=2,
         predictor_margin: int = 100,
     ) -> int:
         self.predictor_type = predictor_type
-        self.backup_predictor = backup_predictor
+        self.backup_predictor = backup_predictor_type
         predictors = {
             "lstm": load_model(LSTM_PATH),
             "reactive": lambda l: l[-1],
             "max": lambda l: max(l),
             "avg": lambda l: max(l) / len(l),
+            "arima": None, # it is defined in place
         }
         self.model = predictors[predictor_type]
-        self.backup_model = predictors[backup_predictor]
+        self.backup_model = predictors[backup_predictor_type]
         self.predictor_margin = predictor_margin
+        self.backup_predictor_duration = backup_predictor_duration
 
     def predict(self, series: List[int]):
-        series_minutes = []
-        step = 60
+        series_aggregated = []
+        step = 10
         for i in range(0, len(series), step):
-            series_minutes.append(max(series[i : i + step]))
-        if self.predictor_type == "lstm":
-            if len(series_minutes) < LSTM_INPUT_SIZE:
-                # corner case of bigger output from prometheus
-                series_minutes = series_minutes[-LSTM_INPUT_SIZE:]
-                logger.info(
-                    "not enough information for lstm"
-                    f" usting backup predictor {self.backup_predictor}"
+            series_aggregated.append(max(series[i : i + step]))
+        if len(series_aggregated) >= int((self.backup_predictor_duration * 60) / step):
+            if self.predictor_type == "lstm":
+                model_intput = tf.convert_to_tensor(
+                    np.array(series_aggregated).reshape((-1, LSTM_INPUT_SIZE, 1)),
+                    dtype=tf.float32,
                 )
-                return self.backup_model(series_minutes)
-            model_intput = tf.convert_to_tensor(
-                np.array(series_minutes).reshape((-1, LSTM_INPUT_SIZE, 1)),
-                dtype=tf.float32,
-            )
-            model_output = self.model.predict(model_intput)[0][0]
+                model_output = self.model.predict(model_intput)[0][0]
+            elif self.predictor_type == "arima":
+                model_intput = np.array(series_aggregated)
+                model = ARIMA(list(model_intput), order=(1, 0, 0))
+                model_fit = model.fit()
+                model_output = int(max(model_fit.forecast(steps=2)))  # max
+            else:
+                model_output = self.model(series_aggregated)
         else:
-            model_output = self.model(series)
+            model_output = self.backup_model(series_aggregated)
 
         # apply a safety margin to the system
         predicted_load = round(model_output * (1 + self.predictor_margin / 100))

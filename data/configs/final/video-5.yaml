@@ -32,7 +32,7 @@ nodes:
 # ----------- experiment configs -------------
 
 benchmark_duration: 1
-adaptation_interval: 1
+adaptation_interval: 10
 # workload_type: static
 # workload_config:
 #   loads_to_test: 10
@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 4003
+series: 4005
 # pipeline_name: video
 metadata: 'repeat of 179 with queue model'
 number_tasks: 2
@@ -94,7 +94,7 @@ accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'lstm' # [reactive | avg | lstm | max]
+predictor_type: 'arima' # [reactive | avg | arima | lstm | max]
 monitoring_duration: 2 # in minutes
 backup_predictor_type: 'max' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes
@@ -112,7 +112,7 @@ distrpution_time: 30
 debug_mode:  false
 
 # ----------- simulation mode -------------
-simulation_mode: true
+simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0

@@ -44,7 +44,7 @@ actual = []
 for i in range(len(data_x)):
     model = ARIMA(list(data_x[i]), order=(1, 0, 0))
     model_fit = model.fit()
-    pred = int(model_fit.forecast(steps=2)[1]) # max
+    pred = int(max(model_fit.forecast(steps=2)))  # max
     preds.append(pred)
     actual.append(data_y[i])
     if i % 100 == 0:
@@ -53,4 +53,4 @@ for i in range(len(data_x)):
 
 plt.plot(list(range(len(preds))), actual, label="actual")
 plt.plot(list(range(len(preds))), preds, label="pred")
-plt.savefig(f"{os.path.dirname(__file__)}/arima.png")
+plt.savefig(f"{os.path.dirname(__file__)}/arima-1.png")

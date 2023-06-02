@@ -52,7 +52,7 @@ def find_initial_config(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="audio-qa")
+@click.option("--config-name", required=True, type=str, default="video-5")
 @click.option(
     "--type-of",
     required=True,

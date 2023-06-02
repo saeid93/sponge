@@ -7,6 +7,7 @@ import pandas as pd
 import tensorflow as tf
 from copy import deepcopy
 from tensorflow.keras.models import load_model
+from statsmodels.tsa.arima.model import ARIMA
 
 
 # get an absolute path to the directory that contains parent files
@@ -269,11 +270,11 @@ class Predictor:
             "reactive": lambda l: l[-1],
             "max": lambda l: max(l),
             "avg": lambda l: max(l) / len(l),
+            "arima": None, # it is defined in place
         }
         self.model = predictors[predictor_type]
         self.backup_model = predictors[backup_predictor_type]
         self.backup_predictor_duration = backup_predictor_duration
-
 
     def predict(self, series: List[int]):
         series_aggregated = []
@@ -282,21 +283,18 @@ class Predictor:
             series_aggregated.append(max(series[i : i + step]))
         if len(series_aggregated) >= int((self.backup_predictor_duration * 60) / step):
             if self.predictor_type == "lstm":
-                if len(series_aggregated) < LSTM_INPUT_SIZE:
-                    # corner case of bigger output from prometheus
-                    series_aggregated = series_aggregated[-LSTM_INPUT_SIZE:]
-                    logger.info(
-                        "not enough information for lstm"
-                        f" using backup predictor {self.backup_predictor}"
-                    )
-                    return self.backup_model(series_aggregated)
                 model_intput = tf.convert_to_tensor(
                     np.array(series_aggregated).reshape((-1, LSTM_INPUT_SIZE, 1)),
                     dtype=tf.float32,
                 )
                 model_output = self.model.predict(model_intput)[0][0]
+            elif self.predictor_type == "arima":
+                model_intput = np.array(series_aggregated)
+                model = ARIMA(list(model_intput), order=(1, 0, 0))
+                model_fit = model.fit()
+                model_output = int(max(model_fit.forecast(steps=2)))  # max
             else:
-                model_output = self.model(series)
+                model_output = self.model(series_aggregated)
         else:
-            model_output = self.backup_model(series)
+            model_output = self.backup_model(series_aggregated)
         return model_output
