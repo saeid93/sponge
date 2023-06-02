@@ -32,14 +32,14 @@ nodes:
 # ----------- experiment configs -------------
 
 benchmark_duration: 1
-adaptation_interval: 20
+adaptation_interval: 5
 # workload_type: static
 # workload_config:
 #   loads_to_test: 10
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1863000'
+  - start: '1862800'
     end: '1863300'
     # end: '1863200'
     # end: '1862200'
@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 188
+series: 4000
 # pipeline_name: video
 metadata: 'repeat of 179 with queue model'
 number_tasks: 2
@@ -94,8 +94,10 @@ accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'max' # [reactive | avg | lstm | max]
-monitoring_duration: 10 # in minutes
+predictor_type: 'lstm' # [reactive | avg | lstm | max]
+monitoring_duration: 2 # in minutes
+backup_predictor_type: 'max' # [reactive | avg | lstm | max]
+backup_predictor_duration: 2 # in minutes
 
 # ----------- queueing-option -------------
 
@@ -110,7 +112,7 @@ distrpution_time: 30
 debug_mode:  false
 
 # ----------- simulation mode -------------
-simulation_mode: false
+simulation_mode: true
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0

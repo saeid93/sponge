@@ -18,6 +18,8 @@ from experiments.utils.constants import LSTM_PATH
 history_seconds = 120
 step = 10
 input_size = history_seconds // step
+
+
 def create_model():
     """
     LSTM model

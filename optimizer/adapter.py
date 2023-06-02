@@ -257,7 +257,6 @@ class Adapter:
                 if to_apply_config is not None:
                     config_change_results = self.change_pipeline_config(to_apply_config)
             else:
-
                 logger.info(
                     "optimizer couldn't find any optimal solution"
                     "the pipeline will stay the same"

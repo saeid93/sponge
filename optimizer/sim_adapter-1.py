@@ -113,7 +113,6 @@ class SimAdapter:
         for timestep in range(
             self.adaptation_interval, len(workload), self.adaptation_interval
         ):
-            time_interval += self.adaptation_interval
             to_apply_config = None
             to_save_config = None
             objective = None
@@ -160,6 +159,7 @@ class SimAdapter:
                 predicted_load=predicted_load,
             )
             old_config = deepcopy(to_apply_config)
+            time_interval += self.adaptation_interval
 
     def output_parser(self, optimizer_output: pd.DataFrame):
         new_configs = []
@@ -273,7 +273,6 @@ class Predictor:
         self.model = predictors[predictor_type]
         self.backup_model = predictors[backup_predictor_type]
         self.backup_predictor_duration = backup_predictor_duration
-
 
     def predict(self, series: List[int]):
         series_aggregated = []

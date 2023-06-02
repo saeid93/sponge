@@ -510,7 +510,8 @@ class Optimizer:
             Returns:
                 latency
             """
-            if arrival_rate == 0: return 0 # just handling the zero load case
+            if arrival_rate == 0:
+                return 0  # just handling the zero load case
             queue = (batch - 1) / arrival_rate
             return queue
 

@@ -96,6 +96,8 @@ accuracy_method: sum # [average | sum | multiply]
 
 predictor_type: 'max' # [reactive | avg | lstm | max]
 monitoring_duration: 10 # in minutes
+backup_predictor_type: 'max' # [reactive | avg | max]
+backup_predictor_duration: 2 # in minutes
 
 # ----------- queueing-option -------------
 
