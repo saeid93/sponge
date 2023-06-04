@@ -58,7 +58,7 @@ class Model:
         self.measured_profiles = measured_profiles
         self.measured_profiles.sort(key=lambda profile: profile.batch)
         self.accuracy = accuracy / 100
-        self.normalized_accuracy = None
+        # self.normalized_accuracy = None
         self.name = name
         self.only_measured_profiles = only_measured_profiles
         self.profiles, self.latency_model_params = self.regression_model()

@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 195
+series: 2020
 # pipeline_name: video
 metadata: 'repeat of 189 with lstm'
 number_tasks: 2
@@ -112,7 +112,7 @@ distrpution_time: 30
 debug_mode:  false
 
 # ----------- simulation mode -------------
-simulation_mode: false
+simulation_mode: true
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0

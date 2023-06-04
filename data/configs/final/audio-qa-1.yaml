@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 200
+series: 4020
 pipeline_name: audio-qa
 metadata: 'first test of audio pipeline'
 number_tasks: 2
@@ -78,7 +78,7 @@ initial_batch:
   - 1
 alpha: 2
 beta: 1
-gamma: 10
+gamma: 0
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 64 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
@@ -89,7 +89,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: null # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
