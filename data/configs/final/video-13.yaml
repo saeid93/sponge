@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 161
+series: 162
 # pipeline_name: video
-metadata: 'teleport 10 and reference throughput avg instead of max'
+metadata: 'normal 150 and drop 3'
 number_tasks: 2
 profiling_series:
   - 71
@@ -118,18 +118,18 @@ simulation_mode: false
 predictor_margin: 0
 
 # ----------- drop interval -------------
-drop_limit: 10000
+drop_limit: 3
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
 
 # ----------- teleport mode (only available in real-world experiments) -------------
-teleport_mode: true 
-teleport_interval: 10
+teleport_mode: false 
+teleport_interval: 0
 
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
-reference_throughput: 'avg' # max | p99 | avg
+reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
 throughput_margin: 0
 

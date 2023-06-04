@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 158
+series: 159
 # pipeline_name: video
-metadata: 'normal 150 and drop 10'
+metadata: 'normal 150 with margin 30% and drop 10'
 number_tasks: 2
 profiling_series:
   - 71
@@ -115,7 +115,7 @@ debug_mode:  false
 simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
-predictor_margin: 0
+predictor_margin: 30
 
 # ----------- drop interval -------------
 drop_limit: 10

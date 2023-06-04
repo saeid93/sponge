@@ -3,6 +3,10 @@ from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import torch
 from jiwer import wer
 
+# facebook/wav2vec2-base-960h:
+# WER: 0.0338557516737675
+# facebook/wav2vec2-large-960h:
+# WER: 0.02765520389531345
 
 librispeech_eval = load_dataset("librispeech_asr", "clean", split="test")
 

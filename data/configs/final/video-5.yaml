@@ -39,7 +39,7 @@ adaptation_interval: 10
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1862800'
+  - start: '1863000'
     end: '1863300'
     # end: '1863200'
     # end: '1862200'
@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 4005
+series: 195
 # pipeline_name: video
-metadata: 'repeat of 179 with queue model'
+metadata: 'repeat of 189 with lstm'
 number_tasks: 2
 profiling_series:
   - 71
@@ -89,12 +89,12 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
 profiling_load: 20
-baseline_mode: null # [switch | scale | null]
+baseline_mode: scale # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'arima' # [reactive | avg | arima | lstm | max]
+predictor_type: 'lstm' # [reactive | avg | arima | lstm | max]
 monitoring_duration: 2 # in minutes
 backup_predictor_type: 'max' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes
@@ -129,6 +129,6 @@ teleport_interval: 0
 
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
-reference_throughput: 'max' # max | p99 | avg | arima
+reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
 throughput_margin: 0

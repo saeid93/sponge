@@ -39,8 +39,8 @@ adaptation_interval: 20
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1863000'
-    end: '1863300'
+  - start: '1862800'
+    end: '1864000'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 162
+series: 5000
 # pipeline_name: video
-metadata: 'normal 150 and drop 3'
+metadata: 'repeat of '
 number_tasks: 2
 profiling_series:
   - 71
@@ -118,13 +118,14 @@ simulation_mode: false
 predictor_margin: 0
 
 # ----------- drop interval -------------
+drop_to_sla: true
 drop_limit: 3
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
 
 # ----------- teleport mode (only available in real-world experiments) -------------
-teleport_mode: false 
+teleport_mode: false
 teleport_interval: 0
 
 # ----------- reference latency and throughput -------------
@@ -132,4 +133,3 @@ reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
 throughput_margin: 0
-

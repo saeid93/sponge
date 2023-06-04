@@ -32,7 +32,7 @@ nodes:
 # ----------- experiment configs -------------
 
 benchmark_duration: 1
-adaptation_interval: 20
+adaptation_interval: 10
 # workload_type: static
 # workload_config:
 #   loads_to_test: 10
@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 189
+series: 196
 # pipeline_name: video
-metadata: 'repeat of 180 with queue model'
+metadata: 'repeat of 190 with lstm'
 number_tasks: 2
 profiling_series:
   - 71
@@ -89,14 +89,14 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: switch # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'max' # [reactive | avg | lstm | max]
-monitoring_duration: 10 # in minutes
-backup_predictor_type: 'max' # [reactive | avg | max]
+predictor_type: 'lstm' # [reactive | avg | arima | lstm | max]
+monitoring_duration: 2 # in minutes
+backup_predictor_type: 'max' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes
 
 # ----------- queueing-option -------------

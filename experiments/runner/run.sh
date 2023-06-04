@@ -10,10 +10,10 @@ python runner_script.py --config-name video-6
 sleep 60
 python runner_script.py --config-name video-7
 sleep 60
-# python runner_script.py --config-name video-8
-# sleep 60
-# python runner_script.py --config-name video-9
-# sleep 60
+python runner_script.py --config-name video-8
+sleep 60
+python runner_script.py --config-name video-9
+sleep 60
 # python runner_script.py --config-name video-10
 # sleep 60
 # python runner_script.py --config-name video-11

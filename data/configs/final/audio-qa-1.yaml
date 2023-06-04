@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 4001
+series: 200
 pipeline_name: audio-qa
 metadata: 'first test of audio pipeline'
 number_tasks: 2
