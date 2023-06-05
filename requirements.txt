@@ -54,7 +54,6 @@ datasets==2.8.0
 tensorflow==2.12
 ultralytics==8.0.100
 seaborn
-kubernetes
 soundfile
 librosa
 torchvision

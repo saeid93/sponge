@@ -431,7 +431,11 @@ class Adapter:
             if env_var["name"] == "MODEL_VARIANT":
                 deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                     "containers"
-                ][0]["env"][env_index]["value"] = node_config["variant"]
+                ][0]["env"][env_index]["value"] = (
+                    node_config["variant"]
+                    if node_name in ["yolo", "resnet-human"]
+                    else f"/mnt/models/{node_config['variant']}"  # a differnt path is used for vision and HF models
+                )
             if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
                 # deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                 #     "containers"

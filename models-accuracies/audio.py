@@ -63,17 +63,15 @@ for model_name in model_names:
     )  # change to "other" for other test dataset
     wer = load("wer")
 
-    model = Speech2TextForConditionalGeneration.from_pretrained(
-        model_name
-    ).to("cpu")
-    processor = Speech2TextProcessor.from_pretrained(
-        model_name, do_upper_case=True
-    )
-
+    model = Speech2TextForConditionalGeneration.from_pretrained(model_name).to("cpu")
+    processor = Speech2TextProcessor.from_pretrained(model_name, do_upper_case=True)
 
     def map_to_pred(batch):
         features = processor(
-            batch["audio"]["array"], sampling_rate=16000, padding=True, return_tensors="pt"
+            batch["audio"]["array"],
+            sampling_rate=16000,
+            padding=True,
+            return_tensors="pt",
         )
         input_features = features.input_features.to("cpu")
         attention_mask = features.attention_mask.to("cpu")
@@ -86,7 +84,6 @@ for model_name in model_names:
         )[0]
         return batch
 
-
     results[model_name] = librispeech_eval.map(map_to_pred, remove_columns=["audio"])
 
 # print(
@@ -96,5 +93,9 @@ for model_name in model_names:
 for model_name in model_names:
     print(f"{model_name}:")
     print(
-        "WER:", wer.compute(predictions=results[model_name]["text"], references=results[model_name]["transcription"])
+        "WER:",
+        wer.compute(
+            predictions=results[model_name]["text"],
+            references=results[model_name]["transcription"],
+        ),
     )

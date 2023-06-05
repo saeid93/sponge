@@ -39,8 +39,8 @@ adaptation_interval: 20
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1862800'
-    end: '1864000'
+  - start: '1863000'
+    end: '1863300'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -119,7 +119,7 @@ predictor_margin: 0
 
 # ----------- drop interval -------------
 drop_to_sla: true
-drop_limit: 3
+drop_limit: 10
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false

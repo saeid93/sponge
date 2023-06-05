@@ -86,7 +86,7 @@ class GeneralNLP(MLModel):
         logger.info(f"max_batch_time: {self._settings.max_batch_time}")
         self.model = pipeline(
             task=self.TASK,
-            model=self.MODEL_VARIANT,
+            model=self.MODEL_VARIANT, # Add /mnt/models stuff here
             batch_size=self._settings.max_batch_size,
         )
         self.loaded = True
