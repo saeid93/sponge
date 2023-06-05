@@ -32,15 +32,15 @@ nodes:
 # ----------- experiment configs -------------
 
 benchmark_duration: 1
-adaptation_interval: 20
+adaptation_interval: 10
 # workload_type: static
 # workload_config:
 #   loads_to_test: 10
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1863000'
-    end: '1863300'
+  - start: '1299600'
+    end: '1300800'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 175
+series: 202
 # pipeline_name: video
-metadata: 'repeat of 171 with penaly on batching'
+metadata: 'repeat of 199 with steady low'
 number_tasks: 2
 profiling_series:
   - 71
@@ -76,7 +76,7 @@ initial_replica:
 initial_batch:
   - 1
   - 1
-alpha: 0
+alpha: 2
 beta: 1
 gamma: 10
 scaling_cap: 100 # maximum possible scaling per nodes
@@ -87,16 +87,16 @@ optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
-only_measured_profiles: false
+only_measured_profiles: true
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: switch # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'max' # [reactive | avg | lstm | max]
+predictor_type: 'lstm' # [reactive | avg | arima | lstm | max]
 monitoring_duration: 2 # in minutes
-backup_predictor_type: 'max' # [reactive | avg | max]
+backup_predictor_type: 'max' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes
 
 # ----------- queueing-option -------------
@@ -112,7 +112,7 @@ distrpution_time: 30
 debug_mode:  false
 
 # ----------- simulation mode -------------
-simulation_mode: true
+simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0
@@ -124,7 +124,7 @@ drop_limit: 10
 warm_up: false
 
 # ----------- teleport mode (only available in real-world experiments) -------------
-teleport_mode: false
+teleport_mode: false 
 teleport_interval: 0
 
 # ----------- reference latency and throughput -------------

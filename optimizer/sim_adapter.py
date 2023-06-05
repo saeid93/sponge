@@ -270,7 +270,7 @@ class Predictor:
             "reactive": lambda l: l[-1],
             "max": lambda l: max(l),
             "avg": lambda l: max(l) / len(l),
-            "arima": None, # it is defined in place
+            "arima": None,  # it is defined in place
         }
         self.model = predictors[predictor_type]
         self.backup_model = predictors[backup_predictor_type]

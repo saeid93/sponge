@@ -39,8 +39,8 @@ adaptation_interval: 10
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1862800'
-    end: '1864000'
+  - start: '1301160'
+    end: '1302360'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 199
+series: 208
 # pipeline_name: video
-metadata: 'repeat of 193 with queuing model'
+metadata: 'repeat of 199 with bursty'
 number_tasks: 2
 profiling_series:
   - 71

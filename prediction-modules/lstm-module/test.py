@@ -14,7 +14,9 @@ from barazmoon.twitter import twitter_workload_generator
 from experiments.utils.constants import PROJECT_PATH, LSTM_PATH, LSTM_INPUT_SIZE
 from train import get_x_y  # , input_size
 
-fig_path = os.path.join(PROJECT_PATH, "lstm-module", "lstm_prediction.png")
+fig_path = os.path.join(
+    PROJECT_PATH, "prediction-modules", "lstm-module", "lstm_prediction.png"
+)
 
 model = load_model(LSTM_PATH)
 last_day = 21 * 24 * 3600
