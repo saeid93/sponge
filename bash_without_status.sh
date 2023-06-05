@@ -1,6 +1,6 @@
 #!/bin/bash
 
-input_file="all_deployments.yaml"
+input_file="all_deployments_audio.yaml"
 output_file="deployment_without_status.yaml"
 
 # Remove 'status' field using sed

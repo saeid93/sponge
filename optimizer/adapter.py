@@ -13,6 +13,7 @@ import concurrent.futures
 import tensorflow as tf
 from copy import deepcopy
 from tensorflow.keras.models import load_model
+import re
 from statsmodels.tsa.arima.model import ARIMA
 
 # get an absolute path to the directory that contains parent files
@@ -429,13 +430,27 @@ class Adapter:
             ][0]["env"]
         ):
             if env_var["name"] == "MODEL_VARIANT":
+                init_container_args = deployment_config["spec"]["predictors"][0][
+                    "componentSpecs"
+                ][0]["spec"]["initContainers"][0]["args"]
                 deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                     "containers"
-                ][0]["env"][env_index]["value"] = (
-                    node_config["variant"]
-                    if node_name in ["yolo", "resnet-human"]
-                    else f"/mnt/models/{node_config['variant']}"  # a differnt path is used for vision and HF models
-                )
+                    # ][0]["env"][env_index]["value"] = (
+                    #     node_config["variant"]
+                    #     if node_name in ["yolo", "resnet-human"]
+                    #     else f"/mnt/models/{node_config['variant']}"  # a differnt path is used for vision and HF models
+                    # )
+                ][0]["env"][env_index]["value"] = node_config["variant"]
+                if node_name in ["yolo", "resnet-human"]:
+                    a = 1
+                else:
+                    # also fix the variants
+                    deployment_config["spec"]["predictors"][0]["componentSpecs"][0][
+                        "spec"
+                    ]["initContainers"][0]["args"] = [
+                        re.sub(r"/([^/]+)$", "/" + node_config["variant"], model)
+                        for model in init_container_args
+                    ]
             if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
                 # deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                 #     "containers"

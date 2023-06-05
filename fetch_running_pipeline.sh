@@ -1,6 +1,6 @@
 #!/bin/bash
 
-output_file="all_deployments.yaml"
+output_file="all_deployments_audio.yaml"
 
 # Get a list of all Seldon Deployments
 deployments=$(kubectl get seldondeployments -o name)

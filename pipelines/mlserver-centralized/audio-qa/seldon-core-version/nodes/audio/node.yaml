@@ -54,7 +54,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/facebook-s2t-small-librispeech-asr
+              value: facebook-s2t-small-librispeech-asr
             # - name: TRANSFORMERS_CACHE
             #   value: /opt/mlserver/.cache
             - name: TASK

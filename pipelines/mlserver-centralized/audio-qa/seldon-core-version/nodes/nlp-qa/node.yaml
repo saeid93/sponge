@@ -55,7 +55,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/distilbert-base-cased-distilled-squad
+              value: distilbert-base-cased-distilled-squad
             # - name: TRANSFORMERS_CACHE
             #   value: /opt/mlserver/.cache
             - name: TASK

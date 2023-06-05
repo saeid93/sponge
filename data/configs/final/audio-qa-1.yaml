@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 400
+series: 402
 pipeline_name: audio-qa
 metadata: 'first test of audio pipeline'
 number_tasks: 2
@@ -118,7 +118,7 @@ simulation_mode: false
 predictor_margin: 0
 
 # ----------- drop interval -------------
-drop_limit: 10
+drop_limit: 100000
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false

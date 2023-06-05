@@ -40,18 +40,18 @@ adaptation_interval: 20
 workload_type: twitter
 workload_config:
   - start: '1863000'
-    end: '1863300'
+    # end: '1863300'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
     # end: '1862500'
     # end: '1863700'
-    # end: '1865100'
+    end: '1865100'
     damping_factor: 8 # [int | null]
 
 # ----------- optimizer configs -------------
 
-series: 5000
+series: 5002
 # pipeline_name: video
 metadata: 'repeat of '
 number_tasks: 2
@@ -89,7 +89,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: false
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: null # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
