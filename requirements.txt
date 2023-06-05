@@ -68,3 +68,5 @@ black
 black[jupyter]
 jiwer
 statsmodels
+soundfile
+librosa

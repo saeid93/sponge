@@ -22,8 +22,8 @@ spec:
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://huggingface/automatic-speech-recognition/facebook-s2t-small-librispeech-asr"
-            - "/mnt/models/facebook-s2t-small-librispeech-asr"
+            - "s3://huggingface/automatic-speech-recognition/facebook-s2t-medium-librispeech-asr"
+            - "/mnt/models/facebook-s2t-medium-librispeech-asr"
 
           volumeMounts:
           - mountPath: /mnt/models
@@ -50,7 +50,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/facebook-s2t-small-librispeech-asr
+              value: /mnt/models/facebook-s2t-medium-librispeech-asr
             # - name: TRANSFORMERS_CACHE
             #   value: /opt/mlserver/.cache
             - name: TASK

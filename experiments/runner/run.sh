@@ -1,22 +1,22 @@
-python runner_script.py --config-name video-1
-sleep 60
-python runner_script.py --config-name video-2
-sleep 60
-python runner_script.py --config-name video-3
-sleep 60
-python runner_script.py --config-name video-4
-sleep 60
-python runner_script.py --config-name video-5
-sleep 60
-python runner_script.py --config-name video-6
-sleep 60
-python runner_script.py --config-name video-7
-sleep 60
-python runner_script.py --config-name video-8
-sleep 60
-python runner_script.py --config-name video-9
+# python runner_script.py --config-name video-1
 # sleep 60
-# python runner_script.py --config-name video-10
+# python runner_script.py --config-name video-2
+# sleep 60
+# python runner_script.py --config-name video-3
+# sleep 60
+# python runner_script.py --config-name video-4
+# sleep 60
+# python runner_script.py --config-name video-5
+# sleep 60
+# python runner_script.py --config-name video-6
+# sleep 60
+# python runner_script.py --config-name video-7
+# sleep 60
+# python runner_script.py --config-name video-8
+# sleep 60
+# python runner_script.py --config-name video-9
+# sleep 60
+python runner_script.py --config-name audio-qa-1
 # sleep 60
 # python runner_script.py --config-name video-11
 # sleep 60

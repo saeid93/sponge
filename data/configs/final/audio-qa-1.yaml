@@ -39,7 +39,7 @@ adaptation_interval: 20
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1862800'
+  - start: '1863000'
     end: '1863300'
     # end: '1863200'
     # end: '1862200'
@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 223
+series: 400
 pipeline_name: audio-qa
 metadata: 'first test of audio pipeline'
 number_tasks: 2
@@ -66,7 +66,7 @@ task_name:
   - nlp-qa
 initial_active_model:
   - facebook-s2t-small-librispeech-asr
-  - distilbert-base-cased-distilled-squad
+  - deepset-roberta-base-squad2
 initial_cpu_allocation:
   - 1
   - 1
@@ -77,12 +77,12 @@ initial_batch:
   - 1
   - 1
 alpha: 10
-beta: 0
-gamma: 0
+beta: 1
+gamma: 10
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 64 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
-threshold: 2 # RPS threshold for finding the base allocation
+threshold: 3 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
@@ -109,10 +109,10 @@ distrpution_time: 30
 
 # ----------- distruption time -------------
 # debug mode with complete lgos of containers
-debug_mode:  false
+debug_mode: false
 
 # ----------- simulation mode -------------
-simulation_mode: true
+simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0

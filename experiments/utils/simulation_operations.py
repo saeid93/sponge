@@ -98,6 +98,10 @@ def make_task_profiles(
         model_variant_profiling_info = profiling_info[
             profiling_info["model_variant"] == model_variant
         ]
+        # if you don't want a model in the profiling to be
+        # in the system comment out it in the accuracies file
+        if model_variant not in task_accuracies.keys():
+            continue
         model_variant_profiling_info.sort_values(by=["max_batch_size", "cpu_request"])
         for cpu_request in model_variant_profiling_info["cpu_request"].unique():
             cpu_request_profiling_info = model_variant_profiling_info[

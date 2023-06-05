@@ -8,7 +8,7 @@ import json
 import time
 import numpy as np
 
-load = 1
+load = 10
 test_duration = 1
 variant = 0
 platform = "router"
