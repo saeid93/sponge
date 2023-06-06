@@ -161,7 +161,7 @@ def dram_temporal_final2(
         dicts_to_draw["load"]["predicted_load"],
         label="predicted_load",
     )
-    axs[0].set_ylabel(ylabel="load")
+    axs[0].set_ylabel(ylabel="Load (RPS)")
 
     figure_index = 1
     for metric, metric_to_draw in dicts_to_draw.items():
