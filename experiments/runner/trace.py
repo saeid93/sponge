@@ -52,7 +52,6 @@ def get_x_y(data):
 
 
 def get_arima_prediction(data):
-    return [30 for _ in range(len(data))]
     preds = []
     data = np.array(data).reshape((-1, 12))
     for history in data:

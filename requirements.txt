@@ -69,3 +69,4 @@ jiwer
 statsmodels
 soundfile
 librosa
+sklearn

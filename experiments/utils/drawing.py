@@ -132,6 +132,70 @@ def draw_temporal_final(
 
     plt.tight_layout()
     plt.show()
+    
+    
+def dram_temporal_final2(
+    dicts_to_draw: Dict[str, Dict[str, List[int]]],
+    series_names: List[str],
+    selected_experiments: Dict[str, Dict[str, Union[str, List[str]]]],
+    adaptation_interval=None,
+    fig_size: int = 10,
+):
+    num_keys = sum(map(lambda l: len(l["selection"]), selected_experiments.values()))
+    _, axs = plt.subplots(
+        nrows=num_keys + 1, ncols=1, figsize=(fig_size, num_keys * 2 + 1)
+    )
+
+    axs[0].plot(
+        dicts_to_draw["load"]["recieved_load_x"],
+        dicts_to_draw["load"]["recieved_load"],
+        label="recieved_load",
+    )
+    axs[0].plot(
+        dicts_to_draw["load"]["sent_load_x"],
+        dicts_to_draw["load"]["sent_load"],
+        label="sent_load",
+    )
+    axs[0].plot(
+        dicts_to_draw["load"]["predicted_load_x"],
+        dicts_to_draw["load"]["predicted_load"],
+        label="predicted_load",
+    )
+    axs[0].set_ylabel(ylabel="load")
+
+    figure_index = 1
+    for metric, metric_to_draw in dicts_to_draw.items():
+        if metric not in selected_experiments.keys():
+            continue
+        sample_experiment = list(metric_to_draw.keys())[0]
+        metrics = metric_to_draw[sample_experiment]
+        for key in metrics.keys():
+            if key not in selected_experiments[metric]["selection"]:
+                continue
+            for (
+                experiment_id,
+                dict_to_draw_exp,
+            ) in metric_to_draw.items():  # draw different experiments
+                x_values = range(len(list(dict_to_draw_exp.values())[0]))
+                if adaptation_interval is not None and metric not in [
+                    "measured_latencies"
+                ]:
+                    x_values = [
+                        item * adaptation_interval[experiment_id]
+                        for item in list(x_values)
+                    ]
+                axs[figure_index].plot(
+                    x_values, dict_to_draw_exp[key], label=series_names[experiment_id]
+                )
+                axs[figure_index].set_title(selected_experiments[metric]["title"])
+                axs[figure_index].set_ylabel(
+                    ylabel=selected_experiments[metric]["ylabel"]
+                )
+                axs[figure_index].legend()
+            figure_index += 1
+
+    plt.tight_layout()
+    plt.show()
 
 
 def draw_cumulative(
