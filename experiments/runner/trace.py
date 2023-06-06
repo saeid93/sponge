@@ -17,13 +17,18 @@ plt.rc('font', **font)
 plt.rcParams['pdf.fonttype'] = 42
 plt.rcParams['ps.fonttype'] = 42
 
+plt.rc('font', size=12)
+plt.rc('axes', titlesize=12)
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
+
 LSTM_PATH = os.path.join(project_dir, "data/lstm")
 lstm_plot_kwargs = {"label": "LSTM",}
 arima_plot_kwargs = {"label": "ARIMA",}
 
 
 lstm = load_model(LSTM_PATH)
-fig, axs = plt.subplots(2, 2, figsize=(10, 5))
+fig, axs = plt.subplots(2, 2, figsize=(10, 4.5))
 for axes in axs:
     for ax in axes:
         ax.set_ylim([0, 57])
@@ -165,15 +170,16 @@ ax.legend(
     fancybox=False,
     ncol=3,
     frameon=False,
-    bbox_to_anchor=(-0.6,2.84),
+    bbox_to_anchor=(-0.1, 2.8),
     loc="upper center",
     handlelength=1,
     columnspacing=0.8
 )
-fig.tight_layout()
-fig.text(0.51, -0.05, 'Time (s)', ha='center')
-fig.text(0, 0.5, "Workload (RPS)", rotation=90, va='center')
-fig.tight_layout()
+
+# fig.tight_layout()
+fig.text(0.51, -0.01, 'Time (s)', ha='center', fontsize=12)
+fig.text(0.07, 0.5, "Workload (RPS)", rotation=90, va='center', fontsize=12)
+plt.subplots_adjust(wspace=0.15, hspace=0.4)
 plt.savefig(
     os.path.dirname(__file__) + "/trace-figures/patterns.pdf",
     dpi=600,
@@ -181,11 +187,5 @@ plt.savefig(
     bbox_inches="tight",
     pad_inches=0,
 )
-# plt.savefig(
-#     os.path.dirname(__file__) + "/trace-figures/patterns.png",
-#     dpi=600,
-#     format="png",
-#     bbox_inches="tight",
-#     pad_inches=0,
-# )
+
 print(f"start: {start} | start2: {start2}")  # start: 1301400 | start2: 1308600
