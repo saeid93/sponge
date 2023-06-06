@@ -11,6 +11,11 @@ from statsmodels.tsa.arima.model import ARIMA
 project_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(os.path.normpath(os.path.join(project_dir, "..", "..")))
 
+font = {'size': 12}
+
+plt.rc('font', **font)
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
 
 LSTM_PATH = os.path.join(project_dir, "data/lstm")
 lstm_plot_kwargs = {"label": "LSTM",}
@@ -18,7 +23,7 @@ arima_plot_kwargs = {"label": "ARIMA",}
 
 
 lstm = load_model(LSTM_PATH)
-fig, axs = plt.subplots(2, 2, figsize=(12, 4.5))
+fig, axs = plt.subplots(2, 2, figsize=(10, 5))
 for axes in axs:
     for ax in axes:
         ax.set_ylim([0, 57])
@@ -42,6 +47,7 @@ def get_x_y(data):
 
 
 def get_arima_prediction(data):
+    return [30 for _ in range(len(data))]
     preds = []
     data = np.array(data).reshape((-1, 12))
     for history in data:
@@ -52,7 +58,7 @@ def get_arima_prediction(data):
     return preds
 
 
-
+# bursty workload
 start = 1296000
 duration = 20 * 60  # 20 minutes
 workload = twitter_workload_generator(f"{0}-{21*24*60*60}", damping_factor=5)
@@ -70,6 +76,7 @@ while True:
 
 ax = axs[0][0]
 ax.plot(list(range(len(selected_workload))), selected_workload, label="Real")
+ax.set_title("Bursty")
 x, _ = get_x_y(selected_workload)
 ax.plot(list(range(len(selected_workload))), list(lstm.predict(x)), **lstm_plot_kwargs)
 arima = get_arima_prediction(x)
@@ -93,6 +100,7 @@ while True:
 
 ax2 = axs[0][1]
 ax2.plot(list(range(len(selected_workload))), selected_workload, label="Real")
+ax2.set_title("Steady Low")
 x, _ = get_x_y(selected_workload)
 ax2.plot(list(range(len(selected_workload))), list(lstm.predict(x)), **lstm_plot_kwargs)
 arima = get_arima_prediction(x)
@@ -117,6 +125,7 @@ while True:
 ax3 = axs[1][0]
 selected_workload = selected_workload * 2
 ax3.plot(list(range(len(selected_workload))), selected_workload, label="Real")
+ax3.set_title("Steady High")
 x, _ = get_x_y(selected_workload)
 ax3.plot(list(range(len(selected_workload))), list(lstm.predict(x)), **lstm_plot_kwargs)
 arima = get_arima_prediction(x)
@@ -145,27 +154,38 @@ selected_workload = selected_workload + selected_workload2
 
 ax4 = axs[1][1]
 ax4.plot(list(range(len(selected_workload))), selected_workload, label="Real")
+ax4.set_title("Fluctuating")
 x, _ = get_x_y(selected_workload)
 ax4.plot(list(range(len(selected_workload))), list(lstm.predict(x)), **lstm_plot_kwargs)
 arima = get_arima_prediction(x)
 ax4.plot(list(range(len(selected_workload))), arima, **arima_plot_kwargs)
 
-plt.legend(
+ax.legend(
     fontsize=13,
     fancybox=False,
     ncol=3,
     frameon=False,
-    bbox_to_anchor=(0.27,2.5),
+    bbox_to_anchor=(-0.6,2.84),
+    loc="upper center",
     handlelength=1,
     columnspacing=0.8
 )
-fig.text(0.51, -0.02, 'Time (s)', ha='center')
-fig.text(0.053, 0.5, "Workload (RPS)", rotation=90, va='center')
+fig.tight_layout()
+fig.text(0.51, -0.05, 'Time (s)', ha='center')
+fig.text(0, 0.5, "Workload (RPS)", rotation=90, va='center')
+fig.tight_layout()
 plt.savefig(
-    os.path.dirname(__file__) + "/trace-figures/patterns.png",
+    os.path.dirname(__file__) + "/trace-figures/patterns.pdf",
     dpi=600,
-    format="png",
+    format="pdf",
     bbox_inches="tight",
     pad_inches=0,
 )
+# plt.savefig(
+#     os.path.dirname(__file__) + "/trace-figures/patterns.png",
+#     dpi=600,
+#     format="png",
+#     bbox_inches="tight",
+#     pad_inches=0,
+# )
 print(f"start: {start} | start2: {start2}")  # start: 1301400 | start2: 1308600
