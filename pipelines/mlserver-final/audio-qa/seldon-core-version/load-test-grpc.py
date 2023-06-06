@@ -9,7 +9,7 @@ import time
 import numpy as np
 
 load = 10
-test_duration = 1
+test_duration = 10
 variant = 0
 platform = "router"
 mode = "exponential"

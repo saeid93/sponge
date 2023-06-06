@@ -1,14 +1,14 @@
 # ----------- pipeline configs -------------
 # pipeline informat
-pipeline_folder_name: video
-pipeline_name: video
+pipeline_folder_name: audio-qa
+pipeline_name: audio-qa
 timeout: 1
-pipeline_folder_name: video
+pipeline_folder_name: audio-qa
 mode: exponential
 nodes:
-  - node_name: yolo
-    data_type: image
-    model_variants: yolov5n
+  - node_name: audio
+    data_type: audio
+    model_variants: facebook-s2t-small-librispeech-asr
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
@@ -17,9 +17,9 @@ nodes:
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
-  - node_name: resnet-human
+  - node_name: nlp-qa
     data_type: text
-    model_variants: resnet18
+    model_variants: deepset-roberta-base-squad2
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
@@ -40,33 +40,33 @@ adaptation_interval: 20
 workload_type: twitter
 workload_config:
   - start: '1863000'
-    # end: '1863300'
+    end: '1863300'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
     # end: '1862500'
     # end: '1863700'
-    end: '1865100'
+    # end: '1865100'
     damping_factor: 8 # [int | null]
 
 # ----------- optimizer configs -------------
 
 series: 403
-# pipeline_name: video
-metadata: 'repeat of '
+pipeline_name: audio-qa
+metadata: 'first test of audio pipeline'
 number_tasks: 2
 profiling_series:
-  - 71
-  - 72
+  - 85
+  - 86
 model_name:
-  - yolo
-  - resnet-human
+  - audio # be consistent with values in pipelines
+  - nlp-qa # be consistent with values in pipelines
 task_name: 
-  - crop
-  - classification
+  - audio
+  - nlp-qa
 initial_active_model:
-  - yolov5n
-  - resnet18
+  - facebook-s2t-small-librispeech-asr
+  - deepset-roberta-base-squad2
 initial_cpu_allocation:
   - 1
   - 1
@@ -76,27 +76,27 @@ initial_replica:
 initial_batch:
   - 1
   - 1
-alpha: 0
+alpha: 10
 beta: 1
-gamma: 0
+gamma: 10
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 64 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
-threshold: 4 # RPS threshold for finding the base allocation
+threshold: 3 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
-only_measured_profiles: false
+only_measured_profiles: true
 profiling_load: 20
 baseline_mode: null # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'max' # [reactive | avg | lstm | max]
-monitoring_duration: 10 # in minutes
-backup_predictor_type: 'max' # [reactive | avg | max]
+predictor_type: 'lstm' # [reactive | avg | lstm | max]
+monitoring_duration: 2 # in minutes
+backup_predictor_type: 'max' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes
 
 # ----------- queueing-option -------------
@@ -118,14 +118,13 @@ simulation_mode: false
 predictor_margin: 0
 
 # ----------- drop interval -------------
-drop_to_sla: true
-drop_limit: 10
+drop_limit: 100000
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
 
 # ----------- teleport mode (only available in real-world experiments) -------------
-teleport_mode: false
+teleport_mode: false 
 teleport_interval: 0
 
 # ----------- reference latency and throughput -------------

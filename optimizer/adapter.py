@@ -442,6 +442,7 @@ class Adapter:
                     # )
                 ][0]["env"][env_index]["value"] = node_config["variant"]
                 if node_name in ["yolo", "resnet-human"]:
+                    # TODO add for yolo and resnet pipelines
                     a = 1
                 else:
                     # also fix the variants

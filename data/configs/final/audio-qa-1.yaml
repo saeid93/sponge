@@ -39,7 +39,7 @@ adaptation_interval: 20
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1862800'
+  - start: '1863000'
     end: '1863300'
     # end: '1863200'
     # end: '1862200'
@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 402
+series: 405
 pipeline_name: audio-qa
 metadata: 'first test of audio pipeline'
 number_tasks: 2

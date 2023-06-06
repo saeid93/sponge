@@ -1,0 +1,366 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: queue-audio
+  namespace: default
+spec:
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 120s
+  name: queue-audio
+  predictors:
+  - annotations:
+      seldon.io/no-engine: "true"
+    componentSpecs:
+    - replicas: 1
+      spec:
+        containers:
+        - env:
+          - name: MODEL_NAME
+            value: audio
+          - name: LAST_NODE
+            value: "False"
+          - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+            value: "1"
+          - name: MLSERVER_MODEL_MAX_BATCH_TIME
+            value: "1"
+          - name: MLSERVER_PARALLEL_WORKERS
+            value: "0"
+          - name: DROP_LIMIT
+            value: "100000"
+          image: sdghafouri/queue:queue
+          imagePullPolicy: Always
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 120
+          name: queue-audio
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "16"
+              memory: 16Gi
+            requests:
+              cpu: "4"
+              memory: 8Gi
+        terminationGracePeriodSeconds: 120
+    graph:
+      children: []
+      name: queue-audio
+      type: MODEL
+    labels:
+      sidecar.istio.io/inject: "true"
+    name: queue-audio
+  protocol: v2
+
+---
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  annotations:
+  name: queue-nlp-qa
+  namespace: default
+spec:
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 120s
+  name: queue-nlp-qa
+  predictors:
+  - annotations:
+      seldon.io/no-engine: "true"
+    componentSpecs:
+    - replicas: 1
+      spec:
+        containers:
+        - env:
+          - name: MODEL_NAME
+            value: nlp-qa
+          - name: LAST_NODE
+            value: "False"
+          - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+            value: "1"
+          - name: MLSERVER_MODEL_MAX_BATCH_TIME
+            value: "1"
+          - name: MLSERVER_PARALLEL_WORKERS
+            value: "0"
+          - name: DROP_LIMIT
+            value: "100000"
+          image: sdghafouri/queue:queue
+          imagePullPolicy: Always
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 120
+          name: queue-nlp-qa
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "16"
+              memory: 16Gi
+            requests:
+              cpu: "4"
+              memory: 8Gi
+        terminationGracePeriodSeconds: 120
+    graph:
+      children: []
+      name: queue-nlp-qa
+      type: MODEL
+    labels:
+      sidecar.istio.io/inject: "true"
+    name: queue-nlp-qa
+  protocol: v2
+
+---
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: router
+  namespace: default
+spec:
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 30s
+  name: router
+  predictors:
+  - annotations:
+      seldon.io/no-engine: "true"
+    componentSpecs:
+    - replicas: 1
+      spec:
+        containers:
+        - env:
+          - name: MODEL_LISTS
+            value: '["queue-audio", "queue-nlp-qa"]'
+          - name: MLSERVER_PARALLEL_WORKERS
+            value: "8"
+          - name: DROP_LIMIT
+            value: "100000"
+          image: sdghafouri/router:router
+          imagePullPolicy: Always
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 30
+          name: router
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "16"
+              memory: 16Gi
+            requests:
+              cpu: "4"
+              memory: 8Gi
+        terminationGracePeriodSeconds: 30
+    graph:
+      children: []
+      name: router
+      type: MODEL
+    labels:
+      sidecar.istio.io/inject: "true"
+    name: router
+  protocol: v2
+
+---
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: audio
+  namespace: default
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 30s
+  name: audio
+  predictors:
+  - annotations:
+      seldon.io/no-engine: "true"
+    componentSpecs:
+    - replicas: 3
+      spec:
+        containers:
+        - env:
+          - name: MODEL_VARIANT
+            value: facebook-s2t-small-librispeech-asr
+          - name: TRANSFORMERS_CACHE
+            value: /opt/mlserver/.cache
+          - name: TASK
+            value: automatic-speech-recognition
+          - name: MLSERVER_PARALLEL_WORKERS
+            value: "0"
+          - name: USE_THREADING
+            value: "True"
+          - name: NUM_INTEROP_THREADS
+            value: "1"
+          - name: NUM_THREADS
+            value: "1"
+          image: sdghafouri/audio-qa-centralized:audio
+          imagePullPolicy: Always
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 30
+          name: audio
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "1"
+              memory: 2Gi
+            requests:
+              cpu: "1"
+              memory: 2Gi
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+        initContainers:
+        - args:
+          - s3://huggingface/automatic-speech-recognition/facebook-s2t-small-librispeech-asr
+          - /mnt/models/facebook-s2t-small-librispeech-asr
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          name: classifier-model-initializer
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir: {}
+          name: classifier-provision-location
+    graph:
+      children: []
+      name: audio
+      type: MODEL
+    labels:
+      sidecar.istio.io/inject: "true"
+    name: audio
+  protocol: v2
+
+---
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: nlp-qa
+  namespace: default
+spec:
+  annotations:
+    proxy.istio.io/config: |
+      terminationDrainDuration: 30s
+  name: nlp-qa
+  predictors:
+  - annotations:
+      seldon.io/no-engine: "true"
+    componentSpecs:
+    - replicas: 3
+      spec:
+        containers:
+        - env:
+          - name: MODEL_VARIANT
+            value: deepset-xlm-roberta-large-squad2
+          - name: TRANSFORMERS_CACHE
+            value: /opt/mlserver/.cache
+          - name: TASK
+            value: question-answering
+          - name: CONTEXT
+            value: default
+          - name: MLSERVER_PARALLEL_WORKERS
+            value: "1"
+          - name: USE_THREADING
+            value: "True"
+          - name: NUM_INTEROP_THREADS
+            value: "1"
+          - name: NUM_THREADS
+            value: "1"
+          image: sdghafouri/audio-qa-centralized:nlpqa
+          imagePullPolicy: Always
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /bin/sleep 30
+          name: nlp-qa
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+            requests:
+              cpu: "2"
+              memory: 2Gi
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+        initContainers:
+        - args:
+          - s3://huggingface/question-answering/deepset-xlm-roberta-large-squad2
+          - /mnt/models/deepset-xlm-roberta-large-squad2
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          name: classifier-model-initializer
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir: {}
+          name: classifier-provision-location
+    graph:
+      children: []
+      name: nlp-qa
+      type: MODEL
+    labels:
+      sidecar.istio.io/inject: "true"
+    name: nlp-qa
+  protocol: v2
