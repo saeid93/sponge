@@ -3,6 +3,14 @@ import numpy as np
 from typing import Dict, List, Union
 
 
+font = {'size': 12}
+plt.rc('font', size=12)
+plt.rc('axes', titlesize=12)
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
+color_list = ['#d7191c','#fdae61','#abd9e9', '#2c7bb6', '#fee090']
+
+
 def draw_temporal(
     dict_to_draw: Dict[str, Dict[str, List[int]]],
     adaptation_interval=None,
@@ -134,7 +142,7 @@ def draw_temporal_final(
     plt.show()
     
     
-def dram_temporal_final2(
+def draw_temporal_final2(
     dicts_to_draw: Dict[str, Dict[str, List[int]]],
     series_names: List[str],
     selected_experiments: Dict[str, Dict[str, Union[str, List[str]]]],
@@ -162,6 +170,8 @@ def dram_temporal_final2(
         label="predicted_load",
     )
     axs[0].set_ylabel(ylabel="Load (RPS)")
+    axs[0].set_xticklabels([])
+    axs[-1].set_xlabel("Time (s)")
 
     figure_index = 1
     for metric, metric_to_draw in dicts_to_draw.items():
@@ -169,13 +179,17 @@ def dram_temporal_final2(
             continue
         sample_experiment = list(metric_to_draw.keys())[0]
         metrics = metric_to_draw[sample_experiment]
+        
         for key in metrics.keys():
+            axs[figure_index].grid(axis='y', linestyle='dashed', color="gray")
             if key not in selected_experiments[metric]["selection"]:
                 continue
+            color_idx = 0
             for (
                 experiment_id,
                 dict_to_draw_exp,
             ) in metric_to_draw.items():  # draw different experiments
+                color = color_list[color_idx]
                 x_values = range(len(list(dict_to_draw_exp.values())[0]))
                 if adaptation_interval is not None and metric not in [
                     "measured_latencies"
@@ -185,16 +199,28 @@ def dram_temporal_final2(
                         for item in list(x_values)
                     ]
                 axs[figure_index].plot(
-                    x_values, dict_to_draw_exp[key], label=series_names[experiment_id]
+                    x_values, dict_to_draw_exp[key], label=series_names[experiment_id], color=color
                 )
-                axs[figure_index].set_title(selected_experiments[metric]["title"])
+                # axs[figure_index].set_title(selected_experiments[metric]["title"])
                 axs[figure_index].set_ylabel(
                     ylabel=selected_experiments[metric]["ylabel"]
                 )
-                axs[figure_index].legend()
+                color_idx += 1
+                # axs[figure_index].legend()
+            if figure_index < len(list(selected_experiments.keys())):
+                axs[figure_index].set_xticklabels([])
             figure_index += 1
-
-    plt.tight_layout()
+            
+    plt.legend(
+        fontsize=13,
+        fancybox=False,
+        ncol=3,
+        frameon=False,
+        bbox_to_anchor=(0.8,6.1),
+        handlelength=1,
+        columnspacing=0.8
+    )
+    # plt.tight_layout()
     plt.show()
 
 
