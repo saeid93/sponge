@@ -255,3 +255,5 @@ gitignored/
 lstm_saved_model
 
 lstm_prediction.png
+
+*.png

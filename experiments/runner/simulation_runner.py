@@ -52,7 +52,7 @@ def find_initial_config(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="audio-sent")
+@click.option("--config-name", required=True, type=str, default="audio-qa-1")
 @click.option(
     "--type-of",
     required=True,
@@ -141,7 +141,7 @@ def main(config_name: str, type_of: str):
     reference_latency = config["reference_latency"]  # p99 | avg
     reference_throughput = config["reference_throughput"]
     latency_margin = config["latency_margin"]
-    throughput_margin = config["latency_margin"]
+    throughput_margin = config["throughput_margin"]
 
     pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,

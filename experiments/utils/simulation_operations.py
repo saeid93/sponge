@@ -65,7 +65,7 @@ def load_profile(
         columns=lambda x: "latency" if "latencies" in x else x
     )
 
-    # add the margins
+    # add the margins for cross machine usecases
     profiling_info["latency"] = profiling_info["latency"] * (
         (100 + latency_margin) / 100
     )

@@ -11,11 +11,6 @@ from statsmodels.tsa.arima.model import ARIMA
 project_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(os.path.normpath(os.path.join(project_dir, "..", "..")))
 
-font = {'size': 12}
-
-plt.rc('font', **font)
-plt.rcParams['pdf.fonttype'] = 42
-plt.rcParams['ps.fonttype'] = 42
 
 plt.rc('font', size=12)
 plt.rc('axes', titlesize=12)
