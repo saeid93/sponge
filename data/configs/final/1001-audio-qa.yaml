@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 219
+series: 1001
 pipeline_name: audio-qa
 metadata: 'first test on the audio-qa'
 number_tasks: 2
@@ -89,7 +89,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: null # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
@@ -107,7 +107,7 @@ central_queue: true
 
 distrpution_time: 30
 
-# ----------- distruption time -------------
+# ----------- dubugging logs -------------
 # debug mode with complete lgos of containers
 debug_mode: false
 
@@ -134,4 +134,4 @@ latency_margin: 100
 throughput_margin: -50
 
 # ----------- enable in container logging -------------
-logs_enabled: true
+logs_enabled: false

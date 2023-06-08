@@ -54,6 +54,8 @@ def setup_pipeline(
     drop_limit: int = config["drop_limit"]
     warm_upp: bool = config["warm_up"]
 
+    logs_enabled = config['logs_enabled']
+
     model_variants = []
     max_batch_sizes = []
     max_batch_times = []
@@ -95,6 +97,7 @@ def setup_pipeline(
             distrpution_time=distrpution_time,
             debug_mode=debug_mode,
             drop_limit=drop_limit,
+            logs_enabled=logs_enabled
         )
     else:
         setup_router_pipeline(
@@ -170,7 +173,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-5")
+@click.option("--config-name", required=True, type=str, default="1002-audio-sent")
 @click.option(
     "--type-of",
     required=True,

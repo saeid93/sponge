@@ -45,6 +45,17 @@ except KeyError as e:
     LAST_NODE = False
     logger.info(f"LAST_NODE env variable not set, using default value: {LAST_NODE}")
 
+try:
+    LOGS_ENABLED = os.getenv("LOGS_ENABLED", "True").lower() in ("true", "1", "t")
+    logger.info(f"LOGS_ENABLED set to: {LOGS_ENABLED}")
+except KeyError as e:
+    LOGS_ENABLED = True
+    logger.info(
+        f"LOGS_ENABLED env variable not set, using default value: {LOGS_ENABLED}"
+    )
+
+if not LOGS_ENABLED:
+    logger.disabled = True
 
 async def send_requests(ch, model_name, payload: InferenceRequest):
     grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
@@ -73,6 +84,8 @@ async def model_infer(model_name, request_input: InferenceRequest) -> InferenceR
 
 class Queue(MLModel):
     async def load(self):
+        if not LOGS_ENABLED:
+            logger.disabled = True
         self.loaded = False
         self.request_counter = 0
         mlserver.register(
@@ -82,12 +95,14 @@ class Queue(MLModel):
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
+        if not LOGS_ENABLED:
+            logger.disabled = True
         batch_shape = payload.inputs[0].shape[0]
         logger.info(f"batch_size: {batch_shape}")
         mlserver.log(batch_size=batch_shape)
         arrival_time = time.time()
         self.request_counter += 1
-        # logger.info(f"Request counter:\n{self.request_counter}\n")
+        logger.info(f"Request counter:\n{self.request_counter}\n")
 
         # early exit logic
         drop_message = (
@@ -117,7 +132,7 @@ class Queue(MLModel):
 
         # early exit before the model
         time_so_far = time.time() - pipeline_arrival
-        # logger.info(f"time_so_far:\n{time_so_far}")
+        logger.info(f"time_so_far:\n{time_so_far}")
         if time_so_far >= DROP_LIMIT:
             return drop_limit_exceed_payload
 
@@ -172,7 +187,7 @@ class Queue(MLModel):
 
         # early exit after the model
         time_so_far = time.time() - pipeline_arrival
-        # logger.info(f"time_so_far:\n{time_so_far}")
+        logger.info(f"time_so_far:\n{time_so_far}")
         if time_so_far >= DROP_LIMIT:
             logger.info(
                 f"returning results, post model violation:\n{drop_limit_exceed_payload}"
@@ -233,16 +248,11 @@ class Queue(MLModel):
         if output.outputs[0].shape[0] == 1:
             if type(output.outputs[0].parameters.times) == list:
                 model_times: Dict = eval(output.outputs[0].parameters.times[0])
-                # logger.info(f"model times 1: {model_times}")
-                # logger.info(f"model times type 1: {type(model_times)}")
                 model_times.update(times)
                 output_times = [str(model_times)]
-                # logger.info(f"output times 1: {output_times}")
             else:
                 model_times: Dict = eval(eval(output.outputs[0].parameters.times)[0])
                 model_times.update(times)
-                # logger.info(f"model times 2: {model_times}")
-                # logger.info(f"model times type 2: {type(model_times)}")
                 output_times = str([str(model_times)])
                 # logger.info(f"output times 2: {output_times}")
             output.outputs[0].parameters.times = output_times

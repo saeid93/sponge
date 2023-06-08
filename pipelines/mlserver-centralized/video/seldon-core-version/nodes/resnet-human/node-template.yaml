@@ -66,6 +66,8 @@ spec:
               value: '{{num_threads}}'
             - name: DROP_LIMIT
               value: '{{drop_limit}}'
+            - name: LOGS_ENABLED
+              value: '{{ logs_enabled }}'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

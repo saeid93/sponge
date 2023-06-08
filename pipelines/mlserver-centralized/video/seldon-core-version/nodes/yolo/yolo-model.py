@@ -73,9 +73,22 @@ except KeyError as e:
     DROP_LIMIT = 1000
     logger.info(f"DROP_LIMIT env variable not set, using default value: {DROP_LIMIT}")
 
+try:
+    LOGS_ENABLED = os.getenv("LOGS_ENABLED", "True").lower() in ("true", "1", "t")
+    logger.info(f"LOGS_ENABLED set to: {LOGS_ENABLED}")
+except KeyError as e:
+    LOGS_ENABLED = True
+    logger.info(
+        f"LOGS_ENABLED env variable not set, using default value: {LOGS_ENABLED}"
+    )
+
+if not LOGS_ENABLED:
+    logger.disabled = True
 
 class Yolo(MLModel):
     async def load(self):
+        if not LOGS_ENABLED:
+            logger.disabled = True
         self.loaded = False
         self.request_counter = 0
         self.batch_counter = 0
@@ -106,22 +119,23 @@ class Yolo(MLModel):
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
+        if not LOGS_ENABLED:
+            logger.disabled = True
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
-
         for request_input in payload.inputs:
             dtypes: List[str] = eval(request_input.parameters.dtype)
-            # logger.info(f"dtypes: {dtypes}")
+            logger.info(f"dtypes: {dtypes}")
             shapes: List[str] = request_input.parameters.datashape
-            # logger.info(f"dtypes: {shapes}")
+            logger.info(f"dtypes: {shapes}")
             batch_shape = request_input.shape[0]
-            # logger.info(f"parameters: {request_input.parameters}")
+            logger.info(f"parameters: {request_input.parameters}")
             # batch one edge case
             if type(shapes) != list:
                 shapes = [shapes]
             input_data = request_input.data.__root__
-            # logger.info(f"shapes:\n{shapes}")
+            logger.info(f"shapes:\n{shapes}")
             shapes = list(map(lambda l: eval(l), eval(shapes[0])))
             X = decode_from_bin(inputs=input_data, shapes=shapes, dtypes=dtypes)
             pipeline_arrival = float(request_input.parameters.pipeline_arrival)
@@ -186,8 +200,8 @@ class Yolo(MLModel):
             model_name=self.name,
             parameters=Parameters(type_of="image"),
         )
-        # logger.info(f"request counter:\n{self.request_counter}\n")
-        # logger.info(f"batch counter:\n{self.batch_counter}\n")
+        logger.info(f"request counter:\n{self.request_counter}\n")
+        logger.info(f"batch counter:\n{self.batch_counter}\n")
         return payload
 
     def get_cropped(self, result):

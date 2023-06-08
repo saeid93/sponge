@@ -1,9 +1,9 @@
 # ----------- pipeline configs -------------
 # pipeline informat
-pipeline_folder_name: audio-qa
-pipeline_name: audio-qa
+pipeline_folder_name: audio-sent
+pipeline_name: audio-sent
 timeout: 1
-pipeline_folder_name: audio-qa
+pipeline_folder_name: audio-sent
 mode: exponential
 nodes:
   - node_name: audio
@@ -17,9 +17,9 @@ nodes:
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
-  - node_name: nlp-qa
+  - node_name: nlp-sent
     data_type: text
-    model_variants: deepset-roberta-base-squad2
+    model_variants: distilbert-base-uncased-finetuned-sst-2-english
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
@@ -46,27 +46,27 @@ workload_config:
     # end: '1861960'
     # end: '1862500'
     # end: '1863700'
-    # end: '1865100'
+  # end: '1865100'
     damping_factor: 8 # [int | null]
 
 # ----------- optimizer configs -------------
 
-series: 219
-pipeline_name: audio-qa
-metadata: 'first test on the audio-qa'
+series: 1002
+pipeline_name: audio-sent
+metadata: 'first test of audio pipeline'
 number_tasks: 2
 profiling_series:
-  - 85
-  - 86
+  - 87
+  - 88
 model_name:
   - audio # be consistent with values in pipelines
-  - nlp-qa # be consistent with values in pipelines
+  - nlp-sent # be consistent with values in pipelines
 task_name: 
   - audio
-  - nlp-qa
+  - nlp-sent
 initial_active_model:
   - facebook-s2t-small-librispeech-asr
-  - deepset-roberta-base-squad2
+  - distilbert-base-uncased-finetuned-sst-2-english
 initial_cpu_allocation:
   - 1
   - 1
@@ -89,7 +89,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: null # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
@@ -134,4 +134,4 @@ latency_margin: 100
 throughput_margin: -50
 
 # ----------- enable in container logging -------------
-logs_enabled: true
+logs_enabled: false

@@ -70,6 +70,8 @@ spec:
               value: "1"
             - name: DROP_LIMIT
               value: "1000"
+            - name: LOGS_ENABLED
+              value: "False"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

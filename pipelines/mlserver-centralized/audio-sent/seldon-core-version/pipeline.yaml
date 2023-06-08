@@ -63,6 +63,8 @@ spec:
               value: "4"
             - name: NUM_THREADS
               value: "4"
+            - name: LOGS_ENABLED
+              value: 'False'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -112,6 +114,8 @@ spec:
               value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
               value: "1"
+            - name: LOGS_ENABLED
+              value: 'False'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -192,6 +196,8 @@ spec:
               value: "4"
             - name: NUM_THREADS
               value: "4"
+            - name: LOGS_ENABLED
+              value: 'False'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -243,6 +249,8 @@ spec:
               value: "1"
             - name: LAST_NODE
               value: 'True'
+            - name: LOGS_ENABLED
+              value: 'False'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -286,6 +294,8 @@ spec:
           env:
             - name: MODEL_LISTS
               value: '["queue-audio", "queue-nlp-sent"]'
+            - name: LOGS_ENABLED
+              value: 'False'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

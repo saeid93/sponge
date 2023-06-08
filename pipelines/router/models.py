@@ -39,6 +39,17 @@ try:
 except KeyError as e:
     raise ValueError(f"MODEL_LISTS env variable not set!")
 
+try:
+    LOGS_ENABLED = os.getenv("LOGS_ENABLED", "True").lower() in ("true", "1", "t")
+    logger.info(f"LOGS_ENABLED set to: {LOGS_ENABLED}")
+except KeyError as e:
+    LOGS_ENABLED = True
+    logger.info(
+        f"LOGS_ENABLED env variable not set, using default value: {LOGS_ENABLED}"
+    )
+
+if not LOGS_ENABLED:
+    logger.disabled = True
 
 async def send_requests(ch, model_name, payload: InferenceRequest):
     grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
@@ -51,6 +62,8 @@ async def send_requests(ch, model_name, payload: InferenceRequest):
 
 
 async def model_infer(model_name, request_input: InferenceRequest):
+    if not LOGS_ENABLED:
+        logger.disabled = True
     try:
         inputs = request_input.outputs[0]
         # logger.info(f"second node {model_name} data extracted!")
@@ -67,6 +80,8 @@ async def model_infer(model_name, request_input: InferenceRequest):
 
 class Router(MLModel):
     async def load(self):
+        if not LOGS_ENABLED:
+            logger.disabled = True
         self.loaded = False
         self.request_counter = 0
         logger.info("Router loaded")
@@ -77,6 +92,8 @@ class Router(MLModel):
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
+        if not LOGS_ENABLED:
+            logger.disabled = True
         mlserver.log(input_requests=1)
 
         # injecting router arrival time to the message

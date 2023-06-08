@@ -107,7 +107,7 @@ central_queue: true
 
 distrpution_time: 30
 
-# ----------- distruption time -------------
+# ----------- dubugging logs -------------
 # debug mode with complete lgos of containers
 debug_mode: false
 
@@ -132,3 +132,6 @@ reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 100
 throughput_margin: -50
+
+# ----------- enable in container logging -------------
+logs_enabled: true

@@ -140,88 +140,107 @@ def draw_temporal_final(
 
     plt.tight_layout()
     plt.show()
-    
-    
+
+
 def draw_temporal_final2(
     dicts_to_draw: Dict[str, Dict[str, List[int]]],
     series_names: List[str],
     selected_experiments: Dict[str, Dict[str, Union[str, List[str]]]],
+    filename: str,
     adaptation_interval=None,
+    draw_load: bool = True,
     fig_size: int = 10,
+    bbox_to_anchor=(0.8, 6.1),
+    save=False
 ):
     num_keys = sum(map(lambda l: len(l["selection"]), selected_experiments.values()))
-    _, axs = plt.subplots(
-        nrows=num_keys + 1, ncols=1, figsize=(fig_size, num_keys * 2 + 1)
-    )
 
-    axs[0].plot(
-        dicts_to_draw["load"]["recieved_load_x"],
-        dicts_to_draw["load"]["recieved_load"],
-        label="recieved_load",
-    )
-    axs[0].plot(
-        dicts_to_draw["load"]["sent_load_x"],
-        dicts_to_draw["load"]["sent_load"],
-        label="sent_load",
-    )
-    axs[0].plot(
-        dicts_to_draw["load"]["predicted_load_x"],
-        dicts_to_draw["load"]["predicted_load"],
-        label="predicted_load",
-    )
-    axs[0].set_ylabel(ylabel="Load (RPS)")
-    axs[0].set_xticklabels([])
-    axs[-1].set_xlabel("Time (s)")
+    if draw_load:
+        _, axs = plt.subplots(nrows=num_keys + 1, ncols=1, figsize=(fig_size, num_keys * 2 + 1))
+        axs[0].plot(
+            dicts_to_draw["load"]["recieved_load_x"],
+            dicts_to_draw["load"]["recieved_load"],
+            label="recieved_load",
+        )
+        axs[0].plot(
+            dicts_to_draw["load"]["sent_load_x"],
+            dicts_to_draw["load"]["sent_load"],
+            label="sent_load",
+        )
+        axs[0].plot(
+            dicts_to_draw["load"]["predicted_load_x"],
+            dicts_to_draw["load"]["predicted_load"],
+            label="predicted_load",
+        )
+        axs[0].set_ylabel(ylabel="Load (RPS)")
+        axs[0].set_xticklabels([])
+        axs[-1].set_xlabel("Time (s)")
+        figure_index = 1
+    else:
+        _, axs = plt.subplots(nrows=num_keys, ncols=1, figsize=(fig_size, num_keys * 2))
+        figure_index = 0
 
-    figure_index = 1
     for metric, metric_to_draw in dicts_to_draw.items():
         if metric not in selected_experiments.keys():
             continue
         sample_experiment = list(metric_to_draw.keys())[0]
         metrics = metric_to_draw[sample_experiment]
-        
+
         for key in metrics.keys():
-            axs[figure_index].grid(axis='y', linestyle='dashed', color="gray")
+            axs[figure_index].grid(axis="y", linestyle="dashed", color="gray")
             if key not in selected_experiments[metric]["selection"]:
                 continue
             color_idx = 0
-            for (
-                experiment_id,
-                dict_to_draw_exp,
-            ) in metric_to_draw.items():  # draw different experiments
+            for experiment_id, dict_to_draw_exp in metric_to_draw.items():
                 color = color_list[color_idx]
                 x_values = range(len(list(dict_to_draw_exp.values())[0]))
-                if adaptation_interval is not None and metric not in [
-                    "measured_latencies"
-                ]:
+                if adaptation_interval is not None and metric not in ["measured_latencies"]:
                     x_values = [
                         item * adaptation_interval[experiment_id]
                         for item in list(x_values)
                     ]
                 axs[figure_index].plot(
-                    x_values, dict_to_draw_exp[key], label=series_names[experiment_id], color=color
+                    x_values,
+                    dict_to_draw_exp[key],
+                    label=series_names[experiment_id],
+                    color=color,
                 )
-                # axs[figure_index].set_title(selected_experiments[metric]["title"])
                 axs[figure_index].set_ylabel(
                     ylabel=selected_experiments[metric]["ylabel"]
                 )
                 color_idx += 1
-                # axs[figure_index].legend()
-            if figure_index < len(list(selected_experiments.keys())):
+
+            if figure_index < len(list(selected_experiments.keys())) - 1:
                 axs[figure_index].set_xticklabels([])
+            else:
+                axs[figure_index].set_xlabel("Time (s)")
             figure_index += 1
-            
-    plt.legend(
-        fontsize=13,
-        fancybox=False,
-        ncol=3,
-        frameon=False,
-        bbox_to_anchor=(0.8,6.1),
-        handlelength=1,
-        columnspacing=0.8
-    )
-    # plt.tight_layout()
-    plt.show()
+
+    if draw_load:
+        plt.legend(
+            fontsize=13,
+            fancybox=False,
+            ncol=3,
+            frameon=False,
+            bbox_to_anchor=(0.8, 6.1),
+            handlelength=1,
+            columnspacing=0.8,
+        )
+    else:
+        # pass
+        plt.legend(
+            fontsize=13,
+            fancybox=False,
+            ncol=3,
+            frameon=False,
+            bbox_to_anchor=bbox_to_anchor,
+            handlelength=1,
+            columnspacing=0.8,
+        )
+    if save:
+        plt.savefig(filename)
+    else:
+        plt.show()
 
 
 def draw_cumulative(

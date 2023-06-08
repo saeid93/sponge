@@ -59,6 +59,8 @@ spec:
               value: "2"
             - name: NUM_THREADS
               value: "2"
+            - name: LOGS_ENABLED
+              value: 'False'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

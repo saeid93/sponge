@@ -78,9 +78,22 @@ if USE_THREADING:
     torch.set_num_interop_threads(NUM_INTEROP_THREADS)
     torch.set_num_threads(NUM_THREADS)
 
+try:
+    LOGS_ENABLED = os.getenv("LOGS_ENABLED", "True").lower() in ("true", "1", "t")
+    logger.info(f"LOGS_ENABLED set to: {LOGS_ENABLED}")
+except KeyError as e:
+    LOGS_ENABLED = True
+    logger.info(
+        f"LOGS_ENABLED env variable not set, using default value: {LOGS_ENABLED}"
+    )
+
+if not LOGS_ENABLED:
+    logger.disabled = True
 
 class ResnetHuman(MLModel):
     async def load(self) -> bool:
+        if not LOGS_ENABLED:
+            logger.disabled = True
         self.loaded = False
         self.request_counter = 0
         self.batch_counter = 0
@@ -125,7 +138,8 @@ class ResnetHuman(MLModel):
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceRequest:
-        # print(payload)
+        if not LOGS_ENABLED:
+            logger.disabled = True
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
@@ -133,20 +147,20 @@ class ResnetHuman(MLModel):
         for request_input in payload.inputs:
             batch_shape = request_input.shape[0]
             prev_nodes_times = request_input.parameters.times
-            # logger.info(f"prev_nodes_times: {prev_nodes_times}")
-            # logger.info(f"prev_nodes_times types: {type(prev_nodes_times)}")
+            logger.info(f"prev_nodes_times: {prev_nodes_times}")
+            logger.info(f"prev_nodes_times types: {type(prev_nodes_times)}")
             prev_nodes_times = eval(prev_nodes_times)
             prev_nodes_times = list(map(lambda l: eval(eval(l)[0]), prev_nodes_times))
             shapes = request_input.parameters.datashape
             dtypes = batch_shape * ["u1"]  # TEMP HACK
 
-            # logger.info(f"input shapes: {shapes}")
-            # logger.info(f"input shapes type: {type(shapes)}")
+            logger.info(f"input shapes: {shapes}")
+            logger.info(f"input shapes type: {type(shapes)}")
             input_data = request_input.data.__root__
 
             shapes = list(map(lambda l: eval(l), eval(shapes)))
-            # logger.info(f"output shapes:\n{shapes}")
-            # logger.info(f"shapes:\n{shapes}")
+            logger.info(f"output shapes:\n{shapes}")
+            logger.info(f"shapes:\n{shapes}")
             input_data = request_input.data.__root__
             X = decode_from_bin(
                 inputs=input_data,
@@ -173,12 +187,12 @@ class ResnetHuman(MLModel):
             parameters=Parameters(type_of="text"),
         )
         time_so_far = time.time() - pipeline_arrival
-        # logger.info(f"time_so_far:\n{time_so_far}")
+        logger.info(f"time_so_far:\n{time_so_far}")
         if time_so_far >= DROP_LIMIT:
             return drop_limit_exceed_payload
 
         received_batch_len = len(X)
-        # logger.info(f"recieved batch len:\n{received_batch_len}")
+        logger.info(f"recieved batch len:\n{received_batch_len}")
         self.request_counter += batch_shape
         self.batch_counter += 1
         # preprocessings
@@ -222,6 +236,6 @@ class ResnetHuman(MLModel):
             model_name=self.name,
             parameters=Parameters(type_of="int"),
         )
-        # logger.info(f"request counter:\n{self.request_counter}\n")
-        # logger.info(f"batch counter:\n{self.batch_counter}\n")
+        logger.info(f"request counter:\n{self.request_counter}\n")
+        logger.info(f"batch counter:\n{self.batch_counter}\n")
         return payload
