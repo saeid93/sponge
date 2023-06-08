@@ -78,8 +78,8 @@ ax.plot(list(range(len(selected_workload))), selected_workload, label="Real")
 ax.set_title("Bursty")
 x, _ = get_x_y(selected_workload)
 ax.plot(list(range(len(selected_workload))), list(lstm.predict(x)), **lstm_plot_kwargs)
-arima = get_arima_prediction(x)
-ax.plot(list(range(len(selected_workload))), arima, **arima_plot_kwargs)
+# arima = get_arima_prediction(x)
+# ax.plot(list(range(len(selected_workload))), arima, **arima_plot_kwargs)
 print(f"start: {start}")  # 1301160
 print(f"end: {start+duration}")
 
@@ -102,8 +102,8 @@ ax2.plot(list(range(len(selected_workload))), selected_workload, label="Real")
 ax2.set_title("Steady Low")
 x, _ = get_x_y(selected_workload)
 ax2.plot(list(range(len(selected_workload))), list(lstm.predict(x)), **lstm_plot_kwargs)
-arima = get_arima_prediction(x)
-ax2.plot(list(range(len(selected_workload))), arima, **arima_plot_kwargs)
+# arima = get_arima_prediction(x)
+# ax2.plot(list(range(len(selected_workload))), arima, **arima_plot_kwargs)
 print(f"start: {start}")  # 1299600
 print(f"end: {start+duration}")
 
@@ -127,8 +127,8 @@ ax3.plot(list(range(len(selected_workload))), selected_workload, label="Real")
 ax3.set_title("Steady High")
 x, _ = get_x_y(selected_workload)
 ax3.plot(list(range(len(selected_workload))), list(lstm.predict(x)), **lstm_plot_kwargs)
-arima = get_arima_prediction(x)
-ax3.plot(list(range(len(selected_workload))), arima, **arima_plot_kwargs)
+# arima = get_arima_prediction(x)
+# ax3.plot(list(range(len(selected_workload))), arima, **arima_plot_kwargs)
 print(f"start: {start}")  # 1768800
 print(f"end: {start+duration}")
 
@@ -156,10 +156,10 @@ ax4.plot(list(range(len(selected_workload))), selected_workload, label="Real")
 ax4.set_title("Fluctuating")
 x, _ = get_x_y(selected_workload)
 ax4.plot(list(range(len(selected_workload))), list(lstm.predict(x)), **lstm_plot_kwargs)
-arima = get_arima_prediction(x)
-ax4.plot(list(range(len(selected_workload))), arima, **arima_plot_kwargs)
+# arima = get_arima_prediction(x)
+# ax4.plot(list(range(len(selected_workload))), arima, **arima_plot_kwargs)
 
-ax.legend(
+plt.legend(
     fontsize=13,
     fancybox=False,
     ncol=3,

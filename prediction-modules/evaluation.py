@@ -16,6 +16,23 @@ from barazmoon.twitter import twitter_workload_generator
 from experiments.utils.constants import PROJECT_PATH, LSTM_PATH, LSTM_INPUT_SIZE
 
 
+def smape(y_true, y_pred):
+    """
+    Compute the Symmetric Mean Absolute Percentage Error (SMAPE).
+
+    Args:
+        actual (np.ndarray or list): Array of actual values.
+        predicted (np.ndarray or list): Array of predicted values.
+
+    Returns:
+        float: The SMAPE value.
+    """
+
+    numerator = np.abs(y_true - y_pred)
+    denominator = (np.abs(y_true) + np.abs(y_pred)) / 2
+
+    return np.mean(numerator / denominator) * 100
+
 
 
 fig_path = os.path.join(
@@ -71,8 +88,8 @@ test_x = tf.convert_to_tensor(
 )
 lstm_prediction = model.predict(test_x)
 
-print(f"lstm mean squaured error: {mean_absolute_percentage_error(y_true=test_y, y_pred=lstm_prediction)}")
-
+print(f"lstm mean_absolute_percentage_error: {mean_absolute_percentage_error(y_true=test_y, y_pred=lstm_prediction)}")
+print(f"lstm Symmetric Mean Absolute Percentage Error (SMAPE): {smape(y_true=test_y, y_pred=lstm_prediction)}")
 
 # ----------------------- ARIMA -----------------------
 
@@ -83,10 +100,12 @@ for x in test_x:
     pred = int(max(model_fit.forecast(steps=2)))  # max
     arima_prediction.append(pred)
 
-print(f"arima mean squaured error: {mean_absolute_percentage_error(y_true=test_y, y_pred=arima_prediction)}")
+print(f"arima mean_absolute_percentage_error: {mean_absolute_percentage_error(y_true=test_y, y_pred=arima_prediction)}")
+print(f"arima Symmetric Mean Absolute Percentage Error (SMAPE): {smape(y_true=test_y, y_pred=arima_prediction)}")
 
-plt.plot(lstm_prediction, label='lstm')
-plt.plot(arima_prediction, label='arima')
-plt.plot(test_y, label='real')
-plt.legend()
-plt.savefig("eval.png")
+
+# plt.plot(lstm_prediction, label='lstm')
+# plt.plot(arima_prediction, label='arima')
+# plt.plot(test_y, label='real')
+# plt.legend()
+# plt.savefig("eval.png")
