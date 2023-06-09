@@ -60,11 +60,15 @@ spec:
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
-              value: "1"
+              value: "4"
             - name: NUM_THREADS
-              value: "1"
+              value: "4"
             - name: LOGS_ENABLED
-              value: 'False'
+              value: 'True'
+            - name: MIN_LENGTH
+              value: '0'
+            - name: MAX_LENGTH
+              value: '4'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

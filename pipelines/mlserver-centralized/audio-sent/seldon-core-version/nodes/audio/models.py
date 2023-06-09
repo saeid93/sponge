@@ -76,6 +76,7 @@ except KeyError as e:
 if not LOGS_ENABLED:
     logger.disabled = True
 
+
 class GeneralAudio(MLModel):
     async def load(self):
         if not LOGS_ENABLED:

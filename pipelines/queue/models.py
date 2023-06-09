@@ -57,6 +57,7 @@ except KeyError as e:
 if not LOGS_ENABLED:
     logger.disabled = True
 
+
 async def send_requests(ch, model_name, payload: InferenceRequest):
     grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
 

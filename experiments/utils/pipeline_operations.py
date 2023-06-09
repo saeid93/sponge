@@ -66,7 +66,7 @@ def setup_node(
     no_engine=False,
     debug_mode=False,
     drop_limit=1000,
-    logs_enabled: bool = True
+    logs_enabled: bool = True,
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
@@ -85,7 +85,7 @@ def setup_node(
             "num_interop_threads": num_interop_threads,
             "num_threads": num_threads,
             "drop_limit": drop_limit,
-            "logs_enabled": logs_enabled
+            "logs_enabled": logs_enabled,
         }
     else:
         svc_vars = {
@@ -124,7 +124,7 @@ def setup_router(
     distrpution_time: int,
     debug_mode: bool = False,
     drop_limit: int = 1000,
-    logs_enabled: bool = True
+    logs_enabled: bool = True,
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
@@ -142,7 +142,7 @@ def setup_router(
         "distrpution_time": distrpution_time,
         "model_lists": model_lists,
         "drop_limit": drop_limit,
-        "logs_enabled": logs_enabled
+        "logs_enabled": logs_enabled,
     }
     environment = Environment(loader=FileSystemLoader(ROUTER_PATH))
     svc_template = environment.get_template("node-template.yaml")
@@ -180,7 +180,7 @@ def setup_queues(
             distrpution_time=distrpution_time,
             debug_mode=debug_mode,
             drop_limit=drop_limit,
-            logs_enabled=logs_enabled
+            logs_enabled=logs_enabled,
         )
 
 
@@ -192,7 +192,7 @@ def setup_queue(
     distrpution_time: int,
     debug_mode: bool = False,
     drop_limit: int = 1000,
-    logs_enabled: bool = True
+    logs_enabled: bool = True,
 ):
     # TODO
     # in a for loop
@@ -211,7 +211,7 @@ def setup_queue(
         "model_name": model_name,
         "last_node": last_node,
         "drop_limit": drop_limit,
-        "logs_enabled": logs_enabled
+        "logs_enabled": logs_enabled,
     }
     queue_path = f"{QUEUE_PATH}-debug" if debug_mode else QUEUE_PATH
     environment = Environment(loader=FileSystemLoader(queue_path))
@@ -408,7 +408,7 @@ def setup_central_pipeline(
     distrpution_time: int,
     debug_mode: bool = False,
     drop_limit: int = 1000,
-    logs_enabled: bool = True
+    logs_enabled: bool = True,
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
@@ -432,7 +432,7 @@ def setup_central_pipeline(
             num_threads=cpu_request[node_id],
             distrpution_time=distrpution_time,
             drop_limit=drop_limit,
-            logs_enabled=logs_enabled
+            logs_enabled=logs_enabled,
         )
     queue_names = list(map(lambda l: "queue-" + l, node_names))
     setup_queues(
@@ -442,7 +442,7 @@ def setup_central_pipeline(
         distrpution_time=distrpution_time,
         debug_mode=debug_mode,
         drop_limit=drop_limit,
-        logs_enabled=logs_enabled
+        logs_enabled=logs_enabled,
     )
     setup_router(
         pipeline_name=pipeline_name,
@@ -450,7 +450,7 @@ def setup_central_pipeline(
         distrpution_time=distrpution_time,
         debug_mode=debug_mode,
         drop_limit=drop_limit,
-        logs_enabled=logs_enabled
+        logs_enabled=logs_enabled,
     )
 
 

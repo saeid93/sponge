@@ -6,8 +6,8 @@ import time
 import pathlib
 import os
 
-load = 1
-test_duration = 5
+load = 10
+test_duration = 10
 variant = 0
 platform = "seldon"
 mode = "equal"
@@ -26,7 +26,7 @@ mode = "equal"
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
-with open(os.path.join(PATH, "input-sample.txt"), "r") as openfile:
+with open(os.path.join(PATH, "input-sample-short.txt"), "r") as openfile:
     data = openfile.read()
 
 # times = str([str(request['times']['models'])])

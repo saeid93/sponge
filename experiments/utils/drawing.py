@@ -3,12 +3,12 @@ import numpy as np
 from typing import Dict, List, Union
 
 
-font = {'size': 12}
-plt.rc('font', size=12)
-plt.rc('axes', titlesize=12)
-plt.rcParams['pdf.fonttype'] = 42
-plt.rcParams['ps.fonttype'] = 42
-color_list = ['#d7191c','#fdae61','#abd9e9', '#2c7bb6', '#fee090']
+font = {"size": 12}
+plt.rc("font", size=12)
+plt.rc("axes", titlesize=12)
+plt.rcParams["pdf.fonttype"] = 42
+plt.rcParams["ps.fonttype"] = 42
+color_list = ["#d7191c", "#fdae61", "#abd9e9", "#2c7bb6", "#fee090"]
 
 
 def draw_temporal(
@@ -151,12 +151,14 @@ def draw_temporal_final2(
     draw_load: bool = True,
     fig_size: int = 10,
     bbox_to_anchor=(0.8, 6.1),
-    save=False
+    save=False,
 ):
     num_keys = sum(map(lambda l: len(l["selection"]), selected_experiments.values()))
 
     if draw_load:
-        _, axs = plt.subplots(nrows=num_keys + 1, ncols=1, figsize=(fig_size, num_keys * 2 + 1))
+        _, axs = plt.subplots(
+            nrows=num_keys + 1, ncols=1, figsize=(fig_size, num_keys * 2 + 1)
+        )
         axs[0].plot(
             dicts_to_draw["load"]["recieved_load_x"],
             dicts_to_draw["load"]["recieved_load"],
@@ -194,7 +196,9 @@ def draw_temporal_final2(
             for experiment_id, dict_to_draw_exp in metric_to_draw.items():
                 color = color_list[color_idx]
                 x_values = range(len(list(dict_to_draw_exp.values())[0]))
-                if adaptation_interval is not None and metric not in ["measured_latencies"]:
+                if adaptation_interval is not None and metric not in [
+                    "measured_latencies"
+                ]:
                     x_values = [
                         item * adaptation_interval[experiment_id]
                         for item in list(x_values)

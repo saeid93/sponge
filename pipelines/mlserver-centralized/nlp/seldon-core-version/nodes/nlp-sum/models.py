@@ -62,6 +62,7 @@ except KeyError as e:
 if not LOGS_ENABLED:
     logger.disabled = True
 
+
 class GeneralNLP(MLModel):
     async def load(self):
         if not LOGS_ENABLED:

@@ -54,7 +54,7 @@ def setup_pipeline(
     drop_limit: int = config["drop_limit"]
     warm_upp: bool = config["warm_up"]
 
-    logs_enabled = config['logs_enabled']
+    logs_enabled = config["logs_enabled"]
 
     model_variants = []
     max_batch_sizes = []
@@ -97,7 +97,7 @@ def setup_pipeline(
             distrpution_time=distrpution_time,
             debug_mode=debug_mode,
             drop_limit=drop_limit,
-            logs_enabled=logs_enabled
+            logs_enabled=logs_enabled,
         )
     else:
         setup_router_pipeline(

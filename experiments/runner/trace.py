@@ -12,14 +12,18 @@ project_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(os.path.normpath(os.path.join(project_dir, "..", "..")))
 
 
-plt.rc('font', size=12)
-plt.rc('axes', titlesize=12)
-plt.rcParams['pdf.fonttype'] = 42
-plt.rcParams['ps.fonttype'] = 42
+plt.rc("font", size=12)
+plt.rc("axes", titlesize=12)
+plt.rcParams["pdf.fonttype"] = 42
+plt.rcParams["ps.fonttype"] = 42
 
 LSTM_PATH = os.path.join(project_dir, "data/lstm")
-lstm_plot_kwargs = {"label": "LSTM",}
-arima_plot_kwargs = {"label": "ARIMA",}
+lstm_plot_kwargs = {
+    "label": "LSTM",
+}
+arima_plot_kwargs = {
+    "label": "ARIMA",
+}
 
 
 lstm = load_model(LSTM_PATH)
@@ -27,6 +31,7 @@ fig, axs = plt.subplots(2, 2, figsize=(10, 4.5))
 for axes in axs:
     for ax in axes:
         ax.set_ylim([0, 57])
+
 
 def get_x_y(data):
     x = []
@@ -43,7 +48,6 @@ def get_x_y(data):
     print(x.shape)
     print(len(y))
     return tf.convert_to_tensor(x.reshape((-1, input_length, 1)), dtype=tf.float32), y
-
 
 
 def get_arima_prediction(data):
@@ -72,7 +76,6 @@ while True:
     start += 60 * 2
 
 
-
 ax = axs[0][0]
 ax.plot(list(range(len(selected_workload))), selected_workload, label="Real")
 ax.set_title("Bursty")
@@ -82,7 +85,6 @@ ax.plot(list(range(len(selected_workload))), list(lstm.predict(x)), **lstm_plot_
 # ax.plot(list(range(len(selected_workload))), arima, **arima_plot_kwargs)
 print(f"start: {start}")  # 1301160
 print(f"end: {start+duration}")
-
 
 
 start = 1296000
@@ -108,7 +110,6 @@ print(f"start: {start}")  # 1299600
 print(f"end: {start+duration}")
 
 
-
 start = 1296000
 duration = 10 * 60  # 10 minutes
 while True:
@@ -131,7 +132,6 @@ ax3.plot(list(range(len(selected_workload))), list(lstm.predict(x)), **lstm_plot
 # ax3.plot(list(range(len(selected_workload))), arima, **arima_plot_kwargs)
 print(f"start: {start}")  # 1768800
 print(f"end: {start+duration}")
-
 
 
 start = 1296000
@@ -167,12 +167,12 @@ plt.legend(
     bbox_to_anchor=(-0.1, 2.8),
     loc="upper center",
     handlelength=1,
-    columnspacing=0.8
+    columnspacing=0.8,
 )
 
 # fig.tight_layout()
-fig.text(0.51, -0.01, 'Time (s)', ha='center', fontsize=12)
-fig.text(0.07, 0.5, "Workload (RPS)", rotation=90, va='center', fontsize=12)
+fig.text(0.51, -0.01, "Time (s)", ha="center", fontsize=12)
+fig.text(0.07, 0.5, "Workload (RPS)", rotation=90, va="center", fontsize=12)
 plt.subplots_adjust(wspace=0.15, hspace=0.4)
 plt.savefig(
     os.path.dirname(__file__) + "/trace-figures/patterns.pdf",
