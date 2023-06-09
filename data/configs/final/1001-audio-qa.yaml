@@ -3,7 +3,6 @@
 pipeline_folder_name: audio-qa
 pipeline_name: audio-qa
 timeout: 1
-pipeline_folder_name: audio-qa
 mode: exponential
 nodes:
   - node_name: audio

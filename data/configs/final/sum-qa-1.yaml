@@ -1,14 +1,13 @@
 # ----------- pipeline configs -------------
 # pipeline informat
-pipeline_folder_name: audio-sent
-pipeline_name: audio-sent
+pipeline_folder_name: sum-qa
+pipeline_name: sum-qa
 timeout: 1
-pipeline_folder_name: audio-sent
 mode: exponential
 nodes:
-  - node_name: audio
-    data_type: audio
-    model_variants: facebook-s2t-small-librispeech-asr
+  - node_name: nlp-sum
+    data_type: text
+    model_variants: sshleifer-distilbart-cnn-12-6
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
@@ -17,9 +16,9 @@ nodes:
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
-  - node_name: nlp-sent
+  - node_name: nlp-qa
     data_type: text
-    model_variants: distilbert-base-uncased-finetuned-sst-2-english
+    model_variants: deepset-roberta-base-squad2
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
@@ -51,22 +50,22 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 224
-pipeline_name: audio-sent
+series: 3000
+pipeline_name: sum-qa
 metadata: 'first test of audio pipeline'
 number_tasks: 2
 profiling_series:
-  - 87
+  - 90
   - 88
 model_name:
-  - audio # be consistent with values in pipelines
-  - nlp-sent # be consistent with values in pipelines
+  - nlp-sum # be consistent with values in pipelines
+  - nlp-qa # be consistent with values in pipelines
 task_name: 
-  - audio
-  - nlp-sent
+  - nlp-sum
+  - nlp-qa
 initial_active_model:
-  - facebook-s2t-small-librispeech-asr
-  - distilbert-base-uncased-finetuned-sst-2-english
+  - sshleifer-distilbart-xsum-12-3
+  - deepset-xlm-roberta-base-squad2
 initial_cpu_allocation:
   - 1
   - 1
