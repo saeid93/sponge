@@ -90,18 +90,18 @@ class GeneralNLP(MLModel):
             )
 
         try:
-            self.MAX_LENGTH = int(os.environ["MAX_LENGTH"])
-            logger.info(f"MAX_LENGTH set to: {self.MAX_LENGTH}")
-        except KeyError as e:
-            self.MAX_LENGTH = 1
-            logger.info(f"MAX_LENGTH env variable not set, using default value: {self.MAX_LENGTH}")
-
-        try:
             self.MIN_LENGTH = int(os.environ["MIN_LENGTH"])
             logger.info(f"MIN_LENGTH set to: {self.MIN_LENGTH}")
         except KeyError as e:
-            self.MAX_LENGTH = 1
+            self.MIN_LENGTH = 0
             logger.info(f"MIN_LENGTH env variable not set, using default value: {self.MIN_LENGTH}")
+
+        try:
+            self.MAX_LENGTH = int(os.environ["MAX_LENGTH"])
+            logger.info(f"MAX_LENGTH set to: {self.MAX_LENGTH}")
+        except KeyError as e:
+            self.MAX_LENGTH = 4
+            logger.info(f"MAX_LENGTH env variable not set, using default value: {self.MAX_LENGTH}")
 
         logger.info("Loading the ML models")
         # TODO add batching like the runtime

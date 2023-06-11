@@ -247,6 +247,63 @@ def draw_temporal_final2(
         plt.show()
 
 
+def draw_temporal_final3(
+    final_by_load_type: Dict[str, Dict[str, List[int]]],
+    selected_experiments: Dict[str, Dict[str, Union[str, List[str]]]],
+    filename: str,
+    adaptation_interval=None,
+    bbox_to_anchor=(0.8, 6.1),
+    save=False,
+):
+    num_keys = sum(map(lambda l: len(l["selection"]), selected_experiments.values()))
+    
+    fig = plt.figure(figsize=(10, 10), dpi=600)
+
+    subfigs = fig.subfigures(2, 2)
+    
+    subfig_idx = 0
+    for load_type in final_by_load_type.keys():
+        subfig = subfigs.flat[subfig_idx]
+        subfig.suptitle(load_type, fontsize=13)
+        subfig_idx += 1
+        # subfig.suptitle(f'Subfig {outerind}')
+        axs = subfig.subplots(len(final_by_load_type[load_type].keys()), 1)
+        axs_idx = 0
+        
+        for metric in final_by_load_type[load_type]:
+            ax = axs.flat[axs_idx]
+            ax.grid(axis="y", linestyle="dashed", color="gray")
+            if subfig_idx % 2 == 1:
+                ax.set_ylabel(selected_experiments[metric]["ylabel"])
+            axs_idx += 1
+            color_idx = 0
+            if axs_idx < len(list(selected_experiments.keys())):
+                ax.set_xticklabels([])
+            else:
+                if subfig_idx > len(final_by_load_type.keys()) // 2:
+                    ax.set_xlabel("Time (s)")
+            for serie_name in final_by_load_type[load_type][metric]:
+                color = color_list[color_idx]
+                color_idx += 1
+                for key, values in final_by_load_type[load_type][metric][serie_name].items():
+                    if key in selected_experiments[metric]["selection"]:
+                        ax.plot(values, label=serie_name, color=color)
+
+    plt.legend(
+        fontsize=13,
+        fancybox=False,
+        ncol=3,
+        frameon=False,
+        bbox_to_anchor=bbox_to_anchor,
+        handlelength=1,
+        columnspacing=0.8,
+    )
+    if save:
+        plt.savefig(filename)
+    else:
+        plt.show()
+
+
 def draw_cumulative(
     dict_to_draw: Dict[str, Dict[str, List[int]]],
     ylabel="Value",

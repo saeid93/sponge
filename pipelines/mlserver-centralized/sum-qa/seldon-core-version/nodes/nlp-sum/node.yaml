@@ -42,10 +42,10 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '4'
+              cpu: '8'
               memory: 4Gi
             limits:
-              cpu: '4'
+              cpu: '8'
           volumeMounts:
           - mountPath: /mnt/models
             name: classifier-provision-location
@@ -60,9 +60,9 @@ spec:
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
-              value: "4"
+              value: "8"
             - name: NUM_THREADS
-              value: "4"
+              value: "8"
             - name: LOGS_ENABLED
               value: 'True'
             - name: MIN_LENGTH

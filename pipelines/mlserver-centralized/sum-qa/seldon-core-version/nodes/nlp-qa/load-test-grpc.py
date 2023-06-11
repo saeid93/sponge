@@ -4,7 +4,7 @@ import asyncio
 import time
 import numpy as np
 
-load = 1
+load = 10
 test_duration = 5
 variant = 0
 platform = "seldon"
@@ -17,9 +17,13 @@ request = {
         }
     },
     "model_name": "nlp-qa",
+    # "outputs": [
+    #     {
+    #         "data": "mister quilter is the apostle of the middle classes and we are glad to welcome his gospel"
+    #     }
     "outputs": [
         {
-            "data": "mister quilter is the apostle of the middle classes and we are glad to welcome his gospel"
+            "data": "martial"
         }
     ],
 }

@@ -6,7 +6,7 @@ import time
 import pathlib
 import os
 
-load = 10
+load = 40
 test_duration = 10
 variant = 0
 platform = "seldon"
@@ -71,3 +71,4 @@ load_tester = MLServerAsyncGrpc(
 responses = asyncio.run(load_tester.start())
 
 print(f"{(time.time() - start_time):2.2}s spent in total")
+print(responses)
