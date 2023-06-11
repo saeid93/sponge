@@ -70,9 +70,22 @@ if USE_THREADING:
     torch.set_num_interop_threads(NUM_INTEROP_THREADS)
     torch.set_num_threads(NUM_THREADS)
 
+try:
+    LOGS_ENABLED = os.getenv("LOGS_ENABLED", "True").lower() in ("true", "1", "t")
+    logger.info(f"LOGS_ENABLED set to: {LOGS_ENABLED}")
+except KeyError as e:
+    LOGS_ENABLED = True
+    logger.info(
+        f"LOGS_ENABLED env variable not set, using default value: {LOGS_ENABLED}"
+    )
+
+if not LOGS_ENABLED:
+    logger.disabled = True
 
 class Yolo(MLModel):
     async def load(self):
+        if not LOGS_ENABLED:
+            logger.disabled = True
         self.loaded = False
         self.request_counter = 0
         self.batch_counter = 0
@@ -104,7 +117,8 @@ class Yolo(MLModel):
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
-        # print(payload)
+        if not LOGS_ENABLED:
+            logger.disabled = True
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
