@@ -69,6 +69,8 @@ spec:
               value: '{{num_interop_threads}}'
             - name: NUM_THREADS
               value: '{{num_threads}}'
+            - name: LOGS_ENABLED
+              value: '{{ logs_enabled }}'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
