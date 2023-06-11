@@ -6,31 +6,46 @@ import time
 import pathlib
 import os
 
-load = 1
-test_duration = 5
+load = 10
+test_duration = 10
 variant = 0
 platform = "seldon"
 mode = "equal"
 
+# request = {
+#     'times': {
+#         'models': {
+#             'nlp-trans': {
+#                 'arrival': 1672276157.286681,
+#                 'serving': 1672276157.2869108
+#                 }
+#             }
+#         },
+#     'model_name': 'nlp-trans',
+# }
+
+times = ['["{\'nlp-li\': {\'arrival\': 1686504468.9357939, \'serving\': 1686504469.0290744}, \'queue-nlp-li\': {\'arrival\': 1686504468.9233086, \'serving\': 1686504469.0370655}}"]']
+
 request = {
-    "times": {
-        "models": {
-            "nlp-trans": {"arrival": 1672276157.286681, "serving": 1672276157.2869108}
-        }
-    },
-    "model_name": "nlp-trans",
+    'times': times,
+    'model_name': 'nlp-li',
 }
+
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
-with open(os.path.join(PATH, "input-sample.txt"), "r") as openfile:
+with open(os.path.join(PATH, "input-sample-short.txt"), "r") as openfile:
     data = openfile.read()
 
-times = str([str(request["times"]["models"])])
+# times = str([str(request['times']['models'])])
 
 data_shape = [1]
-custom_parameters = {"times": str(times)}
-data_1 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
+custom_parameters = {'times': str(times)}
+data_1 = Data(
+    data=data,
+    data_shape=data_shape,
+    custom_parameters=custom_parameters
+)
 
 # single node inference
 if platform == "seldon":

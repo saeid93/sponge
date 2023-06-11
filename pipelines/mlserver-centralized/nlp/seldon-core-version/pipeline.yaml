@@ -41,10 +41,10 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '2'
+              cpu: '8'
               memory: 4Gi
             limits:
-              cpu: '2'
+              cpu: '8'
               memory: 4Gi
           volumeMounts:
           - mountPath: /mnt/models
@@ -62,9 +62,9 @@ spec:
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
-              value: "1"
+              value: "8"
             - name: NUM_THREADS
-              value: "1"
+              value: "8"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -80,7 +80,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 10
-      replicas: 1
+      replicas: 4
     graph:
       name: nlp-li
       type: MODEL
@@ -181,10 +181,10 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '2'
+              cpu: '8'
               memory: 4Gi
             limits:
-              cpu: '2'
+              cpu: '8'
               memory: 4Gi
           volumeMounts:
           - mountPath: /mnt/models
@@ -200,9 +200,13 @@ spec:
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
-              value: "1"
+              value: "8"
             - name: NUM_THREADS
-              value: "1"
+              value: "8"
+            - name: MIN_LENGTH
+              value: '0'
+            - name: MAX_LENGTH
+              value: '4'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -218,7 +222,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 10
-      replicas: 1
+      replicas: 4
     graph:
       name: nlp-sum
       type: MODEL
@@ -319,10 +323,10 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '2'
+              cpu: '8'
               memory: 4Gi
             limits:
-              cpu: '2'
+              cpu: '8'
               memory: 4Gi
           volumeMounts:
           - mountPath: /mnt/models
@@ -338,9 +342,9 @@ spec:
             - name: USE_THREADING
               value: "True"
             - name: NUM_INTEROP_THREADS
-              value: "2"
+              value: "8"
             - name: NUM_THREADS
-              value: "2"
+              value: "8"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -356,7 +360,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 10
-      replicas: 1
+      replicas: 4
     graph:
       name: nlp-trans
       type: MODEL

@@ -65,6 +65,10 @@ spec:
               value: '{{num_threads}}'
             - name: LOGS_ENABLED
               value: '{{ logs_enabled }}'
+            - name: MIN_LENGTH
+              value: '0'
+            - name: MAX_LENGTH
+              value: '4'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

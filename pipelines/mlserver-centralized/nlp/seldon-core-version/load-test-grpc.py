@@ -6,8 +6,8 @@ from barazmoon import Data
 import asyncio
 import time
 
-load = 10
-test_duration = 1
+load = 30
+test_duration = 10
 variant = 0
 platform = "router"
 workload = [load] * test_duration
@@ -16,7 +16,7 @@ data_type = "text"
 mode = "equal"  # options - step, equal, exponential
 
 PATH = pathlib.Path(__file__).parent.resolve()
-with open(os.path.join(PATH, "input-sample.txt"), "r") as openfile:
+with open(os.path.join(PATH, "input-sample-short.txt"), "r") as openfile:
     data = openfile.read()
 
 data_shape = [1]

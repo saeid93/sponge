@@ -133,24 +133,6 @@ class GeneralNLP(MLModel):
         logger.info(f"model output:\n{output}")
 
         # times processing
-        # serving_time = time.time()
-        # times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
-
-        # if "times" in dir(request_input.parameters):
-        #     this_node_times = [times] * batch_shape
-        #     times = []
-        #     for this_node_time, prev_nodes_time in zip(
-        #         this_node_times, prev_nodes_times
-        #     ):
-        #         this_node_time.update(prev_nodes_time)
-        #         times.append(this_node_time)
-        #     batch_times = list(map(lambda l: str(l), times))
-        # else:
-        #     batch_times = [str(times)] * batch_shape
-        # if self.settings.max_batch_size == 1:
-        #     batch_times = str(batch_times)
-
-        # times processing
         serving_time = time.time()
         times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
         this_node_times = [times] * batch_shape
