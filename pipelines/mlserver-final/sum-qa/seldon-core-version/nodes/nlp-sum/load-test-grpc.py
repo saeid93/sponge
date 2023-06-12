@@ -26,7 +26,7 @@ mode = "equal"
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
-with open(os.path.join(PATH, "input-sample.txt"), "r") as openfile:
+with open(os.path.join(PATH, "input-sample-short.txt"), "r") as openfile:
     data = openfile.read()
 
 # times = str([str(request['times']['models'])])
@@ -71,3 +71,5 @@ load_tester = MLServerAsyncGrpc(
 responses = asyncio.run(load_tester.start())
 
 print(f"{(time.time() - start_time):2.2}s spent in total")
+
+print(responses)

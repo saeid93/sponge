@@ -56,6 +56,7 @@ def experiments(
     workload_type = config["workload_type"]
     workload_config = config["workload_config"]
 
+    logs_enabled = config["logs_enabled"]
     distrpution_time = config["distrpution_time"]
 
     if workload_type == "static":
@@ -139,6 +140,7 @@ def experiments(
                                         num_interop_threads=cpu_request,
                                         num_threads=cpu_request,
                                         distrpution_time=distrpution_time,
+                                        logs_enabled=logs_enabled
                                     )
                                     logger.info("Checking if the model is up ...")
                                     logger.info("\n")
@@ -466,7 +468,7 @@ def save_report(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="5-config-yolo")
+@click.option("--config-name", required=True, type=str, default="1-test")
 def main(config_name: str):
     config_path = os.path.join(NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, "r") as cf:

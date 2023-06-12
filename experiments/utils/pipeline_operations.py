@@ -70,6 +70,7 @@ def setup_node(
 ):
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
+    # central pipeline case
     if max_batch_size is None and max_batch_time is None:
         svc_vars = {
             "name": node_name,
@@ -88,6 +89,7 @@ def setup_node(
             "logs_enabled": logs_enabled,
         }
     else:
+        # profiling pipeline case
         svc_vars = {
             "name": node_name,
             "cpu_request": cpu_request,
@@ -104,6 +106,7 @@ def setup_node(
             "num_interop_threads": num_interop_threads,
             "num_threads": num_threads,
             "drop_limit": drop_limit,
+            "logs_enabled": logs_enabled,
         }
     environment = Environment(loader=FileSystemLoader(node_path))
     svc_template = environment.get_template("node-template.yaml")
