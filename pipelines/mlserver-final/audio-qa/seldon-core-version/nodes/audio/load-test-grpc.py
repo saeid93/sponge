@@ -8,8 +8,8 @@ import time
 import numpy as np
 
 
-load = 50
-test_duration = 20
+load = 1
+test_duration = 10
 variant = 0
 platform = "seldon"
 mode = "exponential"
@@ -142,4 +142,4 @@ print(f"{num_failed} failed out of total {total}")
 # plt.show()
 
 # print(f"{np.average(server_arrival_latency)}=")
-# print(responses[0][0])
+print(responses)

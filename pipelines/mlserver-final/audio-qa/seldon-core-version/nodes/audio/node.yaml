@@ -72,7 +72,7 @@ spec:
             - name: NUM_THREADS
               value: "4"
             - name: LOGS_ENABLED
-              value: 'True'
+              value: 'False'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

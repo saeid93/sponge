@@ -34,7 +34,7 @@ request = {
 
 PATH = pathlib.Path(__file__).parent.resolve()
 
-with open(os.path.join(PATH, "input-sample-short.txt"), "r") as openfile:
+with open(os.path.join(PATH, "input-sample.txt"), "r") as openfile:
     data = openfile.read()
 
 # times = str([str(request['times']['models'])])

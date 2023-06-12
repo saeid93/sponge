@@ -1,26 +1,19 @@
-series: 93
+series: 98
 series_meta: testing static trace
 pipeline_name: sum-qa
 node_name: nlp-sum
 data_type: text
-timeout: 120
+timeout: 240
 mode: step
 model_variants:
   - sshleifer-distilbart-cnn-12-6
-  - sshleifer-distilbart-xsum-1-1
-  - sshleifer-distill-pegasus-cnn-16-4
-  - sshleifer-distill-pegasus-xsum-16-4
   - sshleifer-distilbart-xsum-12-3
   - sshleifer-distilbart-xsum-6-6
-  - sshleifer-pegasus-cnn-ft-v2
   - sshleifer-distilbart-cnn-6-6
   - sshleifer-distilbart-xsum-12-6
   - sshleifer-distilbart-cnn-12-3
   - sshleifer-distilbart-xsum-12-1
   - sshleifer-distilbart-xsum-9-6
-  - sshleifer-distill-pegasus-xsum-16-8
-  - facebook-bart-large-cnn
-  - google-pegasus-cnn_dailymail
 max_batch_size:
   - '1'
   - '2'
@@ -65,3 +58,6 @@ workload_config:
 
 distrpution_time: 10
 central_queue: false
+
+# ----------- enable in container logging -------------
+logs_enabled: false
