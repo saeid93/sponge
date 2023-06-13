@@ -123,7 +123,6 @@ class GeneralNLP(MLModel):
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
-        print("inputs are: ", payload.inputs)
         for request_input in payload.inputs:
             prev_nodes_times = request_input.parameters.times
             logger.info(f"prev_nodes_times: {prev_nodes_times}")

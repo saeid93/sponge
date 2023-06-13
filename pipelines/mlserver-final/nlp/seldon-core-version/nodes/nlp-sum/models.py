@@ -122,7 +122,6 @@ class GeneralNLP(MLModel):
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
-        print("inputs are: ", payload.inputs)
         for request_input in payload.inputs:
             # check if this is a first node load
             if "times" in dir(request_input.parameters):

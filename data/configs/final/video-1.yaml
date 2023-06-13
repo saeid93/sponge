@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 215
+series: 400
 # pipeline_name: video
-metadata: 'repeat of 197 on bursty low 20 minute'
+metadata: 'bursty, cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
 profiling_series:
   - 71
