@@ -24,11 +24,13 @@ mode = "equal"
 #     'model_name': 'nlp-trans',
 # }
 
-times = ['["{\'nlp-li\': {\'arrival\': 1686504468.9357939, \'serving\': 1686504469.0290744}, \'queue-nlp-li\': {\'arrival\': 1686504468.9233086, \'serving\': 1686504469.0370655}}"]']
+times = [
+    "[\"{'nlp-li': {'arrival': 1686504468.9357939, 'serving': 1686504469.0290744}, 'queue-nlp-li': {'arrival': 1686504468.9233086, 'serving': 1686504469.0370655}}\"]"
+]
 
 request = {
-    'times': times,
-    'model_name': 'nlp-li',
+    "times": times,
+    "model_name": "nlp-li",
 }
 
 
@@ -40,12 +42,8 @@ with open(os.path.join(PATH, "input-sample.txt"), "r") as openfile:
 # times = str([str(request['times']['models'])])
 
 data_shape = [1]
-custom_parameters = {'times': str(times)}
-data_1 = Data(
-    data=data,
-    data_shape=data_shape,
-    custom_parameters=custom_parameters
-)
+custom_parameters = {"times": str(times)}
+data_1 = Data(data=data, data_shape=data_shape, custom_parameters=custom_parameters)
 
 # single node inference
 if platform == "seldon":

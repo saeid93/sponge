@@ -53,4 +53,4 @@ distrpution_time: 10
 central_queue: false
 
 # ----------- enable in container logging -------------
-logs_enabled: true
+logs_enabled: false

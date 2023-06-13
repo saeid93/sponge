@@ -23,8 +23,8 @@ spec:
           image: seldonio/rclone-storage-initializer:1.16.0-dev
           imagePullPolicy: IfNotPresent
           args:
-            - "s3://huggingface/summarization/sshleifer-distilbart-cnn-12-6"
-            - "/mnt/models/sshleifer-distilbart-cnn-12-6"
+            - "s3://huggingface/summarization/sshleifer-distilbart-cnn-12-3"
+            - "/mnt/models/sshleifer-distilbart-cnn-12-3"
 
           volumeMounts:
           - mountPath: /mnt/models
@@ -52,7 +52,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value:  /mnt/models/sshleifer-distilbart-cnn-12-6
+              value:  /mnt/models/sshleifer-distilbart-cnn-12-3
             - name: TASK
               value: summarization
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -68,7 +68,7 @@ spec:
             - name: NUM_THREADS
               value: "1"
             - name: LOGS_ENABLED
-              value: 'False'
+              value: 'True'
             - name: MIN_LENGTH
               value: '0'
             - name: MAX_LENGTH

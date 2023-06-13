@@ -21,11 +21,7 @@ request = {
     #     {
     #         "data": "mister quilter is the apostle of the middle classes and we are glad to welcome his gospel"
     #     }
-    "outputs": [
-        {
-            "data": "martial"
-        }
-    ],
+    "outputs": [{"data": "martial"}],
 }
 
 

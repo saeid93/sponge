@@ -56,4 +56,4 @@ workload_config:
 #     end: '3:5:1'
 
 # ----------- enable in container logging -------------
-logs_enabled: true
+logs_enabled: false

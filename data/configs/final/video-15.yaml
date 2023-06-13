@@ -53,7 +53,7 @@ workload_config:
 
 series: 414
 # pipeline_name: video
-metadata: 'steady high, cpu type: compute_cascadelake_r_ib'
+metadata: 'steady high - rim-high - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
 profiling_series:
   - 71
@@ -134,4 +134,4 @@ latency_margin: 0
 throughput_margin: 0
 
 # ----------- enable in container logging -------------
-logs_enabled: true
+logs_enabled: false

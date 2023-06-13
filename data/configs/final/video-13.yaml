@@ -8,7 +8,7 @@ mode: exponential
 nodes:
   - node_name: yolo
     data_type: image
-    model_variants: yolov5n
+    model_variants: yolov5s
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
@@ -19,7 +19,7 @@ nodes:
     num_threads: '1'
   - node_name: resnet-human
     data_type: text
-    model_variants: resnet18
+    model_variants: resnet101
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
@@ -65,8 +65,8 @@ task_name:
   - crop
   - classification
 initial_active_model:
-  - yolov5n
-  - resnet18
+  - yolov5s
+  - resnet101
 initial_cpu_allocation:
   - 1
   - 1
@@ -89,7 +89,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
 profiling_load: 20
-baseline_mode: null # [switch | scale | null]
+baseline_mode: scale # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
@@ -135,4 +135,4 @@ latency_margin: 0
 throughput_margin: 0
 
 # ----------- enable in container logging -------------
-logs_enabled: true
+logs_enabled: false

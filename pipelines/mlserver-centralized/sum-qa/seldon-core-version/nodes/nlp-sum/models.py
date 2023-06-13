@@ -62,6 +62,7 @@ except KeyError as e:
 if not LOGS_ENABLED:
     logger.disabled = True
 
+
 class GeneralNLP(MLModel):
     async def load(self):
         if not LOGS_ENABLED:
@@ -93,14 +94,18 @@ class GeneralNLP(MLModel):
             logger.info(f"MIN_LENGTH set to: {self.MIN_LENGTH}")
         except KeyError as e:
             self.MIN_LENGTH = 0
-            logger.info(f"MIN_LENGTH env variable not set, using default value: {self.MIN_LENGTH}")
+            logger.info(
+                f"MIN_LENGTH env variable not set, using default value: {self.MIN_LENGTH}"
+            )
 
         try:
             self.MAX_LENGTH = int(os.environ["MAX_LENGTH"])
             logger.info(f"MAX_LENGTH set to: {self.MAX_LENGTH}")
         except KeyError as e:
             self.MAX_LENGTH = 4
-            logger.info(f"MAX_LENGTH env variable not set, using default value: {self.MAX_LENGTH}")
+            logger.info(
+                f"MAX_LENGTH env variable not set, using default value: {self.MAX_LENGTH}"
+            )
 
         logger.info("Loading the ML models")
         # TODO add batching like the runtime
@@ -111,7 +116,7 @@ class GeneralNLP(MLModel):
             model=self.MODEL_VARIANT,
             batch_size=self._settings.max_batch_size,
             min_length=self.MIN_LENGTH,
-            max_length=self.MAX_LENGTH
+            max_length=self.MAX_LENGTH,
         )
         self.loaded = True
         logger.info("model loading complete!")

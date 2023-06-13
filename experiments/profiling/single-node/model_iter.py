@@ -140,7 +140,7 @@ def experiments(
                                         num_interop_threads=cpu_request,
                                         num_threads=cpu_request,
                                         distrpution_time=distrpution_time,
-                                        logs_enabled=logs_enabled
+                                        logs_enabled=logs_enabled,
                                     )
                                     logger.info("Checking if the model is up ...")
                                     logger.info("\n")

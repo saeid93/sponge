@@ -50,7 +50,7 @@ workload_config:
 
 series: 419
 # pipeline_name: video
-metadata: 'fluctuating, cpu type: compute_cascadelake_r_ib'
+metadata: 'fluctuating - rim-high - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
 profiling_series:
   - 71
@@ -62,8 +62,8 @@ task_name:
   - crop
   - classification
 initial_active_model:
-  - yolov5n
-  - resnet18
+  - yolov5s
+  - resnet101
 initial_cpu_allocation:
   - 1
   - 1
@@ -131,4 +131,4 @@ latency_margin: 0
 throughput_margin: 0
 
 # ----------- enable in container logging -------------
-logs_enabled: true
+logs_enabled: false

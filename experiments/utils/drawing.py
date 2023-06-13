@@ -245,8 +245,8 @@ def draw_temporal_final2(
         plt.savefig(filename)
     else:
         plt.show()
-    
-    
+
+
 def draw_temporal_final3(
     final_by_load_type: Dict[str, Dict[str, List[int]]],
     selected_experiments: Dict[str, Dict[str, Union[str, List[str]]]],
@@ -256,11 +256,11 @@ def draw_temporal_final3(
     save=False,
 ):
     num_keys = sum(map(lambda l: len(l["selection"]), selected_experiments.values()))
-    
+
     fig = plt.figure(figsize=(10, 10), dpi=600)
 
     subfigs = fig.subfigures(2, 2)
-    
+
     subfig_idx = 0
     for load_type in final_by_load_type.keys():
         subfig = subfigs.flat[subfig_idx]
@@ -269,7 +269,7 @@ def draw_temporal_final3(
         # subfig.suptitle(f'Subfig {outerind}')
         axs = subfig.subplots(len(final_by_load_type[load_type].keys()), 1)
         axs_idx = 0
-        
+
         for metric in final_by_load_type[load_type]:
             ax = axs.flat[axs_idx]
             ax.grid(axis="y", linestyle="dashed", color="gray")
@@ -285,7 +285,9 @@ def draw_temporal_final3(
             for serie_name in final_by_load_type[load_type][metric]:
                 color = color_list[color_idx]
                 color_idx += 1
-                for key, values in final_by_load_type[load_type][metric][serie_name].items():
+                for key, values in final_by_load_type[load_type][metric][
+                    serie_name
+                ].items():
                     if key in selected_experiments[metric]["selection"]:
                         ax.plot(values, label=serie_name, color=color)
 
@@ -313,50 +315,60 @@ def draw_temporal_final3(
     save=False,
 ):
     num_keys = sum(map(lambda l: len(l["selection"]), selected_experiments.values()))
-    
-    fig = plt.figure(figsize=(10, 10), dpi=600)
 
-    subfigs = fig.subfigures(2, 2)
-    
-    subfig_idx = 0
+    fig = plt.figure(figsize=(8, 11), dpi=600)
+    fig.tight_layout()
+    gs = fig.add_gridspec(ncols=2, nrows=2)
+    subfig_x = 0
+    subfig_y = 0
+    num_works = 0
     for load_type in final_by_load_type.keys():
-        subfig = subfigs.flat[subfig_idx]
-        subfig.suptitle(load_type, fontsize=13)
-        subfig_idx += 1
-        # subfig.suptitle(f'Subfig {outerind}')
-        axs = subfig.subplots(len(final_by_load_type[load_type].keys()), 1)
-        axs_idx = 0
+        sgs = gs[subfig_x, subfig_y].subgridspec(len(final_by_load_type[load_type].keys()), 1)
         
+        axs_idx = 0
+
         for metric in final_by_load_type[load_type]:
-            ax = axs.flat[axs_idx]
+            ax = fig.add_subplot(sgs[axs_idx])
+            if axs_idx == 0:
+                ax.set_title(load_type, fontsize=13)
             ax.grid(axis="y", linestyle="dashed", color="gray")
-            if subfig_idx % 2 == 1:
+            if subfig_y == 0:
                 ax.set_ylabel(selected_experiments[metric]["ylabel"])
+
             axs_idx += 1
             color_idx = 0
             if axs_idx < len(list(selected_experiments.keys())):
                 ax.set_xticklabels([])
             else:
-                if subfig_idx > len(final_by_load_type.keys()) // 2:
+                if subfig_x == 1:
                     ax.set_xlabel("Time (s)")
+            num_works = 0
             for serie_name in final_by_load_type[load_type][metric]:
+                num_works += 1
                 color = color_list[color_idx]
                 color_idx += 1
-                for key, values in final_by_load_type[load_type][metric][serie_name].items():
+                for key, values in final_by_load_type[load_type][metric][
+                    serie_name
+                ].items():
                     if key in selected_experiments[metric]["selection"]:
                         ax.plot(values, label=serie_name, color=color)
+        subfig_y += 1
+        if subfig_y == 2:
+            subfig_y = 0
+            subfig_x += 1
 
+    print(f"{num_works = }")
     plt.legend(
         fontsize=13,
         fancybox=False,
-        ncol=3,
+        ncol=num_works,
         frameon=False,
         bbox_to_anchor=bbox_to_anchor,
         handlelength=1,
         columnspacing=0.8,
     )
     if save:
-        plt.savefig(filename)
+        plt.savefig(filename, bbox_inches='tight')
     else:
         plt.show()
 
