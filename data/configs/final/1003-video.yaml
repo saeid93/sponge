@@ -1,13 +1,14 @@
 # ----------- pipeline configs -------------
 # pipeline informat
-pipeline_folder_name: audio-qa
-pipeline_name: audio-qa
+pipeline_folder_name: video
+pipeline_name: video
 timeout: 1
+pipeline_folder_name: video
 mode: exponential
 nodes:
-  - node_name: audio
-    data_type: audio
-    model_variants: facebook-s2t-small-librispeech-asr
+  - node_name: yolo
+    data_type: image
+    model_variants: yolov5n
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
@@ -16,9 +17,9 @@ nodes:
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
-  - node_name: nlp-qa
+  - node_name: resnet-human
     data_type: text
-    model_variants: deepset-roberta-base-squad2
+    model_variants: resnet18
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
@@ -38,34 +39,43 @@ adaptation_interval: 10
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1301160'
-    end: '1302360'
+  - start: '1301400'
+    end: '1302000'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
     # end: '1862500'
     # end: '1863700'
     # end: '1865100'
-    damping_factor: 8 # [int | null]
+    damping_factor: 1 # [int | null]
+  # - start: '1308600'
+  #   end: '1309200'
+  #   # end: '1863200'
+  #   # end: '1862200'
+  #   # end: '1861960'
+  #   # end: '1862500'
+  #   # end: '1863700'
+  #   # end: '1865100'
+  #   damping_factor: 4 # [int | null]
 
 # ----------- optimizer configs -------------
 
-series: 1001
-pipeline_name: audio-qa
-metadata: 'first test on the audio-qa'
+series: 2155
+# pipeline_name: video
+metadata: 'doubling the load'
 number_tasks: 2
 profiling_series:
-  - 85
-  - 86
+  - 71
+  - 72
 model_name:
-  - audio # be consistent with values in pipelines
-  - nlp-qa # be consistent with values in pipelines
+  - yolo
+  - resnet-human
 task_name: 
-  - audio
-  - nlp-qa
+  - crop
+  - classification
 initial_active_model:
-  - facebook-s2t-small-librispeech-asr
-  - deepset-roberta-base-squad2
+  - yolov5n
+  - resnet18
 initial_cpu_allocation:
   - 1
   - 1
@@ -75,13 +85,13 @@ initial_replica:
 initial_batch:
   - 1
   - 1
-alpha: 10
-beta: 0.5
+alpha: 2
+beta: 1
 gamma: 10
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 64 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
-threshold: 1 # RPS threshold for finding the base allocation
+threshold: 4 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
@@ -93,10 +103,11 @@ accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'lstm' # [reactive | avg | lstm | max]
+predictor_type: 'lstm' # [reactive | avg | arima | lstm | max]
 monitoring_duration: 2 # in minutes
 backup_predictor_type: 'max' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes
+
 
 # ----------- queueing-option -------------
 
@@ -106,9 +117,9 @@ central_queue: true
 
 distrpution_time: 30
 
-# ----------- dubugging logs -------------
+# ----------- distruption time -------------
 # debug mode with complete lgos of containers
-debug_mode: false
+debug_mode:  false
 
 # ----------- simulation mode -------------
 simulation_mode: false
@@ -129,8 +140,8 @@ teleport_interval: 0
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
-latency_margin: 100
-throughput_margin: -50
+latency_margin: 0
+throughput_margin: 0
 
 # ----------- enable in container logging -------------
-logs_enabled: false
+logs_enabled: true

@@ -6,8 +6,8 @@ from barazmoon import Data
 import asyncio
 import time
 
-load = 5
-test_duration = 5
+load = 10
+test_duration = 20
 variant = 0
 platform = "seldon"
 image_name = "input-sample.JPEG"
