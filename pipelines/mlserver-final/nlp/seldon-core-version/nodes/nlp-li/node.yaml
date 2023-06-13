@@ -41,10 +41,10 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '2'
+              cpu: '1'
               memory: 4Gi
             limits:
-              cpu: '2'
+              cpu: '1'
               memory: 4Gi
           volumeMounts:
           - mountPath: /mnt/models
@@ -70,7 +70,7 @@ spec:
             - name: NUM_THREADS
               value: "1"
             - name: LOGS_ENABLED
-              value: 'False'
+              value: 'True'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
