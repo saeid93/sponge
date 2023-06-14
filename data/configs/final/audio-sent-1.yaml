@@ -17,7 +17,7 @@ nodes:
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
-  - node_name: nlp-sent
+  - node_name:  nlp-sent
     data_type: text
     model_variants: distilbert-base-uncased-finetuned-sst-2-english
     max_batch_size: '1'
@@ -46,21 +46,21 @@ workload_config:
     # end: '1861960'
     # end: '1862500'
     # end: '1863700'
-  # end: '1865100'
+    # end: '1865100'
     damping_factor: 8 # [int | null]
 
 # ----------- optimizer configs -------------
 
-series: 221
-pipeline_name: audio-sent
-metadata: 'first test of audio pipeline'
+series: 600
+# pipeline_name: video
+metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
 profiling_series:
-  - 87
-  - 88
+  - 85
+  - 86
 model_name:
-  - audio # be consistent with values in pipelines
-  - nlp-sent # be consistent with values in pipelines
+  - audio
+  - nlp-sent
 task_name: 
   - audio
   - nlp-sent
@@ -94,10 +94,11 @@ accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'lstm' # [reactive | avg | lstm | max]
+predictor_type: 'lstm' # [reactive | avg | arima | lstm | max]
 monitoring_duration: 2 # in minutes
 backup_predictor_type: 'max' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes
+
 
 # ----------- queueing-option -------------
 
@@ -109,7 +110,7 @@ distrpution_time: 30
 
 # ----------- distruption time -------------
 # debug mode with complete lgos of containers
-debug_mode: false
+debug_mode:  false
 
 # ----------- simulation mode -------------
 simulation_mode: false
@@ -122,6 +123,10 @@ drop_limit: 10
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
+
+# ----------- teleport mode (only available in real-world experiments) -------------
+teleport_mode: false 
+teleport_interval: 0
 
 # ----------- teleport mode (only available in real-world experiments) -------------
 teleport_mode: false 

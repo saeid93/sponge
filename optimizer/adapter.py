@@ -269,6 +269,7 @@ class Adapter:
                     "optimizer couldn't find any optimal solution"
                     "the pipeline will stay the same"
                 )
+                config_change_results = [False for _ in range(len(self.node_names))]
                 try:
                     to_apply_config = self.extract_current_config()
                 except ApiException:
@@ -392,7 +393,7 @@ class Adapter:
             current_config[node_name] = node_config
         return current_config
 
-    def change_pipeline_config(self, config: Dict[str, Dict[str, int]]):
+    def change_pipeline_config(self, config: List[bool]):
         """change the existing configuration based on the optimizer
            output
         Args:

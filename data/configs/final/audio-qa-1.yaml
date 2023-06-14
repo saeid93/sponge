@@ -51,16 +51,16 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 218
-pipeline_name: audio-qa
-metadata: 'first test on the audio-qa'
+series: 500
+# pipeline_name: video
+metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
 profiling_series:
   - 85
   - 86
 model_name:
-  - audio # be consistent with values in pipelines
-  - nlp-qa # be consistent with values in pipelines
+  - audio
+  - nlp-qa
 task_name: 
   - audio
   - nlp-qa
@@ -94,10 +94,11 @@ accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'lstm' # [reactive | avg | lstm | max]
+predictor_type: 'lstm' # [reactive | avg | arima | lstm | max]
 monitoring_duration: 2 # in minutes
 backup_predictor_type: 'max' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes
+
 
 # ----------- queueing-option -------------
 
@@ -107,9 +108,9 @@ central_queue: true
 
 distrpution_time: 30
 
-# ----------- dubugging logs -------------
+# ----------- distruption time -------------
 # debug mode with complete lgos of containers
-debug_mode: false
+debug_mode:  false
 
 # ----------- simulation mode -------------
 simulation_mode: false
@@ -122,6 +123,10 @@ drop_limit: 10
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
+
+# ----------- teleport mode (only available in real-world experiments) -------------
+teleport_mode: false 
+teleport_interval: 0
 
 # ----------- teleport mode (only available in real-world experiments) -------------
 teleport_mode: false 

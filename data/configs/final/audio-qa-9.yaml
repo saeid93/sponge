@@ -39,8 +39,8 @@ adaptation_interval: 10
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1301160'
-    end: '1302360'
+  - start: '1299600'
+    end: '1300800'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 501
+series: 508
 # pipeline_name: video
-metadata: 'bursty - fa2-low - cpu type: compute_cascadelake_r_ib'
+metadata: 'steady low - rim-low - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
 profiling_series:
   - 85
@@ -89,7 +89,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: switch # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------

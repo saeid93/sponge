@@ -173,7 +173,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="sum-qa-1")
+@click.option("--config-name", required=True, type=str, default="1000-video")
 @click.option(
     "--type-of",
     required=True,

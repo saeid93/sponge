@@ -46,18 +46,18 @@ workload_config:
     # end: '1861960'
     # end: '1862500'
     # end: '1863700'
-  # end: '1865100'
+    # end: '1865100'
     damping_factor: 8 # [int | null]
 
 # ----------- optimizer configs -------------
 
-series: 222
-pipeline_name: audio-sent
-metadata: 'first test of audio pipeline'
+series: 601
+# pipeline_name: video
+metadata: 'bursty - fa2-low - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
 profiling_series:
-  - 87
-  - 88
+  - 85
+  - 86
 model_name:
   - audio # be consistent with values in pipelines
   - nlp-sent # be consistent with values in pipelines

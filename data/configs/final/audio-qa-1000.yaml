@@ -51,9 +51,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 501
-# pipeline_name: video
-metadata: 'bursty - fa2-low - cpu type: compute_cascadelake_r_ib'
+series: 218
+pipeline_name: audio-qa
+metadata: 'first test on the audio-qa'
 number_tasks: 2
 profiling_series:
   - 85
@@ -89,7 +89,7 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: null # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
@@ -107,7 +107,7 @@ central_queue: true
 
 distrpution_time: 30
 
-# ----------- distruption time -------------
+# ----------- dubugging logs -------------
 # debug mode with complete lgos of containers
 debug_mode: false
 
