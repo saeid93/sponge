@@ -68,19 +68,19 @@ nlp:
     # DONE
     # ROUGE-L metric for sshleifer versions https://huggingface.co/sshleifer/distilbart-xsum-12-1#metrics-for-distilbart-models
     # Training Datasets: https://huggingface.co/datasets/cnn_dailymail, https://huggingface.co/datasets/xsum
-    sshleifer-distilbart-cnn-12-6: 30.59
-    # sshleifer-distilbart-xsum-1-1: nill
+    # sshleifer-distilbart-cnn-12-6: 30.59
+    sshleifer-distilbart-xsum-1-1: 32.26
     # sshleifer-distill-pegasus-cnn-16-4: nill
     # sshleifer-distill-pegasus-xsum-16-4: nill
-    sshleifer-distilbart-xsum-12-3: 36.39
-    sshleifer-distilbart-xsum-6-6: 35.73
-    # sshleifer/pegasus-cnn-ft-v2: nill
-    sshleifer-distilbart-cnn-6-6: 29.70
-    sshleifer-distilbart-xsum-12-6: 36.99
-    sshleifer-distilbart-cnn-12-3: 30.00
     sshleifer-distilbart-xsum-12-1: 33.37
+    sshleifer-distilbart-xsum-6-6: 35.73
+    sshleifer-distilbart-xsum-12-3: 36.39
+    # sshleifer/pegasus-cnn-ft-v2: nill
+    # sshleifer-distilbart-cnn-6-6: 29.70
+    # sshleifer-distilbart-cnn-12-3: 30.00
     sshleifer-distilbart-xsum-9-6: 36.61
     # sshleifer-distill-pegasus-xsum-16-8: nill
+    sshleifer-distilbart-xsum-12-6: 36.99
 
     # ROUGE-L, https://huggingface.co/facebook/bart-large-cnn, https://paperswithcode.com/sota/summarization-on-cnn-dailymail
     # Training Dataset: https://huggingface.co/datasets/cnn_dailymail
@@ -92,9 +92,11 @@ nlp:
     # google/pegasus-large: nill
   nlp-trans:
     # DONE
-    # chrF2 score, https://object.pouta.csc.fi/OPUS-MT-models/fr-en/opus-2020-02-26.eval.txt
-    # Testset, Tatoeba.fr.en, https://object.pouta.csc.fi/OPUS-MT-models/fr-en/opus-2020-02-26.test.txt
-    Helsinki-NLP/opus-mt-fr-en: 0.720
+    # BLEU metric score, on newsdiscussdev2015
+    # https://huggingface.co/Helsinki-NLP/opus-mt-fr-en
+    # https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-fr-en
+    Helsinki-NLP/opus-mt-fr-en: 33.1
+    Helsinki-NLP/opus-mt-tc-big-fr-en: 34.4
 sum-qa:
   nlp-sum:
     # DONE

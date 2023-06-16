@@ -621,7 +621,7 @@ class Predictor:
         if len(series_aggregated) >= int((self.backup_predictor_duration * 60) / step):
             if self.predictor_type == "lstm":
                 model_intput = tf.convert_to_tensor(
-                    np.array(series_aggregated).reshape((-1, LSTM_INPUT_SIZE, 1)),
+                    np.array(series_aggregated[-LSTM_INPUT_SIZE:]).reshape((-1, LSTM_INPUT_SIZE, 1)),
                     dtype=tf.float32,
                 )
                 model_output = self.model.predict(model_intput)[0][0]
