@@ -8,7 +8,7 @@ mode: exponential
 nodes:
   - node_name: audio
     data_type: audio
-    model_variants: facebook-s2t-large-librispeech-asr
+    model_variants: facebook-s2t-medium-librispeech-asr
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
@@ -65,7 +65,7 @@ task_name:
   - audio
   - nlp-qa
 initial_active_model:
-  - facebook-s2t-large-librispeech-asr
+  - facebook-s2t-medium-librispeech-asr
   - deepset-roberta-base-squad2
 initial_cpu_allocation:
   - 1
@@ -118,7 +118,7 @@ simulation_mode: false
 predictor_margin: 0
 
 # ----------- drop interval -------------
-drop_limit: 10
+drop_limit: 20
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
@@ -134,4 +134,4 @@ latency_margin: 100
 throughput_margin: -50
 
 # ----------- enable in container logging -------------
-logs_enabled: false
+logs_enabled: true

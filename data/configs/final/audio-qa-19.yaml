@@ -13,7 +13,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 1
+    replicas: 5
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -24,7 +24,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 1
+    replicas: 2
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -68,8 +68,8 @@ initial_cpu_allocation:
   - 1
   - 1
 initial_replica:
-  - 1
-  - 1
+  - 5
+  - 2
 initial_batch:
   - 1
   - 1
@@ -115,7 +115,7 @@ simulation_mode: false
 predictor_margin: 0
 
 # ----------- drop interval -------------
-drop_limit: 10
+drop_limit: 20
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
