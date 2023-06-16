@@ -422,3 +422,52 @@ def draw_cumulative(
 
     plt.tight_layout()
     plt.show()
+
+
+
+def draw_cumulative_final(
+    results: Dict[str, Dict[int, float]],
+    series_metadata: Dict[int, dict],
+    metrics_metadata: Dict[str, dict],
+    filename
+):
+    fig, axs = plt.subplots(1, len(results), figsize=(8, 2))
+    ax_idx = 0
+    for metric in results.keys():
+        ax = axs[ax_idx]
+        ax.set_title(metrics_metadata[metric]["ylabel"])
+        x = 0
+        width = 1
+        color_idx = 0
+        for serie, metric_result in results[metric].items():
+            ax.bar(x, metric_result, color=color_list[color_idx], label=series_metadata[serie]["label"], width=width)
+            # ax.set_xticks(
+            #     range(len(series_metadata.keys())),
+            #     [series_metadata[serie]["label"] for serie in series_metadata.keys()]
+            # )
+            ax.set_xticks([])
+            x += width
+            color_idx += 1
+        
+        ax_idx += 1
+    
+    plt.legend(
+        fontsize=13,
+        fancybox=False,
+        ncol=len(series_metadata.keys()),
+        frameon=False, 
+        bbox_to_anchor=(0.85, 1.5), 
+        handlelength=1,
+        columnspacing=0.8
+    )
+    # plt.tight_layout()
+    plt.subplots_adjust(
+        wspace=0.25
+    )
+    plt.savefig(
+        f"{filename}.pdf",
+        dpi=600,
+        format="pdf",
+        bbox_inches="tight",
+        pad_inches=0,
+    )
