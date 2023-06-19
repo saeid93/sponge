@@ -52,7 +52,8 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/{{ model_variant }}
+              # value: /mnt/models/{{ model_variant }}
+              value: {{ model_variant }} 
             - name: TASK
               value: question-answering
             - name: CONTEXT

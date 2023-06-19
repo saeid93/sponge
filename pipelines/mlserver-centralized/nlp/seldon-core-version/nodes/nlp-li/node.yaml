@@ -52,7 +52,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/dinalzein-xlm-roberta-base-finetuned-language-identification
+              value: dinalzein-xlm-roberta-base-finetuned-language-identification
             # - name: TRANSFORMERS_CACHE
             #   value: /opt/mlserver/.cache
             - name: TASK

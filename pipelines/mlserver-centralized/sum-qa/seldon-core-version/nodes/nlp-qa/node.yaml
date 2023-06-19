@@ -53,7 +53,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/distilbert-base-cased-distilled-squad
+              value: distilbert-base-cased-distilled-squad
             - name: TASK
               value: question-answering
             - name: CONTEXT

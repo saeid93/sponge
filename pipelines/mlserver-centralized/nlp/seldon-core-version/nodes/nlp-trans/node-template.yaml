@@ -52,7 +52,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/{{ model_variant }}
+              value: {{ model_variant }}
             - name: TASK
               value: translation_fr_to_en
             - name: MLSERVER_PARALLEL_WORKERS

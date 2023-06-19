@@ -48,7 +48,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/Helsinki-NLP-opus-mt-fr-en
+              value: Helsinki-NLP-opus-mt-fr-en
             - name: TASK
               value: translation_fr_to_en
             - name: MLSERVER_PARALLEL_WORKERS

@@ -48,7 +48,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value:  /mnt/models/sshleifer-distilbart-xsum-1-1
+              value: sshleifer-distilbart-xsum-1-1
             - name: TASK
               value: summarization
             - name: MLSERVER_PARALLEL_WORKERS
@@ -183,7 +183,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/distilbert-base-cased-distilled-squad
+              value: distilbert-base-cased-distilled-squad
             - name: TASK
               value: question-answering
             - name: CONTEXT
