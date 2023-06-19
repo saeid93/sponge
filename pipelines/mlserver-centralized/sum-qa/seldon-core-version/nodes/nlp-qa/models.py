@@ -126,6 +126,7 @@ class GeneralNLP(MLModel):
         logger.info(f"recieved batch len:\n{batch_shape}")
         self.request_counter += batch_shape
         self.batch_counter += 1
+        logger.info(f"model intput:\n{X}")
         logger.info(f"to the model:\n{type(X)}")
         logger.info(f"type of the to the model:\n{type(X)}")
         logger.info(f"len of the to the model:\n{len(X)}")

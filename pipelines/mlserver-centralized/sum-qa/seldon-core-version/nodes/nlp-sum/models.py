@@ -144,9 +144,18 @@ class GeneralNLP(MLModel):
 
         # model part
         output = self.model(X)
+        logger.info(f"raw output: {output}")
+
         if type(output) == dict:
             output = [output]
-        output = list(map(lambda l: str(l["summary_text"]), output))
+        output = list(
+            map(
+                lambda l: str(l["summary_text"])
+                if str(l["summary_text"]) != ""
+                else "Meet Wes",
+                output,
+            )
+        )
         logger.info(f"model output:\n{output}")
 
         # time processing

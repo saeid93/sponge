@@ -1,19 +1,19 @@
 # ----------- pipeline configs -------------
 # pipeline informat
-pipeline_folder_name: audio-qa
-pipeline_name: audio-qa
+pipeline_folder_name: sum-qa
+pipeline_name: sum-qa
 timeout: 1
-pipeline_folder_name: audio-qa
+pipeline_folder_name: sum-qa
 mode: exponential
 nodes:
-  - node_name: audio
-    data_type: audio
-    model_variants: facebook-s2t-small-librispeech-asr
+  - node_name: nlp-sum
+    data_type: text
+    model_variants: sshleifer-distilbart-xsum-1-1
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 5
+    replicas: 2
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -24,7 +24,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 2
+    replicas: 1
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -56,28 +56,28 @@ series: 703
 metadata: 'bursty - rim-low - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
 profiling_series:
-  - 85
+  - 97
   - 86
 model_name:
-  - audio # be consistent with values in pipelines
+  - nlp-sum # be consistent with values in pipelines
   - nlp-qa # be consistent with values in pipelines
 task_name: 
-  - audio
+  - nlp-sum
   - nlp-qa
 initial_active_model:
-  - facebook-s2t-small-librispeech-asr
+  - sshleifer-distilbart-xsum-1-1
   - deepset-roberta-base-squad2
 initial_cpu_allocation:
   - 1
   - 1
 initial_replica:
-  - 5
   - 2
+  - 1
 initial_batch:
   - 1
   - 1
 alpha: 10
-beta: 0.5
+beta: 1
 gamma: 10
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 64 # maximum possible batching per nodes
@@ -88,7 +88,7 @@ allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
-profiling_load: 20
+profiling_load: 10
 baseline_mode: switch # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
@@ -118,7 +118,7 @@ simulation_mode: false
 predictor_margin: 0
 
 # ----------- drop interval -------------
-drop_limit: 20
+drop_limit: 5
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
@@ -130,8 +130,8 @@ teleport_interval: 0
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
-latency_margin: 100
-throughput_margin: -50
+latency_margin: 0
+throughput_margin: 0
 
 # ----------- enable in container logging -------------
 logs_enabled: false
