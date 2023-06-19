@@ -76,18 +76,18 @@ sum-qa:
     task-type: 'huggingface'
     task-name: 'summarization'
     model-names:
-    - sshleifer/distilbart-cnn-12-6
     - sshleifer/distilbart-xsum-1-1
+    - sshleifer/distilbart-xsum-12-1
+    - sshleifer/distilbart-xsum-6-6
+    - sshleifer/distilbart-xsum-12-3
+    - sshleifer/distilbart-xsum-9-6
+    - sshleifer/distilbart-xsum-12-6
+    - sshleifer/distilbart-cnn-12-6
     - sshleifer/distill-pegasus-cnn-16-4
     - sshleifer/distill-pegasus-xsum-16-4
-    - sshleifer/distilbart-xsum-12-3
-    - sshleifer/distilbart-xsum-6-6
     - sshleifer/pegasus-cnn-ft-v2
     - sshleifer/distilbart-cnn-6-6
-    - sshleifer/distilbart-xsum-12-6
     - sshleifer/distilbart-cnn-12-3
-    - sshleifer/distilbart-xsum-12-1
-    - sshleifer/distilbart-xsum-9-6
     - sshleifer/distill-pegasus-xsum-16-8
     - facebook/bart-large-cnn
     - google/roberta2roberta_L-24_bbc

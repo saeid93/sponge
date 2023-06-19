@@ -217,7 +217,7 @@ class Task:
         else:  # no-break
             raise ValueError(
                 f"no matching profile for the variant {active_variant} and allocation"
-                f"of cpu: {active_allocation.cpu} and gpu: {active_allocation.gpu}"
+                f" of cpu: {active_allocation.cpu} and gpu: {active_allocation.gpu}"
             )
 
     def model_switch(self, active_variant: str) -> None:
@@ -289,7 +289,6 @@ class Task:
             # we iterate from the first profile
             profiled_batches = allocations[0].profiled_batches
             for allocation in allocations:
-                breaker = False
                 # check if the max batch size throughput
                 # can reponsd to the threshold
                 check_both[model_variant][allocation.resource_allocation.cpu] = {}
@@ -338,7 +337,7 @@ class Task:
                 # 2. make the heuristic
                 # 3. a test
                 # 4. if worked, document up
-        variant_orders = list(self.variants_accuracies.keys())
+        variant_orders = list(self.variants_accuracies.keys())  # TODO to be fixed
         base_allocation = {}
         indicator = 0
         # former_varaint_indicator = 0
@@ -438,6 +437,9 @@ class Task:
         variants_accuracies = {}
         for profile in self.available_model_profiles:
             variants_accuracies[profile.name] = profile.accuracy
+        variants_accuracies = dict(
+            sorted(variants_accuracies.items(), key=lambda l: l[1])
+        )
         return variants_accuracies
 
     def find_variants_accuracies_normalized(self) -> Dict[str, float]:

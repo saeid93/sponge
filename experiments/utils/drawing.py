@@ -323,8 +323,10 @@ def draw_temporal_final3(
     subfig_y = 0
     num_works = 0
     for load_type in final_by_load_type.keys():
-        sgs = gs[subfig_x, subfig_y].subgridspec(len(final_by_load_type[load_type].keys()), 1)
-        
+        sgs = gs[subfig_x, subfig_y].subgridspec(
+            len(final_by_load_type[load_type].keys()), 1
+        )
+
         axs_idx = 0
 
         for metric in final_by_load_type[load_type]:
@@ -368,7 +370,7 @@ def draw_temporal_final3(
         columnspacing=0.8,
     )
     if save:
-        plt.savefig(filename, bbox_inches='tight')
+        plt.savefig(filename, bbox_inches="tight")
     else:
         plt.show()
 
@@ -424,12 +426,11 @@ def draw_cumulative(
     plt.show()
 
 
-
 def draw_cumulative_final(
     results: Dict[str, Dict[int, float]],
     series_metadata: Dict[int, dict],
     metrics_metadata: Dict[str, dict],
-    filename
+    filename,
 ):
     fig, axs = plt.subplots(1, len(results), figsize=(8, 2))
     ax_idx = 0
@@ -440,7 +441,13 @@ def draw_cumulative_final(
         width = 1
         color_idx = 0
         for serie, metric_result in results[metric].items():
-            ax.bar(x, metric_result, color=color_list[color_idx], label=series_metadata[serie]["label"], width=width)
+            ax.bar(
+                x,
+                metric_result,
+                color=color_list[color_idx],
+                label=series_metadata[serie]["label"],
+                width=width,
+            )
             # ax.set_xticks(
             #     range(len(series_metadata.keys())),
             #     [series_metadata[serie]["label"] for serie in series_metadata.keys()]
@@ -448,22 +455,20 @@ def draw_cumulative_final(
             ax.set_xticks([])
             x += width
             color_idx += 1
-        
+
         ax_idx += 1
-    
+
     plt.legend(
         fontsize=13,
         fancybox=False,
         ncol=len(series_metadata.keys()),
-        frameon=False, 
-        bbox_to_anchor=(0.85, 1.5), 
+        frameon=False,
+        bbox_to_anchor=(0.85, 1.5),
         handlelength=1,
-        columnspacing=0.8
+        columnspacing=0.8,
     )
     # plt.tight_layout()
-    plt.subplots_adjust(
-        wspace=0.25
-    )
+    plt.subplots_adjust(wspace=0.25)
     plt.savefig(
         f"{filename}.pdf",
         dpi=600,

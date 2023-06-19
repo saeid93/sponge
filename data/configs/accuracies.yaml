@@ -102,19 +102,19 @@ sum-qa:
     # DONE
     # ROUGE-L metric for sshleifer versions https://huggingface.co/sshleifer/distilbart-xsum-12-1#metrics-for-distilbart-models
     # Training Datasets: https://huggingface.co/datasets/cnn_dailymail, https://huggingface.co/datasets/xsum
-    sshleifer-distilbart-cnn-12-6: 30.59
-    # sshleifer-distilbart-xsum-1-1: nill
+    # sshleifer-distilbart-cnn-12-6: 30.59
+    sshleifer-distilbart-xsum-1-1: 32.26
     # sshleifer-distill-pegasus-cnn-16-4: nill
     # sshleifer-distill-pegasus-xsum-16-4: nill
-    sshleifer-distilbart-xsum-12-3: 36.39
-    sshleifer-distilbart-xsum-6-6: 35.73
-    # sshleifer-pegasus-cnn-ft-v2: nill
-    sshleifer-distilbart-cnn-6-6: 29.70
-    sshleifer-distilbart-xsum-12-6: 36.99
-    sshleifer-distilbart-cnn-12-3: 30.00
     sshleifer-distilbart-xsum-12-1: 33.37
+    sshleifer-distilbart-xsum-6-6: 35.73
+    sshleifer-distilbart-xsum-12-3: 36.39
+    # sshleifer/pegasus-cnn-ft-v2: nill
+    # sshleifer-distilbart-cnn-6-6: 29.70
+    # sshleifer-distilbart-cnn-12-3: 30.00
     sshleifer-distilbart-xsum-9-6: 36.61
     # sshleifer-distill-pegasus-xsum-16-8: nill
+    sshleifer-distilbart-xsum-12-6: 36.99
 
     # ROUGE-L, https://huggingface.co/facebook/bart-large-cnn, https://paperswithcode.com/sota/summarization-on-cnn-dailymail
     # Training Dataset: https://huggingface.co/datasets/cnn_dailymail

@@ -8,7 +8,6 @@ import yaml
 import click
 import sys
 import shutil
-from barazmoon.twitter import twitter_workload_generator
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -27,8 +26,6 @@ from experiments.utils.pipeline_operations import (
     setup_router_pipeline,
     setup_central_pipeline,
 )
-
-from experiments.utils.simulation_operations import generate_simulated_pipeline
 
 from experiments.utils.constants import (
     PIPLINES_PATH,

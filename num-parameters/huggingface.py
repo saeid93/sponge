@@ -30,10 +30,12 @@ if task_type == "huggingface":
         model = hf_pipeline.model
 
         # Count the number of parameters
-        num_params[model_name] = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        num_params[model_name] = sum(
+            p.numel() for p in model.parameters() if p.requires_grad
+        )
 
 num_params = dict(sorted(num_params.items(), key=lambda x: x[1]))
 
-print(50*"-" + " results " + 50*"-")
+print(50 * "-" + " results " + 50 * "-")
 for model_name, num_params in num_params.items():
     print(f"Number of parameters in model, {model_name} is: {num_params/(10**6)} M")

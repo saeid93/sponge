@@ -9,7 +9,6 @@ import click
 import sys
 import shutil
 from typing import List
-from barazmoon.twitter import twitter_workload_generator
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -52,7 +51,7 @@ def find_initial_config(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-1000")
+@click.option("--config-name", required=True, type=str, default="sum-qa-1000")
 @click.option(
     "--type-of",
     required=True,

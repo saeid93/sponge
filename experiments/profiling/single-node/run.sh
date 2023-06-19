@@ -9,5 +9,5 @@
 # python model_iter.py --config-name 4-config-sum
 # python model_iter.py --config-name 5-config-resnet-human
 # python model_iter.py --config-name 5-config-yolo
-# python model_iter.py --config-name 30-config-sum
-python model_iter.py --config-name 40-config-sum
+python model_iter.py --config-name 30-config-sum
+# python model_iter.py --config-name 40-config-sum

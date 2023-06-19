@@ -6,7 +6,6 @@ data_type: text
 timeout: 240
 mode: step
 model_variants:
-  - sshleifer-distilbart-xsum-1-1
   - sshleifer-distilbart-cnn-12-6
   - sshleifer-distilbart-xsum-12-3
   - sshleifer-distilbart-xsum-6-6

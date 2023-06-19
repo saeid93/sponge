@@ -127,6 +127,12 @@
 # sleep 60
 # python runner_script.py --config-name audio-sent-18
 # sleep 60
-python runner_script.py --config-name audio-sent-19
-sleep 60
+# python runner_script.py --config-name audio-sent-19
+# sleep 60
 # python runner_script.py --config-name audio-sent-20
+
+# python simulation_runner.py --config-name sum-qa-1000
+python simulation_runner.py --config-name sum-qa-2000
+python simulation_runner.py --config-name sum-qa-3000
+python simulation_runner.py --config-name sum-qa-4000
+python simulation_runner.py --config-name sum-qa-5000
