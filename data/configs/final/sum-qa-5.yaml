@@ -13,7 +13,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 6
+    replicas: 12
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -24,7 +24,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 4
+    replicas: 8
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -71,13 +71,13 @@ initial_cpu_allocation:
   - 1
   - 1
 initial_replica:
-  - 6
-  - 4
+  - 12
+  - 8
 initial_batch:
   - 1
   - 1
 alpha: 10
-beta: 1
+beta: 0.5
 gamma: 10
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 64 # maximum possible batching per nodes
@@ -131,7 +131,7 @@ teleport_interval: 0
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
-throughput_margin: 0
+throughput_margin: -50
 
 # ----------- enable in container logging -------------
 logs_enabled: false

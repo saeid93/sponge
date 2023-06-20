@@ -77,7 +77,7 @@ initial_batch:
   - 1
   - 1
 alpha: 10
-beta: 1
+beta: 0.5
 gamma: 10
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 64 # maximum possible batching per nodes
@@ -136,7 +136,7 @@ teleport_interval: 0
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
-throughput_margin: 0
+throughput_margin: -50
 
 # ----------- enable in container logging -------------
-logs_enabled: true
+logs_enabled: false
