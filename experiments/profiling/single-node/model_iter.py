@@ -175,42 +175,54 @@ def experiments(
                                         pipeline_path=node_path,
                                         node_type=node_type,
                                     )
-                                    start_time = time.time()
-                                    output_queue = Queue()
+                                    # start_time = time.time()
+                                    # output_queue = Queue()
                                     try:
-                                        kwargs = {
-                                            "pipeline_name": node_name,
-                                            "model": node_name,
-                                            "data_type": data_type,
-                                            "data": data,
-                                            "workload": workload,
-                                            "mode": mode,
-                                            "namespace": "default",
-                                            # "no_engine": no_engine,
-                                            "benchmark_duration": benchmark_duration,
-                                            "queue": output_queue,
-                                        }
-                                        p = Process(target=load_test, kwargs=kwargs)
-                                        p.start()
-                                        while True:
-                                            time.sleep(1)
-                                            if p.is_alive():
-                                                if time.time() - start_time > timeout:
-                                                    print("finished by cap")
-                                                    start_time_experiment = start_time
-                                                    end_time_experiment = time.time()
-                                                    responses = []
-                                                    p.terminate()
-                                                    break
-                                            else:
-                                                print("finished on time")
-                                                (
-                                                    start_time_experiment,
-                                                    end_time_experiment,
-                                                    responses,
-                                                ) = output_queue.get()
-                                                p.join()
-                                                break
+                                        # kwargs = {
+                                        #     "pipeline_name": node_name,
+                                        #     "model": node_name,
+                                        #     "data_type": data_type,
+                                        #     "data": data,
+                                        #     "workload": workload,
+                                        #     "mode": mode,
+                                        #     "namespace": "default",
+                                        #     # "no_engine": no_engine,
+                                        #     "benchmark_duration": benchmark_duration,
+                                        #     "queue": output_queue,
+                                        # }
+                                        # p = Process(target=load_test, kwargs=kwargs)
+                                        # p.start()
+                                        # while True:
+                                        #     time.sleep(1)
+                                        #     if p.is_alive():
+                                        #         if time.time() - start_time > timeout:
+                                        #             print("finished by cap")
+                                        #             start_time_experiment = start_time
+                                        #             end_time_experiment = time.time()
+                                        #             responses = []
+                                        #             p.terminate()
+                                        #             break
+                                        #     else:
+                                        #         print("finished on time")
+                                        #         (
+                                        #             start_time_experiment,
+                                        #             end_time_experiment,
+                                        #             responses,
+                                        #         ) = output_queue.get()
+                                        #         p.join()
+                                        #         break
+                                        start_time_experiment,\
+                                            end_time_experiment, responses = load_test(
+                                                pipeline_name=node_name,
+                                                model=node_name,
+                                                data_type=data_type,
+                                                data=data,
+                                                workload=workload,
+                                                mode=mode,
+                                                namespace='default',
+                                                # load_duration=load_duration,
+                                                # no_engine=no_engine,
+                                                benchmark_duration=benchmark_duration)
                                         logger.info(
                                             "-" * 25 + "saving the report" + "-" * 25
                                         )

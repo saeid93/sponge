@@ -196,7 +196,7 @@ def generate_simulated_pipeline(
         profiling_info = load_profile(
             series=profiling_series[i],
             model_name=model_names[i],
-            load=profiling_load,
+            load=profiling_load if type(profiling_load) == int else profiling_load[i],
             reference_latency=reference_latency,
             reference_throughput=reference_throughput,
             latency_margin=latency_margin,

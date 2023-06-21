@@ -1,4 +1,4 @@
-series: 91
+series: 99
 series_meta: testing static trace
 pipeline_name: nlp
 node_name: nlp-trans
@@ -14,17 +14,17 @@ max_batch_size:
   - '4'
   - '8'
   - '16'
-  - '32'
-  - '64'
+  # - '32'
+  # - '64'
 max_batch_time:
   - '1'
 cpu_request:
-  - '1'
+  # - '1'
   - '2'
   - '4'
   - '8'
   - '16'
-  - '32'
+  # - '32'
 memory_request:
   - 10Gi
 replicas:
@@ -39,10 +39,10 @@ num_threads:
 repetition: 1
 workload_config:
   loads_to_test:
-  - 1
+  # - 1
   # - 5
   - 10
-  - 20
+  # - 20
   # - 40
   load_duration: 60
 # workload_type: twitter

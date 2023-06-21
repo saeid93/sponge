@@ -95,8 +95,8 @@ nlp:
     # BLEU metric score, on newsdiscussdev2015
     # https://huggingface.co/Helsinki-NLP/opus-mt-fr-en
     # https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-fr-en
-    Helsinki-NLP/opus-mt-fr-en: 33.1
-    Helsinki-NLP/opus-mt-tc-big-fr-en: 34.4
+    Helsinki-NLP-opus-mt-fr-en: 33.1
+    Helsinki-NLP-opus-mt-tc-big-fr-en: 34.4
 sum-qa:
   nlp-sum:
     # DONE

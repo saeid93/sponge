@@ -1,14 +1,14 @@
 # ----------- pipeline configs -------------
 # pipeline informat
-pipeline_folder_name: audio-qa
-pipeline_name: audio-qa
+pipeline_folder_name: nlp
+pipeline_name: nlp
 timeout: 1
-pipeline_folder_name: audio-qa
+pipeline_folder_name: nlp
 mode: exponential
 nodes:
-  - node_name: audio
-    data_type: audio
-    model_variants: facebook-s2t-small-librispeech-asr
+  - node_name: nlp-li
+    data_type: text
+    model_variants: dinalzein-xlm-roberta-base-finetuned-language-identification
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
@@ -17,12 +17,23 @@ nodes:
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
-  - node_name: nlp-qa
+  - node_name: nlp-trans
     data_type: text
-    model_variants: deepset-roberta-base-squad2
+    model_variants: Helsinki-NLP-opus-mt-fr-en
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
+    memory_request: 4Gi
+    replicas: 1
+    use_threading: 'True'
+    num_interop_threads: '1'
+    num_threads: '1'
+  - node_name: nlp-sum
+    data_type: text
+    model_variants: sshleifer-distilbart-xsum-1-1
+    max_batch_size: '1'
+    max_batch_time: '1'
+    cpu_request: '2'
     memory_request: 4Gi
     replicas: 1
     use_threading: 'True'

@@ -455,9 +455,12 @@ class Task:
             accuracies.append(accuracy)
         variants = [variant for _, variant in sorted(zip(accuracies, variants))]
         accuracies.sort()
-        accuracies_normalized = (
-            np.arange(len(accuracies)) / (len(accuracies) - 1)
-        ).tolist()
+        if len(accuracies) == 1:
+            accuracies_normalized = [1]
+        else:
+            accuracies_normalized = (
+                np.arange(len(accuracies)) / (len(accuracies) - 1)
+            ).tolist()
         variants_accuracies_normalized = {
             variant: accuracy_normalized
             for variant, accuracy_normalized in zip(variants, accuracies_normalized)

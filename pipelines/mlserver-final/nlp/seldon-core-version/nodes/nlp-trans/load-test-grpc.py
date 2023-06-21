@@ -6,8 +6,8 @@ import time
 import pathlib
 import os
 
-load = 1
-test_duration = 5
+load = 10
+test_duration = 20
 variant = 0
 platform = "seldon"
 mode = "equal"

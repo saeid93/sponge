@@ -1,9 +1,9 @@
 # ----------- pipeline configs -------------
 # pipeline informat
-pipeline_folder_name: audio-qa
-pipeline_name: audio-qa
+pipeline_folder_name: nlp
+pipeline_name: nlp
 timeout: 1
-pipeline_folder_name: audio-qa
+pipeline_folder_name: nlp
 mode: exponential
 nodes:
   - node_name: audio

@@ -1,9 +1,9 @@
-series: 89
+series: 98
 series_meta: testing static trace
 pipeline_name: nlp
 node_name: nlp-li
 data_type: text
-timeout: 120
+timeout: 180
 mode: step
 model_variants:
   - dinalzein-xlm-roberta-base-finetuned-language-identification
@@ -38,9 +38,9 @@ num_threads:
 repetition: 1
 workload_config:
   loads_to_test:
-  - 1
+  # - 1
   # - 5
-  - 10
+  # - 10
   - 20
   # - 40
   load_duration: 60

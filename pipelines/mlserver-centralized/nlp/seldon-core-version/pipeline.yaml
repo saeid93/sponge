@@ -80,7 +80,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 10
-      replicas: 4
+      replicas: 1
     graph:
       name: nlp-li
       type: MODEL
@@ -222,7 +222,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 10
-      replicas: 4
+      replicas: 1
     graph:
       name: nlp-sum
       type: MODEL
@@ -360,7 +360,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 10
-      replicas: 4
+      replicas: 1
     graph:
       name: nlp-trans
       type: MODEL
