@@ -84,7 +84,7 @@ initial_active_model:
 initial_cpu_allocation:
   - 1
   - 2
-  - 1
+  - 2
 initial_replica:
   - 1
   - 1
@@ -99,7 +99,7 @@ gamma: 10
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 64 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
-threshold: 5 # RPS threshold for finding the base allocation
+threshold: 1 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
@@ -156,7 +156,7 @@ teleport_interval: 0
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
-throughput_margin: 0
+throughput_margin: -50
 
 # ----------- enable in container logging -------------
 logs_enabled: true

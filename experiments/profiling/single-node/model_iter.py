@@ -211,18 +211,22 @@ def experiments(
                                         #         ) = output_queue.get()
                                         #         p.join()
                                         #         break
-                                        start_time_experiment,\
-                                            end_time_experiment, responses = load_test(
-                                                pipeline_name=node_name,
-                                                model=node_name,
-                                                data_type=data_type,
-                                                data=data,
-                                                workload=workload,
-                                                mode=mode,
-                                                namespace='default',
-                                                # load_duration=load_duration,
-                                                # no_engine=no_engine,
-                                                benchmark_duration=benchmark_duration)
+                                        (
+                                            start_time_experiment,
+                                            end_time_experiment,
+                                            responses,
+                                        ) = load_test(
+                                            pipeline_name=node_name,
+                                            model=node_name,
+                                            data_type=data_type,
+                                            data=data,
+                                            workload=workload,
+                                            mode=mode,
+                                            namespace="default",
+                                            # load_duration=load_duration,
+                                            # no_engine=no_engine,
+                                            benchmark_duration=benchmark_duration,
+                                        )
                                         logger.info(
                                             "-" * 25 + "saving the report" + "-" * 25
                                         )
