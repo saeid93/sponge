@@ -50,9 +50,9 @@ LSTM_PATH = os.path.join(DATA_PATH, "lstm")
 LSTM_INPUT_SIZE = 12
 
 # triton folders
-TRITON_PROFILING_PATH = os.path.join(PROFILING_CONFIGS_PATH, "triton")
-TRITON_PROFILING_CONFIGS_PATH = os.path.join(TRITON_PROFILING_PATH, "configs")
-TRITON_PROFILING_TEMPLATES_PATH = os.path.join(TRITON_PROFILING_PATH, "templates")
+# TRITON_PROFILING_PATH = os.path.join(PROFILING_CONFIGS_PATH, "triton")
+# TRITON_PROFILING_CONFIGS_PATH = os.path.join(TRITON_PROFILING_PATH, "configs")
+# TRITON_PROFILING_TEMPLATES_PATH = os.path.join(TRITON_PROFILING_PATH, "templates")
 
 # results noraml path
 RESULTS_PATH = os.path.join(DATA_PATH, "results")
@@ -63,7 +63,7 @@ PIPELINE_SIMULATION_MOCK_PATH = os.path.join(
     PIPELINE_SIMULATION_RESULTS_PATH, "mock-simulation"
 )
 NODE_PROFILING_RESULTS_PATH = os.path.join(PROFILING_RESULTS_PATH, "nodes")
-NODE_PROFILING_RESULTS_TRITON_PATH = os.path.join(NODE_PROFILING_RESULTS_PATH, "triton")
+# NODE_PROFILING_RESULTS_TRITON_PATH = os.path.join(NODE_PROFILING_RESULTS_PATH, "triton")
 PIPELINE_PROFILING_RESULTS_PATH = os.path.join(PROFILING_RESULTS_PATH, "pipelines")
 
 # results object storage path
@@ -120,8 +120,8 @@ def create_dirs():
         os.makedirs(NODE_PROFILING_RESULTS_PATH)
     if not os.path.exists(NODE_PROFILING_RESULTS_PATH):
         os.makedirs(NODE_PROFILING_RESULTS_PATH)
-    if not os.path.exists(NODE_PROFILING_RESULTS_TRITON_PATH):
-        os.makedirs(NODE_PROFILING_RESULTS_TRITON_PATH)
+    # if not os.path.exists(NODE_PROFILING_RESULTS_TRITON_PATH):
+    #     os.makedirs(NODE_PROFILING_RESULTS_TRITON_PATH)
     if not os.path.exists(PIPELINE_PROFILING_RESULTS_PATH):
         os.makedirs(PIPELINE_PROFILING_RESULTS_PATH)
     if not os.path.exists(OBJ_RESULTS_PATH):
