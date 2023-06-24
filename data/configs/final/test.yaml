@@ -40,7 +40,8 @@ adaptation_interval: 10
 workload_type: twitter
 workload_config:
   - start: '1301160'
-    end: '1302360'
+    # end: '1302360'
+    end: '1301460'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -51,7 +52,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 21500
+series: 21502
 # pipeline_name: video
 metadata: 'repeat of 197 on bursty low 20 minute'
 number_tasks: 2

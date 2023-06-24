@@ -234,9 +234,16 @@ class Adapter:
                 arrival_rate=predicted_load,
                 num_state_limit=self.num_state_limit,
             )
-            # optimal = pd.DataFrame() # TEMP
             if "objective" in optimal.columns:
-                objective = optimal["objective"][0]
+                # objective = optimal["objective"][0]
+                objective = optimal[
+                    [
+                        "accuracy_objective",
+                        "resource_objective",
+                        "batch_objective",
+                        "objective",
+                    ]
+                ]
                 new_configs = self.output_parser(optimal)
                 logger.info("-" * 50)
                 logger.info(f"candidate configs:\n{new_configs}")
@@ -582,7 +589,24 @@ class Monitoring:
         self.adaptation_report["change_successful"] = change_successful
         self.adaptation_report["timesteps"][timestep] = {}
         self.adaptation_report["timesteps"][timestep]["config"] = to_apply_config
-        self.adaptation_report["timesteps"][timestep]["objective"] = objective
+        if objective is not None:
+            self.adaptation_report["timesteps"][timestep]["accuracy_objective"] = float(
+                objective["accuracy_objective"][0]
+            )
+            self.adaptation_report["timesteps"][timestep]["resource_objective"] = float(
+                objective["resource_objective"][0]
+            )
+            self.adaptation_report["timesteps"][timestep]["batch_objective"] = float(
+                objective["batch_objective"][0]
+            )
+            self.adaptation_report["timesteps"][timestep]["objective"] = float(
+                objective["objective"][0]
+            )
+        else:
+            self.adaptation_report["timesteps"][timestep]["resource_objective"] = None
+            self.adaptation_report["timesteps"][timestep]["accuracy_objective"] = None
+            self.adaptation_report["timesteps"][timestep]["batch_objective"] = None
+            self.adaptation_report["timesteps"][timestep]["objective"] = None
         self.adaptation_report["timesteps"][timestep]["time_interval"] = time_interval
         self.adaptation_report["timesteps"][timestep]["monitored_load"] = monitored_load
         self.adaptation_report["timesteps"][timestep]["predicted_load"] = predicted_load

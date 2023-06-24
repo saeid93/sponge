@@ -253,10 +253,18 @@ class Monitoring:
         timestep = int(timestep)
         self.adaptation_report["timesteps"][timestep] = {}
         self.adaptation_report["timesteps"][timestep]["config"] = to_apply_config
-        self.adaptation_report["timesteps"][timestep]["accuracy_objective"] = float(objective["accuracy_objective"][0])
-        self.adaptation_report["timesteps"][timestep]["resource_objective"] = float(objective['resource_objective'][0])
-        self.adaptation_report["timesteps"][timestep]["batch_objective"] = float(objective['batch_objective'][0])
-        self.adaptation_report["timesteps"][timestep]["objective"] = float(objective['objective'][0])
+        self.adaptation_report["timesteps"][timestep]["accuracy_objective"] = float(
+            objective["accuracy_objective"][0]
+        )
+        self.adaptation_report["timesteps"][timestep]["resource_objective"] = float(
+            objective["resource_objective"][0]
+        )
+        self.adaptation_report["timesteps"][timestep]["batch_objective"] = float(
+            objective["batch_objective"][0]
+        )
+        self.adaptation_report["timesteps"][timestep]["objective"] = float(
+            objective["objective"][0]
+        )
         self.adaptation_report["timesteps"][timestep]["time_interval"] = time_interval
         self.adaptation_report["timesteps"][timestep]["monitored_load"] = monitored_load
         self.adaptation_report["timesteps"][timestep]["predicted_load"] = predicted_load

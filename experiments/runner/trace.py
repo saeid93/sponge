@@ -60,8 +60,9 @@ def get_arima_prediction(data):
         preds.append(pred)
     return preds
 
+
 damping_factor = 5
-drawing_factor = 5/8
+drawing_factor = 5 / 8
 
 # bursty workload
 start = 1296000
@@ -79,7 +80,9 @@ while True:
 
 
 ax = axs[0][0]
-rescaled_workload = (np.array(selected_workload)*(drawing_factor)).astype(int).tolist()
+rescaled_workload = (
+    (np.array(selected_workload) * (drawing_factor)).astype(int).tolist()
+)
 ax.plot(list(range(len(selected_workload))), rescaled_workload, label="Real")
 ax.set_title("Bursty")
 x, _ = get_x_y(rescaled_workload)
@@ -103,7 +106,9 @@ while True:
 
 
 ax2 = axs[0][1]
-rescaled_workload = (np.array(selected_workload)*(drawing_factor)).astype(int).tolist()
+rescaled_workload = (
+    (np.array(selected_workload) * (drawing_factor)).astype(int).tolist()
+)
 ax2.plot(list(range(len(selected_workload))), rescaled_workload, label="Real")
 ax2.set_title("Steady Low")
 x, _ = get_x_y(rescaled_workload)
@@ -128,7 +133,9 @@ while True:
 
 ax3 = axs[1][0]
 selected_workload = selected_workload * 2
-rescaled_workload = (np.array(selected_workload)*(drawing_factor)).astype(int).tolist()
+rescaled_workload = (
+    (np.array(selected_workload) * (drawing_factor)).astype(int).tolist()
+)
 ax3.plot(list(range(len(selected_workload))), rescaled_workload, label="Real")
 ax3.set_title("Steady High")
 x, _ = get_x_y(rescaled_workload)
@@ -157,7 +164,9 @@ selected_workload = selected_workload + selected_workload2
 
 
 ax4 = axs[1][1]
-rescaled_workload = (np.array(selected_workload)*(drawing_factor)).astype(int).tolist()
+rescaled_workload = (
+    (np.array(selected_workload) * (drawing_factor)).astype(int).tolist()
+)
 ax4.plot(list(range(len(selected_workload))), rescaled_workload, label="Real")
 ax4.set_title("Fluctuating")
 x, _ = get_x_y(rescaled_workload)

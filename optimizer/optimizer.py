@@ -478,8 +478,8 @@ class Optimizer:
             variant_names.append(task.variant_names)
             replicas.append(np.arange(1, scaling_cap + 1))
             batches.append(task.batches)
-        if self.only_measured_profiles:
-            batching_cap = max(batches[0])
+        # if self.only_measured_profiles:
+        #     batching_cap = max(batches[0])
 
         def func_l(batch: int, params: Dict[str, float]) -> float:
             """using parameters of fitted models
@@ -534,6 +534,11 @@ class Optimizer:
             latency_parameters = self.latency_parameters(
                 only_measured_profiles=self.only_measured_profiles
             )
+            distinct_batches = [
+                distinct_batch
+                for distinct_batch in distinct_batches
+                if distinct_batch <= batching_cap
+            ]
         else:
             latency_parameters = self.latency_parameters(
                 only_measured_profiles=self.only_measured_profiles

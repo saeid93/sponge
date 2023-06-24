@@ -29,7 +29,7 @@ from experiments.utils.workload import make_workload
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="sum-qa-1")
+@click.option("--config-name", required=True, type=str, default="test")
 @click.option(
     "--type-of",
     required=True,
