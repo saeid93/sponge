@@ -581,6 +581,9 @@ class AdaptationParser:
     def series_changes(self, adaptation_log: Dict[str, Dict[str, Any]]):
         changes = {
             "time_interval": [],
+            "accuracy_objective": [],
+            "resource_objective": [],
+            "batch_objective": [],
             "objective": [],
             "monitored_load": [],
             "predicted_load": [],
@@ -602,6 +605,9 @@ class AdaptationParser:
             changes["sla"] = adaptation_log["metadata"]["sla"]
             for _, state in adaptation_log["timesteps"].items():
                 changes["time_interval"].append(state["time_interval"])
+                changes["accuracy_objective"].append(state["accuracy_objective"])
+                changes["resource_objective"].append(state["resource_objective"])
+                changes["batch_objective"].append(state["batch_objective"])
                 changes["objective"].append(state["objective"])
                 changes["monitored_load"].append(state["monitored_load"])
                 changes["predicted_load"].append(state["predicted_load"])

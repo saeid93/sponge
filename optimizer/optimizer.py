@@ -63,16 +63,20 @@ class Optimizer:
             max_batch += task.batch
         return max_batch
 
-    def objective(self, alpha: float, beta: float, gamma: float) -> None:
+    def objective(self, alpha: float, beta: float, gamma: float) -> Dict[str, float]:
         """
         objective function of the pipeline
         """
-        objective = (
-            alpha * self.accuracy_objective()
-            - beta * self.resource_objective()
-            - gamma * self.batch_objective()
+        objectives = {}
+        objectives["accuracy_objective"] = alpha * self.accuracy_objective()
+        objectives["resource_objective"] = beta * self.resource_objective()
+        objectives["batch_objective"] = gamma * self.resource_objective()
+        objectives["objective"] = (
+            objectives["accuracy_objective"]
+            - objectives["resource_objective"]
+            - objectives["batch_objective"]
         )
-        return objective
+        return objectives
 
     def constraints(self, arrival_rate: int) -> bool:
         """
@@ -903,7 +907,7 @@ class Optimizer:
                     task_id_j
                 ].replicas
 
-            state["objective"] = self.objective(alpha=alpha, beta=beta, gamma=gamma)
+            state.update(self.objective(alpha=alpha, beta=beta, gamma=gamma))
             states.append(state)
         return pd.DataFrame(states)
 
