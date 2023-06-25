@@ -62,7 +62,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 806
+series: 8006
 # pipeline_name: video
 metadata: 'steady low - fa2-low - cpu type: compute_cascadelake_r_ib'
 number_tasks: 3
@@ -96,9 +96,9 @@ initial_batch:
   - 1
 alpha: 10
 beta: 0.5
-gamma: 10
+gamma: 0
 scaling_cap: 100 # maximum possible scaling per nodes
-batching_cap: 64 # maximum possible batching per nodes
+batching_cap: 16 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
 threshold: 1 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
