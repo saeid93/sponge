@@ -40,12 +40,9 @@ workload_type: twitter
 workload_config:
   - start: '1768800'
     end: '1769400'
-    # end: '1863200'
-    # end: '1862200'
-    # end: '1861960'
-    # end: '1862500'
-    # end: '1863700'
-    # end: '1865100'
+    damping_factor: 8 # [int | null]
+  - start: '1768800'
+    end: '1769400'
     damping_factor: 8 # [int | null]
 
 # ----------- optimizer configs -------------

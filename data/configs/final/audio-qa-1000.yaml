@@ -1,41 +1,30 @@
 # ----------- pipeline configs -------------
 # pipeline informat
-pipeline_folder_name: nlp
-pipeline_name: nlp
+pipeline_folder_name: audio-qa
+pipeline_name: audio-qa
 timeout: 1
-pipeline_folder_name: nlp
+pipeline_folder_name: audio-qa
 mode: exponential
 nodes:
-  - node_name: nlp-li
-    data_type: text
-    model_variants: dinalzein-xlm-roberta-base-finetuned-language-identification
+  - node_name: audio
+    data_type: audio
+    model_variants: facebook-s2t-small-librispeech-asr
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 2
+    replicas: 1
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
-  - node_name: nlp-trans
+  - node_name: nlp-qa
     data_type: text
-    model_variants: Helsinki-NLP-opus-mt-fr-en
+    model_variants: deepset-roberta-base-squad2
     max_batch_size: '1'
     max_batch_time: '1'
-    cpu_request: '2'
+    cpu_request: '1'
     memory_request: 4Gi
-    replicas: 8
-    use_threading: 'True'
-    num_interop_threads: '1'
-    num_threads: '1'
-  - node_name: nlp-sum
-    data_type: text
-    model_variants: sshleifer-distilbart-xsum-1-1
-    max_batch_size: '1'
-    max_batch_time: '1'
-    cpu_request: '2'
-    memory_request: 4Gi
-    replicas: 3
+    replicas: 1
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -56,39 +45,31 @@ workload_config:
   - start: '1768800'
     end: '1769400'
     damping_factor: 8 # [int | null]
-
 # ----------- optimizer configs -------------
 
-series: 8113
+series: 10006
 # pipeline_name: video
-metadata: 'steady high - rim-low - cpu type: compute_cascadelake_r_ib'
-number_tasks: 3
+metadata: 'steady high - ipa - cpu type: compute_cascadelake_r_ib'
+number_tasks: 2
 profiling_series:
-  - 98
-  - 99
-  - 97
+  - 85
+  - 86
 model_name:
-  - nlp-li
-  - nlp-trans
-  - nlp-sum
+  - audio
+  - nlp-qa
 task_name: 
-  - nlp-li
-  - nlp-trans
-  - nlp-sum
+  - audio
+  - nlp-qa
 initial_active_model:
-  - dinalzein-xlm-roberta-base-finetuned-language-identification
-  - Helsinki-NLP-opus-mt-fr-en
-  - sshleifer-distilbart-xsum-1-1
+  - facebook-s2t-small-librispeech-asr
+  - deepset-roberta-base-squad2
 initial_cpu_allocation:
   - 1
-  - 2
-  - 2
-initial_replica:
-  - 2
-  - 8
-  - 3
-initial_batch:
   - 1
+initial_replica:
+  - 1
+  - 1
+initial_batch:
   - 1
   - 1
 alpha: 10
@@ -103,11 +84,8 @@ allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
-profiling_load:
-  - 20
-  - 10
-  - 10
-baseline_mode: switch # [switch | scale | null]
+profiling_load: 20
+baseline_mode: null # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
@@ -131,7 +109,7 @@ distrpution_time: 30
 debug_mode:  false
 
 # ----------- simulation mode -------------
-simulation_mode: false
+simulation_mode: true
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0
@@ -153,8 +131,8 @@ teleport_interval: 0
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
-latency_margin: 0
+latency_margin: 100
 throughput_margin: -50
 
 # ----------- enable in container logging -------------
-logs_enabled: true
+logs_enabled: false
