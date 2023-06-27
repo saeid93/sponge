@@ -51,7 +51,7 @@ def find_initial_config(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-1000")
+@click.option("--config-name", required=True, type=str, default="video-1007")
 @click.option(
     "--type-of",
     required=True,

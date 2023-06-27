@@ -70,7 +70,7 @@ class Optimizer:
         objectives = {}
         objectives["accuracy_objective"] = alpha * self.accuracy_objective()
         objectives["resource_objective"] = beta * self.resource_objective()
-        objectives["batch_objective"] = gamma * self.resource_objective()
+        objectives["batch_objective"] = gamma * self.batch_objective()
         objectives["objective"] = (
             objectives["accuracy_objective"]
             - objectives["resource_objective"]
