@@ -51,7 +51,8 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 40000
+metaseries: 5
+series: 1
 # pipeline_name: video
 metadata: 'bursty - ipa accuracy prefered'
 number_tasks: 2

@@ -51,7 +51,8 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 40002
+metaseries: 5
+series: 3
 # pipeline_name: video
 metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2

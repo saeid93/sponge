@@ -52,6 +52,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
+metaseries: 4
 series: 21502
 # pipeline_name: video
 metadata: 'repeat of 197 on bursty low 20 minute'

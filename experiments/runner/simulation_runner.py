@@ -68,15 +68,17 @@ def main(config_name: str, type_of: str):
     config_path = os.path.join(FINAL_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, "r") as cf:
         config = yaml.safe_load(cf)
+    metaseries = config["metaseries"]
     series = config["series"]
+
+    dir_path = os.path.join(FINAL_RESULTS_PATH, "metaseries", str(metaseries), "series", str(series))
     save_path = os.path.join(
-        FINAL_RESULTS_PATH, "series", str(series), "adaptation_log.json"
+        dir_path, "adaptation_log.json"
     )
     pipeline_name = config["pipeline_name"]
     node_names = [config["node_name"] for config in config["nodes"]]
     adaptation_interval = config["adaptation_interval"]
 
-    dir_path = os.path.join(FINAL_RESULTS_PATH, "series", str(series))
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
         dest_config_path = os.path.join(dir_path, "0.yaml")
@@ -98,7 +100,6 @@ def main(config_name: str, type_of: str):
         accuracies = yaml.safe_load(cf)
 
     # profiling config
-    series = config["series"]
     number_tasks = config["number_tasks"]
     profiling_series = config["profiling_series"]
     model_name = config["model_name"]
