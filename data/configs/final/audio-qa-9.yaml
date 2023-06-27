@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-series: 5108
+series: 5208
 # pipeline_name: video
 metadata: 'steady low - rim-low - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
@@ -80,7 +80,7 @@ alpha: 10
 beta: 0.5
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
-batching_cap: 16 # maximum possible batching per nodes
+batching_cap: 8 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
 threshold: 1 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
