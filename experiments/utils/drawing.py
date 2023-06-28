@@ -8,7 +8,7 @@ plt.rc("font", size=12)
 plt.rc("axes", titlesize=12)
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
-color_list = ["#d7191c", "#fdae61", "#abd9e9", "#2c7bb6", "#fee090"]
+color_list = ["#ffffcc", "#a1dab4", "#41b6c4", "#2c7fb8", "#253494"]
 
 
 def draw_temporal(
@@ -476,3 +476,50 @@ def draw_cumulative_final(
         bbox_inches="tight",
         pad_inches=0,
     )
+
+
+
+
+def draw_cdf(data_dict: dict, x: float):
+    import seaborn as sns
+    
+    rep = 3
+    fig, axs = plt.subplots(1, rep, figsize=(8, 2.2))
+    
+    for idx in range(rep):
+        color_idx = 0
+        for label, data in data_dict.items():
+            sns.kdeplot(
+                data, label=label, cumulative=True, linestyle="dashed", color=color_list[color_idx], ax=axs[idx]
+            )
+            color_idx += 1
+        if idx > 0:
+            axs[idx].set_yticklabels([])
+            axs[idx].set_ylabel(None)
+        else:
+            axs[idx].set_ylabel("CDF")
+        
+        axs[idx].set_xticks([0, x])
+        axs[idx].set_xlim(0)
+        axs[idx].vlines(x, ymin=0, ymax=1, colors="black", ls="--", label="x")
+    plt.legend(
+        fontsize=13,
+        fancybox=False,
+        ncol=len(data_dict.keys()) + 1,
+        frameon=False,
+        bbox_to_anchor=(0.2, 1.25),
+        handlelength=1,
+        columnspacing=0.8,
+    )
+    plt.show()
+        
+
+if __name__ == "__main__":
+    data = np.random.random(100)
+    data2 = np.random.random(100) * 0.9
+    data3 = np.random.random(100) * 0.85
+    data4 = np.random.random(100) * 0.75
+    data5 = np.random.random(100) * 0.6
+
+    data_dict = {"1": data, "2": data2, "3": data3, "4": data4, "5": data5}
+    draw_cdf(data_dict, 0.9)
