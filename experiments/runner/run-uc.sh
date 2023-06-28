@@ -100,26 +100,26 @@ python runner_script.py --config-name audio-sent-9
 sleep 60
 python runner_script.py --config-name audio-sent-10
 sleep 60
-# python runner_script.py --config-name audio-sent-11
-# sleep 60
-# python runner_script.py --config-name audio-sent-12
-# sleep 60
-# python runner_script.py --config-name audio-sent-13
-# sleep 60
-# python runner_script.py --config-name audio-sent-14
-# sleep 60
-# python runner_script.py --config-name audio-sent-15
-# sleep 60
-# python runner_script.py --config-name audio-sent-16
-# sleep 60
-# python runner_script.py --config-name audio-sent-17
-# sleep 60
-# python runner_script.py --config-name audio-sent-18
-# sleep 60
-# python runner_script.py --config-name audio-sent-19
-# sleep 60
-# python runner_script.py --config-name audio-sent-20
-# sleep 60
+python runner_script.py --config-name audio-sent-11
+sleep 60
+python runner_script.py --config-name audio-sent-12
+sleep 60
+python runner_script.py --config-name audio-sent-13
+sleep 60
+python runner_script.py --config-name audio-sent-14
+sleep 60
+python runner_script.py --config-name audio-sent-15
+sleep 60
+python runner_script.py --config-name audio-sent-16
+sleep 60
+python runner_script.py --config-name audio-sent-17
+sleep 60
+python runner_script.py --config-name audio-sent-18
+sleep 60
+python runner_script.py --config-name audio-sent-19
+sleep 60
+python runner_script.py --config-name audio-sent-20
+sleep 60
 
 # python runner_script.py --config-name sum-qa-1
 # sleep 60
