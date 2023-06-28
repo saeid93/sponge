@@ -57,6 +57,7 @@ LSTM_INPUT_SIZE = 12
 # results noraml path
 RESULTS_PATH = os.path.join(DATA_PATH, "results")
 PROFILING_RESULTS_PATH = os.path.join(RESULTS_PATH, "profiling")
+FIGURES_PATH = os.path.join(DATA_PATH, "figures")
 PIPELINE_SIMULATION_RESULTS_PATH = os.path.join(RESULTS_PATH, "pipeline-simulation")
 FINAL_RESULTS_PATH = os.path.join(RESULTS_PATH, "final")
 PIPELINE_SIMULATION_MOCK_PATH = os.path.join(
@@ -96,6 +97,8 @@ def create_dirs():
     #     os.makedirs(PIPLINES_PATH)
     if not os.path.exists(LSTM_PATH):
         os.makedirs(LSTM_PATH)
+    if not os.path.exists(FIGURES_PATH):
+        os.makedirs(FIGURES_PATH)
     if not os.path.exists(CONFIGS_PATH):
         os.makedirs(CONFIGS_PATH)
     if not os.path.exists(PROFILING_CONFIGS_PATH):
