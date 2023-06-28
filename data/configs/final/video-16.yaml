@@ -48,8 +48,8 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 4
-series: 4215
+metaseries: 7
+series: 16
 # pipeline_name: video
 metadata: 'fluctuating - ipa - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2

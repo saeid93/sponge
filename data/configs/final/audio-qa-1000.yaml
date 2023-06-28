@@ -47,7 +47,7 @@ workload_config:
     damping_factor: 8 # [int | null]
 # ----------- optimizer configs -------------
 
-metaseries: 4
+metaseries: 7
 series: 10006
 # pipeline_name: video
 metadata: 'steady high - ipa - cpu type: compute_cascadelake_r_ib'
