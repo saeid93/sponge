@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 5
+metaseries: 8
 series: 2
 # pipeline_name: video
 metadata: 'bursty - ipa cost prefered'

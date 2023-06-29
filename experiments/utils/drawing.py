@@ -8,7 +8,7 @@ plt.rc("font", size=12)
 plt.rc("axes", titlesize=12)
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
-color_list = ["#d7191c", "#fdae61", "#abd9e9", "#2c7bb6", "#fee090"]
+color_list = ["#ffffcc", "#a1dab4", "#41b6c4", "#2c7fb8", "#253494"]
 
 
 def draw_temporal(
