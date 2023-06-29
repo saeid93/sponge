@@ -104,14 +104,14 @@
 # sleep 60
 # python runner_script.py --config-name audio-sent-12
 # sleep 60
-python runner_script.py --config-name audio-sent-13
-sleep 60
+# python runner_script.py --config-name audio-sent-13
+# sleep 60
 # python runner_script.py --config-name audio-sent-14
 # sleep 60
-python runner_script.py --config-name audio-sent-15
-sleep 60
-python runner_script.py --config-name audio-sent-16
-sleep 60
+# python runner_script.py --config-name audio-sent-15
+# sleep 60
+# python runner_script.py --config-name audio-sent-16
+# sleep 60
 python runner_script.py --config-name audio-sent-17
 sleep 60
 python runner_script.py --config-name audio-sent-18
