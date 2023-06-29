@@ -170,7 +170,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="nlp-1")
+@click.option("--config-name", required=True, type=str, default="audio-qa-1000")
 @click.option(
     "--type-of",
     required=True,

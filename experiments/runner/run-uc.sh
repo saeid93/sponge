@@ -67,18 +67,18 @@ python runner_script.py --config-name audio-qa-13
 sleep 60
 # python runner_script.py --config-name audio-qa-14
 # sleep 60
-python runner_script.py --config-name audio-qa-15
-sleep 60
-python runner_script.py --config-name audio-qa-16
-sleep 60
-python runner_script.py --config-name audio-qa-17
-sleep 60
-python runner_script.py --config-name audio-qa-18
-sleep 60
+# python runner_script.py --config-name audio-qa-15
+# sleep 60
+# python runner_script.py --config-name audio-qa-16
+# sleep 60
+# python runner_script.py --config-name audio-qa-17
+# sleep 60
+# python runner_script.py --config-name audio-qa-18
+# sleep 60
 # python runner_script.py --config-name audio-qa-19
 # sleep 60
-python runner_script.py --config-name audio-qa-20
-sleep 60
+# python runner_script.py --config-name audio-qa-20
+# sleep 60
 
 # python runner_script.py --config-name audio-sent-1
 # sleep 60
