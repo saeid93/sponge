@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 9
+metaseries: 10
 series: 23
 # pipeline_name: video
 metadata: 'bursty - fa2-high - cpu type: compute_cascadelake_r_ib - redo of metaseries bursty on chameleon to check latencies'
@@ -116,7 +116,7 @@ debug_mode: false
 simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
-predictor_margin: 0
+predictor_margin: 20
 
 # ----------- drop interval -------------
 drop_limit: 20

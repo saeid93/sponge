@@ -1,30 +1,30 @@
 # ----------- pipeline configs -------------
 # pipeline informat
-pipeline_folder_name: video
-pipeline_name: video
+pipeline_folder_name: audio-qa
+pipeline_name: audio-qa
 timeout: 1
-pipeline_folder_name: video
+pipeline_folder_name: audio-qa
 mode: exponential
 nodes:
-  - node_name: yolo
-    data_type: image
-    model_variants: yolov5n
+  - node_name: audio
+    data_type: audio
+    model_variants: facebook-s2t-small-librispeech-asr
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 1
+    replicas: 20
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
-  - node_name: resnet-human
+  - node_name: nlp-qa
     data_type: text
-    model_variants: resnet18
+    model_variants: deepset-roberta-base-squad2
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 1
+    replicas: 5
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -51,51 +51,51 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 8
+metaseries: 9
 series: 5
 # pipeline_name: video
-metadata: 'bursty - fa2-low - cpu type: compute_cascadelake_r_ib'
+metadata: 'bursty - rim-high - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
 profiling_series:
-  - 71
-  - 72
+  - 85
+  - 86
 model_name:
-  - yolo
-  - resnet-human
+  - audio # be consistent with values in pipelines
+  - nlp-qa # be consistent with values in pipelines
 task_name: 
-  - crop
-  - classification
+  - audio
+  - nlp-qa
 initial_active_model:
-  - yolov5n
-  - resnet18
+  - facebook-s2t-small-librispeech-asr
+  - deepset-roberta-base-squad2
 initial_cpu_allocation:
   - 1
   - 1
 initial_replica:
-  - 1
-  - 1
+  - 20
+  - 5
 initial_batch:
   - 1
   - 1
-alpha: 2
-beta: 1
+alpha: 10
+beta: 0.5
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 8 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
-threshold: 4 # RPS threshold for finding the base allocation
+threshold: 1 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
 profiling_load: 20
-baseline_mode: scale # [switch | scale | null]
+baseline_mode: switch # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'lstm' # [reactive | avg | arima | lstm | max]
+predictor_type: 'lstm' # [reactive | avg | lstm | max]
 monitoring_duration: 2 # in minutes
 backup_predictor_type: 'max' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes
@@ -110,16 +110,16 @@ distrpution_time: 30
 
 # ----------- distruption time -------------
 # debug mode with complete lgos of containers
-debug_mode:  false
+debug_mode: false
 
 # ----------- simulation mode -------------
-simulation_mode: true
+simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0
 
 # ----------- drop interval -------------
-drop_limit: 10
+drop_limit: 20
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
@@ -131,8 +131,8 @@ teleport_interval: 0
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
-latency_margin: 0
-throughput_margin: 0
+latency_margin: 100
+throughput_margin: -50
 
 # ----------- enable in container logging -------------
 logs_enabled: false
