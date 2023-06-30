@@ -1,15 +1,14 @@
 import os
 import sys
 import time
-import json
 import yaml
 import numpy as np
 from typing import List, Tuple, Dict, Any
 import re
-import numpy as np
 from jinja2 import Environment, FileSystemLoader
 from PIL import Image
 import asyncio
+import subprocess
 from datasets import load_dataset
 import tqdm
 from multiprocessing import Queue
@@ -36,6 +35,19 @@ from experiments.utils.constants import NAMESPACE, ROUTER_PATH, QUEUE_PATH
 
 from experiments.utils import logger
 
+def get_cpu_model_name():
+    command = "lscpu"
+    result = subprocess.run(command, capture_output=True, text=True)
+    output = result.stdout.strip()
+    lines = output.split("\n")
+    
+    model_name = None
+    for line in lines:
+        if line.startswith("Model name:"):
+            model_name = line.split(":", 1)[1].strip()
+            break
+    
+    return model_name
 
 def get_pod_name(node_name: str, orchestrator=False):
     pod_regex = f"{node_name}.*"

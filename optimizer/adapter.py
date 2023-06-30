@@ -24,6 +24,7 @@ from experiments.utils.pipeline_operations import (
     get_pod_name,
     check_node_loaded,
     is_terminating,
+    get_cpu_model_name
 )
 
 from experiments.utils.prometheus import PromClient
@@ -553,6 +554,7 @@ class Monitoring:
         self.adaptation_report["timesteps"] = {}
         self.adaptation_report["metadata"] = {}
         self.adaptation_report["metadata"]["sla"] = sla
+        self.adaptation_report["metadata"]["cpu_type"] = get_cpu_model_name()
 
     def rps_monitor(self, monitoring_duration: int = 1) -> List[int]:
         """

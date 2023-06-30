@@ -104,22 +104,22 @@
 # sleep 60
 # python runner_script.py --config-name audio-sent-12
 # sleep 60
-python runner_script.py --config-name audio-sent-13
-sleep 60
+# python runner_script.py --config-name audio-sent-13
+# sleep 60
 # python runner_script.py --config-name audio-sent-14
 # sleep 60
-python runner_script.py --config-name audio-sent-15
-sleep 60
-python runner_script.py --config-name audio-sent-16
-sleep 60
-python runner_script.py --config-name audio-sent-17
-sleep 60
-python runner_script.py --config-name audio-sent-18
-sleep 60
+# python runner_script.py --config-name audio-sent-15
+# sleep 60
+# python runner_script.py --config-name audio-sent-16
+# sleep 60
+# python runner_script.py --config-name audio-sent-17
+# sleep 60
+# python runner_script.py --config-name audio-sent-18
+# sleep 60
 # python runner_script.py --config-name audio-sent-19
 # sleep 60
-python runner_script.py --config-name audio-sent-20
-sleep 60
+# python runner_script.py --config-name audio-sent-20
+# sleep 60
 
 # python runner_script.py --config-name sum-qa-1
 # sleep 60
@@ -186,7 +186,7 @@ sleep 60
 # sleep 60
 # python runner_script.py --config-name nlp-12
 # sleep 60
-# python runner_script.py --config-name nlp-13
+python runner_script.py --config-name nlp-13
 # sleep 60
 # python runner_script.py --config-name nlp-14
 # sleep 60
