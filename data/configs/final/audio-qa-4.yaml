@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 9
+metaseries: 14
 series: 24
 # pipeline_name: video
 metadata: 'bursty - rim-low - cpu type: compute_cascadelake_r_ib - redo of metaseries bursty on chameleon to check latencies'
@@ -81,7 +81,7 @@ alpha: 10
 beta: 0.5
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
-batching_cap: 8 # maximum possible batching per nodes
+batching_cap: 1 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
 threshold: 1 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
@@ -116,7 +116,7 @@ debug_mode: false
 simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
-predictor_margin: 0
+predictor_margin: 20
 
 # ----------- drop interval -------------
 drop_limit: 20
