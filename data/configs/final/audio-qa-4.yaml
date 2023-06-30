@@ -51,10 +51,10 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 7
+metaseries: 9
 series: 24
 # pipeline_name: video
-metadata: 'bursty - rim-low - cpu type: compute_cascadelake_r_ib'
+metadata: 'bursty - rim-low - cpu type: compute_cascadelake_r_ib - redo of metaseries bursty on chameleon to check latencies'
 number_tasks: 2
 profiling_series:
   - 85
