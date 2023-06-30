@@ -8,7 +8,7 @@ plt.rc("font", size=12)
 plt.rc("axes", titlesize=12)
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
-color_list = ["#ffffcc", "#a1dab4", "#41b6c4", "#2c7fb8", "#253494"]
+color_list = ["#ffff99", "#a1dab4", "#41b6c4", "#2c7fb8", "#253494"]
 
 
 def draw_temporal(
@@ -511,7 +511,7 @@ def draw_cdf(data_dict: dict, x: float):
         handlelength=1,
         columnspacing=0.8,
     )
-    plt.show()
+    plt.savefig("cdf.pdf")
         
 
 if __name__ == "__main__":

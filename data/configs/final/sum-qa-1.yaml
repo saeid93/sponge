@@ -120,7 +120,7 @@ simulation_mode: false
 predictor_margin: 0
 
 # ----------- drop interval -------------
-drop_limit: 10
+drop_limit: 5
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false

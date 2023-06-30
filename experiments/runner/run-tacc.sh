@@ -186,7 +186,7 @@ sleep 60
 # sleep 60
 # python runner_script.py --config-name nlp-12
 # sleep 60
-# python runner_script.py --config-name nlp-13
+python runner_script.py --config-name nlp-13
 # sleep 60
 # python runner_script.py --config-name nlp-14
 # sleep 60
