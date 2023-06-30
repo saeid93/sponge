@@ -39,25 +39,29 @@ adaptation_interval: 10
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1768800'
-    end: '1769400'
+  - start: '1301160'
+    end: '1302360'
+    # end: '1863200'
+    # end: '1862200'
+    # end: '1861960'
+    # end: '1862500'
+    # end: '1863700'
+    # end: '1865100'
     damping_factor: 8 # [int | null]
-  - start: '1768800'
-    end: '1769400'
-    damping_factor: 8 # [int | null]
+
 # ----------- optimizer configs -------------
 
-metaseries: 0
-series: 8
+metaseries: 9
+series: 2
 # pipeline_name: video
-metadata: 'steady high - ipa - cpu type: compute_cascadelake_r_ib'
+metadata: 'bursty - fa2-low - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
 profiling_series:
   - 85
   - 86
 model_name:
-  - audio
-  - nlp-qa
+  - audio # be consistent with values in pipelines
+  - nlp-qa # be consistent with values in pipelines
 task_name: 
   - audio
   - nlp-qa
@@ -86,16 +90,15 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
 profiling_load: 20
-baseline_mode: null # [switch | scale | null]
+baseline_mode: scale # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'lstm' # [reactive | avg | arima | lstm | max]
+predictor_type: 'lstm' # [reactive | avg | lstm | max]
 monitoring_duration: 2 # in minutes
 backup_predictor_type: 'max' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes
-
 
 # ----------- queueing-option -------------
 
@@ -107,7 +110,7 @@ distrpution_time: 30
 
 # ----------- distruption time -------------
 # debug mode with complete lgos of containers
-debug_mode:  false
+debug_mode: false
 
 # ----------- simulation mode -------------
 simulation_mode: false
@@ -125,10 +128,6 @@ warm_up: false
 teleport_mode: false 
 teleport_interval: 0
 
-# ----------- teleport mode (only available in real-world experiments) -------------
-teleport_mode: false 
-teleport_interval: 0
-
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
@@ -136,4 +135,4 @@ latency_margin: 100
 throughput_margin: -50
 
 # ----------- enable in container logging -------------
-logs_enabled: true
+logs_enabled: false
