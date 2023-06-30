@@ -84,7 +84,7 @@
 # sleep 60
 # python runner_script.py --config-name audio-sent-2
 # sleep 60
-python runner_script.py --config-name audio-sent-3
+# python runner_script.py --config-name audio-sent-3
 # sleep 60
 # python runner_script.py --config-name audio-sent-4
 # sleep 60
@@ -161,6 +161,19 @@ python runner_script.py --config-name audio-sent-3
 # sleep 60
 # python runner_script.py --config-name sum-qa-20
 # sleep 60
+
+python runner_script.py --config-name sum-qa-11-copy-0
+sleep 60
+python runner_script.py --config-name sum-qa-11-copy-1
+sleep 60
+python runner_script.py --config-name sum-qa-11-copy-2
+sleep 60
+python runner_script.py --config-name sum-qa-11-copy-3
+sleep 60
+python runner_script.py --config-name sum-qa-11-copy-4
+sleep 60
+
+
 
 # python runner_script.py --config-name nlp-1
 # sleep 60
