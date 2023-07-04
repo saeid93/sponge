@@ -135,4 +135,4 @@ latency_margin: 100
 throughput_margin: -50
 
 # ----------- enable in container logging -------------
-logs_enabled: true
+logs_enabled: false

@@ -214,10 +214,139 @@
 # python runner_script.py --config-name nlp-19
 # sleep 60
 # python runner_script.py --config-name nlp-20
+# sleep 60
+
+# python runner_script.py --config-name nlp-0-1
+# sleep 60
+# python runner_script.py --config-name nlp-0-2
+# sleep 60
+# python runner_script.py --config-name nlp-0-3
+# sleep 60
+# python runner_script.py --config-name nlp-4
+# sleep 60
+# python runner_script.py --config-name nlp-0-5
+# sleep 60
+# python runner_script.py --config-name nlp-0-6
+# sleep 60
+# python runner_script.py --config-name nlp-0-7
+# sleep 60
+# python runner_script.py --config-name nlp-0-8
+# sleep 60
+# python runner_script.py --config-name nlp-9
+# sleep 60
+# python runner_script.py --config-name nlp-0-10
+# sleep 60
+# python runner_script.py --config-name nlp-0-11
+# sleep 60
+# python runner_script.py --config-name nlp-0-12
+# sleep 60
+# python runner_script.py --config-name nlp-0-13
+# sleep 60
+# python runner_script.py --config-name nlp-14
+# sleep 60
+# python runner_script.py --config-name nlp-0-15
+# sleep 60
+# python runner_script.py --config-name nlp-0-16
+# sleep 60
+# python runner_script.py --config-name nlp-0-17
+# sleep 60
+# python runner_script.py --config-name nlp-0-18
+# sleep 60
+# python runner_script.py --config-name nlp-19
+# sleep 60
+# python runner_script.py --config-name nlp-0-20
+
+# python simulation_runner.py --config-name accuracy-video-1
+# python simulation_runner.py --config-name accuracy-video-2
+# python simulation_runner.py --config-name accuracy-video-3
+
+# python simulation_runner.py --config-name accuracy-audio-qa-1
+# python simulation_runner.py --config-name accuracy-audio-qa-2
+# python simulation_runner.py --config-name accuracy-audio-qa-3
+
+# python simulation_runner.py --config-name accuracy-audio-sent-1
+# python simulation_runner.py --config-name accuracy-audio-sent-2
+# python simulation_runner.py --config-name accuracy-audio-sent-3
+
+# python simulation_runner.py --config-name accuracy-sum-qa-1
+# python simulation_runner.py --config-name accuracy-sum-qa-2
+# python simulation_runner.py --config-name accuracy-sum-qa-3
+
+# python runner_script.py --config-name video-1-1
+# sleep 60
+# python runner_script.py --config-name video-1-2
+# sleep 60
+# python runner_script.py --config-name video-1-3
+# sleep 60
+# python runner_script.py --config-name video-1-4
 
 
-# python simulation_runner.py --config-name nlp-1000
-# python simulation_runner.py --config-name nlp-2000
-# python simulation_runner.py --config-name nlp-3000
-# python simulation_runner.py --config-name nlp-4000
-# python simulation_runner.py --config-name nlp-5000
+# python runner_script.py --config-name predictor-audio-qa-1
+# sleep 60
+# python runner_script.py --config-name predictor-audio-qa-2
+# sleep 60
+# python runner_script.py --config-name predictor-audio-qa-3
+# sleep 60
+
+# python runner_script.py --config-name predictor-audio-sent-1
+# sleep 60
+# python runner_script.py --config-name predictor-audio-sent-2
+# sleep 60
+# python runner_script.py --config-name predictor-audio-sent-3
+# sleep 60
+
+# python runner_script.py --config-name predictor-sum-qa-1
+# sleep 60
+# python runner_script.py --config-name predictor-sum-qa-2
+# sleep 60
+# python runner_script.py --config-name predictor-sum-qa-3
+# sleep 60
+
+
+# --------------
+
+# python runner_script.py --config-name predictor-1-video-1
+# sleep 60
+# python runner_script.py --config-name predictor-1-video-2
+# sleep 60
+# python runner_script.py --config-name predictor-1-video-3
+# sleep 60
+
+
+# python runner_script.py --config-name predictor-1-audio-qa-1
+# sleep 60
+# python runner_script.py --config-name predictor-1-audio-qa-2
+# sleep 60
+# python runner_script.py --config-name predictor-1-audio-qa-3
+# sleep 60
+
+python runner_script.py --config-name predictor-1-audio-sent-1
+sleep 60
+python runner_script.py --config-name predictor-1-audio-sent-2
+sleep 60
+python runner_script.py --config-name predictor-1-audio-sent-3
+sleep 60
+
+python runner_script.py --config-name predictor-1-sum-qa-1
+sleep 60
+python runner_script.py --config-name predictor-1-sum-qa-2
+sleep 60
+python runner_script.py --config-name predictor-1-sum-qa-3
+sleep 60
+
+# # ---------------------
+
+# python runner_script.py --config-name predictor-audio-sent-2
+# sleep 60
+# python runner_script.py --config-name predictor-audio-sent-3
+# sleep 60
+
+# python runner_script.py --config-name predictor-sum-qa-1
+# sleep 60
+# python runner_script.py --config-name predictor-sum-qa-2
+# sleep 60
+# python runner_script.py --config-name predictor-sum-qa-3
+# sleep 60
+
+# python runner_script.py --config-name predictor-audio-qa-3
+# sleep 60
