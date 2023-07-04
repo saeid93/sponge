@@ -40,8 +40,7 @@ adaptation_interval: 10
 workload_type: twitter
 workload_config:
   - start: '1301160'
-    # end: '1302360'
-    end: '1301460'
+    end: '1302360'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -52,10 +51,10 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 7
-series: 21502
+metaseries: 19
+series: 2
 # pipeline_name: video
-metadata: 'repeat of 197 on bursty low 20 minute'
+metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
 profiling_series:
   - 71
@@ -80,9 +79,9 @@ initial_batch:
   - 1
 alpha: 2
 beta: 1
-gamma: 10
+gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
-batching_cap: 64 # maximum possible batching per nodes
+batching_cap: 8 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
 threshold: 4 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
@@ -115,7 +114,7 @@ distrpution_time: 30
 debug_mode:  false
 
 # ----------- simulation mode -------------
-simulation_mode: false
+simulation_mode: true
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0

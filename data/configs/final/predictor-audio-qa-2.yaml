@@ -1,14 +1,14 @@
 # ----------- pipeline configs -------------
 # pipeline informat
-pipeline_folder_name: nlp
-pipeline_name: nlp
+pipeline_folder_name: audio-qa
+pipeline_name: audio-qa
 timeout: 1
-pipeline_folder_name: nlp
+pipeline_folder_name: audio-qa
 mode: exponential
 nodes:
-  - node_name: nlp-li
-    data_type: text
-    model_variants: dinalzein-xlm-roberta-base-finetuned-language-identification
+  - node_name: audio
+    data_type: audio
+    model_variants: facebook-s2t-small-librispeech-asr
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
@@ -17,23 +17,12 @@ nodes:
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
-  - node_name: nlp-trans
+  - node_name: nlp-qa
     data_type: text
-    model_variants: Helsinki-NLP-opus-mt-tc-big-fr-en
+    model_variants: deepset-roberta-base-squad2
     max_batch_size: '1'
     max_batch_time: '1'
-    cpu_request: '8'
-    memory_request: 4Gi
-    replicas: 1
-    use_threading: 'True'
-    num_interop_threads: '1'
-    num_threads: '1'
-  - node_name: nlp-sum
-    data_type: text
-    model_variants: sshleifer-distilbart-xsum-12-6
-    max_batch_size: '1'
-    max_batch_time: '1'
-    cpu_request: '4'
+    cpu_request: '1'
     memory_request: 4Gi
     replicas: 1
     use_threading: 'True'
@@ -50,11 +39,8 @@ adaptation_interval: 10
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1301400'
-    end: '1302000'
-    damping_factor: 8 # [int | null]
-  - start: '1308600'
-    end: '1309200'
+  - start: '1301160'
+    end: '1302360'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -65,44 +51,37 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 8
-series: 98
+metaseries: 15
+series: 23
 # pipeline_name: video
-metadata: 'bursty - fa2-high - cpu type: compute_cascadelake_r_ib'
-number_tasks: 3
+metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib - redo of metaseries bursty on chameleon to check latencies'
+number_tasks: 2
 profiling_series:
-  - 98
-  - 99
-  - 97
+  - 85
+  - 86
 model_name:
-  - nlp-li
-  - nlp-trans
-  - nlp-sum
+  - audio
+  - nlp-qa
 task_name: 
-  - nlp-li
-  - nlp-trans
-  - nlp-sum
+  - audio
+  - nlp-qa
 initial_active_model:
-  - dinalzein-xlm-roberta-base-finetuned-language-identification
-  - Helsinki-NLP-opus-mt-tc-big-fr-en
-  - sshleifer-distilbart-xsum-12-6
+  - facebook-s2t-small-librispeech-asr
+  - deepset-roberta-base-squad2
 initial_cpu_allocation:
   - 1
-  - 8
-  - 4
+  - 1
 initial_replica:
   - 1
   - 1
-  - 1
 initial_batch:
-  - 1
   - 1
   - 1
 alpha: 10
 beta: 0.5
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
-batching_cap: 2 # maximum possible batching per nodes
+batching_cap: 1 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
 threshold: 1 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
@@ -110,18 +89,15 @@ allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
-profiling_load:
-  - 20
-  - 10
-  - 10
-baseline_mode: scale # [switch | scale | null]
+profiling_load: 20
+baseline_mode: null # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'lstm' # [reactive | avg | arima | lstm | max]
+predictor_type: 'avg' # [reactive | avg | arima | lstm | max]
 monitoring_duration: 2 # in minutes
-backup_predictor_type: 'max' # [reactive | avg | lstm | max]
+backup_predictor_type: 'avg' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes
 
 
@@ -160,8 +136,8 @@ teleport_interval: 0
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
-latency_margin: 0
+latency_margin: 100
 throughput_margin: -50
 
 # ----------- enable in container logging -------------
-logs_enabled: true
+logs_enabled: false

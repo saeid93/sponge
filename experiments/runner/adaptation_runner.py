@@ -29,7 +29,7 @@ from experiments.utils.workload import make_workload
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="test")
+@click.option("--config-name", required=True, type=str, default="video-1-1")
 @click.option(
     "--type-of",
     required=True,
@@ -164,6 +164,7 @@ def main(config_name: str, type_of: str):
     # ----------- 3. loading predictor configs -------------
     monitoring_duration = config["monitoring_duration"]
     predictor_type = config["predictor_type"]
+    backup_predictor_type = config["backup_predictor_type"]
 
     # should be inside of experiments
     adapter = Adapter(
@@ -182,6 +183,7 @@ def main(config_name: str, type_of: str):
         num_state_limit=num_state_limit,
         monitoring_duration=monitoring_duration,
         predictor_type=predictor_type,
+        backup_predictor_type=backup_predictor_type,
         baseline_mode=baseline_mode,
         central_queue=central_queue,
         debug_mode=debug_mode,

@@ -6,7 +6,7 @@ from barazmoon import Data
 import asyncio
 import time
 
-load = 30
+load = 15
 test_duration = 10
 variant = 0
 platform = "router"

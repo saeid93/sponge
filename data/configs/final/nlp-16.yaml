@@ -64,7 +64,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 7
+metaseries: 14
 series: 96
 # pipeline_name: video
 metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
@@ -163,4 +163,4 @@ latency_margin: 0
 throughput_margin: -50
 
 # ----------- enable in container logging -------------
-logs_enabled: true
+logs_enabled: false
