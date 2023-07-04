@@ -8,7 +8,6 @@ plt.rc("font", size=12)
 plt.rc("axes", titlesize=12)
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
-color_list = ["#ffff99", "#a1dab4", "#41b6c4", "#2c7fb8", "#253494"]
 
 
 def draw_temporal(
@@ -251,6 +250,7 @@ def draw_temporal_final3(
     final_by_load_type: Dict[str, Dict[str, List[int]]],
     selected_experiments: Dict[str, Dict[str, Union[str, List[str]]]],
     filename: str,
+    serie_color: dict,
     adaptation_interval=None,
     bbox_to_anchor=(0.8, 6.1),
     save=False,
@@ -276,20 +276,18 @@ def draw_temporal_final3(
             if subfig_idx % 2 == 1:
                 ax.set_ylabel(selected_experiments[metric]["ylabel"])
             axs_idx += 1
-            color_idx = 0
             if axs_idx < len(list(selected_experiments.keys())):
                 ax.set_xticklabels([])
             else:
                 if subfig_idx > len(final_by_load_type.keys()) // 2:
                     ax.set_xlabel("Time (s)")
             for serie_name in final_by_load_type[load_type][metric]:
-                color = color_list[color_idx]
-                color_idx += 1
+               
                 for key, values in final_by_load_type[load_type][metric][
                     serie_name
                 ].items():
                     if key in selected_experiments[metric]["selection"]:
-                        ax.plot(values, label=serie_name, color=color)
+                        ax.plot(values, label=serie_name, color=serie_color[serie_name])
 
     plt.legend(
         fontsize=13,
@@ -306,17 +304,20 @@ def draw_temporal_final3(
         plt.show()
 
 
-def draw_temporal_final3(
+def draw_temporal_final4(
     final_by_load_type: Dict[str, Dict[str, List[int]]],
     selected_experiments: Dict[str, Dict[str, Union[str, List[str]]]],
     filename: str,
+    serie_color: dict,
+    hl_for_metric = None,
     adaptation_interval=None,
     bbox_to_anchor=(0.8, 6.1),
     save=False,
 ):
     num_keys = sum(map(lambda l: len(l["selection"]), selected_experiments.values()))
 
-    fig = plt.figure(figsize=(8, 11), dpi=600)
+    metrics_len = len(final_by_load_type[list(final_by_load_type.keys())[0]].keys())
+    fig = plt.figure(figsize=(8, 1 + metrics_len * 2.5), dpi=600)
     fig.tight_layout()
     gs = fig.add_gridspec(ncols=2, nrows=2)
     subfig_x = 0
@@ -338,22 +339,27 @@ def draw_temporal_final3(
                 ax.set_ylabel(selected_experiments[metric]["ylabel"])
 
             axs_idx += 1
-            color_idx = 0
-            if axs_idx < len(list(selected_experiments.keys())):
+            if axs_idx < metrics_len:
                 ax.set_xticklabels([])
             else:
                 if subfig_x == 1:
                     ax.set_xlabel("Time (s)")
+            
+            if hl_for_metric.get(metric):
+                ax.axhline(
+                    y=hl_for_metric[metric]["value"],
+                    # label=hl_for_metric[metric]["label"],
+                    color=hl_for_metric[metric]["color"],
+                    linestyle="dashed"
+                )
             num_works = 0
             for serie_name in final_by_load_type[load_type][metric]:
                 num_works += 1
-                color = color_list[color_idx]
-                color_idx += 1
                 for key, values in final_by_load_type[load_type][metric][
                     serie_name
                 ].items():
                     if key in selected_experiments[metric]["selection"]:
-                        ax.plot(values, label=serie_name, color=color)
+                        ax.plot(values, label=serie_name, color=serie_color[serie_name])
         subfig_y += 1
         if subfig_y == 2:
             subfig_y = 0
@@ -439,12 +445,11 @@ def draw_cumulative_final(
         ax.set_title(metrics_metadata[metric]["ylabel"])
         x = 0
         width = 1
-        color_idx = 0
         for serie, metric_result in results[metric].items():
             ax.bar(
                 x,
                 metric_result,
-                color=color_list[color_idx],
+                color=series_metadata[serie]["color"],
                 label=series_metadata[serie]["label"],
                 width=width,
             )
@@ -454,7 +459,6 @@ def draw_cumulative_final(
             # )
             ax.set_xticks([])
             x += width
-            color_idx += 1
 
         ax_idx += 1
 
