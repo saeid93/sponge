@@ -500,6 +500,51 @@ def draw_cumulative(
     plt.show()
 
 
+def draw_cumulative_with_grouping(
+    dict_to_draw: Dict[str, Dict[str, List[int]]],
+    series_meta: Dict[str, Dict[str, int]],
+    ylabel="Value",
+    xlabel="Stage",
+):
+    dict_to_draw_cul = {}
+    for series, series_dict in dict_to_draw.items():
+        dict_to_draw_cul[series] = sum(series_dict)
+
+    categories = list(series_meta.keys())
+    group_names = list(next(iter(series_meta.values())).keys())
+
+    values = {}
+    for category in categories:
+        values[category] = {}
+        for group_name in group_names:
+            values[category][group_name] = dict_to_draw_cul[series_meta[category][group_name]]
+
+    bar_width = 0.2
+    x = np.arange(len(group_names))
+
+    # Create a figure and axis
+    fig, ax = plt.subplots()
+
+    # Plot the bars for each category and group
+    for i, category in enumerate(categories):
+        category_values = [values[category][group] for group in group_names]
+        ax.bar(x + i * bar_width, category_values, bar_width, label=category)
+
+    # Set the x-axis labels and title
+    ax.set_xticks(x + (len(categories) - 1) * bar_width / 2)
+    ax.set_xticklabels(group_names)
+
+    ax.set_xlabel(xlabel=xlabel)
+    ax.set_ylabel(ylabel=ylabel)
+    ax.set_title("Comparison of Experiments")
+    # axs.set_xticks(bar_positions + bar_width * (num_experiments - 1) / 2)
+    # axs.set_xticklabels(model_names)
+    ax.legend(title="Experiments")
+
+    plt.tight_layout()
+    plt.show()
+
+
 def draw_cumulative_final(
     results: Dict[str, Dict[int, float]],
     series_metadata: Dict[int, dict],
