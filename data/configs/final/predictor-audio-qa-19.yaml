@@ -1,17 +1,17 @@
 # ----------- pipeline configs -------------
 # pipeline informat
-pipeline_folder_name: sum-qa
-pipeline_name: sum-qa
+pipeline_folder_name: audio-qa
+pipeline_name: audio-qa
 timeout: 1
-pipeline_folder_name: sum-qa
+pipeline_folder_name: audio-qa
 mode: exponential
 nodes:
-  - node_name: nlp-sum
-    data_type: text
-    model_variants: sshleifer-distilbart-xsum-1-1
+  - node_name: audio
+    data_type: audio
+    model_variants: facebook-s2t-small-librispeech-asr
     max_batch_size: '1'
     max_batch_time: '1'
-    cpu_request: '2'
+    cpu_request: '1'
     memory_request: 4Gi
     replicas: 1
     use_threading: 'True'
@@ -52,21 +52,21 @@ workload_config:
 # ----------- optimizer configs -------------
 
 metaseries: 15
-series: 66
+series: 22
 # pipeline_name: video
-metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
+metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib - redo of metaseries bursty on chameleon to check latencies'
 number_tasks: 2
 profiling_series:
-  - 97
+  - 85
   - 86
 model_name:
-  - nlp-sum
+  - audio
   - nlp-qa
 task_name: 
-  - nlp-sum
+  - audio
   - nlp-qa
 initial_active_model:
-  - sshleifer-distilbart-xsum-1-1
+  - facebook-s2t-small-librispeech-asr
   - deepset-roberta-base-squad2
 initial_cpu_allocation:
   - 1
@@ -83,13 +83,13 @@ gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 1 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
-threshold: 5 # RPS threshold for finding the base allocation
+threshold: 1 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
-profiling_load: 10
+profiling_load: 20
 baseline_mode: null # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
@@ -117,10 +117,10 @@ debug_mode:  false
 simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
-predictor_margin: 0
+predictor_margin: 20
 
 # ----------- drop interval -------------
-drop_limit: 5
+drop_limit: 20
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
@@ -136,7 +136,7 @@ teleport_interval: 0
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
-latency_margin: 0
+latency_margin: 100
 throughput_margin: -50
 
 # ----------- enable in container logging -------------
