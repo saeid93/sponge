@@ -295,8 +295,8 @@
 # python runner_script.py --config-name predictor-audio-sent-3
 # sleep 60
 
-# python runner_script.py --config-name predictor-sum-qa-1
-# sleep 60
+python runner_script.py --config-name predictor-sum-qa-1
+sleep 60
 # python runner_script.py --config-name predictor-sum-qa-2
 # sleep 60
 # python runner_script.py --config-name predictor-sum-qa-3
@@ -320,19 +320,19 @@
 # python runner_script.py --config-name predictor-1-audio-qa-3
 # sleep 60
 
-python runner_script.py --config-name predictor-1-audio-sent-1
-sleep 60
-python runner_script.py --config-name predictor-1-audio-sent-2
-sleep 60
-python runner_script.py --config-name predictor-1-audio-sent-3
-sleep 60
+# python runner_script.py --config-name predictor-1-audio-sent-1
+# sleep 60
+# python runner_script.py --config-name predictor-1-audio-sent-2
+# sleep 60
+# python runner_script.py --config-name predictor-1-audio-sent-3
+# sleep 60
 
-python runner_script.py --config-name predictor-1-sum-qa-1
-sleep 60
-python runner_script.py --config-name predictor-1-sum-qa-2
-sleep 60
-python runner_script.py --config-name predictor-1-sum-qa-3
-sleep 60
+# python runner_script.py --config-name predictor-1-sum-qa-1
+# sleep 60
+# python runner_script.py --config-name predictor-1-sum-qa-2
+# sleep 60
+# python runner_script.py --config-name predictor-1-sum-qa-3
+# sleep 60
 
 # # ---------------------
 
