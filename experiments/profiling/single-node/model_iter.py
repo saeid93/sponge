@@ -153,14 +153,14 @@ def experiments(
                                     )
                                     logger.info("model warm up ...")
                                     logger.info("\n")
-                                    warm_up_duration = 10
-                                    warm_up(
-                                        pipeline_name=node_name,
-                                        model=node_name,
-                                        data_type=data_type,
-                                        pipeline_path=node_path,
-                                        warm_up_duration=warm_up_duration,
-                                    )
+                                    # warm_up_duration = 10
+                                    # warm_up(
+                                    #     pipeline_name=node_name,
+                                    #     model=node_name,
+                                    #     data_type=data_type,
+                                    #     pipeline_path=node_path,
+                                    #     warm_up_duration=warm_up_duration,
+                                    # )
                                     logger.info(
                                         "-" * 25 + f"starting load test " + "-" * 25
                                     )

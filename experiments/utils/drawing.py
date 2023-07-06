@@ -503,6 +503,7 @@ def draw_cumulative(
 def draw_cumulative_with_grouping(
     dict_to_draw: Dict[str, Dict[str, List[int]]],
     series_meta: Dict[str, Dict[str, int]],
+    legend="Metrics",
     ylabel="Value",
     xlabel="Stage",
 ):
@@ -536,10 +537,7 @@ def draw_cumulative_with_grouping(
 
     ax.set_xlabel(xlabel=xlabel)
     ax.set_ylabel(ylabel=ylabel)
-    ax.set_title("Comparison of Experiments")
-    # axs.set_xticks(bar_positions + bar_width * (num_experiments - 1) / 2)
-    # axs.set_xticklabels(model_names)
-    ax.legend(title="Experiments")
+    ax.legend(title=legend)
 
     plt.tight_layout()
     plt.show()
@@ -600,43 +598,69 @@ def draw_cumulative_final(
 def draw_cdf(data_dict: dict, x: float):
     import seaborn as sns
     
-    rep = 3
-    fig, axs = plt.subplots(1, rep, figsize=(8, 2.2))
+    fig, ax = plt.subplots(figsize=(6, 2.2))
     
-    for idx in range(rep):
-        color_idx = 0
-        for label, data in data_dict.items():
-            sns.kdeplot(
-                data, label=label, cumulative=True, linestyle="dashed", color=color_list[color_idx], ax=axs[idx]
-            )
-            color_idx += 1
-        if idx > 0:
-            axs[idx].set_yticklabels([])
-            axs[idx].set_ylabel(None)
-        else:
-            axs[idx].set_ylabel("CDF")
-        
-        axs[idx].set_xticks([0, x])
-        axs[idx].set_xlim(0)
-        axs[idx].vlines(x, ymin=0, ymax=1, colors="black", ls="--", label="x")
+    color_idx = 0
+    for label, data in data_dict.items():
+        sns.kdeplot(
+            data, label=label, cumulative=True, linestyle="dashed", color=color_list[color_idx], ax=ax
+        )
+        color_idx += 1
+    # if idx > 0:
+    #     axs[idx].set_yticklabels([])
+    #     axs[idx].set_ylabel(None)
+    # else:
+    ax.set_ylabel("CDF")
+    
+    ax.set_xticks([0, x])
+    ax.set_xlim(0)
+    ax.vlines(x, ymin=0, ymax=1, colors="black", ls="--", label="x")
     plt.legend(
         fontsize=13,
         fancybox=False,
         ncol=len(data_dict.keys()) + 1,
         frameon=False,
-        bbox_to_anchor=(0.2, 1.25),
+        bbox_to_anchor=(1, 1.25),
         handlelength=1,
         columnspacing=0.8,
     )
-    plt.savefig("cdf.pdf")
+    plt.savefig(
+        "cdf.pdf",
+        dpi=600,
+        format="pdf",
+        bbox_inches="tight",
+        pad_inches=0,
+    )
+
+
+def plot_two_metrics(x_title, x_labels, y1, y2, y1_title, y2_title, y1_metadata: dict, y2_metadata: dict):
+    fig, ax = plt.subplots(figsize=(6, 2))
+    ax.grid(axis='y', color="gray", linestyle='dashed')
+    ax.set_xlabel(x_title)
+    ax2 = ax.twinx()
+    ax.set_ylabel(y1_title)
+    ax2.set_ylabel(y2_title)
+    ax.bar(x_labels, y1, **y1_metadata)
+    ax2.plot(np.arange(len(y2)), y2, **y2_metadata)
+    plt.legend(loc="right")
+    plt.savefig(
+        "two_metrics.pdf",
+        dpi=600,
+        format="pdf",
+        bbox_inches="tight",
+        pad_inches=0,
+    )
         
 
 if __name__ == "__main__":
-    data = np.random.random(100)
-    data2 = np.random.random(100) * 0.9
-    data3 = np.random.random(100) * 0.85
-    data4 = np.random.random(100) * 0.75
-    data5 = np.random.random(100) * 0.6
-
-    data_dict = {"1": data, "2": data2, "3": data3, "4": data4, "5": data5}
-    draw_cdf(data_dict, 0.9)
+    pass
+    # plot_two_metrics(
+    #     "ResNet variants",
+    #     ["18", "34", "50", "101", "152"],
+    #     [19, 11, 9, 5, 4],
+    #     [69.75, 73.31, 76.13, 77.37, 78.31],
+    #     "Throughput (RPS)",
+    #     "Accuracy (%)",
+    #     y1_metadata = dict(color="#2c7fb8"),
+    #     y2_metadata = dict(color="black", marker="D", label="Accuracy"),
+    # )

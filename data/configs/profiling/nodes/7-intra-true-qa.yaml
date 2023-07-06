@@ -1,37 +1,32 @@
-series: 97
+series: 109
 series_meta: testing static trace
-pipeline_name: nlp
-node_name: nlp-sum
+pipeline_name: audio-qa
+node_name: nlp-qa 
 data_type: text
-timeout: 240
+timeout: 1 
 mode: step
 model_variants:
-  - sshleifer-distilbart-xsum-1-1
-  - sshleifer-distilbart-cnn-12-6
-  - sshleifer-distilbart-xsum-12-3
-  - sshleifer-distilbart-xsum-6-6
-  - sshleifer-distilbart-cnn-6-6
-  - sshleifer-distilbart-xsum-12-6
-  - sshleifer-distilbart-cnn-12-3
-  - sshleifer-distilbart-xsum-12-1
-  - sshleifer-distilbart-xsum-9-6
+  - deepset-roberta-base-squad2
+  # - deepset-xlm-roberta-large-squad2
+  # - distilbert-base-cased-distilled-squad
+  # - deepset-xlm-roberta-base-squad2
 max_batch_size:
   - '1'
-  - '2'
-  - '4'
-  - '8'
-  - '16'
-  - '32'
-  - '64'
+  # - '2'
+  # - '4'
+  # - '8'
+  # - '16'
+  # - '32'
+  # - '64'
 max_batch_time:
   - '1'
 cpu_request:
   - '1'
-  - '2'
-  - '4'
-  - '8'
-  - '16'
-  - '32'
+  # - '2'
+  # - '4'
+  # - '8'
+  # - '16'
+  # - '32'
 memory_request:
   - 10Gi
 replicas:
@@ -48,10 +43,10 @@ workload_config:
   loads_to_test:
   - 1
   # - 5
-  - 10
-  - 20
+  # - 10
+  # - 20
   # - 40
-  load_duration: 60
+  load_duration: 10
 # workload_type: twitter
 # workload_config:
 #   - start: '3:5:0'
@@ -61,4 +56,4 @@ distrpution_time: 10
 central_queue: false
 
 # ----------- enable in container logging -------------
-logs_enabled: false
+logs_enabled: true

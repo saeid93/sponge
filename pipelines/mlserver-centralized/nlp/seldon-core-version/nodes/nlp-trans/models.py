@@ -24,7 +24,7 @@ except KeyError as e:
     )
 
 try:
-    USE_THREADING = bool(os.environ["USE_THREADING"])
+    USE_THREADING = os.getenv("USE_THREADING", "False").lower() in ("true", "1", "t")
     logger.info(f"USE_THREADING set to: {USE_THREADING}")
 except KeyError as e:
     USE_THREADING = False
