@@ -595,10 +595,10 @@ def draw_cumulative_final(
 
 
 
-def draw_cdf(data_dict: dict, x: float):
+def draw_cdf(data_dict: dict, x: float, vertical_label: str, bbox_to_anchor: tuple):
     import seaborn as sns
     
-    fig, ax = plt.subplots(figsize=(6, 2.2))
+    fig, ax = plt.subplots(figsize=(3, 2.2))
     
     color_idx = 0
     for label, data in data_dict.items():
@@ -614,13 +614,13 @@ def draw_cdf(data_dict: dict, x: float):
     
     ax.set_xticks([0, x])
     ax.set_xlim(0)
-    ax.vlines(x, ymin=0, ymax=1, colors="black", ls="--", label="x")
+    ax.vlines(x, ymin=0, ymax=1, colors="black", ls="--", label=vertical_label)
     plt.legend(
         fontsize=13,
         fancybox=False,
-        ncol=len(data_dict.keys()) + 1,
+        ncol=3,
         frameon=False,
-        bbox_to_anchor=(1, 1.25),
+        bbox_to_anchor=bbox_to_anchor,
         handlelength=1,
         columnspacing=0.8,
     )
@@ -650,17 +650,3 @@ def plot_two_metrics(x_title, x_labels, y1, y2, y1_title, y2_title, y1_metadata:
         bbox_inches="tight",
         pad_inches=0,
     )
-        
-
-if __name__ == "__main__":
-    pass
-    # plot_two_metrics(
-    #     "ResNet variants",
-    #     ["18", "34", "50", "101", "152"],
-    #     [19, 11, 9, 5, 4],
-    #     [69.75, 73.31, 76.13, 77.37, 78.31],
-    #     "Throughput (RPS)",
-    #     "Accuracy (%)",
-    #     y1_metadata = dict(color="#2c7fb8"),
-    #     y2_metadata = dict(color="black", marker="D", label="Accuracy"),
-    # )
