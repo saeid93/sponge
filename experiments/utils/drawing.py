@@ -632,21 +632,3 @@ def draw_cdf(data_dict: dict, x: float, vertical_label: str, bbox_to_anchor: tup
         pad_inches=0,
     )
 
-
-def plot_two_metrics(x_title, x_labels, y1, y2, y1_title, y2_title, y1_metadata: dict, y2_metadata: dict):
-    fig, ax = plt.subplots(figsize=(6, 2))
-    ax.grid(axis='y', color="gray", linestyle='dashed')
-    ax.set_xlabel(x_title)
-    ax2 = ax.twinx()
-    ax.set_ylabel(y1_title)
-    ax2.set_ylabel(y2_title)
-    ax.bar(x_labels, y1, **y1_metadata)
-    ax2.plot(np.arange(len(y2)), y2, **y2_metadata)
-    plt.legend(loc="right")
-    plt.savefig(
-        "two_metrics.pdf",
-        dpi=600,
-        format="pdf",
-        bbox_inches="tight",
-        pad_inches=0,
-    )
