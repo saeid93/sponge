@@ -137,3 +137,8 @@ throughput_margin: 0
 
 # ----------- enable in container logging -------------
 logs_enabled: false
+
+# ----------- whether to read models from storage or not - should be defined per node -------------
+from_storage:
+  - true
+  - true
