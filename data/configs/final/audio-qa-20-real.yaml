@@ -13,7 +13,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 1
+    replicas: 27
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -24,7 +24,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 1
+    replicas: 6
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -39,29 +39,26 @@ adaptation_interval: 10
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1301160'
-    end: '1302360'
-    # end: '1863200'
-    # end: '1862200'
-    # end: '1861960'
-    # end: '1862500'
-    # end: '1863700'
-    # end: '1865100'
+  - start: '1301400'
+    end: '1302000'
+    damping_factor: 8 # [int | null]
+  - start: '1308600'
+    end: '1309200'
     damping_factor: 8 # [int | null]
 
 # ----------- optimizer configs -------------
 
-metaseries: 20
-series: 21
+metaseries: 21
+series: 40
 # pipeline_name: video
-metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib - redo of metaseries bursty on chameleon to check latencies'
+metadata: 'fluctuating - rim-high - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
 profiling_series:
   - 85
   - 86
 model_name:
-  - audio
-  - nlp-qa
+  - audio # be consistent with values in pipelines
+  - nlp-qa # be consistent with values in pipelines
 task_name: 
   - audio
   - nlp-qa
@@ -72,13 +69,13 @@ initial_cpu_allocation:
   - 1
   - 1
 initial_replica:
-  - 1
-  - 1
+  - 27
+  - 6
 initial_batch:
   - 1
   - 1
 alpha: 10
-beta: 0.5
+beta: 0
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 1 # maximum possible batching per nodes
@@ -90,16 +87,15 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
 profiling_load: 20
-baseline_mode: null # [switch | scale | null]
+baseline_mode: switch # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'lstm' # [reactive | avg | arima | lstm | max]
+predictor_type: 'lstm' # [reactive | avg | lstm | max]
 monitoring_duration: 2 # in minutes
 backup_predictor_type: 'max' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes
-
 
 # ----------- queueing-option -------------
 
@@ -111,10 +107,10 @@ distrpution_time: 30
 
 # ----------- distruption time -------------
 # debug mode with complete lgos of containers
-debug_mode:  false
+debug_mode: false
 
 # ----------- simulation mode -------------
-simulation_mode: true
+simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 20
@@ -124,10 +120,6 @@ drop_limit: 20
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false
-
-# ----------- teleport mode (only available in real-world experiments) -------------
-teleport_mode: false 
-teleport_interval: 0
 
 # ----------- teleport mode (only available in real-world experiments) -------------
 teleport_mode: false 
@@ -144,6 +136,5 @@ logs_enabled: false
 
 # ----------- whether to read models from storage or not - should be defined per node -------------
 from_storage:
+  - false
   - true
-  - true
-
