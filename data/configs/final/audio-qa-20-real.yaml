@@ -48,7 +48,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 21
+metaseries: 25
 series: 40
 # pipeline_name: video
 metadata: 'fluctuating - rim-high - cpu type: compute_cascadelake_r_ib'
@@ -75,7 +75,7 @@ initial_batch:
   - 1
   - 1
 alpha: 10
-beta: 0
+beta: 0.1
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 1 # maximum possible batching per nodes
@@ -110,7 +110,7 @@ distrpution_time: 30
 debug_mode: false
 
 # ----------- simulation mode -------------
-simulation_mode: false
+simulation_mode: true
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 20
@@ -136,5 +136,5 @@ logs_enabled: false
 
 # ----------- whether to read models from storage or not - should be defined per node -------------
 from_storage:
-  - false
+  - true
   - true
