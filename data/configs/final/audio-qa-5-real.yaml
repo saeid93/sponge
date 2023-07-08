@@ -13,7 +13,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 20
+    replicas: 27
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -24,7 +24,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 5
+    replicas: 6
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -52,7 +52,7 @@ workload_config:
 # ----------- optimizer configs -------------
 
 metaseries: 25
-series: 30
+series: 25
 # pipeline_name: video
 metadata: 'bursty - rim-high - cpu type: compute_cascadelake_r_ib - redo of metaseries bursty on chameleon to check latencies'
 number_tasks: 2
@@ -72,13 +72,13 @@ initial_cpu_allocation:
   - 1
   - 1
 initial_replica:
-  - 20
-  - 5
+  - 27
+  - 6
 initial_batch:
   - 1
   - 1
 alpha: 10
-beta: 0.05
+beta: 0.1
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 1 # maximum possible batching per nodes
@@ -113,7 +113,7 @@ distrpution_time: 30
 debug_mode: false
 
 # ----------- simulation mode -------------
-simulation_mode: true
+simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 20

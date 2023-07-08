@@ -110,7 +110,7 @@ distrpution_time: 30
 debug_mode: false
 
 # ----------- simulation mode -------------
-simulation_mode: true
+simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 20

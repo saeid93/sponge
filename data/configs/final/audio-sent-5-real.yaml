@@ -13,7 +13,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 20
+    replicas: 27
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -72,7 +72,7 @@ initial_cpu_allocation:
   - 1
   - 1
 initial_replica:
-  - 20
+  - 27
   - 5
 initial_batch:
   - 1
@@ -113,7 +113,7 @@ distrpution_time: 30
 debug_mode: false
 
 # ----------- simulation mode -------------
-simulation_mode: true
+simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 20
