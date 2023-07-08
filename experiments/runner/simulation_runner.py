@@ -51,7 +51,7 @@ def find_initial_config(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="audio-qa-5-sim")
+@click.option("--config-name", required=True, type=str, default="audio-qa-3-sim-5")
 @click.option(
     "--type-of",
     required=True,
@@ -142,6 +142,7 @@ def main(config_name: str, type_of: str):
     reference_throughput = config["reference_throughput"]
     latency_margin = config["latency_margin"]
     throughput_margin = config["throughput_margin"]
+    # replica_factor = config["replica_factor"]
 
     pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,
@@ -201,6 +202,7 @@ def main(config_name: str, type_of: str):
         baseline_mode=baseline_mode,
         backup_predictor_type=backup_predictor_type,
         backup_predictor_duration=backup_predictor_duration,
+        # replica_factor=replica_factor
     )
 
     _, workload = make_workload(config=config)

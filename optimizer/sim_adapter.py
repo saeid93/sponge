@@ -44,6 +44,7 @@ class SimAdapter:
         baseline_mode: Optional[str] = None,
         backup_predictor_type: str = "max",
         backup_predictor_duration: int = 2,
+        replica_factor: int = 1
     ) -> None:
         """
         Args:
@@ -92,6 +93,7 @@ class SimAdapter:
             backup_predictor_type=self.backup_predictor_type,
             backup_predictor_duration=self.backup_predictor_duration,
         )
+        # self.replica_factor = replica_factor
 
     def start_adaptation(
         self, workload: List[int], initial_config: Dict[str, Dict[str, Union[str, int]]]

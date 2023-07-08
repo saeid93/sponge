@@ -133,7 +133,9 @@ class Adapter:
         self.central_queue = central_queue
         self.teleport_mode = teleport_mode
         self.teleport_interval = teleport_interval
-        self.from_storage = from_storage
+        self.from_storage = {}
+        for node_index, node_name in enumerate(node_names):
+            self.from_storage[node_name] = from_storage[node_index]
 
     def start_adaptation(self, workload=None):
         # 0. Check if pipeline is up
@@ -441,20 +443,21 @@ class Adapter:
             ][0]["env"]
         ):
             if env_var["name"] == "MODEL_VARIANT":
-                init_container_args = deployment_config["spec"]["predictors"][0][
-                    "componentSpecs"
-                ][0]["spec"]["initContainers"][0]["args"]
                 deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                     "containers"
                 ][0]["env"][env_index]["value"] = node_config["variant"]
-                if node_name not in ["yolo", "resnet-human"]:
-                    # also fix the variants
-                    deployment_config["spec"]["predictors"][0]["componentSpecs"][0][
-                        "spec"
-                    ]["initContainers"][0]["args"] = [
-                        re.sub(r"/([^/]+)$", "/" + node_config["variant"], model)
-                        for model in init_container_args
-                    ]
+                if self.from_storage[node_name]:
+                    init_container_args = deployment_config["spec"]["predictors"][0][
+                        "componentSpecs"
+                    ][0]["spec"]["initContainers"][0]["args"]
+                    if node_name not in ["yolo", "resnet-human"]:
+                        # also fix the variants
+                        deployment_config["spec"]["predictors"][0]["componentSpecs"][0][
+                            "spec"
+                        ]["initContainers"][0]["args"] = [
+                            re.sub(r"/([^/]+)$", "/" + node_config["variant"], model)
+                            for model in init_container_args
+                        ]
             if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
                 deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                     "containers"
