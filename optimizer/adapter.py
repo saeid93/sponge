@@ -71,6 +71,7 @@ class Adapter:
         num_state_limit: int,
         monitoring_duration: int,
         predictor_type: str,
+        from_storage: List[bool],
         baseline_mode: Optional[str] = None,
         central_queue: bool = False,
         debug_mode: bool = False,
@@ -132,6 +133,7 @@ class Adapter:
         self.central_queue = central_queue
         self.teleport_mode = teleport_mode
         self.teleport_interval = teleport_interval
+        self.from_storage = from_storage
 
     def start_adaptation(self, workload=None):
         # 0. Check if pipeline is up
@@ -444,16 +446,8 @@ class Adapter:
                 ][0]["spec"]["initContainers"][0]["args"]
                 deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                     "containers"
-                    # ][0]["env"][env_index]["value"] = (
-                    #     node_config["variant"]
-                    #     if node_name in ["yolo", "resnet-human"]
-                    #     else f"/mnt/models/{node_config['variant']}"  # a differnt path is used for vision and HF models
-                    # )
                 ][0]["env"][env_index]["value"] = node_config["variant"]
-                if node_name in ["yolo", "resnet-human"]:
-                    # TODO add for yolo and resnet pipelines
-                    a = 1
-                else:
+                if node_name not in ["yolo", "resnet-human"]:
                     # also fix the variants
                     deployment_config["spec"]["predictors"][0]["componentSpecs"][0][
                         "spec"
@@ -462,9 +456,6 @@ class Adapter:
                         for model in init_container_args
                     ]
             if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
-                # deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
-                #     "containers"
-                # ][0]["env"][env_index]["value"] = str(node_config["batch"])
                 deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                     "containers"
                 ][0]["env"][env_index]["value"] = str(1)

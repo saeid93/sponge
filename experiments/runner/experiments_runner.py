@@ -53,6 +53,8 @@ def setup_pipeline(
 
     logs_enabled = config["logs_enabled"]
 
+    from_storage = config["from_storage"]
+
     model_variants = []
     max_batch_sizes = []
     max_batch_times = []
@@ -95,6 +97,7 @@ def setup_pipeline(
             debug_mode=debug_mode,
             drop_limit=drop_limit,
             logs_enabled=logs_enabled,
+            from_storage=from_storage
         )
     else:
         setup_router_pipeline(
@@ -170,7 +173,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="audio-qa-1000")
+@click.option("--config-name", required=True, type=str, default="audio-qa-3-real")
 @click.option(
     "--type-of",
     required=True,

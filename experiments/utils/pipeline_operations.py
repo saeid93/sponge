@@ -75,11 +75,13 @@ def setup_node(
     num_interop_threads: int,
     num_threads: int,
     distrpution_time: int,
+    from_storage=bool,
     no_engine=False,
     debug_mode=False,
     drop_limit=1000,
-    logs_enabled: bool = True,
+    logs_enabled: bool = True
 ):
+    # TODO HERE add if else here to check with model or not
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
     logger.info("\n")
     # central pipeline case
@@ -121,7 +123,11 @@ def setup_node(
             "logs_enabled": logs_enabled,
         }
     environment = Environment(loader=FileSystemLoader(node_path))
-    svc_template = environment.get_template("node-template.yaml")
+    if from_storage:
+        template_file_name = "node-template.yaml"
+    else:
+        template_file_name = "node-template-with-model.yaml" 
+    svc_template = environment.get_template(template_file_name)
     content = svc_template.render(svc_vars)
     logger.info(content)
     command = f"""cat <<EOF | kubectl apply -f -
@@ -421,6 +427,7 @@ def setup_central_pipeline(
     timeout: int,
     num_nodes: int,
     distrpution_time: int,
+    from_storage: List[bool],
     debug_mode: bool = False,
     drop_limit: int = 1000,
     logs_enabled: bool = True,
@@ -448,6 +455,7 @@ def setup_central_pipeline(
             distrpution_time=distrpution_time,
             drop_limit=drop_limit,
             logs_enabled=logs_enabled,
+            from_storage=from_storage[node_id]
         )
     queue_names = list(map(lambda l: "queue-" + l, node_names))
     setup_queues(

@@ -29,7 +29,7 @@ from experiments.utils.workload import make_workload
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="video-1-1")
+@click.option("--config-name", required=True, type=str, default="audio-qa-3")
 @click.option(
     "--type-of",
     required=True,
@@ -138,6 +138,9 @@ def main(config_name: str, type_of: str):
     latency_margin = config["latency_margin"]
     throughput_margin = config["throughput_margin"]
 
+    # read models from storage or container
+    from_storage = config["from_storage"]
+
     pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,
         profiling_series=profiling_series,
@@ -190,6 +193,7 @@ def main(config_name: str, type_of: str):
         predictor_margin=predictor_margin,
         teleport_mode=teleport_mode,
         teleport_interval=teleport_interval,
+        from_storage=from_storage
     )
 
     # ----------- 3. Running an experiment series -------------
