@@ -548,6 +548,7 @@ def draw_cumulative_final(
     series_metadata: Dict[int, dict],
     metrics_metadata: Dict[str, dict],
     filename,
+    bbox_to_anchor=(0.85, 1.5)
 ):
     fig, axs = plt.subplots(1, len(results), figsize=(8, 2))
     ax_idx = 0
@@ -578,7 +579,7 @@ def draw_cumulative_final(
         fancybox=False,
         ncol=len(series_metadata.keys()),
         frameon=False,
-        bbox_to_anchor=(0.85, 1.5),
+        bbox_to_anchor=bbox_to_anchor,
         handlelength=1,
         columnspacing=0.8,
     )
