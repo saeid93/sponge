@@ -243,6 +243,7 @@ infass
 !pipelines/mlserver-final/5-paper-video/seldon-core-version/nodes/yolo/cache
 !data/configs
 !data/upload.sh
+!data/upload-metaseries.sh
 !data/download.sh
 *.lp
 gitignored/
