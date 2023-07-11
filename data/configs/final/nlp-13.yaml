@@ -30,7 +30,7 @@ nodes:
     num_threads: '16'
   - node_name: nlp-sum
     data_type: text
-    model_variants: sshleifer-distilbart-xsum-12-6
+    model_variants: sshleifer-distilbart-xsum-6-6
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '4'
@@ -79,7 +79,7 @@ task_name:
 initial_active_model:
   - dinalzein-xlm-roberta-base-finetuned-language-identification
   - Helsinki-NLP-opus-mt-tc-big-fr-en
-  - sshleifer-distilbart-xsum-12-6
+  - sshleifer-distilbart-xsum-6-6
 initial_cpu_allocation:
   - 1
   - 16
@@ -96,9 +96,9 @@ alpha: 10
 beta: 0.5
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
-batching_cap: 2 # maximum possible batching per nodes
+batching_cap: 1 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
-threshold: 1 # RPS threshold for finding the base allocation
+threshold: 4 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
@@ -155,7 +155,7 @@ teleport_interval: 0
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
-throughput_margin: -50
+throughput_margin: -57
 
 # ----------- enable in container logging -------------
 logs_enabled: false

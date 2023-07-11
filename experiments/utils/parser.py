@@ -603,6 +603,7 @@ class AdaptationParser:
         try:  # for backward compatibility with older experiments
             changes["recieved_load"] = adaptation_log["metadata"]["recieved_load"]
             changes["sla"] = adaptation_log["metadata"]["sla"]
+            # changes["stage_wise_slas"] = adaptation_log["metadata"]["stage_wise_slas"]
             for _, state in adaptation_log["timesteps"].items():
                 changes["time_interval"].append(state["time_interval"])
                 try:  # backward compatibility

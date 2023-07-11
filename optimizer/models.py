@@ -637,6 +637,11 @@ class Pipeline:
         return sla
 
     @property
+    def stage_wise_slas(self):
+        slas = dict(map(lambda l: (l.name, l.sla), self.inference_graph))
+        return slas
+
+    @property
     def stage_wise_accuracies(self):
         latencies = list(map(lambda l: l.accuracy, self.inference_graph))
         return latencies

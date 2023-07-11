@@ -24,7 +24,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '4'
     memory_request: 4Gi
-    replicas: 14
+    replicas: 15
     use_threading: 'True'
     num_interop_threads: '4'
     num_threads: '4'
@@ -35,7 +35,7 @@ nodes:
     max_batch_time: '1'
     cpu_request: '2'
     memory_request: 4Gi
-    replicas: 7
+    replicas: 8
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -62,7 +62,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 23
+metaseries: 26
 series: 85
 # pipeline_name: video
 metadata: 'bursty - rim-high - cpu type: compute_cascadelake_r_ib'
@@ -165,6 +165,6 @@ logs_enabled: false
 
 # ----------- whether to read models from storage or not - should be defined per node -------------
 from_storage:
-  - true
-  - true
-  - true
+  - false
+  - false
+  - false

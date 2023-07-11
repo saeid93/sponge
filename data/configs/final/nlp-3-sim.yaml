@@ -62,7 +62,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 23
+metaseries: 28
 series: 83
 # pipeline_name: video
 metadata: 'bursty - fa2-high - cpu type: compute_cascadelake_r_ib'
@@ -165,6 +165,6 @@ logs_enabled: false
 
 # ----------- whether to read models from storage or not - should be defined per node -------------
 from_storage:
-  - true
-  - true
-  - true
+  - false
+  - false
+  - false
