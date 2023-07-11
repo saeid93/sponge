@@ -22,12 +22,12 @@ nodes:
     model_variants: Helsinki-NLP-opus-mt-tc-big-fr-en
     max_batch_size: '1'
     max_batch_time: '1'
-    cpu_request: '8'
+    cpu_request: '16'
     memory_request: 4Gi
     replicas: 1
     use_threading: 'True'
-    num_interop_threads: '1'
-    num_threads: '1'
+    num_interop_threads: '16'
+    num_threads: '16'
   - node_name: nlp-sum
     data_type: text
     model_variants: sshleifer-distilbart-xsum-12-6
@@ -65,7 +65,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 14
+metaseries: 21
 series: 98
 # pipeline_name: video
 metadata: 'bursty - fa2-high - cpu type: compute_cascadelake_r_ib'
@@ -88,8 +88,8 @@ initial_active_model:
   - sshleifer-distilbart-xsum-12-6
 initial_cpu_allocation:
   - 1
+  - 16
   - 8
-  - 4
 initial_replica:
   - 1
   - 1
@@ -102,9 +102,9 @@ alpha: 10
 beta: 0.5
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
-batching_cap: 2 # maximum possible batching per nodes
+batching_cap: 1 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
-threshold: 1 # RPS threshold for finding the base allocation
+threshold: 4 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
@@ -168,6 +168,6 @@ logs_enabled: false
 
 # ----------- whether to read models from storage or not - should be defined per node -------------
 from_storage:
-  - true
-  - true
-  - true
+  - false
+  - false
+  - false

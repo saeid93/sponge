@@ -37,7 +37,7 @@ spec:
 
         terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
-        - image: sdghafouri/nlp-centralized:nlpli
+        - image: sdghafouri/nlp-centralized-with-model:nlpli
           name: nlp-li
           imagePullPolicy: Always
           resources:

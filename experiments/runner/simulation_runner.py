@@ -51,7 +51,7 @@ def find_initial_config(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="audio-qa-3-sim-5")
+@click.option("--config-name", required=True, type=str, default="nlp-3-sim")
 @click.option(
     "--type-of",
     required=True,

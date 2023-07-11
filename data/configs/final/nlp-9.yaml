@@ -62,7 +62,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 14
+metaseries: 21
 series: 89
 # pipeline_name: video
 metadata: 'steady low - rim-low - cpu type: compute_cascadelake_r_ib'
@@ -165,6 +165,6 @@ logs_enabled: false
 
 # ----------- whether to read models from storage or not - should be defined per node -------------
 from_storage:
-  - true
-  - true
-  - true
+  - false
+  - false
+  - false

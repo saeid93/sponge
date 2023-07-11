@@ -6,8 +6,8 @@ from barazmoon import Data
 import asyncio
 import time
 
-load = 15
-test_duration = 10
+load = 8
+test_duration = 300
 variant = 0
 platform = "router"
 workload = [load] * test_duration

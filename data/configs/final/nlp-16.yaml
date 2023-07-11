@@ -64,7 +64,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 14
+metaseries: 21
 series: 96
 # pipeline_name: video
 metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
@@ -101,9 +101,9 @@ alpha: 10
 beta: 0.5
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
-batching_cap: 2 # maximum possible batching per nodes
+batching_cap: 1 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
-threshold: 1 # RPS threshold for finding the base allocation
+threshold: 4 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
@@ -167,6 +167,6 @@ logs_enabled: false
 
 # ----------- whether to read models from storage or not - should be defined per node -------------
 from_storage:
-  - true
-  - true
-  - true
+  - false
+  - false
+  - false
