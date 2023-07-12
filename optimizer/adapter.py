@@ -24,7 +24,7 @@ from experiments.utils.pipeline_operations import (
     get_pod_name,
     check_node_loaded,
     is_terminating,
-    get_cpu_model_name
+    get_cpu_model_name,
 )
 
 from experiments.utils.prometheus import PromClient

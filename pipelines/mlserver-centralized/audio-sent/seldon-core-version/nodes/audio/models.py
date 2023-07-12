@@ -78,12 +78,11 @@ try:
     logger.info(f"WITH_MODELS set to: {WITH_MODELS}")
 except KeyError as e:
     WITH_MODELS = False
-    logger.info(
-        f"WITH_MODELS env variable not set, using default value: {WITH_MODELS}"
-    )
+    logger.info(f"WITH_MODELS env variable not set, using default value: {WITH_MODELS}")
 
 if not LOGS_ENABLED:
     logger.disabled = True
+
 
 class GeneralAudio(MLModel):
     async def load(self):
@@ -110,9 +109,9 @@ class GeneralAudio(MLModel):
         logger.error(f"max_batch_size: {self._settings.max_batch_size}")
         logger.error(f"max_batch_time: {self._settings.max_batch_time}")
         if WITH_MODELS:
-            model_path=os.path.join(".", "models", self.MODEL_VARIANT)
+            model_path = os.path.join(".", "models", self.MODEL_VARIANT)
         else:
-            model_path=os.path.join("/", "mnt", "models", self.MODEL_VARIANT)
+            model_path = os.path.join("/", "mnt", "models", self.MODEL_VARIANT)
         self.model = pipeline(
             task=self.TASK,
             model=model_path,

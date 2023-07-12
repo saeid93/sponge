@@ -35,19 +35,21 @@ from experiments.utils.constants import NAMESPACE, ROUTER_PATH, QUEUE_PATH
 
 from experiments.utils import logger
 
+
 def get_cpu_model_name():
     command = "lscpu"
     result = subprocess.run(command, capture_output=True, text=True)
     output = result.stdout.strip()
     lines = output.split("\n")
-    
+
     model_name = None
     for line in lines:
         if line.startswith("Model name:"):
             model_name = line.split(":", 1)[1].strip()
             break
-    
+
     return model_name
+
 
 def get_pod_name(node_name: str, orchestrator=False):
     pod_regex = f"{node_name}.*"
@@ -79,7 +81,7 @@ def setup_node(
     no_engine=False,
     debug_mode=False,
     drop_limit=1000,
-    logs_enabled: bool = True
+    logs_enabled: bool = True,
 ):
     # TODO HERE add if else here to check with model or not
     logger.info("-" * 25 + " setting up the node with following config" + "-" * 25)
@@ -126,7 +128,7 @@ def setup_node(
     if from_storage:
         template_file_name = "node-template.yaml"
     else:
-        template_file_name = "node-template-with-model.yaml" 
+        template_file_name = "node-template-with-model.yaml"
     svc_template = environment.get_template(template_file_name)
     content = svc_template.render(svc_vars)
     logger.info(content)
@@ -455,7 +457,7 @@ def setup_central_pipeline(
             distrpution_time=distrpution_time,
             drop_limit=drop_limit,
             logs_enabled=logs_enabled,
-            from_storage=from_storage[node_id]
+            from_storage=from_storage[node_id],
         )
     queue_names = list(map(lambda l: "queue-" + l, node_names))
     setup_queues(

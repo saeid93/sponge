@@ -10,6 +10,7 @@ plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
 color_list = ["#ffff99", "#a1dab4", "#41b6c4", "#2c7fb8", "#253494"]
 
+
 def draw_temporal(
     dict_to_draw: Dict[str, Dict[str, List[int]]],
     adaptation_interval=None,
@@ -282,7 +283,7 @@ def draw_temporal_final2(
 #                 if subfig_idx > len(final_by_load_type.keys()) // 2:
 #                     ax.set_xlabel("Time (s)")
 #             for serie_name in final_by_load_type[load_type][metric]:
-               
+
 #                 for key, values in final_by_load_type[load_type][metric][
 #                     serie_name
 #                 ].items():
@@ -302,6 +303,7 @@ def draw_temporal_final2(
 #         plt.savefig(filename)
 #     else:
 #         plt.show()
+
 
 def draw_temporal_final3(
     final_by_load_type: Dict[str, Dict[str, List[int]]],
@@ -377,7 +379,7 @@ def draw_temporal_final4(
     selected_experiments: Dict[str, Dict[str, Union[str, List[str]]]],
     filename: str,
     serie_color: dict,
-    hl_for_metric = None,
+    hl_for_metric=None,
     adaptation_interval=None,
     bbox_to_anchor=(0.8, 6.1),
     save=False,
@@ -412,13 +414,13 @@ def draw_temporal_final4(
             else:
                 if subfig_x == 1:
                     ax.set_xlabel("Time (s)")
-            
+
             if hl_for_metric.get(metric):
                 ax.axhline(
                     y=hl_for_metric[metric]["value"],
                     # label=hl_for_metric[metric]["label"],
                     color=hl_for_metric[metric]["color"],
-                    linestyle="dashed"
+                    linestyle="dashed",
                 )
             num_works = 0
             for serie_name in final_by_load_type[load_type][metric]:
@@ -519,7 +521,9 @@ def draw_cumulative_with_grouping(
     for category in categories:
         values[category] = {}
         for group_name in group_names:
-            values[category][group_name] = dict_to_draw_cul[series_meta[category][group_name]]
+            values[category][group_name] = dict_to_draw_cul[
+                series_meta[category][group_name]
+            ]
 
     bar_width = 0.2
     x = np.arange(len(group_names))
@@ -555,9 +559,10 @@ def draw_cumulative_final(
     series_metadata: Dict[int, dict],
     metrics_metadata: Dict[str, dict],
     filename,
-    bbox_to_anchor=(0.85, 1.5)
+    bbox_to_anchor=(0.85, 1.5),
+    figsize=(8, 2),
 ):
-    fig, axs = plt.subplots(1, len(results), figsize=(8, 2))
+    fig, axs = plt.subplots(1, len(results), figsize=figsize)
     ax_idx = 0
     for metric in results.keys():
         ax = axs[ax_idx]
@@ -601,15 +606,18 @@ def draw_cumulative_final(
     )
 
 
-
-
 def draw_cdf(
-    data_dict: dict, serie_name: dict, serie_color: dict, vertical_values: float, vertical_label: str, bbox_to_anchor: tuple
+    data_dict: dict,
+    serie_name: dict,
+    serie_color: dict,
+    vertical_values: float,
+    vertical_label: str,
+    bbox_to_anchor: tuple,
 ):
     import seaborn as sns
-    
+
     fig, axes = plt.subplots(2, 2, figsize=(5.2, 4.4))
-    
+
     i = 0
     for pipeline_name, series in data_dict.items():
         ax = axes.flat[i]
@@ -619,9 +627,9 @@ def draw_cdf(
                 data,
                 label=serie_name[serie],
                 cumulative=True,
-                linestyle="dashed", 
+                linestyle="dashed",
                 color=serie_color[serie_name[serie]],
-                ax=ax
+                ax=ax,
             )
         if i % 2 == 1:
             ax.set_yticklabels([])
@@ -630,9 +638,16 @@ def draw_cdf(
             ax.set_ylabel("CDF")
         ax.set_xticks([0, vertical_values[pipeline_name]])
         ax.set_xlim(0)
-        ax.vlines(vertical_values[pipeline_name], ymin=0, ymax=1, colors="black", ls="--", label=vertical_label)
+        ax.vlines(
+            vertical_values[pipeline_name],
+            ymin=0,
+            ymax=1,
+            colors="black",
+            ls="--",
+            label=vertical_label,
+        )
         i += 1
-    
+
     plt.legend(
         fontsize=13,
         fancybox=False,
@@ -650,4 +665,3 @@ def draw_cdf(
         bbox_inches="tight",
         pad_inches=0,
     )
-

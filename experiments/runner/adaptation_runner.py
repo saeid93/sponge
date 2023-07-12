@@ -50,10 +50,10 @@ def main(config_name: str, type_of: str):
     series = config["series"]
 
     # name resuls zero for consistency with the profiling parser
-    dir_path = os.path.join(FINAL_RESULTS_PATH, "metaseries", str(metaseries), "series", str(series))
-    save_path = os.path.join(
-        dir_path, "adaptation_log.json"
+    dir_path = os.path.join(
+        FINAL_RESULTS_PATH, "metaseries", str(metaseries), "series", str(series)
     )
+    save_path = os.path.join(dir_path, "adaptation_log.json")
     pipeline_name = config["pipeline_name"]
     node_names = [config["node_name"] for config in config["nodes"]]
     adaptation_interval = config["adaptation_interval"]
@@ -193,7 +193,7 @@ def main(config_name: str, type_of: str):
         predictor_margin=predictor_margin,
         teleport_mode=teleport_mode,
         teleport_interval=teleport_interval,
-        from_storage=from_storage
+        from_storage=from_storage,
     )
 
     # ----------- 3. Running an experiment series -------------

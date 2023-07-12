@@ -97,7 +97,7 @@ def setup_pipeline(
             debug_mode=debug_mode,
             drop_limit=drop_limit,
             logs_enabled=logs_enabled,
-            from_storage=from_storage
+            from_storage=from_storage,
         )
     else:
         setup_router_pipeline(
@@ -194,7 +194,9 @@ def main(config_name: str, type_of: str):
     series = config["series"]
 
     # name resuls zero for consistency with the profiling parser
-    dir_path = os.path.join(FINAL_RESULTS_PATH, "metaseries", str(metaseries), "series", str(series))
+    dir_path = os.path.join(
+        FINAL_RESULTS_PATH, "metaseries", str(metaseries), "series", str(series)
+    )
     save_path = os.path.join(dir_path, "0.json")
     pipeline_name = config["pipeline_name"]
     pipeline_folder_name = config["pipeline_folder_name"]

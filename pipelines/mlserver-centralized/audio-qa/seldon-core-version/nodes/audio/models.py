@@ -111,9 +111,9 @@ class GeneralAudio(MLModel):
         logger.error(f"max_batch_size: {self._settings.max_batch_size}")
         logger.error(f"max_batch_time: {self._settings.max_batch_time}")
         if WITH_MODELS:
-            model_path=os.path.join(".", "models", self.MODEL_VARIANT)
+            model_path = os.path.join(".", "models", self.MODEL_VARIANT)
         else:
-            model_path=os.path.join("/", "mnt", "models", self.MODEL_VARIANT)
+            model_path = os.path.join("/", "mnt", "models", self.MODEL_VARIANT)
         self.model = pipeline(
             task=self.TASK,
             model=model_path,

@@ -33,25 +33,25 @@ nodes:
 
 benchmark_duration: 1
 adaptation_interval: 10
-# workload_type: static
-# workload_config:
-#   loads_to_test: 10
-#   load_duration: 1800
-workload_type: twitter
+workload_type: static
 workload_config:
-  - start: '1301160'
-    end: '1302360'
-    # end: '1863200'
-    # end: '1862200'
-    # end: '1861960'
-    # end: '1862500'
-    # end: '1863700'
-    # end: '1865100'
-    damping_factor: 8 # [int | null]
+  loads_to_test: 20
+  load_duration: 100
+# workload_type: twitter
+# workload_config:
+#   - start: '1301160'
+#     end: '1302360'
+#     # end: '1863200'
+#     # end: '1862200'
+#     # end: '1861960'
+#     # end: '1862500'
+#     # end: '1863700'
+#     # end: '1865100'
+#     damping_factor: 8 # [int | null]
 
 # ----------- optimizer configs -------------
 
-metaseries: 18
+metaseries: 22
 series: 60
 # pipeline_name: video
 metadata: 'bursty - fa2-low - cpu type: compute_cascadelake_r_ib'
@@ -83,7 +83,7 @@ gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 1 # maximum possible batching per nodes
 num_state_limit: 1 # number of states
-threshold: 5 # RPS threshold for finding the base allocation
+threshold: 4 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5

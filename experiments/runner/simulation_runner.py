@@ -71,10 +71,10 @@ def main(config_name: str, type_of: str):
     metaseries = config["metaseries"]
     series = config["series"]
 
-    dir_path = os.path.join(FINAL_RESULTS_PATH, "metaseries", str(metaseries), "series", str(series))
-    save_path = os.path.join(
-        dir_path, "adaptation_log.json"
+    dir_path = os.path.join(
+        FINAL_RESULTS_PATH, "metaseries", str(metaseries), "series", str(series)
     )
+    save_path = os.path.join(dir_path, "adaptation_log.json")
     pipeline_name = config["pipeline_name"]
     node_names = [config["node_name"] for config in config["nodes"]]
     adaptation_interval = config["adaptation_interval"]

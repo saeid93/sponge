@@ -5,7 +5,13 @@
 # python simulation_runner.py --config-name sla-nlp-1
 
 # python simulation_runner.py --config-name accuracy-nlp-0
-python simulation_runner.py --config-name accuracy-nlp-1
-python simulation_runner.py --config-name accuracy-nlp-2
-python simulation_runner.py --config-name accuracy-nlp-3
+# python simulation_runner.py --config-name accuracy-nlp-1
+# python simulation_runner.py --config-name accuracy-nlp-2
+# python simulation_runner.py --config-name accuracy-nlp-3
 # python simulation_runner.py --config-name accuracy-nlp-4
+
+python simulation_runner.py --config-name accuracy-sum-qa-0
+python simulation_runner.py --config-name accuracy-sum-qa-1
+python simulation_runner.py --config-name accuracy-sum-qa-2
+python simulation_runner.py --config-name accuracy-sum-qa-3
+python simulation_runner.py --config-name accuracy-sum-qa-4
