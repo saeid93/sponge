@@ -61,8 +61,8 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 26
-series: 81
+metaseries: 15
+series: 88
 # pipeline_name: video
 metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
 number_tasks: 3
@@ -134,7 +134,7 @@ distrpution_time: 5
 debug_mode:  false
 
 # ----------- simulation mode -------------
-simulation_mode: true
+simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0

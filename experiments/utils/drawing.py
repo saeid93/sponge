@@ -503,6 +503,7 @@ def draw_cumulative(
 def draw_cumulative_with_grouping(
     dict_to_draw: Dict[str, Dict[str, List[int]]],
     series_meta: Dict[str, Dict[str, int]],
+    filename,
     legend="Metrics",
     ylabel="Value",
     xlabel="Stage",
@@ -540,7 +541,13 @@ def draw_cumulative_with_grouping(
     ax.legend(title=legend)
 
     plt.tight_layout()
-    plt.show()
+    plt.savefig(
+        f"{filename}.pdf",
+        dpi=600,
+        format="pdf",
+        bbox_inches="tight",
+        pad_inches=0,
+    )
 
 
 def draw_cumulative_final(
@@ -596,35 +603,46 @@ def draw_cumulative_final(
 
 
 
-def draw_cdf(data_dict: dict, x: float, vertical_label: str, bbox_to_anchor: tuple):
+def draw_cdf(
+    data_dict: dict, serie_name: dict, serie_color: dict, vertical_values: float, vertical_label: str, bbox_to_anchor: tuple
+):
     import seaborn as sns
     
-    fig, ax = plt.subplots(figsize=(3, 2.2))
+    fig, axes = plt.subplots(2, 2, figsize=(5.2, 4.4))
     
-    color_idx = 0
-    for label, data in data_dict.items():
-        sns.kdeplot(
-            data, label=label, cumulative=True, linestyle="dashed", color=color_list[color_idx], ax=ax
-        )
-        color_idx += 1
-    # if idx > 0:
-    #     axs[idx].set_yticklabels([])
-    #     axs[idx].set_ylabel(None)
-    # else:
-    ax.set_ylabel("CDF")
+    i = 0
+    for pipeline_name, series in data_dict.items():
+        ax = axes.flat[i]
+        ax.set_title(pipeline_name)
+        for serie, data in series.items():
+            sns.kdeplot(
+                data,
+                label=serie_name[serie],
+                cumulative=True,
+                linestyle="dashed", 
+                color=serie_color[serie_name[serie]],
+                ax=ax
+            )
+        if i % 2 == 1:
+            ax.set_yticklabels([])
+            ax.set_ylabel(None)
+        else:
+            ax.set_ylabel("CDF")
+        ax.set_xticks([0, vertical_values[pipeline_name]])
+        ax.set_xlim(0)
+        ax.vlines(vertical_values[pipeline_name], ymin=0, ymax=1, colors="black", ls="--", label=vertical_label)
+        i += 1
     
-    ax.set_xticks([0, x])
-    ax.set_xlim(0)
-    ax.vlines(x, ymin=0, ymax=1, colors="black", ls="--", label=vertical_label)
     plt.legend(
         fontsize=13,
         fancybox=False,
-        ncol=3,
+        ncol=len(set(serie_name.values())) + 1,
         frameon=False,
         bbox_to_anchor=bbox_to_anchor,
         handlelength=1,
         columnspacing=0.8,
     )
+    plt.subplots_adjust(hspace=0.4)
     plt.savefig(
         "cdf.pdf",
         dpi=600,
