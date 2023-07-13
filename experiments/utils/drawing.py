@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 
 
 font = {"size": 12}
@@ -383,6 +383,7 @@ def draw_temporal_final4(
     adaptation_interval=None,
     bbox_to_anchor=(0.8, 6.1),
     save=False,
+    hspace: float=0
 ):
     num_keys = sum(map(lambda l: len(l["selection"]), selected_experiments.values()))
 
@@ -390,6 +391,7 @@ def draw_temporal_final4(
     fig = plt.figure(figsize=(8, 1 + metrics_len * 2.5), dpi=600)
     fig.tight_layout()
     gs = fig.add_gridspec(ncols=2, nrows=2)
+    fig.subplots_adjust(hspace=hspace)
     subfig_x = 0
     subfig_y = 0
     num_works = 0
@@ -558,9 +560,9 @@ def draw_cumulative_final(
     results: Dict[str, Dict[int, float]],
     series_metadata: Dict[int, dict],
     metrics_metadata: Dict[str, dict],
-    filename,
+    filename: str,
     bbox_to_anchor=(0.85, 1.5),
-    figsize=(8, 2),
+    figsize=(8, 2)
 ):
     fig, axs = plt.subplots(1, len(results), figsize=figsize)
     ax_idx = 0
@@ -613,53 +615,99 @@ def draw_cdf(
     vertical_values: float,
     vertical_label: str,
     bbox_to_anchor: tuple,
+    filename: str,
+    linear_plot: bool,
+    figsize: Tuple[float, float] = (5.2, 4.4),
+    num_figs: int = 4
 ):
     import seaborn as sns
-
-    fig, axes = plt.subplots(2, 2, figsize=(5.2, 4.4))
-
-    i = 0
-    for pipeline_name, series in data_dict.items():
-        ax = axes.flat[i]
-        ax.set_title(pipeline_name)
-        for serie, data in series.items():
-            sns.kdeplot(
-                data,
-                label=serie_name[serie],
-                cumulative=True,
-                linestyle="dashed",
-                color=serie_color[serie_name[serie]],
-                ax=ax,
+    if linear_plot:
+        fig, axes = plt.subplots(1, num_figs, figsize=figsize)
+        i = 0
+        for pipeline_name, series in data_dict.items():
+            ax = axes.flat[i]
+            ax.set_title(pipeline_name)
+            for serie, data in series.items():
+                sns.kdeplot(
+                    data,
+                    label=serie_name[serie],
+                    cumulative=True,
+                    linestyle="dashed",
+                    color=serie_color[serie_name[serie]],
+                    ax=ax,
+                )
+            if i != 0:
+                ax.set_yticklabels([])
+                ax.set_ylabel(None)
+            else:
+                ax.set_ylabel("CDF")
+            ax.set_xticks([0, vertical_values[pipeline_name]])
+            ax.set_xlim(0)
+            ax.vlines(
+                vertical_values[pipeline_name],
+                ymin=0,
+                ymax=1,
+                colors="black",
+                ls="--",
+                label=vertical_label,
             )
-        if i % 2 == 1:
-            ax.set_yticklabels([])
-            ax.set_ylabel(None)
-        else:
-            ax.set_ylabel("CDF")
-        ax.set_xticks([0, vertical_values[pipeline_name]])
-        ax.set_xlim(0)
-        ax.vlines(
-            vertical_values[pipeline_name],
-            ymin=0,
-            ymax=1,
-            colors="black",
-            ls="--",
-            label=vertical_label,
-        )
-        i += 1
+            i += 1
 
-    plt.legend(
-        fontsize=13,
-        fancybox=False,
-        ncol=len(set(serie_name.values())) + 1,
-        frameon=False,
-        bbox_to_anchor=bbox_to_anchor,
-        handlelength=1,
-        columnspacing=0.8,
-    )
-    plt.subplots_adjust(hspace=0.4)
+        plt.legend(
+            fontsize=13,
+            fancybox=False,
+            ncol=len(set(serie_name.values())) + 1,
+            frameon=False,
+            bbox_to_anchor=bbox_to_anchor,
+            handlelength=1,
+            columnspacing=0.8,
+        )
+        plt.subplots_adjust(hspace=0.4)
+    else:
+        assert num_figs % 2 == 0, "number of figs should be even for box drawing"
+        fig, axes = plt.subplots(2, 2, figsize=figsize)
+        i = 0
+        for pipeline_name, series in data_dict.items():
+            ax = axes.flat[i]
+            ax.set_title(pipeline_name)
+            for serie, data in series.items():
+                sns.kdeplot(
+                    data,
+                    label=serie_name[serie],
+                    cumulative=True,
+                    linestyle="dashed",
+                    color=serie_color[serie_name[serie]],
+                    ax=ax,
+                )
+            if i % 2 == 1:
+                ax.set_yticklabels([])
+                ax.set_ylabel(None)
+            else:
+                ax.set_ylabel("CDF")
+            ax.set_xticks([0, vertical_values[pipeline_name]])
+            ax.set_xlim(0)
+            ax.vlines(
+                vertical_values[pipeline_name],
+                ymin=0,
+                ymax=1,
+                colors="black",
+                ls="--",
+                label=vertical_label,
+            )
+            i += 1
+
+        plt.legend(
+            fontsize=13,
+            fancybox=False,
+            ncol=len(set(serie_name.values())) + 1,
+            frameon=False,
+            bbox_to_anchor=bbox_to_anchor,
+            handlelength=1,
+            columnspacing=0.8,
+        )
+        plt.subplots_adjust(hspace=0.4)
     plt.savefig(
-        "cdf.pdf",
+        fname=f"{filename}.pdf",
         dpi=600,
         format="pdf",
         bbox_inches="tight",
