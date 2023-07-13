@@ -505,46 +505,58 @@ def draw_cumulative(
 
 
 def draw_cumulative_with_grouping(
-    dict_to_draw: Dict[str, Dict[str, List[int]]],
+    data: Dict[str, Dict[str, Dict[str, List[int]]]],
     series_meta: Dict[str, Dict[str, int]],
     filename,
-    legend="Metrics",
-    ylabel="Value",
+    colors,
+    bar_width,
     xlabel="Stage",
 ):
     dict_to_draw_cul = {}
-    for series, series_dict in dict_to_draw.items():
-        dict_to_draw_cul[series] = sum(series_dict)
+    for metric, dict_to_draw in data.items():
+        dict_to_draw_cul[metric] = {}
+        for series, series_dict in dict_to_draw.items():
+            dict_to_draw_cul[metric][series] = sum(series_dict)
 
+    print(dict_to_draw_cul)
     categories = list(series_meta.keys())
     group_names = list(next(iter(series_meta.values())).keys())
 
     values = {}
-    for category in categories:
-        values[category] = {}
-        for group_name in group_names:
-            values[category][group_name] = dict_to_draw_cul[
-                series_meta[category][group_name]
-            ]
+    for metric in dict_to_draw_cul.keys():
+        values[metric] = {}
+        for category in categories:
+            values[metric][category] = {}
+            for group_name in group_names:
+                values[metric][category][group_name] = dict_to_draw_cul[metric][
+                    series_meta[category][group_name]
+                ]
 
-    bar_width = 0.2
     x = np.arange(len(group_names))
 
     # Create a figure and axis
-    fig, ax = plt.subplots()
+    fig, axs = plt.subplots(2, 1, figsize=(6, 4))
 
     # Plot the bars for each category and group
-    for i, category in enumerate(categories):
-        category_values = [values[category][group] for group in group_names]
-        ax.bar(x + i * bar_width, category_values, bar_width, label=category)
+    idx = 0
+    for metric, category_values in values.items():
+        ax = axs[idx]
+        for i, category in enumerate(categories):
+            category_values = [values[metric][category][group] for group in group_names]
+            ax.bar(x + i * bar_width, category_values, bar_width, label=category, color=colors[i])
+        
+        # Set the x-axis labels and title
+        if idx > 0:
+            ax.set_xticklabels(group_names)
+            ax.set_xlabel(xlabel=xlabel)
+            ax.set_xticks(x + (len(categories) - 1) * bar_width / 2)
+        else:
+            ax.legend()
+            ax.set_xticklabels([])
 
-    # Set the x-axis labels and title
-    ax.set_xticks(x + (len(categories) - 1) * bar_width / 2)
-    ax.set_xticklabels(group_names)
-
-    ax.set_xlabel(xlabel=xlabel)
-    ax.set_ylabel(ylabel=ylabel)
-    ax.legend(title=legend)
+        ax.grid(axis="y", color="gray", linestyle="dashed")
+        ax.set_ylabel(ylabel=metric)
+        idx += 1
 
     plt.tight_layout()
     plt.savefig(
