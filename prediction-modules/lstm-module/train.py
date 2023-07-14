@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Input, LSTM, Dense
 from tensorflow.keras import regularizers
+import time
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -93,6 +94,7 @@ if __name__ == "__main__":
     print(train_y.shape)
     print(test_x.shape)
     print(test_y.shape)
+    start = time.time()
     model = create_model()
     print(model.summary())
     model.compile(optimizer="adam", loss="mse")
@@ -104,4 +106,5 @@ if __name__ == "__main__":
     plt.plot(list(range(len(test_y))), list(predictions), label="predictions")
     plt.legend()
     plt.show()
+    print(f"duration: {time.time() - start}")
     model.save(LSTM_PATH)

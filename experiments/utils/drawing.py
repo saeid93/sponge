@@ -518,7 +518,6 @@ def draw_cumulative_with_grouping(
         for series, series_dict in dict_to_draw.items():
             dict_to_draw_cul[metric][series] = sum(series_dict)
 
-    print(dict_to_draw_cul)
     categories = list(series_meta.keys())
     group_names = list(next(iter(series_meta.values())).keys())
 
@@ -559,6 +558,83 @@ def draw_cumulative_with_grouping(
         idx += 1
 
     plt.tight_layout()
+    plt.savefig(
+        f"{filename}.pdf",
+        dpi=600,
+        format="pdf",
+        bbox_inches="tight",
+        pad_inches=0,
+    )
+
+
+def draw_objective_preference(
+    data: Dict[str, Dict[str, Dict[str, List[int]]]],
+    series_meta: Dict[str, Dict[str, int]],
+    filename,
+    colors,
+    bar_width,
+    xlabel,
+    bbox_to_anchor,
+):
+    dict_to_draw_cul = {}
+    for metric, dict_to_draw in data.items():
+        dict_to_draw_cul[metric] = {}
+        for series, series_dict in dict_to_draw.items():
+            dict_to_draw_cul[metric][series] = sum(series_dict)
+
+    categories = list(series_meta.keys())
+    group_names = list(next(iter(series_meta.values())).keys())
+
+    values = {}
+    for metric in dict_to_draw_cul.keys():
+        values[metric] = {}
+        for category in categories:
+            values[metric][category] = {}
+            for group_name in group_names:
+                values[metric][category][group_name] = dict_to_draw_cul[metric][
+                    series_meta[category][group_name]
+                ]
+
+    x = np.arange(len(group_names))
+
+    # Create a figure and axis
+    fig, ax1 = plt.subplots(figsize=(6, 2.2))
+    ax2 = ax1.twinx()
+    axs = [ax1, ax2]
+    idx = 0
+    # Plot the bars for each category and group
+    for metric, category_values in values.items():
+        ax = axs[idx]
+        for i, category in enumerate(categories):
+            category_values = [values[metric][category][group] for group in group_names]
+            if idx == 0:
+                ax.set_ylabel(ylabel=metric)
+                ax.bar(x + i * bar_width, category_values, bar_width, label=category, color=colors[i])
+            else:
+                ax.set_ylabel(ylabel=metric, color='#d7191c')
+                ax.scatter(
+                    x + i * bar_width, category_values, label=category, color=colors[i], edgecolors='#d7191c', s=65
+                )
+        
+        # Set the x-axis labels and title
+        ax.set_xticklabels(group_names)
+        ax.set_xlabel(xlabel=xlabel)
+        ax.set_xticks(x + (len(categories) - 1) * bar_width / 2)
+        
+        idx += 1
+
+    ax1.legend(
+        fontsize=13,
+        fancybox=False,
+        ncol=len(series_meta.keys()),
+        frameon=False,
+        bbox_to_anchor=bbox_to_anchor,
+        handlelength=1,
+        columnspacing=0.8,
+    )
+    ax2.spines["right"].set_color("#d7191c")
+    ax2.tick_params(axis='y', colors="#d7191c")
+    plt.grid(axis="y", color="gray", linestyle="dashed")
     plt.savefig(
         f"{filename}.pdf",
         dpi=600,
