@@ -6,7 +6,6 @@ import sys
 import shutil
 import yaml
 from pprint import PrettyPrinter
-
 pp = PrettyPrinter(indent=4)
 
 project_dir = os.path.dirname(__file__)

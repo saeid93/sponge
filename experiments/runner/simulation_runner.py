@@ -23,6 +23,7 @@ from experiments.utils.constants import (
 from optimizer import SimAdapter
 from experiments.utils.simulation_operations import generate_simulated_pipeline
 from experiments.utils.workload import make_workload
+from experiments.utils.misc import Int64Encoder
 
 
 def find_initial_config(
@@ -51,7 +52,7 @@ def find_initial_config(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="sla-audio-qa-1")
+@click.option("--config-name", required=True, type=str, default="base-allocation-video")
 @click.option(
     "--type-of",
     required=True,
@@ -217,8 +218,9 @@ def main(config_name: str, type_of: str):
         # 2. process two the pipeline adapter
         adapter.start_adaptation(workload=workload, initial_config=initial_config)
         with open(save_path, "w") as outfile:
-            outfile.write(json.dumps(adapter.monitoring.adaptation_report))
-
+            # outfile.write(json.dumps(convert_values_to_strings(adapter.monitoring.adaptation_report)))
+            # outfile.write(json.dumps(adapter.monitoring.adaptation_report))
+            outfile.write(json.dumps(adapter.monitoring.adaptation_report, cls=Int64Encoder))
 
 if __name__ == "__main__":
     main()

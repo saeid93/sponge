@@ -88,6 +88,7 @@ class SimAdapter:
         self.monitoring = Monitoring(
             pipeline_name=self.pipeline_name,
             sla=self.pipeline.sla,
+            base_allocations=self.optimizer.base_allocations(),
             stage_wise_slas=self.pipeline.stage_wise_slas,
         )
         self.predictor = Predictor(
@@ -239,13 +240,18 @@ class SimAdapter:
 
 class Monitoring:
     def __init__(
-        self, pipeline_name: str, sla: float, stage_wise_slas: Dict[str, float]
+        self,
+        pipeline_name: str,
+        sla: float,
+        base_allocations: Dict[str, Dict[str, int]],
+        stage_wise_slas: Dict[str, float],
     ) -> None:
         self.pipeline_name = pipeline_name
         self.adaptation_report = {}
         self.adaptation_report["timesteps"] = {}
         self.adaptation_report["metadata"] = {}
         self.adaptation_report["metadata"]["sla"] = sla
+        self.adaptation_report["metadata"]["base_allocations"] = base_allocations
         self.adaptation_report["metadata"]["stage_wise_slas"] = stage_wise_slas
 
     def adaptation_step_report(

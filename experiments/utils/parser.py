@@ -609,6 +609,12 @@ class AdaptationParser:
                 ]
             except:
                 pass
+            try:  # backward compatibility
+                changes["base_allocations"] = adaptation_log["metadata"][
+                    "base_allocations"
+                ]
+            except:
+                pass
             for _, state in adaptation_log["timesteps"].items():
                 changes["time_interval"].append(state["time_interval"])
                 try:  # backward compatibility

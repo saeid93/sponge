@@ -40,7 +40,7 @@ adaptation_interval: 10
 workload_type: twitter
 workload_config:
   - start: '1301160'
-    end: '1302360'
+    end: '1301360'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 7
+metaseries: 23
 series: 1
 # pipeline_name: video
 metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
@@ -114,7 +114,7 @@ distrpution_time: 30
 debug_mode:  false
 
 # ----------- simulation mode -------------
-simulation_mode: false
+simulation_mode: true
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0

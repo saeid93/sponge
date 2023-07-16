@@ -383,7 +383,7 @@ def draw_temporal_final4(
     adaptation_interval=None,
     bbox_to_anchor=(0.8, 6.1),
     save=False,
-    hspace: float=0
+    hspace: float = 0,
 ):
     num_keys = sum(map(lambda l: len(l["selection"]), selected_experiments.values()))
 
@@ -542,8 +542,14 @@ def draw_cumulative_with_grouping(
         ax = axs[idx]
         for i, category in enumerate(categories):
             category_values = [values[metric][category][group] for group in group_names]
-            ax.bar(x + i * bar_width, category_values, bar_width, label=category, color=colors[i])
-        
+            ax.bar(
+                x + i * bar_width,
+                category_values,
+                bar_width,
+                label=category,
+                color=colors[i],
+            )
+
         # Set the x-axis labels and title
         if idx > 0:
             ax.set_xticklabels(group_names)
@@ -609,18 +615,29 @@ def draw_objective_preference(
             category_values = [values[metric][category][group] for group in group_names]
             if idx == 0:
                 ax.set_ylabel(ylabel=metric)
-                ax.bar(x + i * bar_width, category_values, bar_width, label=category, color=colors[i])
-            else:
-                ax.set_ylabel(ylabel=metric, color='#d7191c')
-                ax.scatter(
-                    x + i * bar_width, category_values, label=category, color=colors[i], edgecolors='#d7191c', s=65
+                ax.bar(
+                    x + i * bar_width,
+                    category_values,
+                    bar_width,
+                    label=category,
+                    color=colors[i],
                 )
-        
+            else:
+                ax.set_ylabel(ylabel=metric, color="#d7191c")
+                ax.scatter(
+                    x + i * bar_width,
+                    category_values,
+                    label=category,
+                    color=colors[i],
+                    edgecolors="#d7191c",
+                    s=65,
+                )
+
         # Set the x-axis labels and title
         ax.set_xticklabels(group_names)
         ax.set_xlabel(xlabel=xlabel)
         ax.set_xticks(x + (len(categories) - 1) * bar_width / 2)
-        
+
         idx += 1
 
     ax1.legend(
@@ -633,7 +650,7 @@ def draw_objective_preference(
         columnspacing=0.8,
     )
     ax2.spines["right"].set_color("#d7191c")
-    ax2.tick_params(axis='y', colors="#d7191c")
+    ax2.tick_params(axis="y", colors="#d7191c")
     plt.grid(axis="y", color="gray", linestyle="dashed")
     plt.savefig(
         f"{filename}.pdf",
@@ -650,7 +667,7 @@ def draw_cumulative_final(
     metrics_metadata: Dict[str, dict],
     filename: str,
     bbox_to_anchor=(0.85, 1.5),
-    figsize=(8, 2)
+    figsize=(8, 2),
 ):
     fig, axs = plt.subplots(1, len(results), figsize=figsize)
     ax_idx = 0
@@ -706,9 +723,10 @@ def draw_cdf(
     filename: str,
     linear_plot: bool,
     figsize: Tuple[float, float] = (5.2, 4.4),
-    num_figs: int = 4
+    num_figs: int = 4,
 ):
     import seaborn as sns
+
     if linear_plot:
         fig, axes = plt.subplots(1, num_figs, figsize=figsize)
         i = 0
