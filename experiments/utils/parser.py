@@ -636,3 +636,12 @@ class AdaptationParser:
         except KeyError:
             pass
         return changes
+
+
+    def series_changes_gurobi(self, adaptation_log: Dict[str, Dict[str, Any]]):
+        changes = {
+            "duration": [],
+        }
+        for _, state in adaptation_log["timesteps"].items():
+            changes["duration"].append(state["duration"])
+        return changes

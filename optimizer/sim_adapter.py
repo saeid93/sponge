@@ -3,6 +3,7 @@ import numpy as np
 from typing import List
 import os
 import sys
+import time
 import pandas as pd
 import tensorflow as tf
 from copy import deepcopy
@@ -115,23 +116,24 @@ class SimAdapter:
 
         time_interval = 0
         timestep = 0
-        old_config = deepcopy(initial_config)
+        # old_config = deepcopy(initial_config)
         for timestep in range(
             self.adaptation_interval, len(workload), self.adaptation_interval
         ):
             time_interval += self.adaptation_interval
-            to_apply_config = None
-            to_save_config = None
-            objective = None
+            # to_apply_config = None
+            # to_save_config = None
+            # objective = None
 
             rps_series = workload[
                 max(0, timestep - self.monitoring_duration * 60) : timestep
             ]
-            self.update_recieved_load(all_recieved_loads=rps_series)
+            # self.update_recieved_load(all_recieved_loads=rps_series)
             predicted_load = round(self.predictor.predict(rps_series))
             logger.info("-" * 50)
             logger.info(f"\nPredicted Load: {predicted_load}\n")
             logger.info("-" * 50)
+            start = time.time()
             optimal = self.optimizer.optimize(
                 optimization_method=self.optimization_method,
                 scaling_cap=self.scaling_cap,
@@ -142,100 +144,102 @@ class SimAdapter:
                 arrival_rate=predicted_load,
                 num_state_limit=self.num_state_limit,
             )
-            if "objective" in optimal.columns:
-                objective = optimal[
-                    [
-                        "accuracy_objective",
-                        "resource_objective",
-                        "batch_objective",
-                        "objective",
-                    ]
-                ]
-                new_configs = self.output_parser(optimal)
-                to_apply_config = self.choose_config(new_configs, old_config)
-            if to_apply_config is not None:
-                to_save_config = self.saving_config_builder(
-                    to_apply_config=deepcopy(to_apply_config),
-                    node_orders=deepcopy(self.node_names),
-                    stage_wise_latencies=deepcopy(self.pipeline.stage_wise_latencies),
-                    stage_wise_accuracies=deepcopy(self.pipeline.stage_wise_accuracies),
-                    stage_wise_throughputs=deepcopy(
-                        self.pipeline.stage_wise_throughput
-                    ),
-                )
+            duration = time.time() - start
+            # if "objective" in optimal.columns:
+            #     objective = optimal[
+            #         [
+            #             "accuracy_objective",
+            #             "resource_objective",
+            #             "batch_objective",
+            #             "objective",
+            #         ]
+            #     ]
+            #     new_configs = self.output_parser(optimal)
+            #     to_apply_config = self.choose_config(new_configs, old_config)
+            # if to_apply_config is not None:
+            #     to_save_config = self.saving_config_builder(
+            #         to_apply_config=deepcopy(to_apply_config),
+            #         node_orders=deepcopy(self.node_names),
+            #         stage_wise_latencies=deepcopy(self.pipeline.stage_wise_latencies),
+            #         stage_wise_accuracies=deepcopy(self.pipeline.stage_wise_accuracies),
+            #         stage_wise_throughputs=deepcopy(
+            #             self.pipeline.stage_wise_throughput
+            #         ),
+            #     )
             self.monitoring.adaptation_step_report(
-                to_apply_config=to_save_config,
-                objective=objective,
+                duration=duration,
+                # to_apply_config=to_save_config,
+                # objective=objective,
                 timestep=timestep,
-                time_interval=time_interval,
-                monitored_load=rps_series,
-                predicted_load=predicted_load,
+                # time_interval=time_interval,
+                # monitored_load=rps_series,
+                # predicted_load=predicted_load,
             )
-            old_config = deepcopy(to_apply_config)
+            # old_config = deepcopy(to_apply_config)
 
-    def output_parser(self, optimizer_output: pd.DataFrame):
-        new_configs = []
-        for _, row in optimizer_output.iterrows():
-            config = {}
-            for task_id, task_name in enumerate(self.node_names):
-                config[task_name] = {}
-                config[task_name]["cpu"] = row[f"task_{task_id}_cpu"]
-                config[task_name]["replicas"] = int(row[f"task_{task_id}_replicas"])
-                config[task_name]["batch"] = int(row[f"task_{task_id}_batch"])
-                config[task_name]["variant"] = row[f"task_{task_id}_variant"]
-            new_configs.append(config)
-        return new_configs
+    # def output_parser(self, optimizer_output: pd.DataFrame):
+    #     new_configs = []
+    #     for _, row in optimizer_output.iterrows():
+    #         config = {}
+    #         for task_id, task_name in enumerate(self.node_names):
+    #             config[task_name] = {}
+    #             config[task_name]["cpu"] = row[f"task_{task_id}_cpu"]
+    #             config[task_name]["replicas"] = int(row[f"task_{task_id}_replicas"])
+    #             config[task_name]["batch"] = int(row[f"task_{task_id}_batch"])
+    #             config[task_name]["variant"] = row[f"task_{task_id}_variant"]
+    #         new_configs.append(config)
+    #     return new_configs
 
-    def choose_config(
-        self, new_configs: List[Dict[str, Dict[str, Union[str, int]]]], current_config
-    ):
-        # This should be from comparing with the
-        # current config
-        # easiest for now is to choose config with
-        # with the least change from former config
-        if current_config is None:
-            # if the current config is None just return the first config
-            return new_configs[0]
-        new_config_socres = []
-        for new_config in new_configs:
-            new_config_score = 0
-            for node_name, new_node_config in new_config.items():
-                for config_knob, config_value in new_node_config.items():
-                    if (
-                        config_knob == "variant"
-                        and config_value != current_config[node_name][config_knob]
-                    ):
-                        new_config_score -= 1
-                    if (
-                        config_knob == "batch"
-                        and str(config_value) != current_config[node_name][config_knob]
-                    ):
-                        new_config_score -= 1
-            new_config_socres.append(new_config_score)
-        chosen_config_index = new_config_socres.index(max(new_config_socres))
-        chosen_config = new_configs[chosen_config_index]
-        return chosen_config
+    # def choose_config(
+    #     self, new_configs: List[Dict[str, Dict[str, Union[str, int]]]], current_config
+    # ):
+    #     # This should be from comparing with the
+    #     # current config
+    #     # easiest for now is to choose config with
+    #     # with the least change from former config
+    #     if current_config is None:
+    #         # if the current config is None just return the first config
+    #         return new_configs[0]
+    #     new_config_socres = []
+    #     for new_config in new_configs:
+    #         new_config_score = 0
+    #         for node_name, new_node_config in new_config.items():
+    #             for config_knob, config_value in new_node_config.items():
+    #                 if (
+    #                     config_knob == "variant"
+    #                     and config_value != current_config[node_name][config_knob]
+    #                 ):
+    #                     new_config_score -= 1
+    #                 if (
+    #                     config_knob == "batch"
+    #                     and str(config_value) != current_config[node_name][config_knob]
+    #                 ):
+    #                     new_config_score -= 1
+    #         new_config_socres.append(new_config_score)
+    #     chosen_config_index = new_config_socres.index(max(new_config_socres))
+    #     chosen_config = new_configs[chosen_config_index]
+    #     return chosen_config
 
-    def update_recieved_load(self, all_recieved_loads) -> None:
-        """extract the entire sent load during the
-        experiment
-        """
-        self.monitoring.update_recieved_load(all_recieved_loads)
+    # def update_recieved_load(self, all_recieved_loads) -> None:
+    #     """extract the entire sent load during the
+    #     experiment
+    #     """
+    #     self.monitoring.update_recieved_load(all_recieved_loads)
 
-    def saving_config_builder(
-        self,
-        to_apply_config: Dict[str, Any],
-        node_orders: List[str],
-        stage_wise_latencies: List[float],
-        stage_wise_accuracies: List[float],
-        stage_wise_throughputs: List[float],
-    ):
-        saving_config = to_apply_config
-        for index, node in enumerate(node_orders):
-            saving_config[node]["latency"] = stage_wise_latencies[index]
-            saving_config[node]["accuracy"] = stage_wise_accuracies[index]
-            saving_config[node]["throughput"] = stage_wise_throughputs[index]
-        return saving_config
+    # def saving_config_builder(
+    #     self,
+    #     to_apply_config: Dict[str, Any],
+    #     node_orders: List[str],
+    #     stage_wise_latencies: List[float],
+    #     stage_wise_accuracies: List[float],
+    #     stage_wise_throughputs: List[float],
+    # ):
+    #     saving_config = to_apply_config
+    #     for index, node in enumerate(node_orders):
+    #         saving_config[node]["latency"] = stage_wise_latencies[index]
+    #         saving_config[node]["accuracy"] = stage_wise_accuracies[index]
+    #         saving_config[node]["throughput"] = stage_wise_throughputs[index]
+    #     return saving_config
 
 
 class Monitoring:
@@ -256,40 +260,42 @@ class Monitoring:
 
     def adaptation_step_report(
         self,
-        to_apply_config: Dict[str, Dict[str, Union[str, int]]],
-        objective: float,
+        duration: float,
+        # to_apply_config: Dict[str, Dict[str, Union[str, int]]],
+        # objective: float,
         timestep: str,
-        time_interval: int,
-        monitored_load: List[int],
-        predicted_load: int,
+        # time_interval: int,
+        # monitored_load: List[int],
+        # predicted_load: int,
     ):
         timestep = int(timestep)
         self.adaptation_report["timesteps"][timestep] = {}
-        self.adaptation_report["timesteps"][timestep]["config"] = to_apply_config
-        if objective is not None:
-            self.adaptation_report["timesteps"][timestep]["accuracy_objective"] = float(
-                objective["accuracy_objective"][0]
-            )
-            self.adaptation_report["timesteps"][timestep]["resource_objective"] = float(
-                objective["resource_objective"][0]
-            )
-            self.adaptation_report["timesteps"][timestep]["batch_objective"] = float(
-                objective["batch_objective"][0]
-            )
-            self.adaptation_report["timesteps"][timestep]["objective"] = float(
-                objective["objective"][0]
-            )
-        else:
-            self.adaptation_report["timesteps"][timestep]["resource_objective"] = None
-            self.adaptation_report["timesteps"][timestep]["accuracy_objective"] = None
-            self.adaptation_report["timesteps"][timestep]["batch_objective"] = None
-            self.adaptation_report["timesteps"][timestep]["objective"] = None
-        self.adaptation_report["timesteps"][timestep]["time_interval"] = time_interval
-        self.adaptation_report["timesteps"][timestep]["monitored_load"] = monitored_load
-        self.adaptation_report["timesteps"][timestep]["predicted_load"] = predicted_load
+        self.adaptation_report["timesteps"][timestep]["duration"] = duration
+        # self.adaptation_report["timesteps"][timestep]["config"] = to_apply_config
+        # if objective is not None:
+        #     self.adaptation_report["timesteps"][timestep]["accuracy_objective"] = float(
+        #         objective["accuracy_objective"][0]
+        #     )
+        #     self.adaptation_report["timesteps"][timestep]["resource_objective"] = float(
+        #         objective["resource_objective"][0]
+        #     )
+        #     self.adaptation_report["timesteps"][timestep]["batch_objective"] = float(
+        #         objective["batch_objective"][0]
+        #     )
+        #     self.adaptation_report["timesteps"][timestep]["objective"] = float(
+        #         objective["objective"][0]
+        #     )
+        # else:
+        #     self.adaptation_report["timesteps"][timestep]["resource_objective"] = None
+        #     self.adaptation_report["timesteps"][timestep]["accuracy_objective"] = None
+        #     self.adaptation_report["timesteps"][timestep]["batch_objective"] = None
+        #     self.adaptation_report["timesteps"][timestep]["objective"] = None
+        # self.adaptation_report["timesteps"][timestep]["time_interval"] = time_interval
+        # self.adaptation_report["timesteps"][timestep]["monitored_load"] = monitored_load
+        # self.adaptation_report["timesteps"][timestep]["predicted_load"] = predicted_load
 
-    def update_recieved_load(self, all_recieved_loads: List[float]):
-        self.adaptation_report["metadata"]["recieved_load"] = all_recieved_loads
+    # def update_recieved_load(self, all_recieved_loads: List[float]):
+    #     self.adaptation_report["metadata"]["recieved_load"] = all_recieved_loads
 
 
 class Predictor:

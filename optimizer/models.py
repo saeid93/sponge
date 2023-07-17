@@ -58,7 +58,6 @@ class Model:
         self.measured_profiles = measured_profiles
         self.measured_profiles.sort(key=lambda profile: profile.batch)
         self.accuracy = accuracy / 100
-        # self.normalized_accuracy = None
         self.name = name
         self.only_measured_profiles = only_measured_profiles
         self.profiles, self.latency_model_params = self.regression_model()
@@ -198,11 +197,6 @@ class Task:
         self.name = name
         self.sla_factor = sla_factor
         self.allocation_mode = allocation_mode
-        self.sla = self.find_task_sla()
-        self.variants_accuracies = self.find_variants_accuracies()
-        self.variants_accuracies_normalized = self.find_variants_accuracies_normalized()
-        if allocation_mode == "base":
-            self.base_allocations = self.find_base_allocation()
 
         for variant_index, variant in enumerate(self.available_model_profiles):
             if variant.name == active_variant:
@@ -219,6 +213,26 @@ class Task:
                 f"no matching profile for the variant {active_variant} and allocation"
                 f" of cpu: {active_allocation.cpu} and gpu: {active_allocation.gpu}"
             )
+
+    def remove_model_profiles_by_name(self, model_name: str):
+        self.available_model_profiles = [
+            profile
+            for profile in self.available_model_profiles
+            if profile.name != model_name
+        ]
+
+    def get_all_models_by_name(self, model_name: str):
+        return [
+            profile
+            for profile in self.available_model_profiles
+            if profile.name == model_name
+        ]
+
+    def add_model_profile(self, model: Model):
+        self.available_model_profiles.append(model)
+
+    def add_model_profiles(self, model: List[Model]):
+        self.available_model_profiles += model
 
     def model_switch(self, active_variant: str) -> None:
         """
@@ -245,7 +259,12 @@ class Task:
         if self.allocation_mode == "base":
             self.set_to_base_allocation()
 
-    def find_task_sla(self) -> Dict[str, ResourceAllocation]:
+    @property
+    def num_variants(self):
+        return len(self.variant_names)
+
+    @property
+    def sla(self) -> Dict[str, ResourceAllocation]:
         models = {key: [] for key in self.variant_names}
         # 1. filter out models
         for model_variant in self.variant_names:
@@ -267,7 +286,10 @@ class Task:
         # task_sla = min(model_slas.values())
         return task_sla
 
-    def find_base_allocation(self) -> Dict[str, ResourceAllocation]:
+    @property
+    def base_allocations(self) -> Dict[str, ResourceAllocation]:
+        if self.allocation_mode != "base":
+            return None
         models = {key: [] for key in self.variant_names}
         # TOOD change here
         # 1. filter out models
@@ -428,7 +450,8 @@ class Task:
     def change_batch(self, batch) -> None:
         self.batch = batch
 
-    def find_variants_accuracies(self) -> Dict[str, float]:
+    @property
+    def variants_accuracies(self) -> Dict[str, float]:
         """create all the accuracies for each task
 
         Returns:
@@ -442,7 +465,8 @@ class Task:
         )
         return variants_accuracies
 
-    def find_variants_accuracies_normalized(self) -> Dict[str, float]:
+    @property
+    def variants_accuracies_normalized(self) -> Dict[str, float]:
         """create normalized accuracies for each task
 
         Returns:
@@ -618,6 +642,12 @@ class Pipeline:
                         f"pipeline is deployed on cpu",
                         f"but task {task.name} is on gpu",
                     )
+
+    def add_task(self, task: Task):
+        self.inference_graph.append(task)
+
+    def remove_task(self):
+        self.inference_graph.pop()
 
     @property
     def stage_wise_throughput(self):

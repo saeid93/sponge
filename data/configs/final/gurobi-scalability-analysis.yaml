@@ -51,10 +51,10 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 27
-series: 1
+metaseries: 25
+# series: 1
 # pipeline_name: video
-metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
+metadata: 'gorubi scalibility analysis'
 number_tasks: 2
 profiling_series:
   - 71
@@ -137,3 +137,16 @@ throughput_margin: 0
 
 # ----------- enable in container logging -------------
 logs_enabled: false
+
+# ----------- whether to read models from storage or not - should be defined per node -------------
+from_storage:
+  - true
+  - true
+
+# ----------- gorubi latency tests -------------
+models_num_range:
+  start: 1
+  end: 50
+tasks_num_range:
+  start: 1
+  end: 10

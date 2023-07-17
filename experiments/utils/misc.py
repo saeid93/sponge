@@ -11,6 +11,7 @@ import numpy as np
 #         new_dict[key] = new_value
 #     return new_dict
 
+
 class Int64Encoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.int64):
