@@ -21,7 +21,7 @@ from experiments.utils.constants import (
 )
 
 from optimizer import SimAdapter
-from experiments.utils.simulation_operations import generate_random_simulated_pipelines
+from experiments.utils.simulation_operations import generate_fake_simulated_pipelines
 from experiments.utils.workload import make_workload
 from experiments.utils.misc import Int64Encoder
 
@@ -152,7 +152,7 @@ def main(config_name: str, type_of: str):
     tasks_num_range = config["tasks_num_range"]
 
     # TODO change this function
-    pipelines = generate_random_simulated_pipelines(
+    pipelines = generate_fake_simulated_pipelines(
         number_tasks=number_tasks,
         profiling_series=profiling_series,
         model_names=model_name,

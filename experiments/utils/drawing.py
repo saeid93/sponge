@@ -510,6 +510,7 @@ def draw_cumulative_with_grouping(
     filename,
     colors,
     bar_width,
+    bbox_to_anchor=(0.8, 6.1),
     xlabel="Stage",
 ):
     dict_to_draw_cul = {}
@@ -556,7 +557,7 @@ def draw_cumulative_with_grouping(
             ax.set_xlabel(xlabel=xlabel)
             ax.set_xticks(x + (len(categories) - 1) * bar_width / 2)
         else:
-            ax.legend()
+            # ax.legend()
             ax.set_xticklabels([])
 
         ax.grid(axis="y", color="gray", linestyle="dashed")
@@ -564,6 +565,15 @@ def draw_cumulative_with_grouping(
         idx += 1
 
     plt.tight_layout()
+    plt.legend(
+        fontsize=13,
+        fancybox=False,
+        ncol=2,
+        frameon=False,
+        bbox_to_anchor=bbox_to_anchor,
+        handlelength=1,
+        columnspacing=0.8,
+    )
     plt.savefig(
         f"{filename}.pdf",
         dpi=600,

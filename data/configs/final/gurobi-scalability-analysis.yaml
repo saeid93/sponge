@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 25
+metaseries: 27
 # series: 1
 # pipeline_name: video
 metadata: 'gorubi scalibility analysis'
@@ -146,7 +146,7 @@ from_storage:
 # ----------- gorubi latency tests -------------
 models_num_range:
   start: 1
-  end: 50
+  end: 20
 tasks_num_range:
   start: 1
   end: 10

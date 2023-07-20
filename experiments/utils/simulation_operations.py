@@ -232,7 +232,7 @@ def generate_simulated_pipeline(
     return pipeline
 
 
-def generate_random_simulated_pipelines(
+def generate_fake_simulated_pipelines(
     number_tasks: int,
     profiling_series: List[int],
     model_names: List[str],
@@ -323,8 +323,8 @@ def generate_random_simulated_pipelines(
         normalize_accuracy=normalize_accuracy,
     )
     pipelines = []
-    for model_num in range(models_num_range["start"], models_num_range["end"]):
-        for task_num in range(tasks_num_range["start"], tasks_num_range["end"]):
+    for task_num in range(tasks_num_range["start"], tasks_num_range["end"]):
+        for model_num in range(models_num_range["start"], models_num_range["end"]):
             pipelines.append(generate_fake_pipeline(
                 base_pipeline=base_pipeline,
                 model_num=model_num,
