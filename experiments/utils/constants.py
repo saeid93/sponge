@@ -79,6 +79,7 @@ OBJ_PIPELINE_PROFILING_RESULTS_PATH = os.path.join(
 # generated baesd on the users' path
 
 TEMP_MODELS_PATH = os.path.join(DATA_PATH, "model-temp")
+DATASETS = os.path.join(DATA_PATH, "datasets")
 # KUBE_YAMLS_PATH = os.path.join(DATA_PATH, "yamls")
 # PIPELINES_MODELS = os.path.join(DATA_PATH, "pipeline-test-meta")
 
@@ -136,7 +137,8 @@ def create_dirs():
     if not os.path.exists(OBJ_PIPELINE_PROFILING_RESULTS_PATH):
         setup_obj_store()
         os.makedirs(OBJ_PIPELINE_PROFILING_RESULTS_PATH)
-
+    if not os.path.exists(DATASETS):
+        os.makedirs(DATASETS)
 
 # prometheus client
 PROMETHEUS = "http://localhost:30090"
