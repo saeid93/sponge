@@ -8,16 +8,17 @@ from barazmoon.twitter import twitter_workload_generator
 from statsmodels.tsa.arima.model import ARIMA
 
 
-project_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+project_dir = os.path.dirname(__file__)
 sys.path.append(os.path.normpath(os.path.join(project_dir, "..", "..")))
 
+from experiments.utils.constants import FIGURES_PATH, LSTM_PATH
 
-plt.rc("font", size=12)
-plt.rc("axes", titlesize=12)
+plt.rc("font", size=16)
+plt.rc("axes", titlesize=16)
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
 
-LSTM_PATH = os.path.join(project_dir, "data/lstm")
+
 lstm_plot_kwargs = {
     "label": "LSTM",
 }
@@ -175,7 +176,7 @@ ax4.plot(list(range(len(selected_workload))), list(lstm.predict(x)), **lstm_plot
 # ax4.plot(list(range(len(selected_workload))), arima, **arima_plot_kwargs)
 
 plt.legend(
-    fontsize=13,
+    fontsize=16,
     fancybox=False,
     ncol=3,
     frameon=False,
@@ -186,11 +187,11 @@ plt.legend(
 )
 
 # fig.tight_layout()
-fig.text(0.51, -0.01, "Time (s)", ha="center", fontsize=12)
-fig.text(0.07, 0.5, "Workload (RPS)", rotation=90, va="center", fontsize=12)
+fig.text(0.51, -0.01, "Time (s)", ha="center", fontsize=16)
+fig.text(0.07, 0.5, "Workload (RPS)", rotation=90, va="center", fontsize=16)
 plt.subplots_adjust(wspace=0.15, hspace=0.4)
 plt.savefig(
-    os.path.dirname(__file__) + "/trace-figures/patterns.pdf",
+    os.path.join(FIGURES_PATH, "patterns.pdf"),
     dpi=600,
     format="pdf",
     bbox_inches="tight",
