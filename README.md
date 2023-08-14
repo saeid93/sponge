@@ -10,27 +10,6 @@ To address this challenge and propose a solution to efficiently manage model var
 2. **Load tester** code is available at [load_tester](https://github.com/reconfigurable-ml-pipeline/load_tester) repository.
 3. **Forked MLServer** [MLServer](https://github.com/SeldonIO/MLServer) is a production ready ML Serving platform, due to some modification we needed to make in this project we use a [forked version](https://github.com/saeid93/MLServer) of it
 
-# Project Setup Steps
-1. Install the forked MLServer, in the root folder of it do:
-```
-make install-dev
-```
-2. Install the barAzmoon library for load testing, in the root folder of the `saeed` branch:
-```
-pip install -e .
-```
-3. Install dependencies of the project:
-```
-pip install -r requirements.txt
-```
-4. Go to the parent folder `generate_dirs.py` file and run it to populate necessary data folders:
-```
-python generate_dirs.py
-```
-5. Go to the lstm-module and train the lstm NN:
-```
-python lstm_train.py
-```
-# Adding a new pipeline step
-1. Profiling
-2. Finding the best optimization variables with setting the three variables `threshold`, `sla_factor` to approperiate values.
+# Reproducibility
+
+Use the [public repo](https://github.com/reconfigurable-ml-pipeline/ipa/tree/main) for reporoducible resutls
