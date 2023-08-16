@@ -1,1 +1,0 @@
-gsutil cp -rn gs://ipa-models/myshareddir/* /mnt/myshareddir
