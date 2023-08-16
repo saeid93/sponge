@@ -1,5 +1,5 @@
 function upload_all(){
-    gsutil cp -rn ~/inference_x/data/results gs://inference_x_results/
+    gsutil cp -rn ~/ipa-private/data/results gs://ipa-results/
 }
 
 upload_all
