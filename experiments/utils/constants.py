@@ -3,18 +3,15 @@ from .obj import setup_obj_store
 
 # defined by the user
 PROJECT_PATH = "/home/cc/infernece-pipeline-joint-optimization"
-OBJ_PATH = "/home/cc/my_mounting_point/"  # object store path
+OBJ_PATH = "/home/cc/my_mounting_point/"
 KEY_CONFIG_FILENAME = "key_config_mapper.csv"
 NAMESPACE = "default"
 
 # base DATA folder path and object sore path
 DATA_PATH = os.path.join(PROJECT_PATH, "data")
 OBJ_DATA_PATH = os.path.join(OBJ_PATH, "data")
-# PIPELINES_FOLDER = "mlserver-final"
-# PIPELINES_FOLDER = "mlserver-centralized"
 
 # pipelines path
-# PIPLINES_PATH = os.path.join(PROJECT_PATH, "pipelines", PIPELINES_FOLDER)
 PIPLINES_PATH = os.path.join(PROJECT_PATH, "pipelines")
 CONFIGS_PATH = os.path.join(DATA_PATH, "configs")
 
@@ -49,11 +46,6 @@ FINAL_CONFIGS_PATH = os.path.join(CONFIGS_PATH, "final")
 LSTM_PATH = os.path.join(DATA_PATH, "lstm")
 LSTM_INPUT_SIZE = 12
 
-# triton folders
-# TRITON_PROFILING_PATH = os.path.join(PROFILING_CONFIGS_PATH, "triton")
-# TRITON_PROFILING_CONFIGS_PATH = os.path.join(TRITON_PROFILING_PATH, "configs")
-# TRITON_PROFILING_TEMPLATES_PATH = os.path.join(TRITON_PROFILING_PATH, "templates")
-
 # results noraml path
 RESULTS_PATH = os.path.join(DATA_PATH, "results")
 PROFILING_RESULTS_PATH = os.path.join(RESULTS_PATH, "profiling")
@@ -64,7 +56,6 @@ PIPELINE_SIMULATION_MOCK_PATH = os.path.join(
     PIPELINE_SIMULATION_RESULTS_PATH, "mock-simulation"
 )
 NODE_PROFILING_RESULTS_PATH = os.path.join(PROFILING_RESULTS_PATH, "nodes")
-# NODE_PROFILING_RESULTS_TRITON_PATH = os.path.join(NODE_PROFILING_RESULTS_PATH, "triton")
 PIPELINE_PROFILING_RESULTS_PATH = os.path.join(PROFILING_RESULTS_PATH, "pipelines")
 
 # results object storage path
@@ -77,12 +68,8 @@ OBJ_PIPELINE_PROFILING_RESULTS_PATH = os.path.join(
 )
 
 # generated baesd on the users' path
-
 TEMP_MODELS_PATH = os.path.join(DATA_PATH, "model-temp")
 DATASETS = os.path.join(DATA_PATH, "datasets")
-# KUBE_YAMLS_PATH = os.path.join(DATA_PATH, "yamls")
-# PIPELINES_MODELS = os.path.join(DATA_PATH, "pipeline-test-meta")
-
 
 def create_dirs():
     """
@@ -90,12 +77,6 @@ def create_dirs():
     """
     if not os.path.exists(TEMP_MODELS_PATH):
         os.makedirs(TEMP_MODELS_PATH)
-    # if not os.path.exists(KUBE_YAMLS_PATH):
-    #     os.makedirs(KUBE_YAMLS_PATH)
-    # if not os.path.exists(PIPELINES_MODELS):
-    #     os.makedirs(PIPELINES_MODELS)
-    # if not os.path.exists(PIPLINES_PATH):
-    #     os.makedirs(PIPLINES_PATH)
     if not os.path.exists(LSTM_PATH):
         os.makedirs(LSTM_PATH)
     if not os.path.exists(FIGURES_PATH):
@@ -124,8 +105,6 @@ def create_dirs():
         os.makedirs(NODE_PROFILING_RESULTS_PATH)
     if not os.path.exists(NODE_PROFILING_RESULTS_PATH):
         os.makedirs(NODE_PROFILING_RESULTS_PATH)
-    # if not os.path.exists(NODE_PROFILING_RESULTS_TRITON_PATH):
-    #     os.makedirs(NODE_PROFILING_RESULTS_TRITON_PATH)
     if not os.path.exists(PIPELINE_PROFILING_RESULTS_PATH):
         os.makedirs(PIPELINE_PROFILING_RESULTS_PATH)
     if not os.path.exists(OBJ_RESULTS_PATH):
