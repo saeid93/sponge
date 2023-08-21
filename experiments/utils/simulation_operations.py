@@ -325,11 +325,13 @@ def generate_fake_simulated_pipelines(
     pipelines = []
     for task_num in range(tasks_num_range["start"], tasks_num_range["end"]):
         for model_num in range(models_num_range["start"], models_num_range["end"]):
-            pipelines.append(generate_fake_pipeline(
-                base_pipeline=base_pipeline,
-                model_num=model_num,
-                task_num=task_num,
-            ))
+            pipelines.append(
+                generate_fake_pipeline(
+                    base_pipeline=base_pipeline,
+                    model_num=model_num,
+                    task_num=task_num,
+                )
+            )
     return pipelines
 
 
@@ -354,9 +356,14 @@ def generate_fake_pipeline(
             required_num = model_num - task.num_variants
             sugar_val = 0.000001
             sugar_char = "s"
-            heaviest_model = max(task.variants_accuracies_normalized, key=lambda k: task.variants_accuracies_normalized[k])
+            heaviest_model = max(
+                task.variants_accuracies_normalized,
+                key=lambda k: task.variants_accuracies_normalized[k],
+            )
             for i in range(required_num):
-                new_model_profiles = deepcopy(task.get_all_models_by_name(heaviest_model))
+                new_model_profiles = deepcopy(
+                    task.get_all_models_by_name(heaviest_model)
+                )
                 for new_model_profile in new_model_profiles:
                     new_model_profile.name += sugar_char
                     new_model_profile.accuracy += sugar_val
@@ -366,7 +373,7 @@ def generate_fake_pipeline(
                 sugar_val += 0.000001
                 sugar_char += "s"
                 task.add_model_profiles(new_model_profiles)
-                    
+
     # check the number of tasks on infernce graph
     # if it is more than or greater than the required taks remove models
     if new_pipeline.num_nodes > task_num:
@@ -382,5 +389,5 @@ def generate_fake_pipeline(
             first_task_copy.name += sugar_char
             sugar_char += "s"
             new_pipeline.add_task(first_task_copy)
-    
+
     return new_pipeline

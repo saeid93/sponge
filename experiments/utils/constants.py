@@ -71,6 +71,7 @@ OBJ_PIPELINE_PROFILING_RESULTS_PATH = os.path.join(
 TEMP_MODELS_PATH = os.path.join(DATA_PATH, "model-temp")
 DATASETS = os.path.join(DATA_PATH, "datasets")
 
+
 def create_dirs():
     """
     create directories if they don't exist
@@ -118,6 +119,7 @@ def create_dirs():
         os.makedirs(OBJ_PIPELINE_PROFILING_RESULTS_PATH)
     if not os.path.exists(DATASETS):
         os.makedirs(DATASETS)
+
 
 # prometheus client
 PROMETHEUS = "http://localhost:30090"

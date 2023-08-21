@@ -74,7 +74,6 @@ def main(config_name: str, type_of: str):
     metaseries = config["metaseries"]
     # series = config["series"]
 
-
     # dir_path = os.path.join(
     #     FINAL_RESULTS_PATH, "metaseries", str(metaseries), "series", str(series)
     # )
@@ -213,7 +212,7 @@ def main(config_name: str, type_of: str):
             predictor_type=predictor_type,
             baseline_mode=baseline_mode,
             backup_predictor_type=backup_predictor_type,
-            backup_predictor_duration=backup_predictor_duration
+            backup_predictor_duration=backup_predictor_duration,
         )
 
         _, workload = make_workload(config=config)
@@ -225,10 +224,8 @@ def main(config_name: str, type_of: str):
             os.makedirs(metaseries_dir_path)
             dest_config_path = os.path.join(metaseries_dir_path, "0.yaml")
             shutil.copy(config_path, dest_config_path)
-# 
-        series_dir_path = os.path.join(
-            metaseries_dir_path, "series", str(series)
-        )
+        #
+        series_dir_path = os.path.join(metaseries_dir_path, "series", str(series))
         save_path = os.path.join(series_dir_path, "adaptation_log.json")
         pipeline_name = config["pipeline_name"]
         adaptation_interval = config["adaptation_interval"]
@@ -236,7 +233,7 @@ def main(config_name: str, type_of: str):
         # experiment info
         experiment_info = {
             "models_num": pipeline.inference_graph[0].num_variants,
-            "tasks_num": pipeline.num_nodes
+            "tasks_num": pipeline.num_nodes,
         }
 
         config["experiment_info"] = experiment_info
@@ -244,7 +241,7 @@ def main(config_name: str, type_of: str):
         if not os.path.exists(series_dir_path):
             os.makedirs(series_dir_path)
             dest_config_path = os.path.join(series_dir_path, "0.yaml")
-            with open(dest_config_path, 'w') as file:
+            with open(dest_config_path, "w") as file:
                 yaml.dump(config, file)
 
         # ----------- 3. Running an experiment series -------------

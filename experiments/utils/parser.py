@@ -637,7 +637,6 @@ class AdaptationParser:
             pass
         return changes
 
-
     def series_changes_gurobi(self, adaptation_log: Dict[str, Dict[str, Any]]):
         changes = {
             "duration": [],
