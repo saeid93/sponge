@@ -17,7 +17,7 @@ spec:
         volumes:
         - name: logs-volume
           hostPath:
-            path: /home/cc/infernece-pipeline-joint-optimization/data/logs
+            path: /home/cc/ipa-private/data/logs
 
         terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
