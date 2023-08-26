@@ -38,16 +38,18 @@ spec:
 
         terminationGracePeriodSeconds: 10
         containers:
-        - image: sdghafouri/video-final:resnet-human
+        - image: sdghafouri/video-final-gpu:resnet-human
           name: resnet-human
           imagePullPolicy: Always
           resources:
             requests:
               cpu: '1'
               memory: 4Gi
+              nvidia.com/gpu: 1
             limits:
               cpu: '1'
               memory: 4Gi
+              nvidia.com/gpu: 1
           volumeMounts:
           - mountPath: /opt/mlserver/.torch/hub/checkpoints
             name: resnet-volume

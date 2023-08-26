@@ -131,6 +131,7 @@ class ResnetHuman(MLModel):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.default_shape = [253, 294, 3]
         self.resnet = model[self.MODEL_VARIANT](pretrained=True)
+        self.resnet = self.resnet.to(self.device)
         self.resnet.eval()
         self.loaded = True
         logger.info("model loading complete!")

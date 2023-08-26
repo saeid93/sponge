@@ -44,9 +44,11 @@ spec:
             requests:
               cpu: '{{ cpu_request }}'
               memory: '{{ memory_request }}'
+              nvidia.com/gpu: '{{ gpu_request }}'
             limits:
               cpu: '{{ cpu_limit }}'
               memory: '{{ memory_limit }}'
+              nvidia.com/gpu: '{{ gpu_request }}'
           volumeMounts:
           - mountPath: /mnt/models
             name: yolov5-volume
