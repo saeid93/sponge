@@ -48,7 +48,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 14
+metaseries: 18
 series: 77
 # pipeline_name: video
 metadata: 'fluctuating - fa2-low - cpu type: compute_cascadelake_r_ib'
