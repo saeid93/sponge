@@ -1,3 +1,4 @@
+import os
 import random
 import math
 from typing import Dict, List, Union, Optional
@@ -444,6 +445,7 @@ class Optimizer:
         gamma: float,
         arrival_rate: int,
         num_state_limit: int,
+        dir_path: str = None
     ) -> pd.DataFrame:
         """generate all the possible states based on profiling data
 
@@ -735,12 +737,18 @@ class Optimizer:
         )
         # objectives
         if self.pipeline.accuracy_method == "multiply":
-            raise NotImplementedError(
-                (
-                    "multiplication accuracy objective is not implemented",
-                    "yet for Grubi due to quadratic limitation of Gurobi",
-                )
-            )
+            # TODO change here
+            accuracy_objective = gp.LinExpr()
+            for stage in stages:
+                for variant in stages_variants[stage]:
+                    accuracy_objective.add(accuracy_parameters[stage][variant] * i[stage, variant])
+
+            # raise NotImplementedError(
+            #     (
+            #         "multiplication accuracy objective is not implemented",
+            #         "yet for Grubi due to quadratic limitation of Gurobi",
+            #     )
+            # )
         elif self.pipeline.accuracy_method == "sum":
             accuracy_objective = gp.quicksum(
                 accuracy_parameters[stage][vairant] * i[stage, vairant]
@@ -792,7 +800,8 @@ class Optimizer:
         # Solve bilinear model
         model.params.NonConvex = 2
         model.optimize()
-        model.write("unmeasured.lp")
+        if dir_path is not None:
+            model.write(os.path.join(dir_path, "unmeasured.lp"))
         # model.display()
         # model.printStatus()
 
@@ -926,6 +935,7 @@ class Optimizer:
         arrival_rate: int,
         num_state_limit: int = None,
         batching_cap: int = None,
+        dir_path: str = None
     ) -> pd.DataFrame:
         if optimization_method == "brute-force":
             optimal = self.brute_force(
@@ -945,6 +955,7 @@ class Optimizer:
                 gamma=gamma,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit,
+                dir_path=dir_path
             )
         else:
             raise ValueError(f"Invalid optimization_method: {optimization_method}")

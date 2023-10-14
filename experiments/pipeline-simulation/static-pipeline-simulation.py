@@ -182,6 +182,7 @@ def main(config_name: str):
                 gamma=gamma,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit,
+                dir_path=dir_path
             )
             # logger.info(f"{optimal = }")
             optimal.to_markdown(
@@ -191,6 +192,8 @@ def main(config_name: str):
             optimal_time = time.time() - optimal_time
             time_file.write(f"optimal_time_gurobi: {optimal_time}\n")
             logger.info(f"optimal time gurobi: {optimal_time}")
+
+            a = 1
 
         if optimization_method == "brute-force":
             optimal_time = time.time()

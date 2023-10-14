@@ -13,6 +13,18 @@
             "justMyCode": false
         },
         {
+            "name": "Simulation Runner",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "--config-name",
+                "video-test"
+            ],
+            "justMyCode": false
+        },
+        {
             "name": "Run mlserver",
             "type": "python",
             "request": "launch",
