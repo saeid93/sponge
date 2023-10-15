@@ -738,10 +738,13 @@ class Optimizer:
         # objectives
         if self.pipeline.accuracy_method == "multiply":
             # TODO change here
-            accuracy_objective = gp.LinExpr()
+            accuracy_objective = 1
             for stage in stages:
+                stage_accuracy = 0
                 for variant in stages_variants[stage]:
-                    accuracy_objective.add(accuracy_parameters[stage][variant] * i[stage, variant])
+                    stage_accuracy += accuracy_parameters[stage][variant] * i[stage, variant]
+                accuracy_objective *= stage_accuracy
+            a = 1
 
             # raise NotImplementedError(
             #     (
@@ -755,6 +758,7 @@ class Optimizer:
                 for stage in stages
                 for vairant in stages_variants[stage]
             )
+            a = 1
         elif self.pipeline.accuracy_method == "average":
             accuracy_objective = gp.quicksum(
                 accuracy_parameters[stage][vairant]

@@ -183,6 +183,7 @@ class Task:
         sla_factor: int,
         normalize_accuracy: bool,
         gpu_mode: False,
+        lowest_model_accuracy: float = 0
     ) -> None:
         self.available_model_profiles = available_model_profiles
         self.active_variant = active_variant
@@ -197,6 +198,7 @@ class Task:
         self.name = name
         self.sla_factor = sla_factor
         self.allocation_mode = allocation_mode
+        self.lowest_model_accuracy = lowest_model_accuracy
 
         for variant_index, variant in enumerate(self.available_model_profiles):
             if variant.name == active_variant:
@@ -485,6 +487,7 @@ class Task:
             accuracies_normalized = (
                 np.arange(len(accuracies)) / (len(accuracies) - 1)
             ).tolist()
+        accuracies_normalized[0] = self.lowest_model_accuracy
         variants_accuracies_normalized = {
             variant: accuracy_normalized
             for variant, accuracy_normalized in zip(variants, accuracies_normalized)

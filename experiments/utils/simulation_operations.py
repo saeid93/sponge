@@ -163,6 +163,7 @@ def generate_simulated_pipeline(
     reference_latency: str = "p99",
     latency_margin: int = 0,
     throughput_margin: int = 0,
+    lowest_model_accuracy: int = 0
 ) -> Pipeline:
     """generates simulated version of the pipelines
        profiles
@@ -220,6 +221,7 @@ def generate_simulated_pipeline(
             allocation_mode=allocation_mode,
             normalize_accuracy=normalize_accuracy,
             gpu_mode=False,
+            lowest_model_accuracy=lowest_model_accuracy
         )
         inference_graph.append(task)
     pipeline = Pipeline(
