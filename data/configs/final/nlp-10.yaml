@@ -113,6 +113,7 @@ profiling_load:
   - 10
 baseline_mode: switch # [switch | scale | null]
 accuracy_method: sum # [average | sum | multiply]
+lowest_model_accuracy: 0
 
 # ----------- load predictor configs -------------
 
