@@ -94,6 +94,7 @@ def main(config_name: str, type_of: str):
     only_measured_profiles = config["only_measured_profiles"]
     profiling_load = config["profiling_load"]
     central_queue = config["central_queue"]
+    lowest_model_accuracy = config["lowest_model_accuracy"]
 
     # pipeline config
     num_state_limit = config["num_state_limit"]
@@ -162,6 +163,7 @@ def main(config_name: str, type_of: str):
         reference_throughput=reference_throughput,
         latency_margin=latency_margin,
         throughput_margin=throughput_margin,
+        lowest_model_accuracy=lowest_model_accuracy
     )
 
     # ----------- 3. loading predictor configs -------------

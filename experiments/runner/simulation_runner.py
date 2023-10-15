@@ -123,6 +123,7 @@ def main(config_name: str, type_of: str):
     sla_factor = config["sla_factor"]
     accuracy_method = config["accuracy_method"]
     normalize_accuracy = config["normalize_accuracy"]
+    lowest_model_accuracy = config["lowest_model_accuracy"]
 
     # pipeline accuracy
     pipeline_accuracies = accuracies[pipeline_name]
@@ -166,6 +167,7 @@ def main(config_name: str, type_of: str):
         reference_throughput=reference_throughput,
         latency_margin=latency_margin,
         throughput_margin=throughput_margin,
+        lowest_model_accuracy=lowest_model_accuracy
     )
 
     # ----------- 3. loading predictor configs -------------
