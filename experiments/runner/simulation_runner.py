@@ -52,7 +52,7 @@ def find_initial_config(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="base-allocation-video")
+@click.option("--config-name", required=True, type=str, default="sim-test")
 @click.option(
     "--type-of",
     required=True,
