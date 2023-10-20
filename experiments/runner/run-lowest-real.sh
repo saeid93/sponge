@@ -1,41 +1,41 @@
-python runner_script.py --config-name mul-video-1
+python runner_script.py --config-name mul-real-video-1
 sleep 60
-python runner_script.py --config-name mul-video-2
+python runner_script.py --config-name mul-real-video-2
 sleep 60
-python runner_script.py --config-name mul-video-3
+python runner_script.py --config-name mul-real-video-3
 sleep 60
-python runner_script.py --config-name mul-video-4
+python runner_script.py --config-name mul-real-video-4
 sleep 60
-python runner_script.py --config-name mul-video-5
+python runner_script.py --config-name mul-real-video-5
 sleep 60
-python runner_script.py --config-name mul-video-6
+python runner_script.py --config-name mul-real-video-6
 sleep 60
-python runner_script.py --config-name mul-video-7
+python runner_script.py --config-name mul-real-video-7
 sleep 60
-python runner_script.py --config-name mul-video-8
+python runner_script.py --config-name mul-real-video-8
 sleep 60
-python runner_script.py --config-name mul-video-9
+python runner_script.py --config-name mul-real-video-9
 sleep 60
-python runner_script.py --config-name mul-video-10
+python runner_script.py --config-name mul-real-video-10
 sleep 60
-python runner_script.py --config-name mul-video-11
+python runner_script.py --config-name mul-real-video-11
 sleep 60
-python runner_script.py --config-name mul-video-12
+python runner_script.py --config-name mul-real-video-12
 sleep 60
-python runner_script.py --config-name mul-video-13
+python runner_script.py --config-name mul-real-video-13
 sleep 60
-python runner_script.py --config-name mul-video-14
+python runner_script.py --config-name mul-real-video-14
 sleep 60
-python runner_script.py --config-name mul-video-15
+python runner_script.py --config-name mul-real-video-15
 sleep 60
-python runner_script.py --config-name mul-video-16
+python runner_script.py --config-name mul-real-video-16
 sleep 60
-python runner_script.py --config-name mul-video-17
+python runner_script.py --config-name mul-real-video-17
 sleep 60
-python runner_script.py --config-name mul-video-18
+python runner_script.py --config-name mul-real-video-18
 sleep 60
-python runner_script.py --config-name mul-video-19
+python runner_script.py --config-name mul-real-video-19
 sleep 60
-python runner_script.py --config-name mul-video-20
+python runner_script.py --config-name mul-real-video-20
 sleep 60
 
