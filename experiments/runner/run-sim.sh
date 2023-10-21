@@ -16,8 +16,28 @@
 # python simulation_runner.py --config-name accuracy-sum-qa-3
 # python simulation_runner.py --config-name accuracy-sum-qa-4
 
-python simulation_runner.py --config-name base-allocation-video
-python simulation_runner.py --config-name base-allocation-audio-qa
-python simulation_runner.py --config-name base-allocation-audio-sent
-python simulation_runner.py --config-name base-allocation-sum-qa
-python simulation_runner.py --config-name base-allocation-nlp
+# python simulation_runner.py --config-name base-allocation-video
+# python simulation_runner.py --config-name base-allocation-audio-qa
+# python simulation_runner.py --config-name base-allocation-audio-sent
+# python simulation_runner.py --config-name base-allocation-sum-qa
+# python simulation_runner.py --config-name base-allocation-nlp
+
+# python simulation_runner.py --config-name sim-audio-qa-sum-1
+# python simulation_runner.py --config-name sim-audio-qa-sum-2
+# python simulation_runner.py --config-name sim-audio-qa-sum-3
+# python simulation_runner.py --config-name sim-audio-qa-sum-5
+
+# python simulation_runner.py --config-name sim-audio-qa-mul-1
+# python simulation_runner.py --config-name sim-audio-qa-mul-2
+# python simulation_runner.py --config-name sim-audio-qa-mul-3
+# python simulation_runner.py --config-name sim-audio-qa-mul-5
+
+python simulation_runner.py --config-name sim-audio-qa-sum-lowest-1
+python simulation_runner.py --config-name sim-audio-qa-sum-lowest-2
+python simulation_runner.py --config-name sim-audio-qa-sum-lowest-3
+python simulation_runner.py --config-name sim-audio-qa-sum-lowest-5
+
+python simulation_runner.py --config-name sim-audio-qa-mul-lowest-1
+python simulation_runner.py --config-name sim-audio-qa-mul-lowest-2
+python simulation_runner.py --config-name sim-audio-qa-mul-lowest-3
+python simulation_runner.py --config-name sim-audio-qa-mul-lowest-5

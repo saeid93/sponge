@@ -10,8 +10,8 @@ audio-qa:
     facebook-s2t-small-librispeech-asr: -41.28
     facebook-s2t-medium-librispeech-asr: -35.12
     facebook-s2t-large-librispeech-asr: -33.26
-    facebook-wav2vec2-base-960h: -33.85
-    facebook-wav2vec2-large-960h: -27.65
+    # facebook-wav2vec2-base-960h: -33.85
+    # facebook-wav2vec2-large-960h: -27.65
   nlp-qa:
     # F1 score, https://huggingface.co/deepset/roberta-base-squad2#performance
     # Training Dataset: SQuAD 2.0, https://huggingface.co/datasets/squad_v2
