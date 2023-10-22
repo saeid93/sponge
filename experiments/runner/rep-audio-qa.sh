@@ -82,7 +82,7 @@ sleep 60
 
 python runner_script.py --config-name audio-qa-mul-1
 sleep 60
-python runner_script.py --config-name audio-mul-2
+python runner_script.py --config-name audio-qa-mul-2
 sleep 60
 python runner_script.py --config-name audio-qa-mul-3
 sleep 60

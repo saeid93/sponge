@@ -19,7 +19,7 @@ nodes:
     num_threads: '1'
   - node_name: nlp-qa
     data_type: text
-    model_variants: deepset-roberta-base-squad2
+    model_variants: deepset-xlm-roberta-base-squad2
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
@@ -48,7 +48,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 18
+metaseries: 31
 series: 32
 # pipeline_name: video
 metadata: 'steady high - fa2-low - cpu type: compute_cascadelake_r_ib'
@@ -64,7 +64,7 @@ task_name:
   - nlp-qa
 initial_active_model:
   - facebook-s2t-small-librispeech-asr
-  - deepset-roberta-base-squad2
+  - deepset-xlm-roberta-base-squad2
 initial_cpu_allocation:
   - 1
   - 1

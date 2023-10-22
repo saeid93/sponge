@@ -32,12 +32,55 @@
 # python simulation_runner.py --config-name sim-audio-qa-mul-3
 # python simulation_runner.py --config-name sim-audio-qa-mul-5
 
-python simulation_runner.py --config-name sim-audio-qa-sum-lowest-1
-python simulation_runner.py --config-name sim-audio-qa-sum-lowest-2
-python simulation_runner.py --config-name sim-audio-qa-sum-lowest-3
-python simulation_runner.py --config-name sim-audio-qa-sum-lowest-5
+# python simulation_runner.py --config-name sim-audio-qa-sum-lowest-1
+# python simulation_runner.py --config-name sim-audio-qa-sum-lowest-2
+# python simulation_runner.py --config-name sim-audio-qa-sum-lowest-3
+# python simulation_runner.py --config-name sim-audio-qa-sum-lowest-5
 
-python simulation_runner.py --config-name sim-audio-qa-mul-lowest-1
-python simulation_runner.py --config-name sim-audio-qa-mul-lowest-2
-python simulation_runner.py --config-name sim-audio-qa-mul-lowest-3
-python simulation_runner.py --config-name sim-audio-qa-mul-lowest-5
+# python simulation_runner.py --config-name sim-audio-qa-mul-lowest-1
+# python simulation_runner.py --config-name sim-audio-qa-mul-lowest-2
+# python simulation_runner.py --config-name sim-audio-qa-mul-lowest-3
+# python simulation_runner.py --config-name sim-audio-qa-mul-lowest-5
+
+# python simulation_runner.py --config-name audio-qa-1
+# python simulation_runner.py --config-name audio-qa-2
+# python simulation_runner.py --config-name audio-qa-3
+# python simulation_runner.py --config-name audio-qa-5
+
+# python simulation_runner.py --config-name audio-qa-6
+# python simulation_runner.py --config-name audio-qa-7
+# python simulation_runner.py --config-name audio-qa-8
+# python simulation_runner.py --config-name audio-qa-10
+
+# python simulation_runner.py --config-name audio-qa-11
+# python simulation_runner.py --config-name audio-qa-12
+# python simulation_runner.py --config-name audio-qa-13
+# python simulation_runner.py --config-name audio-qa-15
+
+# python simulation_runner.py --config-name audio-qa-16
+# python simulation_runner.py --config-name audio-qa-17
+# python simulation_runner.py --config-name audio-qa-18
+# python simulation_runner.py --config-name audio-qa-20
+
+
+# python simulation_runner.py --config-name sim-sum-qa-mul-1
+# python simulation_runner.py --config-name sim-sum-qa-mul-2
+# python simulation_runner.py --config-name sim-sum-qa-mul-3
+# python simulation_runner.py --config-name sim-sum-qa-mul-5
+
+python simulation_runner.py --config-name sim-sum-qa-mul-1
+python simulation_runner.py --config-name sim-sum-qa-mul-2
+python simulation_runner.py --config-name sim-sum-qa-mul-3
+python simulation_runner.py --config-name sim-sum-qa-mul-5
+python simulation_runner.py --config-name sim-sum-qa-mul-6
+python simulation_runner.py --config-name sim-sum-qa-mul-7
+python simulation_runner.py --config-name sim-sum-qa-mul-8
+python simulation_runner.py --config-name sim-sum-qa-mul-10
+python simulation_runner.py --config-name sim-sum-qa-mul-11
+python simulation_runner.py --config-name sim-sum-qa-mul-12
+python simulation_runner.py --config-name sim-sum-qa-mul-13
+python simulation_runner.py --config-name sim-sum-qa-mul-15
+python simulation_runner.py --config-name sim-sum-qa-mul-16
+python simulation_runner.py --config-name sim-sum-qa-mul-17
+python simulation_runner.py --config-name sim-sum-qa-mul-18
+python simulation_runner.py --config-name sim-sum-qa-mul-20

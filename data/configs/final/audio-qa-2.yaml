@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 18
+metaseries: 31
 series: 22
 # pipeline_name: video
 metadata: 'bursty - fa2-low - cpu type: compute_cascadelake_r_ib - redo of metaseries bursty on chameleon to check latencies'
@@ -67,7 +67,7 @@ task_name:
   - nlp-qa
 initial_active_model:
   - facebook-s2t-small-librispeech-asr
-  - deepset-roberta-base-squad2
+  - deepset-xlm-roberta-base-squad2
 initial_cpu_allocation:
   - 1
   - 1
