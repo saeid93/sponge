@@ -13,18 +13,18 @@ nodes:
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 1
+    replicas: 12
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
   - node_name: nlp-qa
     data_type: text
-    model_variants: deepset-xlm-roberta-base-squad2
+    model_variants: deepset-roberta-base-squad2
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '1'
     memory_request: 4Gi
-    replicas: 1
+    replicas: 8
     use_threading: 'True'
     num_interop_threads: '1'
     num_threads: '1'
@@ -51,11 +51,10 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-
-metaseries: 35
-series: 67
+metaseries: 38
+series: 70
 # pipeline_name: video
-metadata: 'steady low - fa2-low - cpu type: compute_cascadelake_r_ib'
+metadata: 'steady low - rim-high - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
 profiling_series:
   - 97
@@ -68,13 +67,13 @@ task_name:
   - nlp-qa
 initial_active_model:
   - sshleifer-distilbart-xsum-1-1
-  - deepset-xlm-roberta-base-squad2
+  - deepset-roberta-base-squad2
 initial_cpu_allocation:
   - 1
   - 1
 initial_replica:
-  - 1
-  - 1
+  - 12
+  - 8
 initial_batch:
   - 1
   - 1
@@ -91,9 +90,9 @@ sla_factor: 5
 normalize_accuracy: true
 only_measured_profiles: true
 profiling_load: 10
-baseline_mode: scale # [switch | scale | null]
-accuracy_method: multiply # [average | sum | multiply]
-lowest_model_accuracy: 0.05
+baseline_mode: switch # [switch | scale | null]
+accuracy_method: sum # [average | sum | multiply]
+lowest_model_accuracy: 0
 
 # ----------- load predictor configs -------------
 

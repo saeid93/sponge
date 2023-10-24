@@ -162,46 +162,46 @@
 # python runner_script.py --config-name audio-sent-20
 # sleep 60
 
-python runner_script.py --config-name sum-qa-1
-sleep 60
-python runner_script.py --config-name sum-qa-2
-sleep 60
-python runner_script.py --config-name sum-qa-3
-sleep 60
+# python runner_script.py --config-name sum-qa-1
+# sleep 60
+# python runner_script.py --config-name sum-qa-2
+# sleep 60
+# python runner_script.py --config-name sum-qa-3
+# sleep 60
 # python runner_script.py --config-name sum-qa-4
 # sleep 60
-python runner_script.py --config-name sum-qa-5
-sleep 60
-python runner_script.py --config-name sum-qa-6
-sleep 60
-python runner_script.py --config-name sum-qa-7
-sleep 60
-python runner_script.py --config-name sum-qa-8
-sleep 60
+# python runner_script.py --config-name sum-qa-5
+# sleep 60
+# python runner_script.py --config-name sum-qa-6
+# sleep 60
+# python runner_script.py --config-name sum-qa-7
+# sleep 60
+# python runner_script.py --config-name sum-qa-8
+# sleep 60
 # python runner_script.py --config-name sum-qa-9
 # sleep 60
-python runner_script.py --config-name sum-qa-10
-sleep 60
-python runner_script.py --config-name sum-qa-11
-sleep 60
-python runner_script.py --config-name sum-qa-12
-sleep 60
-python runner_script.py --config-name sum-qa-13
-sleep 60
+# python runner_script.py --config-name sum-qa-10
+# sleep 60
+# python runner_script.py --config-name sum-qa-11
+# sleep 60
+# python runner_script.py --config-name sum-qa-12
+# sleep 60
+# python runner_script.py --config-name sum-qa-13
+# sleep 60
 # python runner_script.py --config-name sum-qa-14
 # sleep 60
-python runner_script.py --config-name sum-qa-15
-sleep 60
-python runner_script.py --config-name sum-qa-16
-sleep 60
-python runner_script.py --config-name sum-qa-17
-sleep 60
-python runner_script.py --config-name sum-qa-18
-sleep 60
+# python runner_script.py --config-name sum-qa-15
+# sleep 60
+# python runner_script.py --config-name sum-qa-16
+# sleep 60
+# python runner_script.py --config-name sum-qa-17
+# sleep 60
+# python runner_script.py --config-name sum-qa-18
+# sleep 60
 # python runner_script.py --config-name sum-qa-19
 # sleep 60
-python runner_script.py --config-name sum-qa-20
-sleep 60
+# python runner_script.py --config-name sum-qa-20
+# sleep 60
 
 
 python runner_script.py --config-name sum-qa-mul-1
@@ -245,6 +245,41 @@ sleep 60
 python runner_script.py --config-name sum-qa-mul-20
 sleep 60
 
+python runner_script.py --config-name sum-qa-5-rep-1
+sleep 60
+python runner_script.py --config-name sum-qa-10-rep-1
+sleep 60
+python runner_script.py --config-name sum-qa-15-rep-1
+sleep 60
+python runner_script.py --config-name sum-qa-20-rep-1
+sleep 60
+
+python runner_script.py --config-name sum-qa-5-rep-2
+sleep 60
+python runner_script.py --config-name sum-qa-10-rep-2
+sleep 60
+python runner_script.py --config-name sum-qa-15-rep-2
+sleep 60
+python runner_script.py --config-name sum-qa-20-rep-2
+sleep 60
+
+python runner_script.py --config-name sum-qa-5-rep-3
+sleep 60
+python runner_script.py --config-name sum-qa-10-rep-3
+sleep 60
+python runner_script.py --config-name sum-qa-15-rep-3
+sleep 60
+python runner_script.py --config-name sum-qa-20-rep-3
+sleep 60
+
+python runner_script.py --config-name sum-qa-5-rep-4
+sleep 60
+python runner_script.py --config-name sum-qa-10-rep-4
+sleep 60
+python runner_script.py --config-name sum-qa-15-rep-4
+sleep 60
+python runner_script.py --config-name sum-qa-20-rep-4
+sleep 60
 
 # python runner_script.py --config-name sum-qa-11-copy-0
 # sleep 60
