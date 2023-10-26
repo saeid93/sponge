@@ -1,5 +1,5 @@
 function upload_metasereis(){
-    gsutil cp -rn ~/ipa-private/results/final/metaseries/$1 gs://ipa-results/results/final/metaseries/$1
+    gsutil cp -rn ~/ipa-private/data/results/final/metaseries/$SERIES gs://ipa-results/results/final/metaseries/$SERIES
 }
 
 upload_metasereis

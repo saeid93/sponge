@@ -1,6 +1,6 @@
 .PHONY: clean_cluster download fetch_pipeline upload_all upload_metaseries
 
-hack_dir := $(HOME)/inference_x/hack
+hack_dir := $(HOME)/ipa-private/hack
 clean_cluster := $(hack_dir)/clean_cluster.sh
 download := $(hack_dir)/download.sh
 fetch_pipeline := $(hack_dir)/fetch_pipeline.sh
@@ -32,8 +32,11 @@ upload_all:
 	$(upload_all)
 	@echo "upload_all.sh completed"
 
-upload_metaseries:
+upload_metaseries: SERIES ?= 
+upload_metaseries: upload_metaseries_target
+
+upload_metaseries_target:
 	chmod +x $(upload_metaseries)
-	$(upload_metaseries) $1
+	bash $(upload_metaseries) $(SERIES)
 	@echo "upload_metaseries.sh completed"
 
