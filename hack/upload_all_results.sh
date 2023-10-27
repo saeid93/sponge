@@ -1,4 +1,6 @@
-function upload_all(){
+#!/bin/bash
+
+function upload_all() {
     gsutil cp -rn ~/ipa-private/data/results gs://ipa-results/
 }
 
