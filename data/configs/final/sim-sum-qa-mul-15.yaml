@@ -47,7 +47,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 34
+metaseries: 50
 series: 75
 # pipeline_name: video
 metadata: 'steady high - rim-high - cpu type: compute_cascadelake_r_ib'
@@ -73,7 +73,7 @@ initial_replica:
 initial_batch:
   - 1
   - 1
-alpha: 10
+alpha: 11
 beta: 0.5
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes

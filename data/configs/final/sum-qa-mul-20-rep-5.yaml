@@ -48,7 +48,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 50 
+metaseries: 55 
 series: 80
 # pipeline_name: video
 metadata: 'fluctuating - rim-high - cpu type: compute_cascadelake_r_ib'
@@ -111,7 +111,7 @@ distrpution_time: 30
 debug_mode: false
 
 # ----------- simulation mode -------------
-simulation_mode: true
+simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0
