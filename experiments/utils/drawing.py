@@ -411,6 +411,9 @@ def draw_temporal_final4(
                 ax.set_ylabel(selected_experiments[metric]["ylabel"])
 
             axs_idx += 1
+            if "ylim" in selected_experiments[metric].keys():
+                ylim = selected_experiments[metric]["ylim"]
+                ax.set_ylim(ylim[0], ylim[1]) # temp
             if axs_idx < metrics_len:
                 ax.set_xticklabels([])
             else:
