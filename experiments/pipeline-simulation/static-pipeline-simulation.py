@@ -93,7 +93,7 @@ def main(config_name: str):
         pipeline_accuracies=pipeline_accuracies,
         only_measured_profiles=only_measured_profiles,
         profiling_load=profiling_load,
-        lowest_model_accuracy=lowest_model_accuracy
+        lowest_model_accuracy=lowest_model_accuracy,
     )
 
     optimizer = Optimizer(
@@ -184,7 +184,7 @@ def main(config_name: str):
                 gamma=gamma,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit,
-                dir_path=dir_path
+                dir_path=dir_path,
             )
             # logger.info(f"{optimal = }")
             optimal.to_markdown(

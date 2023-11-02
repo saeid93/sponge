@@ -413,7 +413,7 @@ def draw_temporal_final4(
             axs_idx += 1
             if "ylim" in selected_experiments[metric].keys():
                 ylim = selected_experiments[metric]["ylim"]
-                ax.set_ylim(ylim[0], ylim[1]) # temp
+                ax.set_ylim(ylim[0], ylim[1])  # temp
             if axs_idx < metrics_len:
                 ax.set_xticklabels([])
             else:
@@ -692,7 +692,7 @@ def draw_cumulative_final(
         for serie, metric_result in results[metric].items():
             if "ylim" in metrics_metadata[metric].keys():
                 ylim = metrics_metadata[metric]["ylim"]
-                ax.set_ylim(ylim[0], ylim[1]) # temp            
+                ax.set_ylim(ylim[0], ylim[1])  # temp
             ax.bar(
                 x,
                 metric_result,

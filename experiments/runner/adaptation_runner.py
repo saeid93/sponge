@@ -163,7 +163,7 @@ def main(config_name: str, type_of: str):
         reference_throughput=reference_throughput,
         latency_margin=latency_margin,
         throughput_margin=throughput_margin,
-        lowest_model_accuracy=lowest_model_accuracy
+        lowest_model_accuracy=lowest_model_accuracy,
     )
 
     # ----------- 3. loading predictor configs -------------

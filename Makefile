@@ -55,3 +55,12 @@ upload_node_models_target:
 	chmod +x $(upload_node_models)
 	bash $(upload_node_models) $(SOURCE) $(NODE)
 	@echo "upload_node_models.sh completed"
+
+lint:
+	black --check .
+	# flake8 .
+	# Check if something has changed after generation
+	git \
+		--no-pager diff \
+		--exit-code \
+		.

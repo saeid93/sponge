@@ -445,7 +445,7 @@ class Optimizer:
         gamma: float,
         arrival_rate: int,
         num_state_limit: int,
-        dir_path: str = None
+        dir_path: str = None,
     ) -> pd.DataFrame:
         """generate all the possible states based on profiling data
 
@@ -742,7 +742,9 @@ class Optimizer:
             for stage in stages:
                 stage_accuracy = 0
                 for variant in stages_variants[stage]:
-                    stage_accuracy += accuracy_parameters[stage][variant] * i[stage, variant]
+                    stage_accuracy += (
+                        accuracy_parameters[stage][variant] * i[stage, variant]
+                    )
                 accuracy_objective *= stage_accuracy
             a = 1
 
@@ -939,7 +941,7 @@ class Optimizer:
         arrival_rate: int,
         num_state_limit: int = None,
         batching_cap: int = None,
-        dir_path: str = None
+        dir_path: str = None,
     ) -> pd.DataFrame:
         if optimization_method == "brute-force":
             optimal = self.brute_force(
@@ -959,7 +961,7 @@ class Optimizer:
                 gamma=gamma,
                 arrival_rate=arrival_rate,
                 num_state_limit=num_state_limit,
-                dir_path=dir_path
+                dir_path=dir_path,
             )
         else:
             raise ValueError(f"Invalid optimization_method: {optimization_method}")

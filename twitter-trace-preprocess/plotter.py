@@ -18,7 +18,7 @@ def timer(data):
     end = 0
     flag_start = False
     for d in range(len(data)):
-        if data[d] > 0 and flag_start == False:
+        if data[d] > 0 and not flag_start:
             print(data[d], d)
             starter = d
             flag_start = True

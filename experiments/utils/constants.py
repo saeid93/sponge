@@ -125,5 +125,6 @@ def create_dirs():
     if not os.path.exists(ACCURACIES_EVAL):
         os.makedirs(ACCURACIES_EVAL)
 
+
 # prometheus client
 PROMETHEUS = "http://localhost:30090"

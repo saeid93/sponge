@@ -183,7 +183,7 @@ class Task:
         sla_factor: int,
         normalize_accuracy: bool,
         gpu_mode: False,
-        lowest_model_accuracy: float = 0
+        lowest_model_accuracy: float = 0,
     ) -> None:
         self.available_model_profiles = available_model_profiles
         self.active_variant = active_variant

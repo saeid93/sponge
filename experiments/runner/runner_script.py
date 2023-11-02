@@ -16,8 +16,11 @@ runner_folder = os.path.join(PROJECT_PATH, "experiments", "runner")
 script1_path = os.path.join(runner_folder, "experiments_runner.py")
 time.sleep(10)
 script2_path = os.path.join(runner_folder, "adaptation_runner.py")
+
+
 def run_script(script_path, config_name):
     return subprocess.Popen(["python", script_path, "--config-name", config_name])
+
 
 config_name = args.config_name
 process1 = run_script(script1_path, config_name)
