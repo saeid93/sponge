@@ -690,6 +690,9 @@ def draw_cumulative_final(
         x = 0
         width = 1
         for serie, metric_result in results[metric].items():
+            if "ylim" in metrics_metadata[metric].keys():
+                ylim = metrics_metadata[metric]["ylim"]
+                ax.set_ylim(ylim[0], ylim[1]) # temp            
             ax.bar(
                 x,
                 metric_result,
