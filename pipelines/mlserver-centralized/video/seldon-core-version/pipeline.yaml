@@ -41,7 +41,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 5
     graph:
       name: queue-yolo
       type: MODEL
@@ -133,7 +133,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 10
-      replicas: 1
+      replicas: 5
     graph:
       name: yolo
       type: MODEL
@@ -184,7 +184,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 5
     graph:
       name: queue-resnet-human
       type: MODEL
@@ -275,7 +275,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 10
-      replicas: 1
+      replicas: 5
     graph:
       name: resnet-human
       type: MODEL
@@ -326,7 +326,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 5
     graph:
       name: router
       type: MODEL
