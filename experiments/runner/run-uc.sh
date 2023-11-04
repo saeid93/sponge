@@ -399,29 +399,29 @@
 # sleep 60
 # python runner_script.py --config-name predictor-repeat-video-2
 # sleep 60
-# python runner_script.py --config-name predictor-repeat-video-3
-# sleep 60
-
-# python runner_script.py --config-name predictor-repeat-audio-sent-1
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-audio-sent-2
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-audio-sent-3
-# sleep 60
-
-python runner_script.py --config-name predictor-repeat-audio-qa-1
-sleep 60
-python runner_script.py --config-name predictor-repeat-audio-qa-2
-sleep 60
-python runner_script.py --config-name predictor-repeat-audio-qa-3
+python runner_script.py --config-name predictor-repeat-video-3
 sleep 60
 
-# python runner_script.py --config-name predictor-repeat-sum-qa-1
+python runner_script.py --config-name predictor-repeat-audio-sent-1
+sleep 60
+python runner_script.py --config-name predictor-repeat-audio-sent-2
+sleep 60
+python runner_script.py --config-name predictor-repeat-audio-sent-3
+sleep 60
+
+# python runner_script.py --config-name predictor-repeat-audio-qa-1
 # sleep 60
-# python runner_script.py --config-name predictor-repeat-sum-qa-2
+# python runner_script.py --config-name predictor-repeat-audio-qa-2
 # sleep 60
-# python runner_script.py --config-name predictor-repeat-sum-qa-3
+# python runner_script.py --config-name predictor-repeat-audio-qa-3
 # sleep 60
+
+python runner_script.py --config-name predictor-repeat-sum-qa-1
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-2
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3
+sleep 60
 
 # python runner_script.py --config-name predictor-repeat-nlp-1
 # sleep 60

@@ -48,17 +48,18 @@ Werkzeug==2.2.2
 wrapt==1.14.1
 zipp==3.11.0
 click==8.0.4
-transformers==4.21.1
+transformers==4.35.0
 opencv-python==4.6.0.66
 datasets==2.14.6
+torch==2.1.0
 tensorflow
 ultralytics
 seaborn
 soundfile
 librosa
-torchvision
+# torchvision
 sentencepiece
-torchaudio
+# torchaudio
 gurobipy
 tabulate
 kubernetes

@@ -40,8 +40,8 @@ adaptation_interval: 10
 workload_type: twitter
 workload_config:
   - start: '1301160'
-    end: '1301460'
-    # end: '1302360'
+    # end: '1301460'
+    end: '1302360'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
