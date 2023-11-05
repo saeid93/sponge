@@ -482,16 +482,44 @@ sleep 60
 # python runner_script.py --config-name predictor-repeat-audio-qa-3-3
 # sleep 60
 
-# python runner_script.py --config-name predictor-repeat-sum-qa-3-1
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-sum-qa-3-2
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-sum-qa-3-3
-# sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-1
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-2
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-3
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-4
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-5
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-6
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-7
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-8
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-9
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-10
+sleep 60
 
-# python runner_script.py --config-name predictor-repeat-nlp-3-1
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-nlp-3-2
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-nlp-3-3
-# sleep 60
+python runner_script.py --config-name predictor-repeat-nlp-3-1
+sleep 60
+python runner_script.py --config-name predictor-repeat-nlp-3-2
+sleep 60
+python runner_script.py --config-name predictor-repeat-nlp-3-3
+sleep 60
+python runner_script.py --config-name predictor-repeat-nlp-3-4
+sleep 60
+python runner_script.py --config-name predictor-repeat-nlp-3-5
+sleep 60
+python runner_script.py --config-name predictor-repeat-nlp-3-6
+sleep 60
+python runner_script.py --config-name predictor-repeat-nlp-3-7
+sleep 60
+python runner_script.py --config-name predictor-repeat-nlp-3-8
+sleep 60
+python runner_script.py --config-name predictor-repeat-nlp-3-9
+sleep 60
+python runner_script.py --config-name predictor-repeat-nlp-3-10
+sleep 60
