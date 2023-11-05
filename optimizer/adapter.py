@@ -214,6 +214,10 @@ class Adapter:
                         0, workload_timestep - self.monitoring_duration * 60
                     ) : workload_timestep
                 ]
+                rps_series_1 = self.monitoring.rps_monitor(
+                    monitoring_duration=self.monitoring_duration
+                )
+                a = 1
             else:
                 rps_series = self.monitoring.rps_monitor(
                     monitoring_duration=self.monitoring_duration

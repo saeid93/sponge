@@ -29,7 +29,7 @@ from experiments.utils.workload import make_workload
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="audio-qa-3")
+@click.option("--config-name", required=True, type=str, default="predictor-repeat-video-3-1")
 @click.option(
     "--type-of",
     required=True,
