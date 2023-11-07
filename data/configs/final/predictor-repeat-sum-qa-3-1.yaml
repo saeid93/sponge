@@ -127,8 +127,8 @@ drop_limit: 5
 warm_up: false
 
 # ----------- teleport mode (only available in real-world experiments) -------------
-teleport_mode: false 
-teleport_interval: 0
+teleport_mode: true 
+teleport_interval: 20
 
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg

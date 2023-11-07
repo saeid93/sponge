@@ -51,8 +51,8 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 51
-series: 63
+metaseries: 66
+series: 61
 # pipeline_name: video
 metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
@@ -96,9 +96,9 @@ lowest_model_accuracy: 0
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'reactive' # [reactive | avg | arima | lstm | max]
+predictor_type: 'lstm' # [reactive | avg | arima | lstm | max]
 monitoring_duration: 2 # in minutes
-backup_predictor_type: 'reactive' # [reactive | avg | lstm | max]
+backup_predictor_type: 'max' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes
 
 
@@ -127,8 +127,8 @@ drop_limit: 5
 warm_up: false
 
 # ----------- teleport mode (only available in real-world experiments) -------------
-teleport_mode: true 
-teleport_interval: 20
+teleport_mode: false 
+teleport_interval: 0
 
 # ----------- reference latency and throughput -------------
 reference_latency: 'p99' # p99 | avg
@@ -137,7 +137,7 @@ latency_margin: 0
 throughput_margin: -50
 
 # ----------- enable in container logging -------------
-logs_enabled: false
+logs_enabled: true
 
 # ----------- whether to read models from storage or not - should be defined per node -------------
 from_storage:
