@@ -49,7 +49,7 @@ adaptation_interval: 10
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1301460'
+  - start: '1301160'
     end: '1302360'
     # end: '1863200'
     # end: '1862200'
@@ -61,7 +61,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 69
+metaseries: 70
 series: 81
 # pipeline_name: video
 metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
