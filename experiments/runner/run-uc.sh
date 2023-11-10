@@ -475,88 +475,88 @@
 # python runner_script.py --config-name predictor-repeat-audio-sent-3-10
 # sleep 60
 
-# python runner_script.py --config-name predictor-repeat-audio-qa-3-1
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-audio-qa-3-2
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-audio-qa-3-3
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-audio-qa-3-4
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-audio-qa-3-5
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-audio-qa-3-6
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-audio-qa-3-7
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-audio-qa-3-8
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-audio-qa-3-9
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-audio-qa-3-10
-# sleep 60
+python runner_script.py --config-name predictor-repeat-audio-qa-3-1
+sleep 60
+python runner_script.py --config-name predictor-repeat-audio-qa-3-2
+sleep 60
+python runner_script.py --config-name predictor-repeat-audio-qa-3-3
+sleep 60
+python runner_script.py --config-name predictor-repeat-audio-qa-3-4
+sleep 60
+python runner_script.py --config-name predictor-repeat-audio-qa-3-5
+sleep 60
+python runner_script.py --config-name predictor-repeat-audio-qa-3-6
+sleep 60
+python runner_script.py --config-name predictor-repeat-audio-qa-3-7
+sleep 60
+python runner_script.py --config-name predictor-repeat-audio-qa-3-8
+sleep 60
+python runner_script.py --config-name predictor-repeat-audio-qa-3-9
+sleep 60
+python runner_script.py --config-name predictor-repeat-audio-qa-3-10
+sleep 60
 
-# python runner_script.py --config-name predictor-repeat-sum-qa-3-1
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-sum-qa-3-2
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-sum-qa-3-3
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-sum-qa-3-4
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-sum-qa-3-5
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-sum-qa-3-6
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-sum-qa-3-7
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-sum-qa-3-8
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-sum-qa-3-9
-# sleep 60
-# python runner_script.py --config-name predictor-repeat-sum-qa-3-10
-# sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-1
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-2
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-3
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-4
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-5
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-6
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-7
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-8
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-9
+sleep 60
+python runner_script.py --config-name predictor-repeat-sum-qa-3-10
+sleep 60
 
-python runner_script.py --config-name predictor-repeat-nlp-3-1
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-2
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-3
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-4
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-5
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-6
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-7
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-8
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-9
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-10
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-11
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-12
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-13
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-14
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-15
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-16
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-17
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-18
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-19
-sleep 60
-python runner_script.py --config-name predictor-repeat-nlp-3-20
-sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-1
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-2
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-3
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-4
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-5
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-6
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-7
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-8
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-9
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-10
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-11
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-12
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-13
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-14
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-15
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-16
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-17
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-18
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-19
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-nlp-3-20
+# sleep 60
 
 # python runner_script.py --config-name predictor-repeat-sum-qa-1-1
 # sleep 60

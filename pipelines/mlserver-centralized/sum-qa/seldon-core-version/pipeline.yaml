@@ -74,7 +74,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 10
     graph:
       name: nlp-sum
       type: MODEL
@@ -207,7 +207,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 10
     graph:
       name: nlp-qa
       type: MODEL
