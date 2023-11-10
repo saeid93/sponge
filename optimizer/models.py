@@ -487,7 +487,9 @@ class Task:
             accuracies_normalized = (
                 np.arange(len(accuracies)) / (len(accuracies) - 1)
             ).tolist()
-        accuracies_normalized[0] = self.lowest_model_accuracy
+        # TODO add the if statement for the lowest model if only one model
+        if len(accuracies_normalized) != 1:
+            accuracies_normalized[0] = self.lowest_model_accuracy
         variants_accuracies_normalized = {
             variant: accuracy_normalized
             for variant, accuracy_normalized in zip(variants, accuracies_normalized)
