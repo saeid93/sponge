@@ -157,8 +157,8 @@ def setup_router(
     model_lists = model_lists.replace("'", '"')
     svc_vars = {
         "name": pipeline_name,
-        "cpu_request": 4,
-        "memory_request": "8Gi",
+        "cpu_request": 16,
+        "memory_request": "16Gi",
         "cpu_limit": 16,
         "memory_limit": "32Gi",
         "replicas": 1,
