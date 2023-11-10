@@ -82,7 +82,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 10
-      replicas: 1
+      replicas: 10
     graph:
       name: nlp-li
       type: MODEL
@@ -131,7 +131,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 10
     graph:
       name: queue-nlp-li
       type: MODEL
@@ -226,7 +226,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 10
-      replicas: 1
+      replicas: 10
     graph:
       name: nlp-sum
       type: MODEL
@@ -275,7 +275,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 10
     graph:
       name: queue-nlp-sum
       type: MODEL
@@ -366,7 +366,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 10
-      replicas: 1
+      replicas: 10
     graph:
       name: nlp-trans
       type: MODEL
@@ -415,7 +415,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 10
     graph:
       name: queue-nlp-trans
       type: MODEL
@@ -458,7 +458,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 1
+      replicas: 10
     graph:
       name: router
       type: MODEL

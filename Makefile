@@ -2,7 +2,8 @@
 
 hack_dir := $(HOME)/ipa-private/hack
 clean_cluster := $(hack_dir)/clean_cluster.sh
-download := $(hack_dir)/download.sh
+download_all_results := $(hack_dir)/download_all_results.sh
+download_metaseries := $(hack_dir)/download_metaseries.sh
 fetch_pipeline := $(hack_dir)/fetch_pipeline.sh
 upload_all_results := $(hack_dir)/upload_all_results.sh
 upload_metaseries := $(hack_dir)/upload_metaseries.sh
@@ -19,10 +20,10 @@ clean_cluster_force:
 	$(clean_cluster) --force
 	@echo "clean_cluster.sh completed"
 
-download:
-	chmod +x $(download)
-	$(download)
-	@echo "download.sh completed"
+download_all_results:
+	chmod +x $(download_all_results)
+	$(download_all_results)
+	@echo "download_all_results.sh completed"
 
 fetch_pipeline:
 	chmod +x $(fetch_pipeline)
@@ -46,6 +47,20 @@ upload_all_models:
 	chmod +x $(upload_all_models)
 	$(upload_all_models)
 	@echo "upload_all_models.sh completed"
+
+download_metaseries: SERIES ?= 
+download_metaseries: download_metaseries_target
+
+download_metaseries_target:
+	chmod +x $(download_metaseries)
+	bash $(download_metaseries) $(SERIES)
+	@echo "download_metaseries.sh completed"
+
+upload_all_models:
+	chmod +x $(upload_all_models)
+	$(upload_all_models)
+	@echo "upload_all_models.sh completed"
+
 
 upload_node_models: NODE ?=
 upload_node_models: SOURCE ?= 
