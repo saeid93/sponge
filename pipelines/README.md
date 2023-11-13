@@ -1,7 +1,5 @@
-**Pipelines from multiple sources** 
-
-tages at the end of the folders \
-**doc**: from Seldon core doc \
-**web**: other sources \
-**our**: build by ourselves \
-**main**: main, going to be used in the real thing
+1. Video Monitoring (1 Chameleon Cascadelake_r node)
+2. Audio Question Answering (2 Chameleon Cascadelake_r node)
+3. Audio Sentiment Analysis (2 Chameleon Cascadelake_r node)
+4. Summerization Question Answering (2 Chameleon Cascadelake_r node)
+5. Natural Language Processing (6 Chameleon Cascadelake_r node)
