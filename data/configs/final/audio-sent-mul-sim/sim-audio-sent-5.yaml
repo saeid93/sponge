@@ -51,7 +51,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 48
+metaseries: 51
 series: 45
 # pipeline_name: video
 metadata: 'bursty - rim-high - cpu type: compute_cascadelake_r_ib'
@@ -77,8 +77,8 @@ initial_replica:
 initial_batch:
   - 1
   - 1
-alpha: 10
-beta: 0.5
+alpha: 30
+beta: 0.4
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 1 # maximum possible batching per nodes
@@ -91,8 +91,8 @@ normalize_accuracy: true
 only_measured_profiles: true
 profiling_load: 20
 baseline_mode: switch # [switch | scale | null]
-simulation_mode: multiply # [average | sum | multiply]
-lowest_model_accuracy: 0
+accuracy_method: multiply # [average | sum | multiply]
+lowest_model_accuracy: 0.05
 
 # ----------- load predictor configs -------------
 
