@@ -475,47 +475,47 @@
 # python runner_script.py --config-name predictor-repeat-audio-sent-3-10
 # sleep 60
 
-python runner_script.py --config-name predictor-repeat-audio-qa-3-1
-sleep 60
-python runner_script.py --config-name predictor-repeat-audio-qa-3-2
-sleep 60
-python runner_script.py --config-name predictor-repeat-audio-qa-3-3
-sleep 60
-python runner_script.py --config-name predictor-repeat-audio-qa-3-4
-sleep 60
-python runner_script.py --config-name predictor-repeat-audio-qa-3-5
-sleep 60
-python runner_script.py --config-name predictor-repeat-audio-qa-3-6
-sleep 60
-python runner_script.py --config-name predictor-repeat-audio-qa-3-7
-sleep 60
-python runner_script.py --config-name predictor-repeat-audio-qa-3-8
-sleep 60
-python runner_script.py --config-name predictor-repeat-audio-qa-3-9
-sleep 60
-python runner_script.py --config-name predictor-repeat-audio-qa-3-10
-sleep 60
+# python runner_script.py --config-name predictor-repeat-audio-qa-3-1
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-audio-qa-3-2
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-audio-qa-3-3
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-audio-qa-3-4
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-audio-qa-3-5
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-audio-qa-3-6
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-audio-qa-3-7
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-audio-qa-3-8
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-audio-qa-3-9
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-audio-qa-3-10
+# sleep 60
 
-python runner_script.py --config-name predictor-repeat-sum-qa-3-1
-sleep 60
-python runner_script.py --config-name predictor-repeat-sum-qa-3-2
-sleep 60
-python runner_script.py --config-name predictor-repeat-sum-qa-3-3
-sleep 60
-python runner_script.py --config-name predictor-repeat-sum-qa-3-4
-sleep 60
-python runner_script.py --config-name predictor-repeat-sum-qa-3-5
-sleep 60
-python runner_script.py --config-name predictor-repeat-sum-qa-3-6
-sleep 60
-python runner_script.py --config-name predictor-repeat-sum-qa-3-7
-sleep 60
-python runner_script.py --config-name predictor-repeat-sum-qa-3-8
-sleep 60
-python runner_script.py --config-name predictor-repeat-sum-qa-3-9
-sleep 60
-python runner_script.py --config-name predictor-repeat-sum-qa-3-10
-sleep 60
+# python runner_script.py --config-name predictor-repeat-sum-qa-3-1
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-sum-qa-3-2
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-sum-qa-3-3
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-sum-qa-3-4
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-sum-qa-3-5
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-sum-qa-3-6
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-sum-qa-3-7
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-sum-qa-3-8
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-sum-qa-3-9
+# sleep 60
+# python runner_script.py --config-name predictor-repeat-sum-qa-3-10
+# sleep 60
 
 # python runner_script.py --config-name predictor-repeat-nlp-3-1
 # sleep 60
@@ -598,3 +598,65 @@ sleep 60
 # sleep 60
 # python runner_script.py --config-name predictor-repeat-sum-qa-1-20
 # sleep 60
+
+
+
+python runner_script.py --config-name audio-qa-1-1
+sleep 60
+python runner_script.py --config-name audio-qa-1-2
+sleep 60
+python runner_script.py --config-name audio-qa-1-3
+sleep 60
+python runner_script.py --config-name audio-qa-1-4
+sleep 60
+python runner_script.py --config-name audio-qa-1-5
+sleep 60
+python runner_script.py --config-name audio-qa-1-6
+sleep 60
+python runner_script.py --config-name audio-qa-1-7
+sleep 60
+
+# python runner_script.py --config-name audio-qa-6-1
+# sleep 60
+# python runner_script.py --config-name audio-qa-6-2
+# sleep 60
+# python runner_script.py --config-name audio-qa-6-3
+# sleep 60
+# python runner_script.py --config-name audio-qa-6-4
+# sleep 60
+# python runner_script.py --config-name audio-qa-6-5
+# sleep 60
+# python runner_script.py --config-name audio-qa-6-6
+# sleep 60
+# python runner_script.py --config-name audio-qa-6-7
+# sleep 60
+
+# python runner_script.py --config-name audio-qa-11-1
+# sleep 60
+# python runner_script.py --config-name audio-qa-11-2
+# sleep 60
+# python runner_script.py --config-name audio-qa-11-3
+# sleep 60
+# python runner_script.py --config-name audio-qa-11-4
+# sleep 60
+# python runner_script.py --config-name audio-qa-11-5
+# sleep 60
+# python runner_script.py --config-name audio-qa-11-6
+# sleep 60
+# python runner_script.py --config-name audio-qa-11-7
+# sleep 60
+
+python runner_script.py --config-name audio-qa-16-1
+sleep 60
+python runner_script.py --config-name audio-qa-16-2
+sleep 60
+python runner_script.py --config-name audio-qa-16-3
+sleep 60
+python runner_script.py --config-name audio-qa-16-4
+sleep 60
+python runner_script.py --config-name audio-qa-16-5
+sleep 60
+python runner_script.py --config-name audio-qa-16-6
+sleep 60
+python runner_script.py --config-name audio-qa-16-7
+sleep 60

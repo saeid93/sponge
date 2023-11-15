@@ -102,24 +102,24 @@
 # python simulation_runner.py --config-name sim-audio-qa-18
 # python simulation_runner.py --config-name sim-audio-qa-20
 
-python simulation_runner.py --config-name sim-audio-sent-1
-python simulation_runner.py --config-name sim-audio-sent-2
-python simulation_runner.py --config-name sim-audio-sent-3
-python simulation_runner.py --config-name sim-audio-sent-5
-python simulation_runner.py --config-name sim-audio-sent-6
-python simulation_runner.py --config-name sim-audio-sent-7
-python simulation_runner.py --config-name sim-audio-sent-8
-python simulation_runner.py --config-name sim-audio-sent-10
-python simulation_runner.py --config-name sim-audio-sent-11
-python simulation_runner.py --config-name sim-audio-sent-12
-python simulation_runner.py --config-name sim-audio-sent-13
-python simulation_runner.py --config-name sim-audio-sent-15
-python simulation_runner.py --config-name sim-audio-sent-16
-python simulation_runner.py --config-name sim-audio-sent-17
-python simulation_runner.py --config-name sim-audio-sent-18
-python simulation_runner.py --config-name sim-audio-sent-20
+# python simulation_runner.py --config-name sim-audio-sent-1
+# python simulation_runner.py --config-name sim-audio-sent-2
+# python simulation_runner.py --config-name sim-audio-sent-3
+# python simulation_runner.py --config-name sim-audio-sent-5
+# python simulation_runner.py --config-name sim-audio-sent-6
+# python simulation_runner.py --config-name sim-audio-sent-7
+# python simulation_runner.py --config-name sim-audio-sent-8
+# python simulation_runner.py --config-name sim-audio-sent-10
+# python simulation_runner.py --config-name sim-audio-sent-11
+# python simulation_runner.py --config-name sim-audio-sent-12
+# python simulation_runner.py --config-name sim-audio-sent-13
+# python simulation_runner.py --config-name sim-audio-sent-15
+# python simulation_runner.py --config-name sim-audio-sent-16
+# python simulation_runner.py --config-name sim-audio-sent-17
+# python simulation_runner.py --config-name sim-audio-sent-18
+# python simulation_runner.py --config-name sim-audio-sent-20
 
-# python simulation_runner.py --config-name sim-audio-qa-1
+python simulation_runner.py --config-name sim-audio-qa-1
 # python simulation_runner.py --config-name sim-audio-qa-2
 # python simulation_runner.py --config-name sim-audio-qa-3
 # python simulation_runner.py --config-name sim-audio-qa-5
@@ -131,7 +131,7 @@ python simulation_runner.py --config-name sim-audio-sent-20
 # python simulation_runner.py --config-name sim-audio-qa-12
 # python simulation_runner.py --config-name sim-audio-qa-13
 # python simulation_runner.py --config-name sim-audio-qa-15
-# python simulation_runner.py --config-name sim-audio-qa-16
+python simulation_runner.py --config-name sim-audio-qa-16
 # python simulation_runner.py --config-name sim-audio-qa-17
 # python simulation_runner.py --config-name sim-audio-qa-18
 # python simulation_runner.py --config-name sim-audio-qa-20
