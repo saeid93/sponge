@@ -601,8 +601,8 @@
 
 
 
-python runner_script.py --config-name audio-qa-1-1
-sleep 60
+# python runner_script.py --config-name audio-qa-1-1
+# sleep 60
 python runner_script.py --config-name audio-qa-1-2
 sleep 60
 python runner_script.py --config-name audio-qa-1-3
