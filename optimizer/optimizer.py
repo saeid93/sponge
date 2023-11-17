@@ -737,30 +737,26 @@ class Optimizer:
         )
         # objectives
         if self.pipeline.accuracy_method == "multiply":
-            # TODO change here
-            accuracy_objective = 1
-            for stage in stages:
-                stage_accuracy = 0
-                for variant in stages_variants[stage]:
-                    stage_accuracy += (
-                        accuracy_parameters[stage][variant] * i[stage, variant]
-                    )
-                accuracy_objective *= stage_accuracy
-            a = 1
-
-            # raise NotImplementedError(
-            #     (
-            #         "multiplication accuracy objective is not implemented",
-            #         "yet for Grubi due to quadratic limitation of Gurobi",
-            #     )
-            # )
+            if len(stages) <= 2:
+                accuracy_objective = 1
+                for stage in stages:
+                    stage_accuracy = 0
+                    for variant in stages_variants[stage]:
+                        stage_accuracy += (
+                            accuracy_parameters[stage][variant] * i[stage, variant]
+                        )
+                    accuracy_objective *= stage_accuracy
+                a = 1
+            elif len(stages) == 3:
+                a = 1
+            else:
+                raise NotImplementedError("pipelines of len >3 are not currently supported")
         elif self.pipeline.accuracy_method == "sum":
             accuracy_objective = gp.quicksum(
                 accuracy_parameters[stage][vairant] * i[stage, vairant]
                 for stage in stages
                 for vairant in stages_variants[stage]
             )
-            a = 1
         elif self.pipeline.accuracy_method == "average":
             accuracy_objective = gp.quicksum(
                 accuracy_parameters[stage][vairant]

@@ -119,7 +119,7 @@
 # python simulation_runner.py --config-name sim-audio-sent-18
 # python simulation_runner.py --config-name sim-audio-sent-20
 
-python simulation_runner.py --config-name sim-audio-qa-1
+# python simulation_runner.py --config-name sim-audio-qa-1
 # python simulation_runner.py --config-name sim-audio-qa-2
 # python simulation_runner.py --config-name sim-audio-qa-3
 # python simulation_runner.py --config-name sim-audio-qa-5
@@ -131,7 +131,25 @@ python simulation_runner.py --config-name sim-audio-qa-1
 # python simulation_runner.py --config-name sim-audio-qa-12
 # python simulation_runner.py --config-name sim-audio-qa-13
 # python simulation_runner.py --config-name sim-audio-qa-15
-python simulation_runner.py --config-name sim-audio-qa-16
+# python simulation_runner.py --config-name sim-audio-qa-16
 # python simulation_runner.py --config-name sim-audio-qa-17
 # python simulation_runner.py --config-name sim-audio-qa-18
 # python simulation_runner.py --config-name sim-audio-qa-20
+
+
+# python simulation_runner.py --config-name nlp-1
+# python simulation_runner.py --config-name nlp-2
+# python simulation_runner.py --config-name nlp-3
+python simulation_runner.py --config-name nlp-5
+# python simulation_runner.py --config-name nlp-6
+# python simulation_runner.py --config-name nlp-7
+# python simulation_runner.py --config-name nlp-8
+python simulation_runner.py --config-name nlp-10
+# python simulation_runner.py --config-name nlp-11
+# python simulation_runner.py --config-name nlp-12
+# python simulation_runner.py --config-name nlp-13
+python simulation_runner.py --config-name nlp-15
+# python simulation_runner.py --config-name nlp-16
+# python simulation_runner.py --config-name nlp-17
+# python simulation_runner.py --config-name nlp-18
+python simulation_runner.py --config-name nlp-20
