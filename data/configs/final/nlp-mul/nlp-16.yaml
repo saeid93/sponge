@@ -64,7 +64,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 54
+metaseries: 55
 series: 96
 # pipeline_name: video
 metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'

@@ -61,7 +61,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 52
+metaseries: 54
 series: 81
 # pipeline_name: video
 metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
@@ -94,7 +94,7 @@ initial_batch:
   - 1
   - 1
   - 1
-alpha: 100
+alpha: 40
 beta: 0.5
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
@@ -104,7 +104,7 @@ threshold: 4 # RPS threshold for finding the base allocation
 optimization_method: gurobi # options: [brute-force | gurobi]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
-normalize_accuracy: false
+normalize_accuracy: true
 only_measured_profiles: true
 profiling_load:
   - 20

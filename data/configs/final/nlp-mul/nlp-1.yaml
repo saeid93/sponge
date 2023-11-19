@@ -49,11 +49,8 @@ adaptation_interval: 10
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
-  - start: '1301400'
-    end: '1302000'
-    damping_factor: 8 # [int | null]
-  - start: '1308600'
-    end: '1309200'
+  - start: '1301160'
+    end: '1302360'
     # end: '1863200'
     # end: '1862200'
     # end: '1861960'
@@ -64,8 +61,8 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 54
-series: 96
+metaseries: 55
+series: 81
 # pipeline_name: video
 metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
 number_tasks: 3
@@ -131,7 +128,7 @@ central_queue: true
 
 # ----------- distruption time -------------
 
-distrpution_time: 30
+distrpution_time: 5
 
 # ----------- distruption time -------------
 # debug mode with complete lgos of containers
@@ -164,7 +161,7 @@ latency_margin: 0
 throughput_margin: -50
 
 # ----------- enable in container logging -------------
-logs_enabled: false
+logs_enabled: true
 
 # ----------- whether to read models from storage or not - should be defined per node -------------
 from_storage:
