@@ -61,7 +61,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 54
+metaseries: 55
 series: 86
 # pipeline_name: video
 metadata: 'steady low - ipa - cpu type: compute_cascadelake_r_ib'
@@ -135,7 +135,7 @@ distrpution_time: 30
 debug_mode:  false
 
 # ----------- simulation mode -------------
-simulation_mode: true
+simulation_mode: false
 
 # ----------- percent added to the predictor load -------------
 predictor_margin: 0
