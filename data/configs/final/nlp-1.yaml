@@ -19,7 +19,7 @@ nodes:
     num_threads: '1'
   - node_name: nlp-trans
     data_type: text
-    model_variants:  Helsinki-NLP-opus-mt-tc-fr-en
+    model_variants:  Helsinki-NLP-opus-mt-tc-big-fr-en
     max_batch_size: '1'
     max_batch_time: '1'
     cpu_request: '16'
@@ -80,7 +80,7 @@ task_name:
   - nlp-sum
 initial_active_model:
   - dinalzein-xlm-roberta-base-finetuned-language-identification
-  - Helsinki-NLP-opus-mt-tc-fr-en
+  - Helsinki-NLP-opus-mt-tc-big-fr-en
   - sshleifer-distilbart-xsum-12-6
 initial_cpu_allocation:
   - 1
