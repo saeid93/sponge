@@ -603,18 +603,18 @@
 
 # python runner_script.py --config-name audio-qa-1-1
 # sleep 60
-python runner_script.py --config-name audio-qa-1-2
-sleep 60
-python runner_script.py --config-name audio-qa-1-3
-sleep 60
-python runner_script.py --config-name audio-qa-1-4
-sleep 60
-python runner_script.py --config-name audio-qa-1-5
-sleep 60
-python runner_script.py --config-name audio-qa-1-6
-sleep 60
-python runner_script.py --config-name audio-qa-1-7
-sleep 60
+# python runner_script.py --config-name audio-qa-1-2
+# sleep 60
+# python runner_script.py --config-name audio-qa-1-3
+# sleep 60
+# python runner_script.py --config-name audio-qa-1-4
+# sleep 60
+# python runner_script.py --config-name audio-qa-1-5
+# sleep 60
+# python runner_script.py --config-name audio-qa-1-6
+# sleep 60
+# python runner_script.py --config-name audio-qa-1-7
+# sleep 60
 
 # python runner_script.py --config-name audio-qa-6-1
 # sleep 60
@@ -646,17 +646,50 @@ sleep 60
 # python runner_script.py --config-name audio-qa-11-7
 # sleep 60
 
-python runner_script.py --config-name audio-qa-16-1
+# python runner_script.py --config-name audio-qa-16-1
+# sleep 60
+# python runner_script.py --config-name audio-qa-16-2
+# sleep 60
+# python runner_script.py --config-name audio-qa-16-3
+# sleep 60
+# python runner_script.py --config-name audio-qa-16-4
+# sleep 60
+# python runner_script.py --config-name audio-qa-16-5
+# sleep 60
+# python runner_script.py --config-name audio-qa-16-6
+# sleep 60
+# python runner_script.py --config-name audio-qa-16-7
+# sleep 60
+
+python runner_script.py --config-name nlp-1
 sleep 60
-python runner_script.py --config-name audio-qa-16-2
+python runner_script.py --config-name nlp-2
 sleep 60
-python runner_script.py --config-name audio-qa-16-3
+python runner_script.py --config-name nlp-3
 sleep 60
-python runner_script.py --config-name audio-qa-16-4
+python runner_script.py --config-name nlp-5
 sleep 60
-python runner_script.py --config-name audio-qa-16-5
+python runner_script.py --config-name nlp-6
 sleep 60
-python runner_script.py --config-name audio-qa-16-6
+python runner_script.py --config-name nlp-7
 sleep 60
-python runner_script.py --config-name audio-qa-16-7
+python runner_script.py --config-name nlp-8
+sleep 60
+python runner_script.py --config-name nlp-10
+sleep 60
+python runner_script.py --config-name nlp-11
+sleep 60
+python runner_script.py --config-name nlp-12
+sleep 60
+python runner_script.py --config-name nlp-13
+sleep 60
+python runner_script.py --config-name nlp-15
+sleep 60
+python runner_script.py --config-name nlp-16
+sleep 60
+python runner_script.py --config-name nlp-17
+sleep 60
+python runner_script.py --config-name nlp-18
+sleep 60
+python runner_script.py --config-name nlp-20
 sleep 60

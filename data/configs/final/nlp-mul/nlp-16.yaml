@@ -19,10 +19,10 @@ nodes:
     num_threads: '1'
   - node_name: nlp-trans
     data_type: text
-    model_variants: Helsinki-NLP-opus-mt-fr-en
+    model_variants:  Helsinki-NLP-opus-mt-tc-fr-en
     max_batch_size: '1'
     max_batch_time: '1'
-    cpu_request: '2'
+    cpu_request: '16'
     memory_request: 4Gi
     replicas: 1
     use_threading: 'True'
@@ -30,10 +30,10 @@ nodes:
     num_threads: '1'
   - node_name: nlp-sum
     data_type: text
-    model_variants: sshleifer-distilbart-xsum-1-1
+    model_variants: sshleifer-distilbart-xsum-12-6
     max_batch_size: '1'
     max_batch_time: '1'
-    cpu_request: '2'
+    cpu_request: '4'
     memory_request: 4Gi
     replicas: 1
     use_threading: 'True'
@@ -83,12 +83,12 @@ task_name:
   - nlp-sum
 initial_active_model:
   - dinalzein-xlm-roberta-base-finetuned-language-identification
-  - Helsinki-NLP-opus-mt-fr-en
-  - sshleifer-distilbart-xsum-1-1
+  - Helsinki-NLP-opus-mt-tc-fr-en
+  - sshleifer-distilbart-xsum-12-6
 initial_cpu_allocation:
   - 1
-  - 2
-  - 2
+  - 16
+  - 8
 initial_replica:
   - 1
   - 1

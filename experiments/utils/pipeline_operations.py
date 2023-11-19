@@ -138,7 +138,7 @@ def setup_node(
     os.system(command)
     logger.info("-" * 25 + f" waiting to make sure the node is up " + "-" * 25)
     logger.info("\n")
-    check_node_loaded(node_name=node_name)
+    # check_node_loaded(node_name=node_name)
 
 
 def setup_router(
@@ -230,7 +230,7 @@ def setup_queue(
         "cpu_limit": 16,
         "memory_limit": "32Gi",
         "replicas": 1,
-        "distrpution_time": 120,
+        "distrpution_time": 20,
         "model_name": model_name,
         "last_node": last_node,
         "drop_limit": drop_limit,
