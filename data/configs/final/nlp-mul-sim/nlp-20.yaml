@@ -65,7 +65,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 50
+metaseries: 52
 series: 100
 # pipeline_name: video
 metadata: 'bursty - rim-high - cpu type: compute_cascadelake_r_ib'
@@ -116,7 +116,7 @@ profiling_load:
   - 10
 baseline_mode: switch # [switch | scale | null]
 accuracy_method: multiply # [average | sum | multiply]
-lowest_model_accuracy: 0
+lowest_model_accuracy: 0.05
 
 # ----------- load predictor configs -------------
 

@@ -62,7 +62,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 50
+metaseries: 51
 series: 90
 # pipeline_name: video
 metadata: 'steady low - rim-high - cpu type: compute_cascadelake_r_ib'

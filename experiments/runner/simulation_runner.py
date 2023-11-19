@@ -52,7 +52,7 @@ def find_initial_config(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="audio-qa-1")
+@click.option("--config-name", required=True, type=str, default="nlp-1")
 @click.option(
     "--type-of",
     required=True,
