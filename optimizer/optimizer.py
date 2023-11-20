@@ -740,7 +740,7 @@ class Optimizer:
                             accuracy_parameters[stage][variant] * i[stage, variant]
                         )
                     accuracy_objective *= stage_accuracy
-            elif len(stages) == 3:
+            else:
                 first_stage_variants = variant_names[0]
                 second_stage_variants = variant_names[1]
                 third_stage_variants = variant_names[2]
