@@ -699,141 +699,141 @@
 # python runner_script.py --config-name nlp-3
 # sleep 60
 
-python runner_script.py --config-name video-3-1
+python runner_script.py --config-name video-13-1
 sleep 60
-python runner_script.py --config-name audio-qa-3-1
+python runner_script.py --config-name audio-qa-13-1
 sleep 60
-python runner_script.py --config-name audio-sent-3-1
+python runner_script.py --config-name audio-sent-13-1
 sleep 60
-python runner_script.py --config-name nlp-3-1
-sleep 60
-
-python runner_script.py --config-name video-3-2
-sleep 60
-python runner_script.py --config-name audio-qa-3-2
-sleep 60
-python runner_script.py --config-name audio-sent-3-2
-sleep 60
-python runner_script.py --config-name nlp-3-2
+python runner_script.py --config-name nlp-13-1
 sleep 60
 
-python runner_script.py --config-name video-3-3
+python runner_script.py --config-name video-13-2
 sleep 60
-python runner_script.py --config-name audio-qa-3-3
+python runner_script.py --config-name audio-qa-13-2
 sleep 60
-python runner_script.py --config-name audio-sent-3-3
+python runner_script.py --config-name audio-sent-13-2
 sleep 60
-python runner_script.py --config-name nlp-3-3
+python runner_script.py --config-name nlp-13-2
+sleep 60
+
+python runner_script.py --config-name video-13-3
+sleep 60
+python runner_script.py --config-name audio-qa-13-3
+sleep 60
+python runner_script.py --config-name audio-sent-13-3
+sleep 60
+python runner_script.py --config-name nlp-13-3
 sleep 60
 
 
-python runner_script.py --config-name video-3-4
+python runner_script.py --config-name video-13-4
 sleep 60
-python runner_script.py --config-name audio-qa-3-4
+python runner_script.py --config-name audio-qa-13-4
 sleep 60
-python runner_script.py --config-name audio-sent-3-4
+python runner_script.py --config-name audio-sent-13-4
 sleep 60
-python runner_script.py --config-name nlp-3-4
-sleep 60
-
-python runner_script.py --config-name video-3-5
-sleep 60
-python runner_script.py --config-name audio-qa-3-5
-sleep 60
-python runner_script.py --config-name audio-sent-3-5
-sleep 60
-python runner_script.py --config-name nlp-3-5
+python runner_script.py --config-name nlp-13-4
 sleep 60
 
-python runner_script.py --config-name video-3-6
+python runner_script.py --config-name video-13-5
 sleep 60
-python runner_script.py --config-name audio-qa-3-6
+python runner_script.py --config-name audio-qa-13-5
 sleep 60
-python runner_script.py --config-name audio-sent-3-6
+python runner_script.py --config-name audio-sent-13-5
 sleep 60
-python runner_script.py --config-name nlp-3-6
+python runner_script.py --config-name nlp-13-5
+sleep 60
+
+python runner_script.py --config-name video-13-6
+sleep 60
+python runner_script.py --config-name audio-qa-13-6
+sleep 60
+python runner_script.py --config-name audio-sent-13-6
+sleep 60
+python runner_script.py --config-name nlp-13-6
 sleep 60
 
 python runner_script.py --config-name video-3-7
 sleep 60
-python runner_script.py --config-name audio-qa-3-7
+python runner_script.py --config-name audio-qa-13-7
 sleep 60
-python runner_script.py --config-name audio-sent-3-7
+python runner_script.py --config-name audio-sent-13-7
 sleep 60
-python runner_script.py --config-name nlp-3-7
-sleep 60
-
-
-python runner_script.py --config-name video-3-8
-sleep 60
-python runner_script.py --config-name audio-qa-3-8
-sleep 60
-python runner_script.py --config-name audio-sent-3-8
-sleep 60
-python runner_script.py --config-name nlp-3-8
-sleep 60
-
-python runner_script.py --config-name video-3-9
-sleep 60
-python runner_script.py --config-name audio-qa-3-9
-sleep 60
-python runner_script.py --config-name audio-sent-3-9
-sleep 60
-python runner_script.py --config-name nlp-3-9
-sleep 60
-
-python runner_script.py --config-name video-3-10
-sleep 60
-python runner_script.py --config-name audio-qa-3-10
-sleep 60
-python runner_script.py --config-name audio-sent-3-10
-sleep 60
-python runner_script.py --config-name nlp-3-10
+python runner_script.py --config-name nlp-13-7
 sleep 60
 
 
-python runner_script.py --config-name video-3-11
+python runner_script.py --config-name video-13-8
 sleep 60
-python runner_script.py --config-name audio-qa-3-11
+python runner_script.py --config-name audio-qa-13-8
 sleep 60
-python runner_script.py --config-name audio-sent-3-11
+python runner_script.py --config-name audio-sent-13-8
 sleep 60
-python runner_script.py --config-name nlp-3-11
-sleep 60
-
-python runner_script.py --config-name video-3-12
-sleep 60
-python runner_script.py --config-name audio-qa-3-12
-sleep 60
-python runner_script.py --config-name audio-sent-3-12
-sleep 60
-python runner_script.py --config-name nlp-3-12
+python runner_script.py --config-name nlp-13-8
 sleep 60
 
-python runner_script.py --config-name video-3-13
+python runner_script.py --config-name video-13-9
 sleep 60
-python runner_script.py --config-name audio-qa-3-13
+python runner_script.py --config-name audio-qa-13-9
 sleep 60
-python runner_script.py --config-name audio-sent-3-13
+python runner_script.py --config-name audio-sent-13-9
 sleep 60
-python runner_script.py --config-name nlp-3-13
+python runner_script.py --config-name nlp-13-9
 sleep 60
 
-python runner_script.py --config-name video-3-14
+python runner_script.py --config-name video-13-10
 sleep 60
-python runner_script.py --config-name audio-qa-3-14
+python runner_script.py --config-name audio-qa-13-10
 sleep 60
-python runner_script.py --config-name audio-sent-3-14
+python runner_script.py --config-name audio-sent-13-10
 sleep 60
-python runner_script.py --config-name nlp-3-14
+python runner_script.py --config-name nlp-13-10
 sleep 60
 
 
-python runner_script.py --config-name video-3-15
+python runner_script.py --config-name video-13-11
 sleep 60
-python runner_script.py --config-name audio-qa-3-15
+python runner_script.py --config-name audio-qa-13-11
 sleep 60
-python runner_script.py --config-name audio-sent-3-15
+python runner_script.py --config-name audio-sent-13-11
 sleep 60
-python runner_script.py --config-name nlp-3-15
+python runner_script.py --config-name nlp-13-11
+sleep 60
+
+python runner_script.py --config-name video-13-12
+sleep 60
+python runner_script.py --config-name audio-qa-13-12
+sleep 60
+python runner_script.py --config-name audio-sent-13-12
+sleep 60
+python runner_script.py --config-name nlp-13-12
+sleep 60
+
+python runner_script.py --config-name video-13-13
+sleep 60
+python runner_script.py --config-name audio-qa-13-13
+sleep 60
+python runner_script.py --config-name audio-sent-13-13
+sleep 60
+python runner_script.py --config-name nlp-13-13
+sleep 60
+
+python runner_script.py --config-name video-13-14
+sleep 60
+python runner_script.py --config-name audio-qa-13-14
+sleep 60
+python runner_script.py --config-name audio-sent-13-14
+sleep 60
+python runner_script.py --config-name nlp-13-14
+sleep 60
+
+
+python runner_script.py --config-name video-13-15
+sleep 60
+python runner_script.py --config-name audio-qa-13-15
+sleep 60
+python runner_script.py --config-name audio-sent-13-15
+sleep 60
+python runner_script.py --config-name nlp-13-15
 sleep 60
