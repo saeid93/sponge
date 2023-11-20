@@ -49,6 +49,8 @@ adaptation_interval: 10
 #   load_duration: 1800
 workload_type: twitter
 workload_config:
+  # - start: '1301510'
+  #   end: '1301810'
   - start: '1301160'
     end: '1302360'
     # end: '1863200'
@@ -61,7 +63,7 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 60
+metaseries: 68
 series: 81
 # pipeline_name: video
 metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
@@ -94,7 +96,7 @@ initial_batch:
   - 1
   - 1
   - 1
-alpha: 40
+alpha: 100
 beta: 0.5
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
@@ -158,7 +160,7 @@ teleport_interval: 0
 reference_latency: 'p99' # p99 | avg
 reference_throughput: 'max' # max | p99 | avg
 latency_margin: 0
-throughput_margin: -50
+throughput_margin: -57
 
 # ----------- enable in container logging -------------
 logs_enabled: true
