@@ -705,7 +705,7 @@ python runner_script.py --config-name audio-qa-13-1
 sleep 60
 python runner_script.py --config-name audio-sent-13-1
 sleep 60
-python runner_script.py --config-name nlp-13-1
+python runner_script.py --config-name sum-qa-qa-1
 sleep 60
 
 python runner_script.py --config-name video-13-2
@@ -714,7 +714,7 @@ python runner_script.py --config-name audio-qa-13-2
 sleep 60
 python runner_script.py --config-name audio-sent-13-2
 sleep 60
-python runner_script.py --config-name nlp-13-2
+python runner_script.py --config-name sum-qa-qa-2
 sleep 60
 
 python runner_script.py --config-name video-13-3
@@ -723,7 +723,7 @@ python runner_script.py --config-name audio-qa-13-3
 sleep 60
 python runner_script.py --config-name audio-sent-13-3
 sleep 60
-python runner_script.py --config-name nlp-13-3
+python runner_script.py --config-name sum-qa-qa-3
 sleep 60
 
 
@@ -733,7 +733,7 @@ python runner_script.py --config-name audio-qa-13-4
 sleep 60
 python runner_script.py --config-name audio-sent-13-4
 sleep 60
-python runner_script.py --config-name nlp-13-4
+python runner_script.py --config-name sum-qa-qa-4
 sleep 60
 
 python runner_script.py --config-name video-13-5
@@ -742,7 +742,7 @@ python runner_script.py --config-name audio-qa-13-5
 sleep 60
 python runner_script.py --config-name audio-sent-13-5
 sleep 60
-python runner_script.py --config-name nlp-13-5
+python runner_script.py --config-name sum-qa-qa-5
 sleep 60
 
 python runner_script.py --config-name video-13-6
@@ -751,7 +751,7 @@ python runner_script.py --config-name audio-qa-13-6
 sleep 60
 python runner_script.py --config-name audio-sent-13-6
 sleep 60
-python runner_script.py --config-name nlp-13-6
+python runner_script.py --config-name sum-qa-qa-6
 sleep 60
 
 python runner_script.py --config-name video-3-7
@@ -760,7 +760,7 @@ python runner_script.py --config-name audio-qa-13-7
 sleep 60
 python runner_script.py --config-name audio-sent-13-7
 sleep 60
-python runner_script.py --config-name nlp-13-7
+python runner_script.py --config-name sum-qa-qa-7
 sleep 60
 
 
@@ -770,7 +770,7 @@ python runner_script.py --config-name audio-qa-13-8
 sleep 60
 python runner_script.py --config-name audio-sent-13-8
 sleep 60
-python runner_script.py --config-name nlp-13-8
+python runner_script.py --config-name sum-qa-qa-8
 sleep 60
 
 python runner_script.py --config-name video-13-9
@@ -779,7 +779,7 @@ python runner_script.py --config-name audio-qa-13-9
 sleep 60
 python runner_script.py --config-name audio-sent-13-9
 sleep 60
-python runner_script.py --config-name nlp-13-9
+python runner_script.py --config-name sum-qa-qa-9
 sleep 60
 
 python runner_script.py --config-name video-13-10
@@ -788,7 +788,7 @@ python runner_script.py --config-name audio-qa-13-10
 sleep 60
 python runner_script.py --config-name audio-sent-13-10
 sleep 60
-python runner_script.py --config-name nlp-13-10
+python runner_script.py --config-name sum-qa-qa-10
 sleep 60
 
 
@@ -798,7 +798,7 @@ python runner_script.py --config-name audio-qa-13-11
 sleep 60
 python runner_script.py --config-name audio-sent-13-11
 sleep 60
-python runner_script.py --config-name nlp-13-11
+python runner_script.py --config-name sum-qa-qa-11
 sleep 60
 
 python runner_script.py --config-name video-13-12
@@ -807,7 +807,7 @@ python runner_script.py --config-name audio-qa-13-12
 sleep 60
 python runner_script.py --config-name audio-sent-13-12
 sleep 60
-python runner_script.py --config-name nlp-13-12
+python runner_script.py --config-name sum-qa-qa-12
 sleep 60
 
 python runner_script.py --config-name video-13-13
@@ -816,7 +816,7 @@ python runner_script.py --config-name audio-qa-13-13
 sleep 60
 python runner_script.py --config-name audio-sent-13-13
 sleep 60
-python runner_script.py --config-name nlp-13-13
+python runner_script.py --config-name sum-qa-qa-13
 sleep 60
 
 python runner_script.py --config-name video-13-14
@@ -825,7 +825,7 @@ python runner_script.py --config-name audio-qa-13-14
 sleep 60
 python runner_script.py --config-name audio-sent-13-14
 sleep 60
-python runner_script.py --config-name nlp-13-14
+python runner_script.py --config-name sum-qa-qa-14
 sleep 60
 
 
@@ -835,5 +835,5 @@ python runner_script.py --config-name audio-qa-13-15
 sleep 60
 python runner_script.py --config-name audio-sent-13-15
 sleep 60
-python runner_script.py --config-name nlp-13-15
+python runner_script.py --config-name sum-qa-qa-15
 sleep 60
