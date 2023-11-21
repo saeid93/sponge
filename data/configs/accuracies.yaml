@@ -62,7 +62,7 @@ nlp:
     # DONE
     # Accuracy, https://huggingface.co/dinalzein/xlm-roberta-base-finetuned-language-identification
     # Training Dataset: https://huggingface.co/datasets/papluca/language-identification
-    dinalzein-xlm-roberta-base-finetuned-language-identification: 0.9959
+    dinalzein-xlm-roberta-base-finetuned-language-identification: 99.59
   # text summerization
   nlp-sum:
     # DONE

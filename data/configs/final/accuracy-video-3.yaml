@@ -51,8 +51,8 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 81
-series: 2
+metaseries: 82
+series: 3
 # pipeline_name: video
 metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
 number_tasks: 2
@@ -77,8 +77,8 @@ initial_replica:
 initial_batch:
   - 1
   - 1
-alpha: 2
-beta: 1
+alpha: 0
+beta: 2
 gamma: 0.000001
 scaling_cap: 100 # maximum possible scaling per nodes
 batching_cap: 8 # maximum possible batching per nodes
