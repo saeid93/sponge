@@ -137,8 +137,8 @@ def experiments(
                                         use_threading=use_threading,
                                         # HACK for now we set the number of requests
                                         # proportional to the the number threads
-                                        num_interop_threads=cpu_request,
-                                        num_threads=cpu_request,
+                                        num_interop_threads=str(int(float(cpu_request))), # TEMP workaround for fractional allocation
+                                        num_threads=str(int(float(cpu_request))), # TEMP workaround for fractional allocation
                                         distrpution_time=distrpution_time,
                                         logs_enabled=logs_enabled,
                                     )
