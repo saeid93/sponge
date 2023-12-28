@@ -1,15 +1,15 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: {{ name }}
+  name: resnet-human
 spec:
   protocol: v2
-  name: {{ name }}
+  name: resnet-human
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: {{ distrpution_time }}s
+      terminationDrainDuration: 10s
   predictors:
-  - name: {{ name }}
+  - name: resnet-human
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
@@ -24,7 +24,7 @@ spec:
         #   image: seldonio/rclone-storage-initializer:1.16.0-dev
         #   imagePullPolicy: IfNotPresent
         #   args:
-        #     - "s3://torchhub/resnet/{{ model_variant }}"
+        #     - "s3://torchhub/resnet/resnet34"
         #     - "/opt/mlserver/.torch/hub/checkpoints/"
 
         #   volumeMounts:
@@ -35,39 +35,42 @@ spec:
         #   - secretRef:
         #       name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: {{ distrpution_time }}
+
+        terminationGracePeriodSeconds: 10
         containers:
-        - image: sdghafouri/video-centralized:resnet-human
+        - image: sdghafouri/video-final:resnet-human
           name: resnet-human
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '{{ cpu_request }}'
-              memory: '{{ memory_request }}'
+              cpu: '1'
+              memory: 4Gi
             limits:
-              cpu: '{{ cpu_limit }}'
-              memory: '{{ memory_limit }}'
+              cpu: '1'
+              memory: 4Gi
           # volumeMounts:
           # - mountPath: /opt/mlserver/.torch/hub/checkpoints
           #   name: resnet-volume
 
           env:
             - name: MODEL_VARIANT
-              value: {{ model_variant }}
+              value: resnet34
             - name: TORCH_HOME
               value: /opt/mlserver/.torch
+            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+              value: "1"
+            - name: MLSERVER_MODEL_MAX_BATCH_TIME
+              value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
-              value: "0"
+              value: "1"
             - name: USE_THREADING
-              value: '{{use_threading}}'
+              value: "True"
             - name: NUM_INTEROP_THREADS
-              value: '{{num_interop_threads}}'
+              value: "1"
             - name: NUM_THREADS
-              value: '{{num_threads}}'
-            - name: DROP_LIMIT
-              value: '{{drop_limit}}'
+              value: "1"
             - name: LOGS_ENABLED
-              value: '{{ logs_enabled }}'
+              value: 'True'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -82,11 +85,12 @@ spec:
                 command:
                 - /bin/sh
                 - -c
-                - /bin/sleep {{ distrpution_time }}
-      replicas: {{ replicas }}
+                - /bin/sleep 10
+      replicas: 1
     graph:
       name: resnet-human
       type: MODEL
       children: []
     labels:
       sidecar.istio.io/inject: "true"
+    replicas: 1

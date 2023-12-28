@@ -9,36 +9,36 @@ spec:
     proxy.istio.io/config: |
       terminationDrainDuration: {{ distrpution_time }}s
   predictors:
-  - name: {{ name }}
+  - name:  {{ name }}
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
 
-        # volumes:
-        # - name: resnet-volume
-        #   emptyDir: {}
+        volumes:
+        - name: yolov5-volume
+          emptyDir: {}
 
-        # initContainers:
-        # - name: classifier-model-initializer
-        #   image: seldonio/rclone-storage-initializer:1.16.0-dev
-        #   imagePullPolicy: IfNotPresent
-        #   args:
-        #     - "s3://torchhub/resnet/{{ model_variant }}"
-        #     - "/opt/mlserver/.torch/hub/checkpoints/"
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://torchhub/yolo/{{ model_variant }}"
+            - "/mnt/models/{{ model_variant }}"
 
-        #   volumeMounts:
-        #   - mountPath: /opt/mlserver/.torch/hub/checkpoints
-        #     name: resnet-volume
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: yolov5-volume
 
-        #   envFrom:
-        #   - secretRef:
-        #       name: seldon-rclone-secret
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
 
         terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
-        - image: sdghafouri/video-centralized:resnet-human
-          name: resnet-human
+        - image: sdghafouri/video-centralized:yolo
+          name: yolo
           imagePullPolicy: Always
           resources:
             requests:
@@ -47,11 +47,13 @@ spec:
             limits:
               cpu: '{{ cpu_limit }}'
               memory: '{{ memory_limit }}'
-          # volumeMounts:
-          # - mountPath: /opt/mlserver/.torch/hub/checkpoints
-          #   name: resnet-volume
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: yolov5-volume
 
           env:
+            - name: MODEL_PATH
+              value: {{ model_variant }}
             - name: MODEL_VARIANT
               value: {{ model_variant }}
             - name: TORCH_HOME
@@ -85,7 +87,7 @@ spec:
                 - /bin/sleep {{ distrpution_time }}
       replicas: {{ replicas }}
     graph:
-      name: resnet-human
+      name: yolo
       type: MODEL
       children: []
     labels:
