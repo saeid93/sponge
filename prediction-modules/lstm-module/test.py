@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import os
+import time
 import sys
 from tensorflow.keras.models import load_model
 
@@ -37,7 +38,10 @@ test_x, test_y = get_x_y(test_data)
 test_x = tf.convert_to_tensor(
     np.array(test_x).reshape((-1, LSTM_INPUT_SIZE, 1)), dtype=tf.float32
 )
+
+start = time.time()
 prediction = model.predict(test_x)
+print(f"duration: {time.time()- start}")
 
 plt.plot(list(range(len(test_y))), list(test_y), label="real values")
 plt.plot(list(range(len(test_y))), list(prediction), label="predictions")

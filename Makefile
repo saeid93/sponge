@@ -7,6 +7,7 @@ download_metaseries := $(hack_dir)/download_metaseries.sh
 fetch_pipeline := $(hack_dir)/fetch_pipeline.sh
 upload_all_results := $(hack_dir)/upload_all_results.sh
 upload_metaseries := $(hack_dir)/upload_metaseries.sh
+upload_profiling_series := $(hack_dir)/upload_profiling_series.sh
 upload_all_models := $(hack_dir)/upload_all_models.sh
 upload_node_models := $(hack_dir)/upload_node_models.sh
 
@@ -42,6 +43,14 @@ upload_metaseries_target:
 	chmod +x $(upload_metaseries)
 	bash $(upload_metaseries) $(SERIES)
 	@echo "upload_metaseries.sh completed"
+
+upload_profiling_series: SERIES ?= 
+upload_profiling_series: upload_profiling_series_target
+
+upload_profiling_series_target:
+	chmod +x $(upload_profiling_series)
+	bash $(upload_profiling_series) $(SERIES)
+	@echo "upload_profiling_series.sh completed"
 
 upload_all_models:
 	chmod +x $(upload_all_models)
