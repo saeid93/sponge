@@ -68,6 +68,8 @@ spec:
               value: '{{num_threads}}'
             - name: LOGS_ENABLED
               value: '{{ logs_enabled }}'
+            - name: WITH_MODELS
+              value: "True"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

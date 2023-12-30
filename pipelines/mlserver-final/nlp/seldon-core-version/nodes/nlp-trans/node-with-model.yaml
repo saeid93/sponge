@@ -32,7 +32,7 @@ spec:
         #       name: seldon-rclone-secret
 
         containers:
-        - image: sdghafouri/nlp-final:nlptrans
+        - image: sdghafouri/nlp-final-with-model:nlptrans
           name: nlp-trans
           imagePullPolicy: Always
           resources:
@@ -48,7 +48,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/Helsinki-NLP-opus-mt-fr-en
+              value: Helsinki-NLP-opus-mt-fr-en
             - name: TASK
               value: translation_fr_to_en
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -65,6 +65,8 @@ spec:
               value: "2"
             - name: LOGS_ENABLED
               value: 'False'
+            - name: WITH_MODELS
+              value: "True"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

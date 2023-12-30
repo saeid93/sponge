@@ -52,7 +52,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/{{ model_variant }}
+              value: {{ model_variant }}
             - name: TASK
               value: question-answering
             - name: CONTEXT
@@ -71,6 +71,8 @@ spec:
               value: '{{num_threads}}'
             - name: LOGS_ENABLED
               value: '{{ logs_enabled }}'
+            - name: WITH_MODELS
+              value: "True"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

@@ -52,7 +52,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/dinalzein-xlm-roberta-base-finetuned-language-identification
+              value: dinalzein-xlm-roberta-base-finetuned-language-identification
             # - name: TRANSFORMERS_CACHE
             #   value: /opt/mlserver/.cache
             - name: TASK
@@ -71,6 +71,8 @@ spec:
               value: "1"
             - name: LOGS_ENABLED
               value: 'True'
+            - name: WITH_MODELS
+              value: "True"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -86,7 +88,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 10
-      replicas: 15
+      replicas: 1
     graph:
       name: nlp-li
       type: MODEL

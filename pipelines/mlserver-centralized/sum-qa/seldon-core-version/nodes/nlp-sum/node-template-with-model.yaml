@@ -71,6 +71,8 @@ spec:
               value: '0'
             - name: MAX_LENGTH
               value: '4'
+            - name: WITH_MODELS
+              value: "True"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

@@ -53,7 +53,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/distilbert-base-cased-distilled-squad
+              value: distilbert-base-cased-distilled-squad
             - name: TASK
               value: question-answering
             - name: CONTEXT
@@ -72,6 +72,8 @@ spec:
               value: "1"
             - name: LOGS_ENABLED
               value: 'False'
+            - name: WITH_MODELS
+              value: "True"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -87,7 +89,7 @@ spec:
                 - /bin/sh
                 - -c
                 - /bin/sleep 10
-      replicas: 20
+      replicas: 1
     graph:
       name: nlp-qa
       type: MODEL

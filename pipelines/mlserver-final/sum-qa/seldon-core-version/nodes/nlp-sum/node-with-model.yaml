@@ -52,7 +52,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value:  /mnt/models/sshleifer-distilbart-xsum-9-6
+              value: sshleifer-distilbart-xsum-9-6
             - name: TASK
               value: summarization
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -69,6 +69,8 @@ spec:
               value: "1"
             - name: LOGS_ENABLED
               value: 'True'
+            - name: WITH_MODELS
+              value: "True"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

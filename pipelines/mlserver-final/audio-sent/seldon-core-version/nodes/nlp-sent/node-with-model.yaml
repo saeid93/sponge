@@ -53,7 +53,7 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/distilbert-base-uncased-finetuned-sst-2-english
+              value: distilbert-base-uncased-finetuned-sst-2-english
             # - name: TRANSFORMERS_CACHE
             #   value: /opt/mlserver/.cache
             - name: TASK
@@ -72,6 +72,8 @@ spec:
               value: "4"
             - name: LOGS_ENABLED
               value: 'False'
+            - name: WITH_MODELS
+              value: "True"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
