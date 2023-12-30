@@ -14,7 +14,6 @@ spec:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
-
         # volumes:
         # - name: classifier-provision-location
         #   emptyDir: {}
@@ -24,21 +23,21 @@ spec:
         #   image: seldonio/rclone-storage-initializer:1.16.0-dev
         #   imagePullPolicy: IfNotPresent
         #   args:
-        #     - "s3://huggingface/text-classification/{{ model_variant }}"
+        #     - "s3://huggingface/sentiment-analysis/{{ model_variant }}"
         #     - "/mnt/models/{{ model_variant }}"
 
         #   volumeMounts:
         #   - mountPath: /mnt/models
         #     name: classifier-provision-location
 
-        #   envFrom:
-        #   - secretRef:
-        #       name: seldon-rclone-secret
+          # envFrom:
+          # - secretRef:
+          #     name: seldon-rclone-secret
 
         terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
-        - image: sdghafouri/nlp-final-with-model:nlpli
-          name: nlp-li
+        - image: sdghafouri/audio-sent-centralized-with-model:nlpsent
+          name: nlp-sent
           imagePullPolicy: Always
           resources:
             requests:
@@ -53,15 +52,11 @@ spec:
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/{{ model_variant }}
+              value: {{ model_variant }}
             # - name: TRANSFORMERS_CACHE
             #   value: /opt/mlserver/.cache
             - name: TASK
-              value: text-classification
-            - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: '{{ max_batch_size }}'
-            - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: '{{ max_batch_time }}'
+              value: sentiment-analysis
             - name: MLSERVER_PARALLEL_WORKERS
               value: "0"
             - name: USE_THREADING
@@ -89,7 +84,7 @@ spec:
                 - /bin/sleep {{ distrpution_time }}
       replicas: {{ replicas }}
     graph:
-      name: nlp-li
+      name: nlp-sent
       type: MODEL
       children: []
     labels:

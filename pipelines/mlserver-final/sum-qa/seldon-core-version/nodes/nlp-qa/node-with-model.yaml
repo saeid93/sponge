@@ -1,17 +1,17 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: {{ name }}
+  name: nlp-qa
 spec:
   protocol: v2
-  name: {{ name }}
+  name: nlp-qa
   annotations:
     proxy.istio.io/config: |
-      terminationDrainDuration: {{ distrpution_time }}s
+      terminationDrainDuration: 10s
   predictors:
-  - name: {{ name }}
+  - name: nlp-qa
     annotations:
-      seldon.io/no-engine: "true"
+      seldon.io/no-engine: "true" 
     componentSpecs:
     - spec:
 
@@ -24,8 +24,8 @@ spec:
         #   image: seldonio/rclone-storage-initializer:1.16.0-dev
         #   imagePullPolicy: IfNotPresent
         #   args:
-        #     - "s3://huggingface/text-classification/{{ model_variant }}"
-        #     - "/mnt/models/{{ model_variant }}"
+        #     - "s3://huggingface/question-answering/distilbert-base-cased-distilled-squad"
+        #     - "/mnt/models/distilbert-base-cased-distilled-squad"
 
         #   volumeMounts:
         #   - mountPath: /mnt/models
@@ -35,43 +35,43 @@ spec:
         #   - secretRef:
         #       name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: {{ distrpution_time }}
+        terminationGracePeriodSeconds: 10
         containers:
-        - image: sdghafouri/nlp-final-with-model:nlpli
-          name: nlp-li
+        - image: sdghafouri/sum-qa-final-with-model:nlpqa
+          name: nlp-qa 
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '{{ cpu_request }}'
-              memory: '{{ memory_request }}'
+              cpu: '4'
+              memory: 4Gi
             limits:
-              cpu: '{{ cpu_limit }}'
-              memory: '{{ memory_limit }}'
+              cpu: '4'
+              memory: 4Gi
           # volumeMounts:
           # - mountPath: /mnt/models
           #   name: classifier-provision-location
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/{{ model_variant }}
-            # - name: TRANSFORMERS_CACHE
-            #   value: /opt/mlserver/.cache
+              value: /mnt/models/distilbert-base-cased-distilled-squad
             - name: TASK
-              value: text-classification
+              value: question-answering
+            - name: CONTEXT
+              value: default
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: '{{ max_batch_size }}'
+              value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: '{{ max_batch_time }}'
+              value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
-              value: "0"
+              value: "1"
             - name: USE_THREADING
-              value: '{{use_threading}}'
+              value: "True"
             - name: NUM_INTEROP_THREADS
-              value: '{{num_interop_threads}}'
+              value: "1"
             - name: NUM_THREADS
-              value: '{{num_threads}}'
+              value: "1"
             - name: LOGS_ENABLED
-              value: '{{ logs_enabled }}'
+              value: 'False'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -86,10 +86,10 @@ spec:
                 command:
                 - /bin/sh
                 - -c
-                - /bin/sleep {{ distrpution_time }}
-      replicas: {{ replicas }}
+                - /bin/sleep 10
+      replicas: 20
     graph:
-      name: nlp-li
+      name: nlp-qa
       type: MODEL
       children: []
     labels:

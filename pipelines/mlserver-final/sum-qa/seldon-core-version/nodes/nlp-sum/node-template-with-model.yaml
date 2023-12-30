@@ -18,13 +18,12 @@ spec:
         # volumes:
         # - name: classifier-provision-location
         #   emptyDir: {}
-
         # initContainers:
         # - name: classifier-model-initializer
         #   image: seldonio/rclone-storage-initializer:1.16.0-dev
         #   imagePullPolicy: IfNotPresent
         #   args:
-        #     - "s3://huggingface/text-classification/{{ model_variant }}"
+        #     - "s3://huggingface/summarization/{{ model_variant }}"
         #     - "/mnt/models/{{ model_variant }}"
 
         #   volumeMounts:
@@ -37,8 +36,8 @@ spec:
 
         terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
-        - image: sdghafouri/nlp-final-with-model:nlpli
-          name: nlp-li
+        - image: sdghafouri/sum-qa-final-with-model:nlpsum
+          name: nlp-sum 
           imagePullPolicy: Always
           resources:
             requests:
@@ -54,10 +53,8 @@ spec:
           env:
             - name: MODEL_VARIANT
               value: /mnt/models/{{ model_variant }}
-            # - name: TRANSFORMERS_CACHE
-            #   value: /opt/mlserver/.cache
             - name: TASK
-              value: text-classification
+              value: summarization
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
@@ -89,7 +86,7 @@ spec:
                 - /bin/sleep {{ distrpution_time }}
       replicas: {{ replicas }}
     graph:
-      name: nlp-li
+      name: nlp-sum
       type: MODEL
       children: []
     labels:

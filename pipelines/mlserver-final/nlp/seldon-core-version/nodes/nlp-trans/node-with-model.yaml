@@ -1,20 +1,16 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: {{ name }}
+  name: nlp-trans
 spec:
   protocol: v2
-  name: {{ name }}
-  annotations:
-    proxy.istio.io/config: |
-      terminationDrainDuration: {{ distrpution_time }}s
+  name: nlp-trans
   predictors:
-  - name: {{ name }}
+  - name: nlp-trans
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
-
         # volumes:
         # - name: classifier-provision-location
         #   emptyDir: {}
@@ -24,8 +20,8 @@ spec:
         #   image: seldonio/rclone-storage-initializer:1.16.0-dev
         #   imagePullPolicy: IfNotPresent
         #   args:
-        #     - "s3://huggingface/text-classification/{{ model_variant }}"
-        #     - "/mnt/models/{{ model_variant }}"
+        #     - "s3://huggingface/translation_fr_to_en/Helsinki-NLP-opus-mt-fr-en"
+        #     - "/mnt/models/Helsinki-NLP-opus-mt-fr-en"
 
         #   volumeMounts:
         #   - mountPath: /mnt/models
@@ -35,43 +31,40 @@ spec:
         #   - secretRef:
         #       name: seldon-rclone-secret
 
-        terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
-        - image: sdghafouri/nlp-final-with-model:nlpli
-          name: nlp-li
+        - image: sdghafouri/nlp-final:nlptrans
+          name: nlp-trans
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: '{{ cpu_request }}'
-              memory: '{{ memory_request }}'
+              cpu: '2'
+              memory: 4Gi
             limits:
-              cpu: '{{ cpu_limit }}'
-              memory: '{{ memory_limit }}'
+              cpu: '2'
+              memory: 4Gi
           # volumeMounts:
           # - mountPath: /mnt/models
           #   name: classifier-provision-location
 
           env:
             - name: MODEL_VARIANT
-              value: /mnt/models/{{ model_variant }}
-            # - name: TRANSFORMERS_CACHE
-            #   value: /opt/mlserver/.cache
+              value: /mnt/models/Helsinki-NLP-opus-mt-fr-en
             - name: TASK
-              value: text-classification
+              value: translation_fr_to_en
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-              value: '{{ max_batch_size }}'
+              value: "5"
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
-              value: '{{ max_batch_time }}'
+              value: "1"
             - name: MLSERVER_PARALLEL_WORKERS
-              value: "0"
+              value: "1"
             - name: USE_THREADING
-              value: '{{use_threading}}'
+              value: "True"
             - name: NUM_INTEROP_THREADS
-              value: '{{num_interop_threads}}'
+              value: "2"
             - name: NUM_THREADS
-              value: '{{num_threads}}'
+              value: "2"
             - name: LOGS_ENABLED
-              value: '{{ logs_enabled }}'
+              value: 'False'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -80,16 +73,9 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                - /bin/sh
-                - -c
-                - /bin/sleep {{ distrpution_time }}
-      replicas: {{ replicas }}
+      replicas: 1
     graph:
-      name: nlp-li
+      name: nlp-trans
       type: MODEL
       children: []
     labels:

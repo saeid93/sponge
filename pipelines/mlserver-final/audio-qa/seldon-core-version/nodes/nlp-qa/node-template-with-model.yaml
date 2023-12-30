@@ -5,6 +5,8 @@ metadata:
 spec:
   protocol: v2
   name: {{ name }}
+  # annotations:
+  #   seldon.io/engine-separate-pod: "true"
   annotations:
     proxy.istio.io/config: |
       terminationDrainDuration: {{ distrpution_time }}s
@@ -13,8 +15,8 @@ spec:
     annotations:
       seldon.io/no-engine: "true"
     componentSpecs:
-    - spec:
 
+    - spec:
         # volumes:
         # - name: classifier-provision-location
         #   emptyDir: {}
@@ -24,7 +26,7 @@ spec:
         #   image: seldonio/rclone-storage-initializer:1.16.0-dev
         #   imagePullPolicy: IfNotPresent
         #   args:
-        #     - "s3://huggingface/text-classification/{{ model_variant }}"
+        #     - "s3://huggingface/question-answering/{{ model_variant }}"
         #     - "/mnt/models/{{ model_variant }}"
 
         #   volumeMounts:
@@ -37,8 +39,8 @@ spec:
 
         terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
-        - image: sdghafouri/nlp-final-with-model:nlpli
-          name: nlp-li
+        - image: sdghafouri/audio-qa-final-with-model:nlpqa
+          name: nlp-qa 
           imagePullPolicy: Always
           resources:
             requests:
@@ -57,13 +59,15 @@ spec:
             # - name: TRANSFORMERS_CACHE
             #   value: /opt/mlserver/.cache
             - name: TASK
-              value: text-classification
+              value: question-answering
+            - name: CONTEXT
+              value: default
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
               value: '{{ max_batch_time }}'
             - name: MLSERVER_PARALLEL_WORKERS
-              value: "0"
+              value: "1"
             - name: USE_THREADING
               value: '{{use_threading}}'
             - name: NUM_INTEROP_THREADS
@@ -89,7 +93,7 @@ spec:
                 - /bin/sleep {{ distrpution_time }}
       replicas: {{ replicas }}
     graph:
-      name: nlp-li
+      name: nlp-qa
       type: MODEL
       children: []
     labels:

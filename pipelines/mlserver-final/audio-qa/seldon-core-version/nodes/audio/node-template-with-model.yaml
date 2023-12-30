@@ -5,6 +5,8 @@ metadata:
 spec:
   protocol: v2
   name: {{ name }}
+  # annotations:
+  #   seldon.io/engine-separate-pod: "true"
   annotations:
     proxy.istio.io/config: |
       terminationDrainDuration: {{ distrpution_time }}s
@@ -14,7 +16,6 @@ spec:
       seldon.io/no-engine: "true"
     componentSpecs:
     - spec:
-
         # volumes:
         # - name: classifier-provision-location
         #   emptyDir: {}
@@ -24,7 +25,7 @@ spec:
         #   image: seldonio/rclone-storage-initializer:1.16.0-dev
         #   imagePullPolicy: IfNotPresent
         #   args:
-        #     - "s3://huggingface/text-classification/{{ model_variant }}"
+        #     - "s3://huggingface/automatic-speech-recognition/{{ model_variant }}"
         #     - "/mnt/models/{{ model_variant }}"
 
         #   volumeMounts:
@@ -37,8 +38,8 @@ spec:
 
         terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:
-        - image: sdghafouri/nlp-final-with-model:nlpli
-          name: nlp-li
+        - image: sdghafouri/audio-qa-final-with-model:audio
+          name: audio
           imagePullPolicy: Always
           resources:
             requests:
@@ -57,7 +58,7 @@ spec:
             # - name: TRANSFORMERS_CACHE
             #   value: /opt/mlserver/.cache
             - name: TASK
-              value: text-classification
+              value: automatic-speech-recognition
             - name: MLSERVER_MODEL_MAX_BATCH_SIZE
               value: '{{ max_batch_size }}'
             - name: MLSERVER_MODEL_MAX_BATCH_TIME
@@ -89,8 +90,9 @@ spec:
                 - /bin/sleep {{ distrpution_time }}
       replicas: {{ replicas }}
     graph:
-      name: nlp-li
+      name: audio
       type: MODEL
       children: []
     labels:
       sidecar.istio.io/inject: "true"
+
