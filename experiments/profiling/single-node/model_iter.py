@@ -55,6 +55,7 @@ def experiments(
     series_meta = config["series_meta"]
     workload_type = config["workload_type"]
     workload_config = config["workload_config"]
+    from_stroage = config['from_storage']
 
     logs_enabled = config["logs_enabled"]
     distrpution_time = config["distrpution_time"]
@@ -141,6 +142,7 @@ def experiments(
                                         num_threads=str(int(float(cpu_request))), # TEMP workaround for fractional allocation
                                         distrpution_time=distrpution_time,
                                         logs_enabled=logs_enabled,
+                                        from_storage=from_stroage
                                     )
                                     logger.info("Checking if the model is up ...")
                                     logger.info("\n")
@@ -484,7 +486,7 @@ def save_report(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="1-test")
+@click.option("--config-name", required=True, type=str, default="kamran-2")
 def main(config_name: str):
     config_path = os.path.join(NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, "r") as cf:
