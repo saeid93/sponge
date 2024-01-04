@@ -1,0 +1,1 @@
+kubectl patch pod kamran --patch '{"spec":{"containers":[{"name":"kamran", "resources":{"requests":{"cpu":"1"}, "limits":{"cpu":"1"}}}]}}'

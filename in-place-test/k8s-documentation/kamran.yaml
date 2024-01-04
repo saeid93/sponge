@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kamran
+spec:
+  containers:
+  - name: kamran
+    image: krazavi/vertical_testing
+    imagePullPolicy: Always
+    resources:
+      limits:
+        # memory: "1Gi"
+        cpu: "2"
+      requests:
+        # memory: "1Gi"
+        cpu: "2"
