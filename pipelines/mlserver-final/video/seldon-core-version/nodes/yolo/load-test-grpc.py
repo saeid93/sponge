@@ -21,8 +21,8 @@ data = image_loader(PATH, "input-sample.JPEG")
 data_shape = list(np.array(data).shape)
 data = np.array(data).flatten()
 
-load = 10
-test_duration = 1000
+load = 1
+test_duration = 1
 variant = 0
 platform = "seldon"
 workload = [load] * test_duration
@@ -65,6 +65,8 @@ load_tester = MLServerAsyncGrpc(
 responses = asyncio.run(load_tester.start())
 
 print(f"{(time.time() - start_time):2.2}s spent in total")
+
+print(responses)
 
 import matplotlib.pyplot as plt
 import numpy as np

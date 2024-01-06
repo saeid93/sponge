@@ -19,25 +19,25 @@ spec:
         - name: yolov5-volume
           emptyDir: {}
 
-        # initContainers:
-        # - name: classifier-model-initializer
-        #   image: seldonio/rclone-storage-initializer:1.16.0-dev
-        #   imagePullPolicy: IfNotPresent
-        #   args:
-        #     - "s3://torchhub/yolo/yolov5m"
-        #     - "/mnt/models/yolov5m"
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.16.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://torchhub/yolo/yolov5m"
+            - "/mnt/models/yolov5m"
 
-        #   volumeMounts:
-        #   - mountPath: /mnt/models
-        #     name: yolov5-volume
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: yolov5-volume
 
-        #   envFrom:
-        #   - secretRef:
-        #       name: seldon-rclone-secret
+          envFrom:
+          - secretRef:
+              name: seldon-rclone-secret
 
         terminationGracePeriodSeconds: 10
         containers:
-        - image: sdghafouri/video-final:yolo
+        - image: sdghafouri/video-final-with-model:yolo
           name: yolo
           imagePullPolicy: Always
           resources:
@@ -52,7 +52,7 @@ spec:
             name: yolov5-volume
           env:
             - name: MODEL_PATH
-              value: /mnt/models/yolov5m
+              value: yolov5m
             - name: MODEL_VARIANT
               value: yolov5n
             - name: TORCH_HOME
@@ -70,7 +70,7 @@ spec:
             - name: NUM_THREADS
               value: "1"
             - name: LOGS_ENABLED
-              value: 'False'
+              value: 'True'
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0

@@ -1,0 +1,321 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # annotations:
+  #   deployment.kubernetes.io/revision: "1"
+  #   proxy.istio.io/config: |
+  #     terminationDrainDuration: 10s
+  #   seldon.io/last-applied: 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
+  #   seldon.io/no-engine: "true"
+  # creationTimestamp: "2024-01-06T18:47:18Z"
+  # generation: 1
+  labels:
+    app: yolo-yolo-0-yolo
+    app.kubernetes.io/managed-by: seldon-core
+    fluentd: "true"
+    seldon-app: yolo-yolo
+    seldon-app-svc-yolo: yolo-yolo-yolo
+    seldon-deployment-id: yolo
+    seldon.io/model: "true"
+    sidecar.istio.io/inject: "true"
+    version: yolo
+  name: yolo-yolo-0-yolo
+  namespace: default
+  # ownerReferences:
+  # - apiVersion: machinelearning.seldon.io/v1
+  #   blockOwnerDeletion: true
+  #   controller: true
+  #   kind: SeldonDeployment
+  #   name: yolo
+  #   uid: 0cd0e4d1-ca06-45e8-aeab-98d0c4580cb7
+  # resourceVersion: "646991"
+  # selfLink: /apis/apps/v1/namespaces/default/deployments/yolo-yolo-0-yolo
+  # uid: a9f4b5c1-02dd-460f-8baf-c2502c1d7e4f
+spec:
+  # progressDeadlineSeconds: 600
+  replicas: 1
+  # revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      seldon-app: yolo-yolo
+      seldon-app-svc-yolo: yolo-yolo-yolo
+      seldon-deployment-id: yolo
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /prometheus
+        prometheus.io/scrape: "true"
+        proxy.istio.io/config: |
+          terminationDrainDuration: 10s
+        seldon.io/no-engine: "true"
+      creationTimestamp: null
+      labels:
+        app: yolo-yolo-0-yolo
+        app.kubernetes.io/managed-by: seldon-core
+        fluentd: "true"
+        seldon-app: yolo-yolo
+        seldon-app-svc-yolo: yolo-yolo-yolo
+        seldon-deployment-id: yolo
+        seldon.io/model: "true"
+        sidecar.istio.io/inject: "true"
+        version: yolo
+    spec:
+      containers:
+      - env:
+        - name: MODEL_PATH
+          value: /mnt/models/yolov5m
+        - name: MODEL_VARIANT
+          value: yolov5n
+        - name: TORCH_HOME
+          value: /opt/mlserver/.torch
+        - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+          value: "1"
+        - name: MLSERVER_MODEL_MAX_BATCH_TIME
+          value: "1"
+        - name: MLSERVER_PARALLEL_WORKERS
+          value: "1"
+        - name: USE_THREADING
+          value: "True"
+        - name: NUM_INTEROP_THREADS
+          value: "1"
+        - name: NUM_THREADS
+          value: "1"
+        - name: LOGS_ENABLED
+          value: "False"
+        - name: PREDICTIVE_UNIT_SERVICE_PORT
+          value: "9000"
+        - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
+          value: "9000"
+        - name: MLSERVER_HTTP_PORT
+          value: "9000"
+        - name: PREDICTIVE_UNIT_GRPC_SERVICE_PORT
+          value: "9500"
+        - name: MLSERVER_GRPC_PORT
+          value: "9500"
+        - name: PREDICTIVE_UNIT_ID
+          value: yolo
+        - name: MLSERVER_MODEL_NAME
+          value: yolo
+        - name: PREDICTIVE_UNIT_IMAGE
+          value: sdghafouri/video-final:yolo
+        - name: PREDICTOR_ID
+          value: yolo
+        - name: PREDICTOR_LABELS
+          value: '{"sidecar.istio.io/inject":"true","version":"yolo"}'
+        - name: SELDON_DEPLOYMENT_ID
+          value: yolo
+        - name: SELDON_EXECUTOR_ENABLED
+          value: "true"
+        - name: PREDICTIVE_UNIT_METRICS_SERVICE_PORT
+          value: "6000"
+        - name: PREDICTIVE_UNIT_METRICS_ENDPOINT
+          value: /prometheus
+        - name: MLSERVER_METRICS_PORT
+          value: "6000"
+        - name: MLSERVER_METRICS_ENDPOINT
+          value: /prometheus
+        image: sdghafouri/video-final:yolo
+        imagePullPolicy: Always
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - /bin/sleep 10
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 5
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 1
+        name: yolo
+        ports:
+        - containerPort: 6000
+          name: metrics
+          protocol: TCP
+        - containerPort: 9000
+          name: http
+          protocol: TCP
+        - containerPort: 9500
+          name: grpc
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 1
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: "1"
+            memory: 4Gi
+          requests:
+            cpu: "1"
+            memory: 4Gi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /mnt/models
+          name: yolov5-volume
+        - mountPath: /etc/podinfo
+          name: seldon-podinfo
+      dnsPolicy: ClusterFirst
+      initContainers:
+      - args:
+        - s3://torchhub/yolo/yolov5m
+        - /mnt/models/yolov5m
+        envFrom:
+        - secretRef:
+            name: seldon-rclone-secret
+        image: seldonio/rclone-storage-initializer:1.16.0-dev
+        imagePullPolicy: IfNotPresent
+        name: classifier-model-initializer
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /mnt/models
+          name: yolov5-volume
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        runAsUser: 8888
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - emptyDir: {}
+        name: yolov5-volume
+      - downwardAPI:
+          defaultMode: 420
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.annotations
+            path: annotations
+        name: seldon-podinfo
+# status:
+#   availableReplicas: 1
+#   conditions:
+#   - lastTransitionTime: "2024-01-06T18:47:22Z"
+#     lastUpdateTime: "2024-01-06T18:47:22Z"
+#     message: Deployment has minimum availability.
+#     reason: MinimumReplicasAvailable
+#     status: "True"
+#     type: Available
+#   - lastTransitionTime: "2024-01-06T18:47:18Z"
+#     lastUpdateTime: "2024-01-06T18:47:22Z"
+#     message: ReplicaSet "yolo-yolo-0-yolo-69d5c75957" has successfully progressed.
+#     reason: NewReplicaSetAvailable
+#     status: "True"
+#     type: Progressing
+#   observedGeneration: 1
+#   readyReplicas: 1
+#   replicas: 1
+#   updatedReplicas: 1
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  # annotations:
+  #   seldon.io/no-engine: "true"
+  # creationTimestamp: "2024-01-06T18:47:18Z"
+  labels:
+    app.kubernetes.io/managed-by: seldon-core
+    seldon-app: yolo-yolo
+    seldon-app-svc-yolo: yolo-yolo-yolo
+    seldon-deployment-id: yolo
+    seldon.io/model: "true"
+  name: yolo-yolo-yolo
+  namespace: default
+  # ownerReferences:
+  # - apiVersion: machinelearning.seldon.io/v1
+  #   blockOwnerDeletion: true
+  #   controller: true
+  #   kind: SeldonDeployment
+  #   name: yolo
+  #   uid: 0cd0e4d1-ca06-45e8-aeab-98d0c4580cb7
+  # resourceVersion: "646916"
+  # selfLink: /api/v1/namespaces/default/services/yolo-yolo-yolo
+  # uid: c6c2b809-d134-462e-9e14-e602d2c52ded
+spec:
+  # clusterIP: 10.152.183.164
+  # clusterIPs:
+  # - 10.152.183.164
+  # internalTrafficPolicy: Cluster
+  # ipFamilies:
+  # - IPv4
+  # ipFamilyPolicy: SingleStack
+  ports:
+  - name: http
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  - name: grpc
+    port: 9500
+    protocol: TCP
+    targetPort: 9500
+  selector:
+    seldon-app-svc-yolo: yolo-yolo-yolo
+  sessionAffinity: None
+  type: LoadBalancer
+# status:
+#   loadBalancer: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  # annotations:
+  #   seldon.io/no-engine: "true"
+  # creationTimestamp: "2024-01-06T18:47:18Z"
+  labels:
+    app.kubernetes.io/managed-by: seldon-core
+    seldon-app: yolo-yolo
+    seldon-deployment-id: yolo
+    seldon.io/model: "true"
+  name: yolo-yolo
+  namespace: default
+  # ownerReferences:
+  # - apiVersion: machinelearning.seldon.io/v1
+  #   blockOwnerDeletion: true
+  #   controller: true
+  #   kind: SeldonDeployment
+  #   name: yolo
+  #   uid: 0cd0e4d1-ca06-45e8-aeab-98d0c4580cb7
+  # resourceVersion: "646921"
+  # selfLink: /api/v1/namespaces/default/services/yolo-yolo
+  # uid: 23a47a8b-8e9c-49f1-8b7c-c699dcdacd0a
+spec:
+  # clusterIP: 10.152.183.17
+  # clusterIPs:
+  # - 10.152.183.17
+  # internalTrafficPolicy: Cluster
+  # ipFamilies:
+  # - IPv4
+  # ipFamilyPolicy: SingleStack
+  ports:
+  - name: http
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  - name: grpc
+    port: 9500
+    protocol: TCP
+    targetPort: 9500
+  selector:
+    seldon-app: yolo-yolo
+  sessionAffinity: None
+  type: LoadBalancer
+status:
+  loadBalancer: {}
