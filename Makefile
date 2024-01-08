@@ -1,9 +1,10 @@
 .PHONY: clean_cluster download fetch_pipeline upload_all upload_metaseries
 
-hack_dir := $(HOME)/ipa-private/hack
+hack_dir := $(HOME)/malleable_scaler/hack
 clean_cluster := $(hack_dir)/clean_cluster.sh
 download_all_results := $(hack_dir)/download_all_results.sh
 download_metaseries := $(hack_dir)/download_metaseries.sh
+download_profiling_series := $(hack_dir)/download_profiling_series.sh
 fetch_pipeline := $(hack_dir)/fetch_pipeline.sh
 upload_all_results := $(hack_dir)/upload_all_results.sh
 upload_metaseries := $(hack_dir)/upload_metaseries.sh
@@ -25,6 +26,14 @@ download_all_results:
 	chmod +x $(download_all_results)
 	$(download_all_results)
 	@echo "download_all_results.sh completed"
+
+download_profiling_series: SERIES ?= 
+download_profiling_series: download_profiling_series_target
+
+download_profiling_series_target:
+	chmod +x $(download_profiling_series)
+	bash $(download_profiling_series) $(SERIES)
+	@echo "download_profiling_series.sh completed"
 
 fetch_pipeline:
 	chmod +x $(fetch_pipeline)
@@ -52,6 +61,7 @@ upload_profiling_series_target:
 	bash $(upload_profiling_series) $(SERIES)
 	@echo "upload_profiling_series.sh completed"
 
+
 upload_all_models:
 	chmod +x $(upload_all_models)
 	$(upload_all_models)
@@ -64,11 +74,6 @@ download_metaseries_target:
 	chmod +x $(download_metaseries)
 	bash $(download_metaseries) $(SERIES)
 	@echo "download_metaseries.sh completed"
-
-upload_all_models:
-	chmod +x $(upload_all_models)
-	$(upload_all_models)
-	@echo "upload_all_models.sh completed"
 
 
 upload_node_models: NODE ?=

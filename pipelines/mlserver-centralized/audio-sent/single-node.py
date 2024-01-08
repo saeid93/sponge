@@ -19,11 +19,11 @@ from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
 
-PATH = "/home/cc/ipa-private/pipelines/seldon-prototype/paper-audio-sent/seldon-core-version"
+PATH = "/home/cc/malleable_scaler/pipelines/seldon-prototype/paper-audio-sent/seldon-core-version"
 PIPELINES_MODELS_PATH = (
-    "/home/cc/ipa-private/data/pipeline-test-meta"  # TODO fix be moved to utilspr
+    "/home/cc/malleable_scaler/data/pipeline-test-meta"  # TODO fix be moved to utilspr
 )
-DATABASE = "/home/cc/ipa-private/data/pipeline"
+DATABASE = "/home/cc/malleable_scaler/data/pipeline"
 CHECK_TIMEOUT = 60
 RETRY_TIMEOUT = 90
 DELETE_WAIT = 45
