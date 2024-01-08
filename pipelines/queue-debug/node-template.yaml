@@ -17,7 +17,7 @@ spec:
         volumes:
         - name: logs-volume
           hostPath:
-            path: /home/cc/malleable_scaler/data/logs
+            path: /home/cc/malleable-scaler/data/logs
 
         terminationGracePeriodSeconds: {{ distrpution_time }}
         containers:

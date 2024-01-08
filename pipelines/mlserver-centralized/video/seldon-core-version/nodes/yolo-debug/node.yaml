@@ -21,7 +21,7 @@ spec:
 
         - name: logs-volume
           hostPath:
-            path: /home/cc/malleable_scaler/data/logs
+            path: /home/cc/malleable-scaler/data/logs
 
         initContainers:
         - name: classifier-model-initializer
