@@ -215,7 +215,7 @@ def main(config_name: str, type_of: str):
 
     # pipeline path based on pipeline type [central | distributed] queues
     central_queue = config["central_queue"]
-    pipeline_type = "mlserver-centralized" if central_queue else "mlserver-final"
+    pipeline_type = "mlserver-centralized" if central_queue else "mlserver"
     pipeline_path = os.path.join(
         PIPLINES_PATH, pipeline_type, pipeline_folder_name, "seldon-core-version"
     )

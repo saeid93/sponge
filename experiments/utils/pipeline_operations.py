@@ -488,28 +488,17 @@ def load_data(data_type: str, pipeline_path: str, node_type: str = "first"):
         data_shape = [len(data)]
     elif data_type == "text":
         input_sample_path = os.path.join(pipeline_path, "input-sample.txt")
-        input_sample_shape_path = os.path.join(pipeline_path, "input-sample-shape.json")
         with open(input_sample_path, "r") as openfile:
             data = openfile.read()
-            # with open(input_sample_shape_path, 'r') as openfile:
-            #     data_shape = json.load(openfile)
-            #     data_shape = data_shape['data_shape']
             data_shape = [1]
     elif data_type == "image":
         input_sample_path = os.path.join(pipeline_path, "input-sample.JPEG")
         data = Image.open(input_sample_path)
-        if node_type == "first":
-            data_shape = list(np.array(data).shape)
-        elif node_type == "second":
-            data_shape = [list(np.array(data).shape)]
-        else:
-            raise ValueError(f"Invalid data type: {node_type}")
+        data_shape = list(np.array(data).shape)
         data = np.array(data).flatten()
-    # custom_parameters =  "[\"{'yolo': {'arrival': 1680913322.8364007, 'serving': 1680913322.92951}}\"]"
     data_1 = Data(
         data=data,
         data_shape=data_shape
-        # custom_parameters={'times': str(custom_parameters)},
     )
 
     # Data list
