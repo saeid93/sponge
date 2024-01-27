@@ -1,9 +1,0 @@
-{
-    "name": "node-one",
-    "implementation": "models.NodeOne",
-    "max_batch_size": 1,
-    "max_batch_time": 1,
-    "parameters": {
-        "uri": "./fakeuri"
-    }
-}

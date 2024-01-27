@@ -1,0 +1,7 @@
+{
+    "name": "resnet-car",
+    "implementation": "models.ResnetCar",
+    "parameters": {
+        "uri": "./fakeuri"
+    }
+}
