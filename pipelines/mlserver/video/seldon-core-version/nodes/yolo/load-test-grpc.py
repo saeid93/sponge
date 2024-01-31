@@ -18,7 +18,7 @@ def image_loader(folder_path, image_name):
 
 PATH = pathlib.Path(__file__).parent.resolve()
 # image = "input-sample.JPEG"
-image = "car.png"
+image = "input-sample.JPEG"
 # image_size = "input-sample-shape.json"
 data = image_loader(PATH, image)
 data_shape = list(np.array(data).shape)
@@ -27,7 +27,7 @@ data = np.array(data).flatten()
 load = 10
 test_duration = 10
 variant = 0
-platform = "seldon"
+platform = "not-seldon"
 workload = [load] * test_duration
 data_type = "image"
 mode = "equal"  # options - step, equal, exponential
@@ -36,6 +36,12 @@ mode = "equal"  # options - step, equal, exponential
 # single node inference
 if platform == "seldon":
     endpoint = "localhost:32000"
+    deployment_name = "yolo"
+    model = "yolo"
+    namespace = "default"
+    metadata = [("seldon", deployment_name), ("namespace", namespace)]
+elif platform == "not-seldon":
+    endpoint = "localhost:32001"
     deployment_name = "yolo"
     model = "yolo"
     namespace = "default"

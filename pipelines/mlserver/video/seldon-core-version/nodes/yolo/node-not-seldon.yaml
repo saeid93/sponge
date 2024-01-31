@@ -1,0 +1,250 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: yolo-yolo-0-yolo
+    app.kubernetes.io/managed-by: seldon-core
+    fluentd: "true"
+    seldon-app: yolo-yolo
+    seldon-app-svc-yolo: yolo-yolo-yolo
+    seldon-deployment-id: yolo
+    seldon.io/model: "true"
+    sidecar.istio.io/inject: "true"
+    version: yolo
+  name: yolo-yolo-0-yolo
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      seldon-app: yolo-yolo
+      seldon-app-svc-yolo: yolo-yolo-yolo
+      seldon-deployment-id: yolo
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /prometheus
+        prometheus.io/scrape: "true"
+        proxy.istio.io/config: |
+          terminationDrainDuration: 10s
+        seldon.io/no-engine: "true"
+      creationTimestamp: null
+      labels:
+        app: yolo-yolo-0-yolo
+        app.kubernetes.io/managed-by: seldon-core
+        fluentd: "true"
+        seldon-app: yolo-yolo
+        seldon-app-svc-yolo: yolo-yolo-yolo
+        seldon-deployment-id: yolo
+        seldon.io/model: "true"
+        sidecar.istio.io/inject: "true"
+        version: yolo
+    spec:
+      containers:
+      - env:
+        - name: MODEL_PATH
+          value: /mnt/models/yolov5m
+        - name: MODEL_VARIANT
+          value: yolov5n
+        - name: TORCH_HOME
+          value: /opt/mlserver/.torch
+        - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+          value: "1"
+        - name: MLSERVER_MODEL_MAX_BATCH_TIME
+          value: "1"
+        - name: MLSERVER_PARALLEL_WORKERS
+          value: "0"
+        - name: USE_THREADING
+          value: "True"
+        - name: NUM_INTEROP_THREADS
+          value: "1"
+        - name: NUM_THREADS
+          value: "1"
+        - name: LOGS_ENABLED
+          value: "True"
+        - name: PREDICTIVE_UNIT_SERVICE_PORT
+          value: "9000"
+        - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
+          value: "9000"
+        - name: MLSERVER_HTTP_PORT
+          value: "9000"
+        - name: PREDICTIVE_UNIT_GRPC_SERVICE_PORT
+          value: "9500"
+        - name: MLSERVER_GRPC_PORT
+          value: "9500"
+        - name: PREDICTIVE_UNIT_ID
+          value: yolo
+        - name: MLSERVER_MODEL_NAME
+          value: yolo
+        - name: PREDICTIVE_UNIT_IMAGE
+          value: sdghafouri/dynainf:yolo
+        - name: PREDICTOR_ID
+          value: yolo
+        - name: PREDICTOR_LABELS
+          value: '{"sidecar.istio.io/inject":"true","version":"yolo"}'
+        - name: SELDON_DEPLOYMENT_ID
+          value: yolo
+        - name: SELDON_EXECUTOR_ENABLED
+          value: "true"
+        - name: PREDICTIVE_UNIT_METRICS_SERVICE_PORT
+          value: "6000"
+        - name: PREDICTIVE_UNIT_METRICS_ENDPOINT
+          value: /prometheus
+        - name: MLSERVER_METRICS_PORT
+          value: "6000"
+        - name: MLSERVER_METRICS_ENDPOINT
+          value: /prometheus
+        image: sdghafouri/dynainf:yolo
+        imagePullPolicy: Always
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - /bin/sleep 10
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 5
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 1
+        name: yolo
+        ports:
+        - containerPort: 6000
+          name: metrics
+          protocol: TCP
+        - containerPort: 9000
+          name: http
+          protocol: TCP
+        - containerPort: 9500
+          name: grpc
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 1
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: "1"
+            memory: 4Gi
+          requests:
+            cpu: "1"
+            memory: 4Gi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /mnt/models
+          name: yolov5-volume
+        - mountPath: /etc/podinfo
+          name: seldon-podinfo
+      dnsPolicy: ClusterFirst
+      initContainers:
+      - args:
+        - s3://torchhub/yolo/yolov5m
+        - /mnt/models/yolov5m
+        envFrom:
+        - secretRef:
+            name: seldon-rclone-secret
+        image: seldonio/rclone-storage-initializer:1.16.0-dev
+        imagePullPolicy: IfNotPresent
+        name: classifier-model-initializer
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /mnt/models
+          name: yolov5-volume
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        runAsUser: 8888
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - emptyDir: {}
+        name: yolov5-volume
+      - downwardAPI:
+          defaultMode: 420
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.annotations
+            path: annotations
+        name: seldon-podinfo
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: seldon-core
+    seldon-app: yolo-yolo
+    seldon-app-svc-yolo: yolo-yolo-yolo
+    seldon-deployment-id: yolo
+    seldon.io/model: "true"
+  name: yolo-yolo-yolo
+  namespace: default
+spec:
+  ports:
+  - name: http
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  - name: grpc
+    port: 9500
+    protocol: TCP
+    targetPort: 9500
+  selector:
+    seldon-app-svc-yolo: yolo-yolo-yolo
+  sessionAffinity: None
+  type: LoadBalancer
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: seldon-core
+    seldon-app: yolo-yolo
+    seldon-deployment-id: yolo
+    seldon.io/model: "true"
+  name: yolo-yolo
+  namespace: default
+spec:
+  # clusterIP: 10.152.183.17
+  # Nodeport: 32000
+  # clusterIPs:
+  # - 10.152.183.17
+  # internalTrafficPolicy: Cluster
+  # ipFamilies:
+  # - IPv4
+  # ipFamilyPolicy: SingleStack
+  ports:
+  - name: http
+    nodePort: 32002
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  - name: grpc
+    nodePort: 32001
+    port: 9500
+    protocol: TCP
+    targetPort: 9500
+  selector:
+    seldon-app: yolo-yolo
+  sessionAffinity: None
+  type: LoadBalancer
+status:
+  loadBalancer: {}
