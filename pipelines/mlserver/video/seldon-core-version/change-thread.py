@@ -1,6 +1,6 @@
 import requests
 
-model_name = "yolo"
+model_name = "resnet-car"
 response = requests.post(
     # f"http://localhost:32000/seldon/default/{model_name}/change",
     f"http://localhost:32002/change",

@@ -14,7 +14,9 @@ metadata:
   name: yolo-yolo-0-yolo
   namespace: default
 spec:
+  progressDeadlineSeconds: 600
   replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       seldon-app: yolo-yolo
@@ -48,7 +50,7 @@ spec:
       containers:
       - env:
         - name: MODEL_PATH
-          value: /mnt/models/yolov5m
+          value: /mnt/models/yolov5n
         - name: MODEL_VARIANT
           value: yolov5n
         - name: TORCH_HOME
@@ -62,10 +64,12 @@ spec:
         - name: USE_THREADING
           value: "True"
         - name: NUM_INTEROP_THREADS
-          value: "1"
+          value: "4"
         - name: NUM_THREADS
-          value: "1"
+          value: "4"
         - name: LOGS_ENABLED
+          value: "True"
+        - name: QUEUE_MODE
           value: "True"
         - name: PREDICTIVE_UNIT_SERVICE_PORT
           value: "9000"
@@ -136,10 +140,10 @@ spec:
           timeoutSeconds: 1
         resources:
           limits:
-            cpu: "1"
+            cpu: "8"
             memory: 4Gi
           requests:
-            cpu: "1"
+            cpu: "8"
             memory: 4Gi
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
@@ -151,8 +155,8 @@ spec:
       dnsPolicy: ClusterFirst
       initContainers:
       - args:
-        - s3://torchhub/yolo/yolov5m
-        - /mnt/models/yolov5m
+        - s3://torchhub/yolo/yolov5n
+        - /mnt/models/yolov5n
         envFrom:
         - secretRef:
             name: seldon-rclone-secret
@@ -181,62 +185,3 @@ spec:
               fieldPath: metadata.annotations
             path: annotations
         name: seldon-podinfo
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app.kubernetes.io/managed-by: seldon-core
-    seldon-app: yolo-yolo
-    seldon-app-svc-yolo: yolo-yolo-yolo
-    seldon-deployment-id: yolo
-    seldon.io/model: "true"
-  name: yolo-yolo-yolo
-  namespace: default
-spec:
-  ports:
-  - name: http
-    port: 9000
-    protocol: TCP
-    targetPort: 9000
-  - name: grpc
-    port: 9500
-    protocol: TCP
-    targetPort: 9500
-  selector:
-    seldon-app-svc-yolo: yolo-yolo-yolo
-  sessionAffinity: None
-  type: LoadBalancer
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app.kubernetes.io/managed-by: seldon-core
-    seldon-app: yolo-yolo
-    seldon-deployment-id: yolo
-    seldon.io/model: "true"
-  name: yolo-yolo
-  namespace: default
-spec:
-  ports:
-  - name: http
-    nodePort: 32002
-    port: 9000
-    protocol: TCP
-    targetPort: 9000
-  - name: grpc
-    nodePort: 32001
-    port: 9500
-    protocol: TCP
-    targetPort: 9500
-  selector:
-    seldon-app: yolo-yolo
-  sessionAffinity: None
-  type: LoadBalancer
-status:
-  loadBalancer: {}

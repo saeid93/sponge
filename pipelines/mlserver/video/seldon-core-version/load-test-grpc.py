@@ -28,7 +28,7 @@ data = np.array(data).flatten()
 load = 20
 test_duration = 10
 variant = 0
-platform = "router"
+platform = "router-not-seldon"
 workload = [load] * test_duration
 data_type = "image"
 mode = "equal"  # options - step, equal, exponential
@@ -39,6 +39,12 @@ next_node = 'queue-yolo'
 # single node inference
 if platform == "router":
     endpoint = "localhost:32000"
+    deployment_name = "router"
+    model = "router"
+    namespace = "default"
+    metadata = [("seldon", deployment_name), ("namespace", namespace)]
+if platform == "router-not-seldon":
+    endpoint = "localhost:32001"
     deployment_name = "router"
     model = "router"
     namespace = "default"

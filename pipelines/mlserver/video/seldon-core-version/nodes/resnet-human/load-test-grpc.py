@@ -19,7 +19,7 @@ def image_loader(folder_path, image_name):
 load = 10
 test_duration = 10
 variant = 0
-platform = "seldon"
+platform = "not-seldon"
 image_name = "human.jpg"
 workload = [load] * test_duration
 data_type = "image"
@@ -33,6 +33,12 @@ data = np.array(data).flatten()
 # single node inference
 if platform == "seldon":
     endpoint = "localhost:32000"
+    deployment_name = "resnet-human"
+    model = "resnet-human"
+    namespace = "default"
+    metadata = [("seldon", deployment_name), ("namespace", namespace)]
+elif platform == "not-seldon":
+    endpoint = "localhost:32001"
     deployment_name = "resnet-human"
     model = "resnet-human"
     namespace = "default"

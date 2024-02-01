@@ -2,24 +2,26 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: yolo-yolo-0-yolo
+    app: resnet-car-resnet-car-0-resnet-car
     app.kubernetes.io/managed-by: seldon-core
     fluentd: "true"
-    seldon-app: yolo-yolo
-    seldon-app-svc-yolo: yolo-yolo-yolo
-    seldon-deployment-id: yolo
+    seldon-app: resnet-car-resnet-car
+    seldon-app-svc-resnet-car: resnet-car-resnet-car-resnet-car
+    seldon-deployment-id: resnet-car
     seldon.io/model: "true"
     sidecar.istio.io/inject: "true"
-    version: yolo
-  name: yolo-yolo-0-yolo
+    version: resnet-car
+  name: resnet-car-resnet-car-0-resnet-car
   namespace: default
 spec:
+  progressDeadlineSeconds: 600
   replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
-      seldon-app: yolo-yolo
-      seldon-app-svc-yolo: yolo-yolo-yolo
-      seldon-deployment-id: yolo
+      seldon-app: resnet-car-resnet-car
+      seldon-app-svc-resnet-car: resnet-car-resnet-car-resnet-car
+      seldon-deployment-id: resnet-car
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -30,27 +32,23 @@ spec:
       annotations:
         prometheus.io/path: /prometheus
         prometheus.io/scrape: "true"
-        proxy.istio.io/config: |
-          terminationDrainDuration: 10s
         seldon.io/no-engine: "true"
       creationTimestamp: null
       labels:
-        app: yolo-yolo-0-yolo
+        app: resnet-car-resnet-car-0-resnet-car
         app.kubernetes.io/managed-by: seldon-core
         fluentd: "true"
-        seldon-app: yolo-yolo
-        seldon-app-svc-yolo: yolo-yolo-yolo
-        seldon-deployment-id: yolo
+        seldon-app: resnet-car-resnet-car
+        seldon-app-svc-resnet-car: resnet-car-resnet-car-resnet-car
+        seldon-deployment-id: resnet-car
         seldon.io/model: "true"
         sidecar.istio.io/inject: "true"
-        version: yolo
+        version: resnet-car
     spec:
       containers:
       - env:
-        - name: MODEL_PATH
-          value: /mnt/models/yolov5m
         - name: MODEL_VARIANT
-          value: yolov5n
+          value: resnet18
         - name: TORCH_HOME
           value: /opt/mlserver/.torch
         - name: MLSERVER_MODEL_MAX_BATCH_SIZE
@@ -62,9 +60,9 @@ spec:
         - name: USE_THREADING
           value: "True"
         - name: NUM_INTEROP_THREADS
-          value: "1"
+          value: "4"
         - name: NUM_THREADS
-          value: "1"
+          value: "4"
         - name: LOGS_ENABLED
           value: "True"
         - name: PREDICTIVE_UNIT_SERVICE_PORT
@@ -78,17 +76,17 @@ spec:
         - name: MLSERVER_GRPC_PORT
           value: "9500"
         - name: PREDICTIVE_UNIT_ID
-          value: yolo
+          value: resnet-car
         - name: MLSERVER_MODEL_NAME
-          value: yolo
+          value: resnet-car
         - name: PREDICTIVE_UNIT_IMAGE
-          value: sdghafouri/dynainf:yolo
+          value: sdghafouri/dynainf:resnet-car
         - name: PREDICTOR_ID
-          value: yolo
+          value: resnet-car
         - name: PREDICTOR_LABELS
-          value: '{"sidecar.istio.io/inject":"true","version":"yolo"}'
+          value: '{"sidecar.istio.io/inject":"true","version":"resnet-car"}'
         - name: SELDON_DEPLOYMENT_ID
-          value: yolo
+          value: resnet-car
         - name: SELDON_EXECUTOR_ENABLED
           value: "true"
         - name: PREDICTIVE_UNIT_METRICS_SERVICE_PORT
@@ -99,7 +97,7 @@ spec:
           value: "6000"
         - name: MLSERVER_METRICS_ENDPOINT
           value: /prometheus
-        image: sdghafouri/dynainf:yolo
+        image: sdghafouri/dynainf:resnet-car
         imagePullPolicy: Always
         lifecycle:
           preStop:
@@ -116,7 +114,7 @@ spec:
           tcpSocket:
             port: 9000
           timeoutSeconds: 1
-        name: yolo
+        name: resnet-car
         ports:
         - containerPort: 6000
           name: metrics
@@ -136,23 +134,23 @@ spec:
           timeoutSeconds: 1
         resources:
           limits:
-            cpu: "1"
+            cpu: "4"
             memory: 4Gi
           requests:
-            cpu: "1"
+            cpu: "4"
             memory: 4Gi
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
-        - mountPath: /mnt/models
-          name: yolov5-volume
+        - mountPath: /opt/mlserver/.torch/hub/checkpoints
+          name: resnet-volume
         - mountPath: /etc/podinfo
           name: seldon-podinfo
       dnsPolicy: ClusterFirst
       initContainers:
       - args:
-        - s3://torchhub/yolo/yolov5m
-        - /mnt/models/yolov5m
+        - s3://torchhub/resnet/resnet18
+        - /opt/mlserver/.torch/hub/checkpoints/
         envFrom:
         - secretRef:
             name: seldon-rclone-secret
@@ -163,8 +161,8 @@ spec:
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
-        - mountPath: /mnt/models
-          name: yolov5-volume
+        - mountPath: /opt/mlserver/.torch/hub/checkpoints
+          name: resnet-volume
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext:
@@ -172,7 +170,7 @@ spec:
       terminationGracePeriodSeconds: 10
       volumes:
       - emptyDir: {}
-        name: yolov5-volume
+        name: resnet-volume
       - downwardAPI:
           defaultMode: 420
           items:
@@ -181,62 +179,3 @@ spec:
               fieldPath: metadata.annotations
             path: annotations
         name: seldon-podinfo
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app.kubernetes.io/managed-by: seldon-core
-    seldon-app: yolo-yolo
-    seldon-app-svc-yolo: yolo-yolo-yolo
-    seldon-deployment-id: yolo
-    seldon.io/model: "true"
-  name: yolo-yolo-yolo
-  namespace: default
-spec:
-  ports:
-  - name: http
-    port: 9000
-    protocol: TCP
-    targetPort: 9000
-  - name: grpc
-    port: 9500
-    protocol: TCP
-    targetPort: 9500
-  selector:
-    seldon-app-svc-yolo: yolo-yolo-yolo
-  sessionAffinity: None
-  type: LoadBalancer
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app.kubernetes.io/managed-by: seldon-core
-    seldon-app: yolo-yolo
-    seldon-deployment-id: yolo
-    seldon.io/model: "true"
-  name: yolo-yolo
-  namespace: default
-spec:
-  ports:
-  - name: http
-    nodePort: 32002
-    port: 9000
-    protocol: TCP
-    targetPort: 9000
-  - name: grpc
-    nodePort: 32001
-    port: 9500
-    protocol: TCP
-    targetPort: 9500
-  selector:
-    seldon-app: yolo-yolo
-  sessionAffinity: None
-  type: LoadBalancer
-status:
-  loadBalancer: {}
