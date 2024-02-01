@@ -11,10 +11,10 @@ spec:
       seldon.io/no-engine: "true" 
     componentSpecs:
     - spec:
-        nodeSelector:
-          router-node: "true"
+        # nodeSelector:
+        #   router-node: "true"
         containers:
-        - image: sdghafouri/router:router
+        - image: sdghafouri/dynainf:router
           name: router
           imagePullPolicy: Always
           resources:
@@ -30,7 +30,7 @@ spec:
             - name: MLSERVER_PARALLEL_WORKERS
               value: "1"
             - name: DROP_LIMIT
-              aeidalue: "5"
+              value: "5"
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 0
@@ -39,7 +39,7 @@ spec:
             tcpSocket:
               port: 9000
             timeoutSeconds: 1
-      replicas: 50
+      replicas: 1
     graph:
       name: router
       type: MODEL
