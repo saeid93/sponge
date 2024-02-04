@@ -17,15 +17,15 @@ def image_loader(folder_path, image_name):
 
 
 PATH = pathlib.Path(__file__).parent.resolve()
+image = "car.jpg"
 # image = "input-sample.JPEG"
-image = "input-sample.JPEG"
 # image_size = "input-sample-shape.json"
 data = image_loader(PATH, image)
 data_shape = list(np.array(data).shape)
 data = np.array(data).flatten()
 
-load = 10
-test_duration = 10
+load = 5
+test_duration = 1
 variant = 0
 platform = "not-seldon"
 workload = [load] * test_duration
@@ -41,7 +41,7 @@ if platform == "seldon":
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == "not-seldon":
-    endpoint = "localhost:32001"
+    endpoint = "localhost:32003"
     deployment_name = "yolo"
     model = "yolo"
     namespace = "default"

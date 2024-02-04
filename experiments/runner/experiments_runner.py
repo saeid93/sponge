@@ -173,7 +173,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="audio-qa-3-real")
+@click.option("--config-name", required=True, type=str, default="video")
 @click.option(
     "--type-of",
     required=True,
@@ -214,8 +214,8 @@ def main(config_name: str, type_of: str):
         raise ValueError("wrong config chosen, this is a simulation config")
 
     # pipeline path based on pipeline type [central | distributed] queues
-    central_queue = config["central_queue"]
-    pipeline_type = "mlserver-centralized" if central_queue else "mlserver"
+    # central_queue = config["central_queue"]
+    pipeline_type = "mlserver"
     pipeline_path = os.path.join(
         PIPLINES_PATH, pipeline_type, pipeline_folder_name, "seldon-core-version"
     )

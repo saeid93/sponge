@@ -746,19 +746,48 @@ class Optimizer:
                 third_stage_variants = variant_names[2]
                 all_pipeline_variant_combinations = list(
                     itertools.product(
-                        first_stage_variants, second_stage_variants, third_stage_variants))
+                        first_stage_variants,
+                        second_stage_variants,
+                        third_stage_variants,
+                    )
+                )
                 all_comb_i = model.addVars(
-                    all_pipeline_variant_combinations, name="all_comb_i", vtype=GRB.INTEGER, lb=0, ub=1)
-                accuracy_objective = model.addVar(name="accuracy_objective", vtype=GRB.CONTINUOUS, lb=0, ub=1)
-                model.addConstr(gp.quicksum(all_comb_i[combination] for combination in all_pipeline_variant_combinations) == 1, name='one-model-combs')
+                    all_pipeline_variant_combinations,
+                    name="all_comb_i",
+                    vtype=GRB.INTEGER,
+                    lb=0,
+                    ub=1,
+                )
+                accuracy_objective = model.addVar(
+                    name="accuracy_objective", vtype=GRB.CONTINUOUS, lb=0, ub=1
+                )
+                model.addConstr(
+                    gp.quicksum(
+                        all_comb_i[combination]
+                        for combination in all_pipeline_variant_combinations
+                    )
+                    == 1,
+                    name="one-model-combs",
+                )
                 for combination in all_pipeline_variant_combinations:
-                            model.addConstr((all_comb_i[combination] == 1) >>
-                                ((i[stages[0], combination[0]]\
-                                     + i[stages[1], combination[1]] + i[stages[2], combination[2]]) == 3))
-                            combination_accuracy = 1
-                            for stage, variant in zip(stages, combination):
-                                combination_accuracy *= accuracy_parameters[stage][variant]
-                            model.addConstr((all_comb_i[combination] == 1) >> (accuracy_objective == combination_accuracy))
+                    model.addConstr(
+                        (all_comb_i[combination] == 1)
+                        >> (
+                            (
+                                i[stages[0], combination[0]]
+                                + i[stages[1], combination[1]]
+                                + i[stages[2], combination[2]]
+                            )
+                            == 3
+                        )
+                    )
+                    combination_accuracy = 1
+                    for stage, variant in zip(stages, combination):
+                        combination_accuracy *= accuracy_parameters[stage][variant]
+                    model.addConstr(
+                        (all_comb_i[combination] == 1)
+                        >> (accuracy_objective == combination_accuracy)
+                    )
         elif self.pipeline.accuracy_method == "sum":
             accuracy_objective = gp.quicksum(
                 accuracy_parameters[stage][vairant] * i[stage, vairant]

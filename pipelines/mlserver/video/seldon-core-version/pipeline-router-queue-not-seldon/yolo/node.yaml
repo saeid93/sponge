@@ -85,6 +85,8 @@ spec:
           value: yolo
         - name: MLSERVER_MODEL_NAME
           value: yolo
+        - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
+          value: "20971520"
         - name: PREDICTIVE_UNIT_IMAGE
           value: sdghafouri/dynainf:yolo
         - name: PREDICTOR_ID

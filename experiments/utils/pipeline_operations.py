@@ -94,6 +94,8 @@ def setup_node(
             "memory_request": memory_request,
             "cpu_limit": cpu_request,
             "memory_limit": memory_request,
+            "max_batch_size": 1,
+            "max_batch_time": 1,
             "model_variant": model_variant,
             "replicas": replica,
             "no_engine": str(no_engine),
@@ -125,12 +127,17 @@ def setup_node(
             "logs_enabled": logs_enabled,
         }
     environment = Environment(loader=FileSystemLoader(node_path))
-    if from_storage:
-        template_file_name = "node-template.yaml"
+    non_seldon = True
+    if non_seldon:
+        template_file_name = "node-template-not-seldon.yaml"
     else:
-        template_file_name = "node-template-with-model.yaml"
+        if from_storage:
+            template_file_name = "node-template.yaml"
+        else:
+            template_file_name = "node-template-with-model.yaml"
     svc_template = environment.get_template(template_file_name)
     content = svc_template.render(svc_vars)
+    logger.info("node yaml file:")
     logger.info(content)
     command = f"""cat <<EOF | kubectl apply -f -
 {content}
@@ -168,7 +175,12 @@ def setup_router(
         "logs_enabled": logs_enabled,
     }
     environment = Environment(loader=FileSystemLoader(ROUTER_PATH))
-    svc_template = environment.get_template("node-template.yaml")
+    non_seldon = True
+    if non_seldon:
+        template_file_name = "node-template-not-seldon.yaml"
+    else:
+        template_file_name = "node-template.yaml"
+    svc_template = environment.get_template(template_file_name)
     content = svc_template.render(svc_vars)
     logger.info(content)
     command = f"""cat <<EOF | kubectl apply -f -
@@ -177,7 +189,7 @@ def setup_router(
     os.system(command)
     logger.info("-" * 25 + f" waiting to make sure the node is up " + "-" * 25)
     logger.info("\n")
-    check_node_loaded(node_name="router")
+    # check_node_loaded(node_name="router")
 
 
 def setup_queues(
@@ -238,7 +250,12 @@ def setup_queue(
     }
     queue_path = f"{QUEUE_PATH}-debug" if debug_mode else QUEUE_PATH
     environment = Environment(loader=FileSystemLoader(queue_path))
-    svc_template = environment.get_template("node-template.yaml")
+    non_seldon = True
+    if non_seldon:
+        template_file_name = "node-template-not-seldon.yaml"
+    else:
+        template_file_name = "node-template.yaml"
+    svc_template = environment.get_template(template_file_name)
     content = svc_template.render(svc_vars)
     logger.info(content)
     command = f"""cat <<EOF | kubectl apply -f -
@@ -247,7 +264,7 @@ def setup_queue(
     os.system(command)
     logger.info("-" * 25 + f" waiting to make sure the node is up " + "-" * 25)
     logger.info("\n")
-    check_node_loaded(node_name="queue-" + model_name)
+    # check_node_loaded(node_name="queue-" + model_name)
 
 
 def setup_seldon_pipeline(
@@ -496,10 +513,7 @@ def load_data(data_type: str, pipeline_path: str, node_type: str = "first"):
         data = Image.open(input_sample_path)
         data_shape = list(np.array(data).shape)
         data = np.array(data).flatten()
-    data_1 = Data(
-        data=data,
-        data_shape=data_shape
-    )
+    data_1 = Data(data=data, data_shape=data_shape, next_node='queue-yolo')
 
     # Data list
     data = []
@@ -512,7 +526,7 @@ def check_load_test(pipeline_name: str, data_type: str, pipeline_path: str, mode
     if pipeline_name == "resnet-human":
         node_type = "second"
     data = load_data(
-        data_type=data_type, pipeline_path=pipeline_path, node_type=node_type
+        data_type=data_type, pipeline_path=pipeline_path, node_type=node_type,
     )
     loop_timeout = 5
     while True:
@@ -560,6 +574,7 @@ def remove_pipeline(pipeline_name: str):
     os.system(f"kubectl delete seldondeployment --all -n default")
     os.system(f"kubectl delete deployments --all -n default")
     os.system(f"kubectl delete replicaset --all -n default")
+    os.system(f"kubectl delete service --all -n default")
     os.system(f"kubectl delete pods --all -n default")
     os.system(
         "kubectl get services | grep -v kubernetes | awk '{print $1}' | xargs kubectl delete service -n default"
@@ -581,7 +596,11 @@ def load_test(
 ) -> Tuple[int, int, List[List[Dict[str, Any]]]]:
     start_time = time.time()
 
-    endpoint = "localhost:32000"
+    non_seldon = True
+    if non_seldon:
+        endpoint = "localhost:32001"
+    else:
+        endpoint = "localhost:32000"
     deployment_name = pipeline_name
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]

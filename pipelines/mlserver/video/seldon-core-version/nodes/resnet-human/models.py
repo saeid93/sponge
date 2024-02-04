@@ -86,7 +86,6 @@ if not LOGS_ENABLED:
 
 
 class ResnetHuman(MLModel):
-
     @custom_handler(rest_path="/change")
     async def change_thread(self, request: Request) -> Response:
         """
@@ -157,24 +156,34 @@ class ResnetHuman(MLModel):
         for request_input in payload.inputs:
             batch_shape = request_input.shape[0]
             if batch_shape == 1:
-                dtypes = [request_input.parameters.extended_parameters['dtype']]
-                shapes = [request_input.parameters.extended_parameters['datashape']]
-                prev_node_name = request_input.parameters.extended_parameters['node_name']
-                prev_arrival = request_input.parameters.extended_parameters['arrival']
-                prev_serving = request_input.parameters.extended_parameters['serving']
+                dtypes = [request_input.parameters.extended_parameters["dtype"]]
+                shapes = [request_input.parameters.extended_parameters["datashape"]]
+                prev_node_name = request_input.parameters.extended_parameters[
+                    "node_name"
+                ]
+                prev_arrival = request_input.parameters.extended_parameters["arrival"]
+                prev_serving = request_input.parameters.extended_parameters["serving"]
             else:
-                extended_parameters_repeated = request_input.parameters.extended_parameters
+                extended_parameters_repeated = (
+                    request_input.parameters.extended_parameters
+                )
                 if request_input.parameters.extended_parameters is None:
-                    extended_parameters_repeated = request_input.parameters.extended_parameters_repeated
+                    extended_parameters_repeated = (
+                        request_input.parameters.extended_parameters_repeated
+                    )
                 else:
-                    extended_parameters_repeated = request_input.parameters.extended_parameters
-                dtypes = list(map(lambda l: l['dtype'], extended_parameters_repeated))
-                shapes = list(map(lambda l: l['datashape'], extended_parameters_repeated))
+                    extended_parameters_repeated = (
+                        request_input.parameters.extended_parameters
+                    )
+                dtypes = list(map(lambda l: l["dtype"], extended_parameters_repeated))
+                shapes = list(
+                    map(lambda l: l["datashape"], extended_parameters_repeated)
+                )
                 # NOTE the assumption here is that the requests in a bactch always come from the
                 # same path
-                prev_node_name = extended_parameters_repeated[0]['node_name']
-                prev_arrival = extended_parameters_repeated[0]['arrival']
-                prev_serving = extended_parameters_repeated[0]['serving']
+                prev_node_name = extended_parameters_repeated[0]["node_name"]
+                prev_arrival = extended_parameters_repeated[0]["arrival"]
+                prev_serving = extended_parameters_repeated[0]["serving"]
             input_data = request_input.data.__root__
             logger.info(f"shapes:\n{shapes}")
             X = decode_from_bin(inputs=input_data, shapes=shapes, dtypes=dtypes)
@@ -203,13 +212,14 @@ class ResnetHuman(MLModel):
             "node_name": prev_node_name + [PREDICTIVE_UNIT_ID],
             "arrival": prev_arrival + [arrival_time],
             "serving": prev_serving + [serving_time],
-            "next_node": next_node}
+            "next_node": next_node,
+        }
         batch_extended_parameters = [extended_parameters] * batch_shape
         if batch_shape == 1:
             batch_extended_parameters = extended_parameters
             parameters = {"extended_parameters": batch_extended_parameters}
         elif self.settings.max_batch_size != 1:
-            parameters = {"extended_parameters": batch_extended_parameters}            
+            parameters = {"extended_parameters": batch_extended_parameters}
         else:
             parameters = {"extended_parameters_repeated": batch_extended_parameters}
         # processing inference response
@@ -220,9 +230,7 @@ class ResnetHuman(MLModel):
                     shape=[batch_shape],
                     datatype="INT32",
                     data=output,
-                    parameters=Parameters(
-                        **parameters, content_type="np"
-                    ),
+                    parameters=Parameters(**parameters, content_type="np"),
                 )
             ],
             model_name=self.name,

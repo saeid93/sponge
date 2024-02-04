@@ -17,7 +17,7 @@ def image_loader(folder_path, image_name):
 
 
 PATH = pathlib.Path(__file__).parent.resolve()
-data = image_loader(PATH, "input-sample.JPEG")
+data = image_loader(PATH, "car.jpg")
 data_shape = list(np.array(data).shape)
 data = np.array(data).flatten()
 
@@ -28,7 +28,7 @@ platform = "mlserver"
 workload = [load] * test_duration
 data_type = "image"
 mode = "equal"  # options - step, equal, exponential
-image = "input-sample.JPEG"
+image = "car.jpg"
 image_size = "input-sample-shape.json"
 
 # single node inference

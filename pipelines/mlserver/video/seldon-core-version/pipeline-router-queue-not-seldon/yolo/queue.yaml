@@ -71,6 +71,8 @@ spec:
           value: queue-yolo
         - name: MLSERVER_MODEL_NAME
           value: queue-yolo
+        - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
+          value: "20971520"
         - name: PREDICTIVE_UNIT_IMAGE
           value: sdghafouri/dynainf:queue
         - name: PREDICTOR_ID

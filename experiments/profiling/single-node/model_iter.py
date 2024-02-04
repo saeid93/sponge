@@ -55,7 +55,7 @@ def experiments(
     series_meta = config["series_meta"]
     workload_type = config["workload_type"]
     workload_config = config["workload_config"]
-    from_stroage = config['from_storage']
+    from_stroage = config["from_storage"]
 
     logs_enabled = config["logs_enabled"]
     distrpution_time = config["distrpution_time"]
@@ -138,11 +138,13 @@ def experiments(
                                         use_threading=use_threading,
                                         # HACK for now we set the number of requests
                                         # proportional to the the number threads
-                                        num_interop_threads= "1", #str(int(float(cpu_request))), # TEMP workaround for fractional allocation
-                                        num_threads= str(int(float(cpu_request))), # TEMP workaround for fractional allocation
+                                        num_interop_threads="1",  # str(int(float(cpu_request))), # TEMP workaround for fractional allocation
+                                        num_threads=str(
+                                            int(float(cpu_request))
+                                        ),  # TEMP workaround for fractional allocation
                                         distrpution_time=distrpution_time,
                                         logs_enabled=logs_enabled,
-                                        from_storage=from_stroage
+                                        from_storage=from_stroage,
                                     )
                                     logger.info("Checking if the model is up ...")
                                     logger.info("\n")
@@ -497,8 +499,8 @@ def main(config_name: str):
     series = config["series"]
 
     # pipeline path based on pipeline type [central | distributed] queues
-    central_queue = config["central_queue"]
-    pipeline_type = "mlserver-centralized" if central_queue else "mlserver"
+    # central_queue = config["central_queue"]
+    pipeline_type = "mlserver"
     pipeline_path = os.path.join(
         PIPLINES_PATH, pipeline_type, pipeline_name, "seldon-core-version"
     )

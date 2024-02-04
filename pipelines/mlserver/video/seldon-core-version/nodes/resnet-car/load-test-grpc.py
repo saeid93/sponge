@@ -49,7 +49,7 @@ elif platform == "mlserver":
 
 # times = "[\"{'yolo': {'arrival': 1680913322.8364007, 'serving': 1680913322.92951}}\"]"
 
-node_name = ['yolo'.encode("utf-8")]
+node_name = ["yolo".encode("utf-8")]
 arrival = [1680913322.8364007]
 serving = [1680913322.92951]
 
@@ -59,7 +59,7 @@ data_1 = Data(
     data_shape=data_shape,
     node_name=node_name,
     arrival=arrival,
-    serving=serving
+    serving=serving,
 )
 
 # Data list

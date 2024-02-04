@@ -18,22 +18,22 @@ def image_loader(folder_path, image_name):
 
 
 PATH = pathlib.Path(__file__).parent.resolve()
-image = "human.jpg"
-# image = "car.jpg"
+# image = "human.jpg"
+image = "car.jpg"
 data = image_loader(PATH, image)
 data_shape = list(np.array(data).shape)
 data = np.array(data).flatten()
 
 
-load = 20
-test_duration = 10
+load = 5
+test_duration = 1
 variant = 0
-platform = "router-not-seldon"
+platform = "router"
 workload = [load] * test_duration
 data_type = "image"
 mode = "equal"  # options - step, equal, exponential
 # next_node = 'yolo'
-next_node = 'queue-yolo'
+next_node = "queue-yolo"
 
 
 # single node inference
@@ -65,7 +65,8 @@ data_1 = Data(
     data=data,
     data_shape=data_shape,
     # custom_parameters=custom_parameters,
-    next_node=next_node)
+    next_node=next_node,
+)
 
 # Data list
 data = []
@@ -80,7 +81,7 @@ load_tester = MLServerAsyncGrpc(
     model=model,
     data=data,
     mode=mode,  # options - step, equal, exponential
-    data_type=data_type
+    data_type=data_type,
 )
 
 responses = asyncio.run(load_tester.start())

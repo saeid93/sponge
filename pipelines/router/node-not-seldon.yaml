@@ -2,16 +2,16 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: resnet-car-resnet-car-0-resnet-car
+    app: router-router-0-router
     app.kubernetes.io/managed-by: seldon-core
     fluentd: "true"
-    seldon-app: resnet-car-resnet-car
-    seldon-app-svc-resnet-car: resnet-car-resnet-car-resnet-car
-    seldon-deployment-id: resnet-car
+    seldon-app: router-router
+    seldon-app-svc-router: router-router-router
+    seldon-deployment-id: router
     seldon.io/model: "true"
     sidecar.istio.io/inject: "true"
-    version: resnet-car
-  name: resnet-car-resnet-car-0-resnet-car
+    version: router
+  name: router-router-0-router
   namespace: default
 spec:
   progressDeadlineSeconds: 600
@@ -19,9 +19,9 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      seldon-app: resnet-car-resnet-car
-      seldon-app-svc-resnet-car: resnet-car-resnet-car-resnet-car
-      seldon-deployment-id: resnet-car
+      seldon-app: router-router
+      seldon-app-svc-router: router-router-router
+      seldon-deployment-id: router
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -35,36 +35,22 @@ spec:
         seldon.io/no-engine: "true"
       creationTimestamp: null
       labels:
-        app: resnet-car-resnet-car-0-resnet-car
+        app: router-router-0-router
         app.kubernetes.io/managed-by: seldon-core
         fluentd: "true"
-        seldon-app: resnet-car-resnet-car
-        seldon-app-svc-resnet-car: resnet-car-resnet-car-resnet-car
-        seldon-deployment-id: resnet-car
+        seldon-app: router-router
+        seldon-app-svc-router: router-router-router
+        seldon-deployment-id: router
         seldon.io/model: "true"
         sidecar.istio.io/inject: "true"
-        version: resnet-car
+        version: router
     spec:
       containers:
       - env:
-        - name: MODEL_VARIANT
-          value: resnet18
-        - name: TORCH_HOME
-          value: /opt/mlserver/.torch
-        - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-          value: "1"
-        - name: MLSERVER_MODEL_MAX_BATCH_TIME
-          value: "1"
         - name: MLSERVER_PARALLEL_WORKERS
-          value: "0"
-        - name: USE_THREADING
-          value: "True"
-        - name: NUM_INTEROP_THREADS
-          value: "4"
-        - name: NUM_THREADS
-          value: "4"
-        - name: LOGS_ENABLED
-          value: "True"
+          value: "1"
+        - name: DROP_LIMIT
+          value: "5"
         - name: PREDICTIVE_UNIT_SERVICE_PORT
           value: "9000"
         - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
@@ -76,19 +62,17 @@ spec:
         - name: MLSERVER_GRPC_PORT
           value: "9500"
         - name: PREDICTIVE_UNIT_ID
-          value: resnet-car
+          value: router
         - name: MLSERVER_MODEL_NAME
-          value: resnet-car
-        - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
-          value: "20971520"
+          value: router
         - name: PREDICTIVE_UNIT_IMAGE
-          value: sdghafouri/dynainf:resnet-car
+          value: sdghafouri/dynainf:router
         - name: PREDICTOR_ID
-          value: resnet-car
+          value: router
         - name: PREDICTOR_LABELS
-          value: '{"sidecar.istio.io/inject":"true","version":"resnet-car"}'
+          value: '{"sidecar.istio.io/inject":"true","version":"router"}'
         - name: SELDON_DEPLOYMENT_ID
-          value: resnet-car
+          value: router
         - name: SELDON_EXECUTOR_ENABLED
           value: "true"
         - name: PREDICTIVE_UNIT_METRICS_SERVICE_PORT
@@ -99,7 +83,7 @@ spec:
           value: "6000"
         - name: MLSERVER_METRICS_ENDPOINT
           value: /prometheus
-        image: sdghafouri/dynainf:resnet-car
+        image: sdghafouri/dynainf:router
         imagePullPolicy: Always
         lifecycle:
           preStop:
@@ -116,7 +100,7 @@ spec:
           tcpSocket:
             port: 9000
           timeoutSeconds: 1
-        name: resnet-car
+        name: router
         ports:
         - containerPort: 6000
           name: metrics
@@ -136,43 +120,23 @@ spec:
           timeoutSeconds: 1
         resources:
           limits:
-            cpu: "4"
-            memory: 4Gi
+            cpu: "16"
+            memory: 16Gi
           requests:
             cpu: "4"
-            memory: 4Gi
+            memory: 8Gi
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
-        - mountPath: /opt/mlserver/.torch/hub/checkpoints
-          name: resnet-volume
         - mountPath: /etc/podinfo
           name: seldon-podinfo
       dnsPolicy: ClusterFirst
-      initContainers:
-      - args:
-        - s3://torchhub/resnet/resnet18
-        - /opt/mlserver/.torch/hub/checkpoints/
-        envFrom:
-        - secretRef:
-            name: seldon-rclone-secret
-        image: seldonio/rclone-storage-initializer:1.16.0-dev
-        imagePullPolicy: IfNotPresent
-        name: classifier-model-initializer
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /opt/mlserver/.torch/hub/checkpoints
-          name: resnet-volume
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext:
         runAsUser: 8888
-      terminationGracePeriodSeconds: 10
+      terminationGracePeriodSeconds: 20
       volumes:
-      - emptyDir: {}
-        name: resnet-volume
       - downwardAPI:
           defaultMode: 420
           items:
@@ -181,3 +145,31 @@ spec:
               fieldPath: metadata.annotations
             path: annotations
         name: seldon-podinfo
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: seldon-core
+    seldon-app: router-router
+    seldon-deployment-id: router
+    seldon.io/model: "true"
+  name: router-router
+  namespace: default
+spec:
+  ports:
+  - name: http
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  - name: grpc
+    port: 9500
+    protocol: TCP
+    targetPort: 9500
+  selector:
+    seldon-app: router-router
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

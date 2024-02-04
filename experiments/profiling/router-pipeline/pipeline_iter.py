@@ -61,7 +61,7 @@ def experiments(
     workload_type = config["workload_type"]
     workload_config = config["workload_config"]
 
-    central_queue = config["central_queue"]
+    # central_queue = config["central_queue"]
     distrpution_time = config["distrpution_time"]
 
     if workload_type == "static":
@@ -142,46 +142,46 @@ def experiments(
                                     benchmark_duration=benchmark_duration,
                                 )
                                 if not experiments_exist:
-                                    if central_queue:
-                                        setup_central_pipeline(
-                                            node_names=node_names,
-                                            pipeline_name=pipeline_name,
-                                            cpu_request=cpu_request,
-                                            memory_request=memory_request,
-                                            model_variant=model_variant,
-                                            max_batch_size=max_batch_size,
-                                            max_batch_time=max_batch_time,
-                                            replica=replica,
-                                            pipeline_path=pipeline_path,
-                                            timeout=timeout,
-                                            num_nodes=len(config["nodes"]),
-                                            use_threading=use_threading,
-                                            # HACK for now we set the number of requests
-                                            # proportional to the the number threads
-                                            num_interop_threads=cpu_requests,
-                                            num_threads=cpu_requests,
-                                            distrpution_time=distrpution_time,
-                                        )
-                                    else:
-                                        setup_router_pipeline(
-                                            node_names=node_names,
-                                            pipeline_name=pipeline_name,
-                                            cpu_request=cpu_request,
-                                            memory_request=memory_request,
-                                            model_variant=model_variant,
-                                            max_batch_size=max_batch_size,
-                                            max_batch_time=max_batch_time,
-                                            replica=replica,
-                                            pipeline_path=pipeline_path,
-                                            timeout=timeout,
-                                            num_nodes=len(config["nodes"]),
-                                            use_threading=use_threading,
-                                            # HACK for now we set the number of requests
-                                            # proportional to the the number threads
-                                            num_interop_threads=cpu_request,
-                                            num_threads=cpu_request,
-                                            distrpution_time=distrpution_time,
-                                        )
+                                    # if central_queue:
+                                    setup_central_pipeline(
+                                        node_names=node_names,
+                                        pipeline_name=pipeline_name,
+                                        cpu_request=cpu_request,
+                                        memory_request=memory_request,
+                                        model_variant=model_variant,
+                                        max_batch_size=max_batch_size,
+                                        max_batch_time=max_batch_time,
+                                        replica=replica,
+                                        pipeline_path=pipeline_path,
+                                        timeout=timeout,
+                                        num_nodes=len(config["nodes"]),
+                                        use_threading=use_threading,
+                                        # HACK for now we set the number of requests
+                                        # proportional to the the number threads
+                                        num_interop_threads=cpu_requests,
+                                        num_threads=cpu_requests,
+                                        distrpution_time=distrpution_time,
+                                    )
+                                    # else:
+                                    #     setup_router_pipeline(
+                                    #         node_names=node_names,
+                                    #         pipeline_name=pipeline_name,
+                                    #         cpu_request=cpu_request,
+                                    #         memory_request=memory_request,
+                                    #         model_variant=model_variant,
+                                    #         max_batch_size=max_batch_size,
+                                    #         max_batch_time=max_batch_time,
+                                    #         replica=replica,
+                                    #         pipeline_path=pipeline_path,
+                                    #         timeout=timeout,
+                                    #         num_nodes=len(config["nodes"]),
+                                    #         use_threading=use_threading,
+                                    #         # HACK for now we set the number of requests
+                                    #         # proportional to the the number threads
+                                    #         num_interop_threads=cpu_request,
+                                    #         num_threads=cpu_request,
+                                    #         distrpution_time=distrpution_time,
+                                    #     )
 
                                     logger.info("Checking if the model is up ...")
                                     logger.info("\n")
@@ -586,8 +586,8 @@ def main(config_name: str):
     data_type = config["nodes"][0]["data_type"]
 
     # pipeline path based on pipeline type [central | distributed] queues
-    central_queue = config["central_queue"]
-    pipeline_type = "mlserver-centralized" if central_queue else "mlserver"
+    # central_queue = config["central_queue"]
+    pipeline_type = "mlserver"
     pipeline_path = os.path.join(
         PIPLINES_PATH, pipeline_type, pipeline_folder_name, "seldon-core-version"
     )

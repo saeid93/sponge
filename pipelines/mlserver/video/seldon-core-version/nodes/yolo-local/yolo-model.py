@@ -77,12 +77,18 @@ except KeyError as e:
         f"LOGS_ENABLED env variable not set, using default value: {LOGS_ENABLED}"
     )
 
+try:
+    QUEUE_MODE = os.getenv("QUEUE_MODE", "True").lower() in ("true", "1", "t")
+    logger.info(f"QUEUE_MODE set to: {QUEUE_MODE}")
+except KeyError as e:
+    QUEUE_MODE = False
+    logger.info(f"QUEUE_MODE env variable not set, using default value: {QUEUE_MODE}")
+
 if not LOGS_ENABLED:
     logger.disabled = True
 
 
 class Yolo(MLModel):
-
     @custom_handler(rest_path="/change")
     async def change_thread(self, request: Request) -> Response:
         """
@@ -117,10 +123,7 @@ class Yolo(MLModel):
             self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
             logger.info(f"max_batch_size: {self._settings.max_batch_size}")
             logger.info(f"max_batch_time: {self._settings.max_batch_time}")
-            self.model = torch.hub.load(
-                "ultralytics/yolov5",
-                self.MODEL_VARIANT
-            )
+            self.model = torch.hub.load("ultralytics/yolov5", self.MODEL_VARIANT)
             logger.info("model loaded!")
             self.loaded = True
             logger.info("model loading complete!")
@@ -139,16 +142,24 @@ class Yolo(MLModel):
         for request_input in payload.inputs:
             batch_shape = request_input.shape[0]
             if batch_shape == 1:
-                dtypes = [request_input.parameters.extended_parameters['dtype']]
-                shapes = [request_input.parameters.extended_parameters['datashape']]
+                dtypes = [request_input.parameters.extended_parameters["dtype"]]
+                shapes = [request_input.parameters.extended_parameters["datashape"]]
             else:
-                extended_parameters_repeated = request_input.parameters.extended_parameters
+                extended_parameters_repeated = (
+                    request_input.parameters.extended_parameters
+                )
                 if request_input.parameters.extended_parameters is None:
-                    extended_parameters_repeated = request_input.parameters.extended_parameters_repeated
+                    extended_parameters_repeated = (
+                        request_input.parameters.extended_parameters_repeated
+                    )
                 else:
-                    extended_parameters_repeated = request_input.parameters.extended_parameters
-                dtypes = list(map(lambda l: l['dtype'], extended_parameters_repeated))
-                shapes = list(map(lambda l: l['datashape'], extended_parameters_repeated))
+                    extended_parameters_repeated = (
+                        request_input.parameters.extended_parameters
+                    )
+                dtypes = list(map(lambda l: l["dtype"], extended_parameters_repeated))
+                shapes = list(
+                    map(lambda l: l["datashape"], extended_parameters_repeated)
+                )
             input_data = request_input.data.__root__
             logger.info(f"shapes:\n{shapes}")
             X = decode_from_bin(inputs=input_data, shapes=shapes, dtypes=dtypes)
@@ -159,20 +170,48 @@ class Yolo(MLModel):
         logger.info(f"type of the to the model:\n{type(X)}")
         logger.info(f"len of the to the model:\n{len(X)}")
         objs = self.model(X)
-        output = self.get_cropped(objs)
+        outputs = self.get_cropped(objs)
         serving_time = time.time()
         # TEMP Currently considering only one person per pic, zero index
-        pics = list(map(lambda l: l["person"][0], output))
+        categories = ["person", "car", "liscense"]
+        category_to_node = {
+            "person": "resnet-human",
+            "car": "resnet-car",
+            "liscense": "resnet-liscense",
+        }
+        pics = []
+        next_nodes = []
+        for output in outputs:
+            for category in categories:
+                if output[category] != []:
+                    pics.append(output[category][0])
+                    next_nodes.append(category_to_node[category])
         output_data = list(map(lambda l: l.tobytes(), pics))
         dtypes = "u1"
         extended_parameters = {
-            "node_name": [PREDICTIVE_UNIT_ID], "arrival": [arrival_time], "serving": [serving_time],
-            "dtype": dtypes}
+            "node_name": [PREDICTIVE_UNIT_ID],
+            "arrival": [arrival_time],
+            "serving": [serving_time],
+            "dtype": dtypes,
+        }
         batch_extended_parameters = [extended_parameters] * batch_shape
         for pic, extended_parameters in zip(pics, batch_extended_parameters):
-            extended_parameters['datashape'] = list(pic.shape)
-        if self.settings.max_batch_size == 1:
+            # list of list to hande for the shape to be able to handle images with multipe outputs
+            extended_parameters["datashape"] = list(pic.shape)
+        for next_node, extended_parameters in zip(
+            next_nodes, batch_extended_parameters
+        ):
+            if QUEUE_MODE:
+                next_node = f"queue-{next_node}"
+            logger.info(f"next_node: {next_node}")
+            extended_parameters["next_node"] = next_node
+        if batch_shape == 1:
             batch_extended_parameters = extended_parameters
+            parameters = {"extended_parameters": batch_extended_parameters}
+        elif self.settings.max_batch_size != 1:
+            parameters = {"extended_parameters": batch_extended_parameters}
+        else:
+            parameters = {"extended_parameters_repeated": batch_extended_parameters}
         payload = InferenceResponse(
             outputs=[
                 ResponseOutput(
@@ -180,9 +219,7 @@ class Yolo(MLModel):
                     shape=[batch_shape],
                     datatype="BYTES",
                     data=output_data,
-                    parameters=Parameters(
-                        extended_parameters=batch_extended_parameters,
-                    ),
+                    parameters=Parameters(**parameters),
                 )
             ],
             model_name=self.name,

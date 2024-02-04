@@ -81,16 +81,13 @@ try:
     logger.info(f"QUEUE_MODE set to: {QUEUE_MODE}")
 except KeyError as e:
     QUEUE_MODE = False
-    logger.info(
-        f"QUEUE_MODE env variable not set, using default value: {QUEUE_MODE}"
-    )
+    logger.info(f"QUEUE_MODE env variable not set, using default value: {QUEUE_MODE}")
 
 if not LOGS_ENABLED:
     logger.disabled = True
 
 
 class Yolo(MLModel):
-
     @custom_handler(rest_path="/change")
     async def change_thread(self, request: Request) -> Response:
         """
@@ -147,16 +144,24 @@ class Yolo(MLModel):
         for request_input in payload.inputs:
             batch_shape = request_input.shape[0]
             if batch_shape == 1:
-                dtypes = [request_input.parameters.extended_parameters['dtype']]
-                shapes = [request_input.parameters.extended_parameters['datashape']]
+                dtypes = [request_input.parameters.extended_parameters["dtype"]]
+                shapes = [request_input.parameters.extended_parameters["datashape"]]
             else:
-                extended_parameters_repeated = request_input.parameters.extended_parameters
+                extended_parameters_repeated = (
+                    request_input.parameters.extended_parameters
+                )
                 if request_input.parameters.extended_parameters is None:
-                    extended_parameters_repeated = request_input.parameters.extended_parameters_repeated
+                    extended_parameters_repeated = (
+                        request_input.parameters.extended_parameters_repeated
+                    )
                 else:
-                    extended_parameters_repeated = request_input.parameters.extended_parameters
-                dtypes = list(map(lambda l: l['dtype'], extended_parameters_repeated))
-                shapes = list(map(lambda l: l['datashape'], extended_parameters_repeated))
+                    extended_parameters_repeated = (
+                        request_input.parameters.extended_parameters
+                    )
+                dtypes = list(map(lambda l: l["dtype"], extended_parameters_repeated))
+                shapes = list(
+                    map(lambda l: l["datashape"], extended_parameters_repeated)
+                )
             input_data = request_input.data.__root__
             logger.info(f"shapes:\n{shapes}")
             X = decode_from_bin(inputs=input_data, shapes=shapes, dtypes=dtypes)
@@ -170,11 +175,11 @@ class Yolo(MLModel):
         outputs = self.get_cropped(objs)
         serving_time = time.time()
         # TEMP Currently considering only one person per pic, zero index
-        categories = ['person', 'car', 'liscense']
+        categories = ["person", "car", "liscense"]
         category_to_node = {
-            'person': 'resnet-human',
-            'car': 'resnet-car',
-            'liscense': 'resnet-liscense'
+            "person": "resnet-human",
+            "car": "resnet-car",
+            "liscense": "resnet-liscense",
         }
         pics = []
         next_nodes = []
@@ -186,22 +191,28 @@ class Yolo(MLModel):
         output_data = list(map(lambda l: l.tobytes(), pics))
         dtypes = "u1"
         extended_parameters = {
-            "node_name": [PREDICTIVE_UNIT_ID], "arrival": [arrival_time], "serving": [serving_time],
-            "dtype": dtypes}
+            "node_name": [PREDICTIVE_UNIT_ID],
+            "arrival": [arrival_time],
+            "serving": [serving_time],
+            "dtype": dtypes,
+        }
         batch_extended_parameters = [extended_parameters] * batch_shape
         for pic, extended_parameters in zip(pics, batch_extended_parameters):
-             # list of list to hande for the shape to be able to handle images with multipe outputs
-            extended_parameters['datashape'] = list(pic.shape)
-        for next_node, extended_parameters in zip(next_nodes, batch_extended_parameters):
-            if QUEUE_MODE:
-                next_node = f"queue-{next_node}"
+            # list of list to hande for the shape to be able to handle images with multipe outputs
+            extended_parameters["datashape"] = list(pic.shape)
+        for next_node, extended_parameters in zip(
+            next_nodes, batch_extended_parameters
+        ):
+            next_node = 'out' # TEMP for dynainf
+            # if QUEUE_MODE:
+            #     next_node = f"queue-{next_node}"
             logger.info(f"next_node: {next_node}")
-            extended_parameters['next_node'] = next_node
+            extended_parameters["next_node"] = next_node
         if batch_shape == 1:
             batch_extended_parameters = extended_parameters
             parameters = {"extended_parameters": batch_extended_parameters}
         elif self.settings.max_batch_size != 1:
-            parameters = {"extended_parameters": batch_extended_parameters}            
+            parameters = {"extended_parameters": batch_extended_parameters}
         else:
             parameters = {"extended_parameters_repeated": batch_extended_parameters}
         payload = InferenceResponse(
@@ -211,9 +222,7 @@ class Yolo(MLModel):
                     shape=[batch_shape],
                     datatype="BYTES",
                     data=output_data,
-                    parameters=Parameters(
-                        **parameters
-                    ),
+                    parameters=Parameters(**parameters),
                 )
             ],
             model_name=self.name,

@@ -75,6 +75,8 @@ spec:
           value: sdghafouri/dynainf:queue
         - name: PREDICTOR_ID
           value: queue-resnet-human
+        - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
+          value: "20971520"
         - name: PREDICTOR_LABELS
           value: '{"sidecar.istio.io/inject":"true","version":"queue-resnet-human"}'
         - name: SELDON_DEPLOYMENT_ID

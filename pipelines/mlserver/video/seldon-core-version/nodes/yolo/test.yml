@@ -1,27 +1,24 @@
-apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: resnet-car-resnet-car-0-resnet-car
+    app: yolo-yolo-0-yolo
     app.kubernetes.io/managed-by: seldon-core
     fluentd: "true"
-    seldon-app: resnet-car-resnet-car
-    seldon-app-svc-resnet-car: resnet-car-resnet-car-resnet-car
-    seldon-deployment-id: resnet-car
+    seldon-app: yolo-yolo
+    seldon-app-svc-yolo: yolo-yolo-yolo
+    seldon-deployment-id: yolo
     seldon.io/model: "true"
     sidecar.istio.io/inject: "true"
-    version: resnet-car
-  name: resnet-car-resnet-car-0-resnet-car
+    version: yolo
+  name: yolo-yolo-0-yolo
   namespace: default
 spec:
-  progressDeadlineSeconds: 600
   replicas: 1
-  revisionHistoryLimit: 10
   selector:
     matchLabels:
-      seldon-app: resnet-car-resnet-car
-      seldon-app-svc-resnet-car: resnet-car-resnet-car-resnet-car
-      seldon-deployment-id: resnet-car
+      seldon-app: yolo-yolo
+      seldon-app-svc-yolo: yolo-yolo-yolo
+      seldon-deployment-id: yolo
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -32,39 +29,43 @@ spec:
       annotations:
         prometheus.io/path: /prometheus
         prometheus.io/scrape: "true"
+        proxy.istio.io/config: |
+          terminationDrainDuration: 10s
         seldon.io/no-engine: "true"
       creationTimestamp: null
       labels:
-        app: resnet-car-resnet-car-0-resnet-car
+        app: yolo-yolo-0-yolo
         app.kubernetes.io/managed-by: seldon-core
         fluentd: "true"
-        seldon-app: resnet-car-resnet-car
-        seldon-app-svc-resnet-car: resnet-car-resnet-car-resnet-car
-        seldon-deployment-id: resnet-car
+        seldon-app: yolo-yolo
+        seldon-app-svc-yolo: yolo-yolo-yolo
+        seldon-deployment-id: yolo
         seldon.io/model: "true"
         sidecar.istio.io/inject: "true"
-        version: resnet-car
+        version: yolo
     spec:
       containers:
       - env:
+        - name: MODEL_PATH
+          value: /mnt/models/yolov5n
         - name: MODEL_VARIANT
-          value: resnet18
+          value: yolov5n
         - name: TORCH_HOME
           value: /opt/mlserver/.torch
         - name: MLSERVER_MODEL_MAX_BATCH_SIZE
-          value: "1"
+          value: ''
         - name: MLSERVER_MODEL_MAX_BATCH_TIME
-          value: "1"
+          value: ''
         - name: MLSERVER_PARALLEL_WORKERS
           value: "0"
         - name: USE_THREADING
-          value: "True"
+          value: 'True'
         - name: NUM_INTEROP_THREADS
-          value: "4"
+          value: '1'
         - name: NUM_THREADS
-          value: "4"
+          value: '1'
         - name: LOGS_ENABLED
-          value: "True"
+          value: 'True'
         - name: PREDICTIVE_UNIT_SERVICE_PORT
           value: "9000"
         - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
@@ -76,19 +77,17 @@ spec:
         - name: MLSERVER_GRPC_PORT
           value: "9500"
         - name: PREDICTIVE_UNIT_ID
-          value: resnet-car
+          value: yolo
         - name: MLSERVER_MODEL_NAME
-          value: resnet-car
-        - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
-          value: "20971520"
+          value: yolo
         - name: PREDICTIVE_UNIT_IMAGE
-          value: sdghafouri/dynainf:resnet-car
+          value: sdghafouri/dynainf:yolo
         - name: PREDICTOR_ID
-          value: resnet-car
+          value: yolo
         - name: PREDICTOR_LABELS
-          value: '{"sidecar.istio.io/inject":"true","version":"resnet-car"}'
+          value: '{"sidecar.istio.io/inject":"true","version":"yolo"}'
         - name: SELDON_DEPLOYMENT_ID
-          value: resnet-car
+          value: yolo
         - name: SELDON_EXECUTOR_ENABLED
           value: "true"
         - name: PREDICTIVE_UNIT_METRICS_SERVICE_PORT
@@ -99,7 +98,7 @@ spec:
           value: "6000"
         - name: MLSERVER_METRICS_ENDPOINT
           value: /prometheus
-        image: sdghafouri/dynainf:resnet-car
+        image: sdghafouri/dynainf:yolo
         imagePullPolicy: Always
         lifecycle:
           preStop:
@@ -107,7 +106,7 @@ spec:
               command:
               - /bin/sh
               - -c
-              - /bin/sleep 10
+              - /bin/sleep 30
         livenessProbe:
           failureThreshold: 3
           initialDelaySeconds: 60
@@ -116,7 +115,7 @@ spec:
           tcpSocket:
             port: 9000
           timeoutSeconds: 1
-        name: resnet-car
+        name: yolo
         ports:
         - containerPort: 6000
           name: metrics
@@ -136,23 +135,23 @@ spec:
           timeoutSeconds: 1
         resources:
           limits:
-            cpu: "4"
-            memory: 4Gi
+            cpu: '1'
+            memory: '4Gi'
           requests:
-            cpu: "4"
-            memory: 4Gi
+            cpu: '1'
+            memory: '4Gi'
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
-        - mountPath: /opt/mlserver/.torch/hub/checkpoints
-          name: resnet-volume
+        - mountPath: /mnt/models
+          name: yolov5-volume
         - mountPath: /etc/podinfo
           name: seldon-podinfo
       dnsPolicy: ClusterFirst
       initContainers:
       - args:
-        - s3://torchhub/resnet/resnet18
-        - /opt/mlserver/.torch/hub/checkpoints/
+        - s3://torchhub/yolo/yolov5n
+        - /mnt/models/yolov5n
         envFrom:
         - secretRef:
             name: seldon-rclone-secret
@@ -163,16 +162,16 @@ spec:
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
-        - mountPath: /opt/mlserver/.torch/hub/checkpoints
-          name: resnet-volume
+        - mountPath: /mnt/models
+          name: yolov5-volume
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext:
         runAsUser: 8888
-      terminationGracePeriodSeconds: 10
+      terminationGracePeriodSeconds: 30
       volumes:
       - emptyDir: {}
-        name: resnet-volume
+        name: yolov5-volume
       - downwardAPI:
           defaultMode: 420
           items:

@@ -69,6 +69,8 @@ spec:
           value: sdghafouri/dynainf:router
         - name: PREDICTOR_ID
           value: router
+        - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
+          value: "20971520"
         - name: PREDICTOR_LABELS
           value: '{"sidecar.istio.io/inject":"true","version":"router"}'
         - name: SELDON_DEPLOYMENT_ID
