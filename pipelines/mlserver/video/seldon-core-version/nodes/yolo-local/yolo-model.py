@@ -16,6 +16,7 @@ from copy import deepcopy
 from typing import List
 from fastapi import Request, Response
 from mlserver.handlers import custom_handler
+import mlserver
 
 
 try:
@@ -130,6 +131,9 @@ class Yolo(MLModel):
         except OSError:
             raise ValueError("model loading unsuccessful")
         self.loaded = True
+        mlserver.register(
+            name="test_input", description="test input to check the working of custom metrics"
+        )
         return self.loaded
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
@@ -138,7 +142,7 @@ class Yolo(MLModel):
         if self.loaded == False:
             self.load()
         arrival_time = time.time()
-
+        mlserver.log(test_input=1)
         for request_input in payload.inputs:
             batch_shape = request_input.shape[0]
             if batch_shape == 1:

@@ -16,6 +16,7 @@ import grpc
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
 import mlserver
+from prometheus_client import Counter
 
 try:
     PREDICTIVE_UNIT_ID = os.environ["PREDICTIVE_UNIT_ID"]
@@ -98,6 +99,7 @@ class Router(MLModel):
             logger.disabled = True
         self.loaded = False
         self.request_counter = 0
+        # self.input_requests_counter = Counter("input_requests", "Number of input requests")
         logger.info("Router loaded")
         mlserver.register(
             name="input_requests", description="Measuring number of input requests"
@@ -108,6 +110,7 @@ class Router(MLModel):
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         if not LOGS_ENABLED:
             logger.disabled = True
+        # self.input_requests_counter.inc()
         mlserver.log(input_requests=1)
 
         # injecting router arrival time to the message

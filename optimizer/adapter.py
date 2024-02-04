@@ -47,6 +47,8 @@ client.Configuration.set_default(kube_config)
 
 kube_custom_api = client.CustomObjectsApi()
 
+from kubernetes.client import V1Container, V1Deployment, V1EnvVar, V1PodSpec, V1ResourceRequirements
+
 
 class Adapter:
     def __init__(
@@ -214,10 +216,6 @@ class Adapter:
                         0, workload_timestep - self.monitoring_duration * 60
                     ) : workload_timestep
                 ]
-                rps_series_1 = self.monitoring.rps_monitor(
-                    monitoring_duration=self.monitoring_duration
-                )
-                a = 1
             else:
                 rps_series = self.monitoring.rps_monitor(
                     monitoring_duration=self.monitoring_duration
@@ -361,20 +359,16 @@ class Adapter:
             node_config = {}
             # TODO check if it exists before extracting the config
             raw_config = kube_custom_api.get_namespaced_custom_object(
-                group="machinelearning.seldon.io",
+                group="apps",
                 version="v1",
                 namespace=NAMESPACE,
-                plural="seldondeployments",
-                name=node_name,
+                plural="deployments",
+                name=f"{node_name}-{node_name}-0-{node_name}",
             )
-            component_config = raw_config["spec"]["predictors"][0]["componentSpecs"][0]
-            env_vars = component_config["spec"]["containers"][0]["env"]
-            replicas = component_config["replicas"]
-            cpu = int(
-                component_config["spec"]["containers"][0]["resources"]["requests"][
-                    "cpu"
-                ]
-            )
+            component_config = raw_config['spec']['template']['spec']['containers'][0]
+            env_vars = component_config["env"]
+            replicas = raw_config['spec']['replicas']
+            cpu = int(component_config['resources']['requests']['cpu'])
             for env_var in env_vars:
                 if env_var["name"] == "MODEL_VARIANT":
                     variant = env_var["value"]
@@ -387,19 +381,17 @@ class Adapter:
                 node_config["batch"] = batch
             else:
                 raw_queue_config = kube_custom_api.get_namespaced_custom_object(
-                    group="machinelearning.seldon.io",
+                    group="apps",
                     version="v1",
                     namespace=NAMESPACE,
-                    plural="seldondeployments",
-                    name="queue-" + node_name,
+                    plural="deployments",
+                    name=f"queue-{node_name}-queue-{node_name}-0-queue-{node_name}",
                 )
-                queue_component_config = raw_queue_config["spec"]["predictors"][0][
-                    "componentSpecs"
-                ][0]
-                queue_env_vars = queue_component_config["spec"]["containers"][0]["env"]
-                for env_var in queue_env_vars:
-                    if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
-                        batch = env_var["value"]
+                queue_component_config = raw_queue_config['spec']['template']['spec']['containers'][0]
+                queue_env_vars = queue_component_config["env"]
+                for queue_env_var in queue_env_vars:
+                    if queue_env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
+                        batch = queue_env_var["value"]
                 node_config["batch"] = batch
             current_config[node_name] = node_config
         return current_config

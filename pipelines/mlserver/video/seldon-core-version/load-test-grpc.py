@@ -18,15 +18,15 @@ def image_loader(folder_path, image_name):
 
 
 PATH = pathlib.Path(__file__).parent.resolve()
-# image = "human.jpg"
-image = "car.jpg"
+image = "human.jpg"
+# image = "car.jpg"
 data = image_loader(PATH, image)
 data_shape = list(np.array(data).shape)
 data = np.array(data).flatten()
 
 
-load = 5
-test_duration = 1
+load = 50
+test_duration = 100
 variant = 0
 platform = "router"
 workload = [load] * test_duration

@@ -21,8 +21,8 @@ data = image_loader(PATH, "car.jpg")
 data_shape = list(np.array(data).shape)
 data = np.array(data).flatten()
 
-load = 40
-test_duration = 100
+load = 10
+test_duration = 10
 variant = 0
 platform = "mlserver"
 workload = [load] * test_duration

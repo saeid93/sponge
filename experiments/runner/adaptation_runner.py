@@ -30,7 +30,7 @@ from experiments.utils.workload import make_workload
 
 @click.command()
 @click.option(
-    "--config-name", required=True, type=str, default="predictor-repeat-video-3-1"
+    "--config-name", required=True, type=str, default="video"
 )
 @click.option(
     "--type-of",
@@ -95,7 +95,7 @@ def main(config_name: str, type_of: str):
     pipeline_name = config["pipeline_name"]
     only_measured_profiles = config["only_measured_profiles"]
     profiling_load = config["profiling_load"]
-    # central_queue = config["central_queue"]
+    central_queue = config["central_queue"]
     lowest_model_accuracy = config["lowest_model_accuracy"]
 
     # pipeline config
