@@ -177,7 +177,6 @@ spec:
     protocol: TCP
     targetPort: 9000
   - name: grpc
-    # nodePort: 32001
     port: 9500
     protocol: TCP
     targetPort: 9500

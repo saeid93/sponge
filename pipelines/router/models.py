@@ -112,7 +112,8 @@ class Router(MLModel):
             logger.disabled = True
         # self.input_requests_counter.inc()
         mlserver.log(input_requests=1)
-
+        logger.info(f"extended paramters from the model: {payload.inputs[0].parameters.extended_parameters}")
+        logger.info(f"sla from the model: {payload.inputs[0].parameters.extended_parameters['sla']}")
         # injecting router arrival time to the message
         arrival_time = time.time()
         self.request_counter += 1

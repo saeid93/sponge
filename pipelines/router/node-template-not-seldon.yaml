@@ -162,7 +162,6 @@ metadata:
 spec:
   ports:
   - name: http
-    # nodePort: 32002
     port: 9000
     protocol: TCP
     targetPort: 9000

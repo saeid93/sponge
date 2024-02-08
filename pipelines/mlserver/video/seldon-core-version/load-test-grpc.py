@@ -25,10 +25,10 @@ data_shape = list(np.array(data).shape)
 data = np.array(data).flatten()
 
 
-load = 50
-test_duration = 100
+load = 10
+test_duration = 10
 variant = 0
-platform = "router"
+platform = "router-not-seldon"
 workload = [load] * test_duration
 data_type = "image"
 mode = "equal"  # options - step, equal, exponential
@@ -82,6 +82,7 @@ load_tester = MLServerAsyncGrpc(
     data=data,
     mode=mode,  # options - step, equal, exponential
     data_type=data_type,
+    sla=75
 )
 
 responses = asyncio.run(load_tester.start())

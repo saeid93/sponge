@@ -11,6 +11,7 @@ import sys
 import pandas as pd
 import concurrent.futures
 import tensorflow as tf
+import requests
 from copy import deepcopy
 from tensorflow.keras.models import load_model
 import re
@@ -46,8 +47,6 @@ except AttributeError:
 client.Configuration.set_default(kube_config)
 
 kube_custom_api = client.CustomObjectsApi()
-
-from kubernetes.client import V1Container, V1Deployment, V1EnvVar, V1PodSpec, V1ResourceRequirements
 
 
 class Adapter:
@@ -189,7 +188,6 @@ class Adapter:
             logger.info(f"Waiting {self.adaptation_interval}" " to make next descision")
             logger.info("-" * 50)
             for _ in tqdm.tqdm(range(self.adaptation_interval)):
-                # if timestep == 0: break # adapt on the begining
                 time.sleep(1)
             if self.teleport_mode:
                 workload_timestep += self.adaptation_interval
@@ -413,85 +411,34 @@ class Adapter:
     def change_node_config(self, inputs: Tuple[str, Dict[str, int]]):
         node_name, node_config = inputs
         deployment_config = kube_custom_api.get_namespaced_custom_object(
-            group="machinelearning.seldon.io",
+            group="apps",
             version="v1",
             namespace=NAMESPACE,
-            plural="seldondeployments",
-            name=node_name,
+            plural="deployments",
+            name=f"{node_name}-{node_name}-0-{node_name}",
         )
-        deployment_config["spec"]["predictors"][0]["componentSpecs"][0][
-            "replicas"
-        ] = node_config["replicas"]
-        deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
-            "containers"
-        ][0]["resources"]["limits"]["cpu"] = str(node_config["cpu"])
-        deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
-            "containers"
-        ][0]["resources"]["requests"]["cpu"] = str(node_config["cpu"])
-        for env_index, env_var in enumerate(
-            deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
-                "containers"
-            ][0]["env"]
-        ):
-            if env_var["name"] == "MODEL_VARIANT":
-                deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
-                    "containers"
-                ][0]["env"][env_index]["value"] = node_config["variant"]
-                if self.from_storage[node_name]:
-                    init_container_args = deployment_config["spec"]["predictors"][0][
-                        "componentSpecs"
-                    ][0]["spec"]["initContainers"][0]["args"]
-                    if node_name not in ["yolo", "resnet-human"]:
-                        # also fix the variants
-                        deployment_config["spec"]["predictors"][0]["componentSpecs"][0][
-                            "spec"
-                        ]["initContainers"][0]["args"] = [
-                            re.sub(r"/([^/]+)$", "/" + node_config["variant"], model)
-                            for model in init_container_args
-                        ]
-            if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
-                deployment_config["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
-                    "containers"
-                ][0]["env"][env_index]["value"] = str(1)
-        if self.central_queue:
-            queue_deployment_config = kube_custom_api.get_namespaced_custom_object(
-                group="machinelearning.seldon.io",
-                version="v1",
-                namespace=NAMESPACE,
-                plural="seldondeployments",
-                name="queue-" + node_name,
-            )
-            for env_index, env_var in enumerate(
-                queue_deployment_config["spec"]["predictors"][0]["componentSpecs"][0][
-                    "spec"
-                ]["containers"][0]["env"]
-            ):
-                if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
-                    queue_deployment_config["spec"]["predictors"][0]["componentSpecs"][
-                        0
-                    ]["spec"]["containers"][0]["env"][env_index]["value"] = str(
-                        node_config["batch"]
-                    )
+        deployment_config["spec"]["replicas"] = node_config["replicas"]
+        deployment_config["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"]["cpu"] = str(node_config["cpu"])
+        deployment_config["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"]["cpu"] = str(node_config["cpu"])
         number_of_retries = 3
         for _ in range(3):
             try:
                 kube_custom_api.replace_namespaced_custom_object(
-                    group="machinelearning.seldon.io",
+                    group="apps",
                     version="v1",
                     namespace=NAMESPACE,
-                    plural="seldondeployments",
-                    name=node_name,
+                    plural="deployments",
+                    name=f"{node_name}-{node_name}-0-{node_name}",
                     body=deployment_config,
                 )
-                if self.central_queue:
-                    kube_custom_api.replace_namespaced_custom_object(
-                        group="machinelearning.seldon.io",
-                        version="v1",
-                        namespace=NAMESPACE,
-                        plural="seldondeployments",
-                        name="queue-" + node_name,
-                        body=queue_deployment_config,
-                    )
+                _ = requests.post(
+                    f"http://localhost:32003/change",
+                    json={"interop_threads": node_config["cpu"], "num_threads": node_config["cpu"]},
+                )
+                _ = requests.post(
+                    f"http://localhost:32002/v2/repository/models/queue-{node_name}/load",
+                    json={"max_batch_size": node_config['batch']},
+                )
                 return True  # Return True if the code execution is successful
             except ApiException:
                 logger.info(

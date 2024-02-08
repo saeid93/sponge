@@ -613,6 +613,7 @@ def load_test(
         mode=mode,  # options - step, equal, exponential
         data_type=data_type,
         benchmark_duration=benchmark_duration,
+        sla=75
     )
     responses = asyncio.run(load_tester.start())
     end_time = time.time()
