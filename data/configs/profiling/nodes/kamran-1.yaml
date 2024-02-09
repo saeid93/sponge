@@ -1,5 +1,5 @@
-series: 307
-series_meta: 'yolo static inter & intra (== 8)'
+series: 309
+series_meta: 'YOLO intra = 1, inter = int(cpu)'
 pipeline_name: video
 node_name: yolo
 data_type: image
@@ -7,10 +7,10 @@ timeout: 100
 mode: exponential
 model_variants:
   - yolov5n
-  - yolov5s
-  - yolov5m
-  - yolov5l
-  - yolov5x
+  # - yolov5s
+  # - yolov5m
+  # - yolov5l
+  # - yolov5x
 max_batch_size:
   - '1'
   - '2'
@@ -47,7 +47,7 @@ workload_config:
   # - 10
   # - 30
   # - 40
-  - 64
+  - 128
   load_duration: 60
 # workload_type: twitter
 # workload_config:
