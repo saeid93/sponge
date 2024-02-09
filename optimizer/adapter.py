@@ -218,6 +218,9 @@ class Adapter:
                 rps_series = self.monitoring.rps_monitor(
                     monitoring_duration=self.monitoring_duration
                 )
+                sla_series = self.monitoring.sla_monitor(
+                    monitoring_duration=self.monitoring_duration
+                )
             if rps_series is None:
                 continue
             predicted_load = self.predictor.predict(rps_series)
@@ -505,6 +508,24 @@ class Monitoring:
             rate=rate,
         )
         return rps_series
+
+    def sla_monitor(self, monitoring_duration: int = 1) -> List[int]:
+        """
+        Get the sla of the router
+        duration in minutes
+        """
+        # Get the complete router pod name to make
+        # sure it is always getting the latest run
+        # router pod
+        rate = 2
+        sla_series, _ = prom_client.get_input_sla(
+            pod_name=self.router_pod_name,
+            namespace="default",
+            duration=monitoring_duration,
+            container="router",
+            rate=rate,
+        )
+        return sla_series
 
     def get_router_pod_name(self):
         self.router_pod_name = get_pod_name("router")[0]

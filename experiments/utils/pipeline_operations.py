@@ -539,7 +539,7 @@ def check_load_test(pipeline_name: str, data_type: str, pipeline_path: str, mode
             model=model,
             data=data,
             data_type=data_type,
-            workload=[2],
+            workload=[2]
         )
         if "failed" not in response[0][0].keys():
             return True
@@ -589,10 +589,11 @@ def load_test(
     model: str,
     workload: List[int],
     data: List[Data],
+    slas: List[float] = [0],
     namespace: str = "default",
     mode: str = "step",
     benchmark_duration=1,
-    queue: Queue = None,
+    queue: Queue = None
 ) -> Tuple[int, int, List[List[Dict[str, Any]]]]:
     start_time = time.time()
 
@@ -608,12 +609,12 @@ def load_test(
         endpoint=endpoint,
         metadata=metadata,
         workload=workload,
+        slas=slas,
         model=model,
         data=data,
         mode=mode,  # options - step, equal, exponential
         data_type=data_type,
         benchmark_duration=benchmark_duration,
-        sla=75
     )
     responses = asyncio.run(load_tester.start())
     end_time = time.time()

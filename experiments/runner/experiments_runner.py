@@ -24,7 +24,7 @@ from experiments.utils.pipeline_operations import (
     load_test,
     remove_pipeline,
     setup_router_pipeline,
-    setup_central_pipeline,
+    setup_central_pipeline
 )
 
 from experiments.utils.constants import (
@@ -34,6 +34,7 @@ from experiments.utils.constants import (
 )
 from experiments.utils import logger
 from experiments.utils.workload import make_workload
+from experiments.utils.slas import make_slas
 
 
 def setup_pipeline(
@@ -150,8 +151,8 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
     mode = config["mode"]
     benchmark_duration = config["benchmark_duration"]
     _, workload = make_workload(config=config)
+    slas = make_slas(image_size=100, sla=1000, length=len(workload))
     data = load_data(data_type, pipeline_path)
-    # try:
     start_time_experiment, end_time_experiment, responses = load_test(
         pipeline_name="router",
         model="router",
@@ -161,6 +162,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
         mode=mode,
         namespace="default",
         benchmark_duration=benchmark_duration,
+        slas=slas
     )
     logger.info("-" * 25 + "saving the report" + "-" * 25)
     logger.info("\n")
