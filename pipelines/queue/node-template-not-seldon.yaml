@@ -90,6 +90,8 @@ spec:
           value: "6000"
         - name: MLSERVER_METRICS_ENDPOINT
           value: /prometheus
+        - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
+          value: "20971520"
         image: sdghafouri/dynainf:queue
         imagePullPolicy: Always
         lifecycle:

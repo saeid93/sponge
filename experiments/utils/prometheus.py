@@ -80,6 +80,6 @@ class PromClient:
         return self.prom_response_postprocess(response)
 
     def get_input_sla(self, pod_name, namespace, container, duration, rate=120):
-        query = f"rate(model_infer_request_sla{{pod='{pod_name}', namespace='{namespace}', container='{container}'}}[{rate}s])[{duration}m:1s]"
+        query = f"model_infer_request_sla{{pod='{pod_name}', namespace='{namespace}', container='{container}'}}[{duration}m:1s]"
         response = requests.get(PROMETHEUS + "/api/v1/query", params={"query": query})
         return self.prom_response_postprocess(response)

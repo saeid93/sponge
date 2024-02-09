@@ -521,7 +521,7 @@ def load_data(data_type: str, pipeline_path: str, node_type: str = "first"):
     return data
 
 
-def check_load_test(pipeline_name: str, data_type: str, pipeline_path: str, model: str):
+def check_load_test(pipeline_name: str, data_type: str, pipeline_path: str, model: str, profiling: bool=False):
     node_type = "first"
     if pipeline_name == "resnet-human":
         node_type = "second"
@@ -539,7 +539,8 @@ def check_load_test(pipeline_name: str, data_type: str, pipeline_path: str, mode
             model=model,
             data=data,
             data_type=data_type,
-            workload=[2]
+            workload=[2],
+            profiling=profiling
         )
         if "failed" not in response[0][0].keys():
             return True
@@ -593,13 +594,16 @@ def load_test(
     namespace: str = "default",
     mode: str = "step",
     benchmark_duration=1,
-    queue: Queue = None
+    queue: Queue = None,
+    profiling: bool = False,
 ) -> Tuple[int, int, List[List[Dict[str, Any]]]]:
     start_time = time.time()
 
     non_seldon = True
     if non_seldon:
         endpoint = "localhost:32001"
+        if profiling:
+            endpoint = "localhost:32004"
     else:
         endpoint = "localhost:32000"
     deployment_name = pipeline_name

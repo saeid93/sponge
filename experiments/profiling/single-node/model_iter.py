@@ -40,7 +40,7 @@ from experiments.utils.prometheus import PromClient
 prom_client = PromClient()
 
 from experiments.utils import logger
-
+from experiments.utils.slas import make_slas
 
 def experiments(
     pipeline_name: str, node_name: str, config: dict, node_path: str, data_type: str
@@ -154,6 +154,7 @@ def experiments(
                                         model=node_name,
                                         data_type=data_type,
                                         pipeline_path=node_path,
+                                        profiling=True
                                     )
                                     logger.info("model warm up ...")
                                     logger.info("\n")
@@ -177,8 +178,11 @@ def experiments(
                                     data = load_data(
                                         data_type=data_type,
                                         pipeline_path=node_path,
-                                        node_type=node_type,
+                                        node_type=node_type
                                     )
+                                    image_size = data[0].data.nbytes / 1024
+                                    sla = 1000 * config['sla']
+                                    slas = make_slas(image_size=image_size, sla=sla, length=len(workload))
                                     # start_time = time.time()
                                     # output_queue = Queue()
                                     try:
@@ -230,6 +234,8 @@ def experiments(
                                             # load_duration=load_duration,
                                             # no_engine=no_engine,
                                             benchmark_duration=benchmark_duration,
+                                            slas=slas,
+                                            profiling=True
                                         )
                                         logger.info(
                                             "-" * 25 + "saving the report" + "-" * 25
@@ -488,7 +494,7 @@ def save_report(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="kamran-2")
+@click.option("--config-name", required=True, type=str, default="kamran-1")
 def main(config_name: str):
     config_path = os.path.join(NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, "r") as cf:
