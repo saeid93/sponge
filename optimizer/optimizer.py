@@ -155,23 +155,6 @@ class Optimizer:
                         model_latencies_parameters[stage][variant_name][
                             batch
                         ] = dummy_latency
-            # else:
-            # HACK gurobi does not support cubic equations so for now
-            # we will use the same method as only measured profiles to store all the
-            # latency values staticly
-            pass
-            # model_latencies_parameters = {}
-            # inference_graph = deepcopy(self.pipeline.inference_graph)
-            # for task in inference_graph:
-            #     model_latencies_parameters[task.name] = {}
-            #     for variant_name in task.variant_names:
-            #         model_latencies_parameters[task.name][variant_name] = {}
-            #         task.model_switch(variant_name)
-            #         # for batch_size in task.batches:
-            #         # task.change_batch(batch_size)
-            #         model_latencies_parameters[task.name][
-            #             variant_name
-            #         ] = task.latency_model_params
         return model_latencies_parameters
 
     def throughput_parameters(self) -> Dict[str, Dict[str, List[float]]]:
@@ -250,11 +233,12 @@ class Optimizer:
     def all_states(
         self,
         scaling_cap: int,
-        alpha: float,
-        beta: float,
-        gamma: float,
+        # alpha: float,
+        # beta: float,
+        # gamma: float,
         check_constraints: bool,
-        arrival_rate: int,
+        # arrival_rate: int,
+        sla_series: List[float],
         num_state_limit: int = None,
     ) -> pd.DataFrame:
         """generate all the possible states based on profiling data
@@ -335,11 +319,11 @@ class Optimizer:
                             active_allocation=combination[3][task_id_i]
                         )
                 ok_to_add = False
-                if check_constraints:
-                    if self.constraints(arrival_rate=arrival_rate):
-                        ok_to_add = True
-                else:
-                    ok_to_add = True
+                # if check_constraints:
+                #     if self.constraints(arrival_rate=arrival_rate):
+                #         ok_to_add = True
+                # else:
+                #     ok_to_add = True
                 if ok_to_add:
                     state = {}
                     if self.complete_profile:
@@ -377,9 +361,9 @@ class Optimizer:
                         state["pipeline_throughput"] = self.pipeline.pipeline_throughput
                         state["pipeline_cpu"] = self.pipeline.pipeline_cpu
                         state["pipeline_gpu"] = self.pipeline.pipeline_gpu
-                        state["alpha"] = alpha
-                        state["beta"] = beta
-                        state["gamma"] = gamma
+                        # state["alpha"] = alpha
+                        # state["beta"] = beta
+                        # state["gamma"] = gamma
                         state["accuracy_objective"] = self.accuracy_objective()
                         state["resource_objective"] = self.resource_objective()
                         state["batch_objective"] = self.batch_objective()
@@ -402,9 +386,9 @@ class Optimizer:
                             f"task_{task_id_j}_replicas"
                         ] = self.pipeline.inference_graph[task_id_j].replicas
 
-                    state["objective"] = self.objective(
-                        alpha=alpha, beta=beta, gamma=gamma
-                    )
+                    # state["objective"] = self.objective(
+                    #     alpha=alpha, beta=beta, gamma=gamma
+                    # )
                     states.append(state)
                     if num_state_limit is not None:
                         state_counter += 1
@@ -415,35 +399,38 @@ class Optimizer:
                 pass
         return pd.DataFrame(states)
 
-    def brute_force(
+    def dynainf(
         self,
         scaling_cap: int,
-        alpha: float,
-        beta: float,
-        gamma: float,
-        arrival_rate: int,
+        # alpha: float,
+        # beta: float,
+        # gamma: float,
+        # arrival_rate: int,
+        sla_series: List[float],
         num_state_limit: int = None,
     ) -> pd.DataFrame:
         states = self.all_states(
             check_constraints=True,
             scaling_cap=scaling_cap,
-            alpha=alpha,
-            beta=beta,
-            gamma=gamma,
-            arrival_rate=arrival_rate,
+            # alpha=alpha,
+            # beta=beta,
+            # gamma=gamma,
+            # arrival_rate=arrival_rate,
+            sla_series=sla_series,
             num_state_limit=num_state_limit,
         )
         optimal = states[states["objective"] == states["objective"].max()]
         return optimal
 
-    def gurobi_optmizer(
+    def fa2(
         self,
         scaling_cap: int,
         batching_cap: int,
-        alpha: float,
-        beta: float,
-        gamma: float,
-        arrival_rate: int,
+        # alpha: float,
+        # beta: float,
+        # gamma: float,
+        # arrival_rate: int,
+        sla_series: List[float],
         num_state_limit: int,
         dir_path: str = None,
     ) -> pd.DataFrame:
@@ -968,31 +955,34 @@ class Optimizer:
         self,
         optimization_method: str,
         scaling_cap: int,
-        alpha: float,
-        beta: float,
-        gamma: float,
-        arrival_rate: int,
+        # alpha: float,
+        # beta: float,
+        # gamma: float,
+        # arrival_rate: int,
+        sla_series: List[float],
         num_state_limit: int = None,
         batching_cap: int = None,
         dir_path: str = None,
     ) -> pd.DataFrame:
-        if optimization_method == "brute-force":
-            optimal = self.brute_force(
+        if optimization_method == "dynainf":
+            optimal = self.dynainf(
                 scaling_cap=scaling_cap,
-                alpha=alpha,
-                beta=beta,
-                gamma=gamma,
-                arrival_rate=arrival_rate,
+                # alpha=alpha,
+                # beta=beta,
+                # gamma=gamma,
+                # arrival_rate=arrival_rate,
+                sla_series=sla_series,
                 num_state_limit=num_state_limit,
             )
-        elif optimization_method == "gurobi":
-            optimal = self.gurobi_optmizer(
+        elif optimization_method == "fa2":
+            optimal = self.fa2(
                 scaling_cap=scaling_cap,
                 batching_cap=batching_cap,
-                alpha=alpha,
-                beta=beta,
-                gamma=gamma,
-                arrival_rate=arrival_rate,
+                # alpha=alpha,
+                # beta=beta,
+                # gamma=gamma,
+                # arrival_rate=arrival_rate,
+                sla_series=sla_series,
                 num_state_limit=num_state_limit,
                 dir_path=dir_path,
             )

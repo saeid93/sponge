@@ -56,14 +56,14 @@ class Adapter:
         pipeline: Pipeline,
         node_names: List[str],
         adaptation_interval: int,
-        optimization_method: Literal["gurobi", "brute-force"],
+        optimization_method: Literal["dynainf", "fa2"],
         allocation_mode: Literal["base", "variable"],
         only_measured_profiles: bool,
         scaling_cap: int,
         batching_cap: int,
-        alpha: float,
-        beta: float,
-        gamma: float,
+        # alpha: float,
+        # beta: float,
+        # gamma: float,
         num_state_limit: int,
         monitoring_duration: int,
         predictor_type: str,
@@ -111,21 +111,21 @@ class Adapter:
         self.optimization_method = optimization_method
         self.scaling_cap = scaling_cap
         self.batching_cap = batching_cap
-        self.alpha = alpha
-        self.beta = beta
-        self.gamma = gamma
+        # self.alpha = alpha
+        # self.beta = beta
+        # self.gamma = gamma
         self.num_state_limit = num_state_limit
         self.monitoring_duration = monitoring_duration
         self.predictor_type = predictor_type
         self.monitoring = Monitoring(
             pipeline_name=self.pipeline_name, sla=self.pipeline.sla
         )
-        self.predictor = Predictor(
-            predictor_type=self.predictor_type,
-            predictor_margin=predictor_margin,
-            backup_predictor_type=self.backup_predictor_type,
-            backup_predictor_duration=self.backup_predictor_duration,
-        )
+        # self.predictor = Predictor(
+        #     predictor_type=self.predictor_type,
+        #     predictor_margin=predictor_margin,
+        #     backup_predictor_type=self.backup_predictor_type,
+        #     backup_predictor_duration=self.backup_predictor_duration,
+        # )
         self.central_queue = central_queue
         self.teleport_mode = teleport_mode
         self.teleport_interval = teleport_interval
@@ -208,33 +208,27 @@ class Adapter:
 
             time_interval += self.adaptation_interval
             timestep += 1
-            if self.teleport_mode:
-                rps_series = workload[
-                    max(
-                        0, workload_timestep - self.monitoring_duration * 60
-                    ) : workload_timestep
-                ]
-            else:
-                rps_series = self.monitoring.rps_monitor(
-                    monitoring_duration=self.monitoring_duration
-                )
-                sla_series = self.monitoring.sla_monitor(
-                    monitoring_duration=self.monitoring_duration
-                )
+            rps_series = self.monitoring.rps_monitor(
+                monitoring_duration=self.monitoring_duration
+            )
+            sla_series = self.monitoring.sla_monitor(
+                monitoring_duration=self.monitoring_duration
+            )
             if rps_series is None:
                 continue
-            predicted_load = self.predictor.predict(rps_series)
+            # predicted_load = self.predictor.predict(rps_series)
             logger.info("-" * 50)
-            logger.info(f"\nPredicted Load: {predicted_load}\n")
+            # logger.info(f"\nPredicted Load: {predicted_load}\n")
             logger.info("-" * 50)
             optimal = self.optimizer.optimize(
                 optimization_method=self.optimization_method,
                 scaling_cap=self.scaling_cap,
                 batching_cap=self.batching_cap,
-                alpha=self.alpha,
-                beta=self.beta,
-                gamma=self.gamma,
-                arrival_rate=predicted_load,
+                # alpha=self.alpha,
+                # beta=self.beta,
+                # gamma=self.gamma,
+                # arrival_rate=predicted_load,
+                sla_series=sla_series,
                 num_state_limit=self.num_state_limit,
             )
             if "objective" in optimal.columns:
@@ -308,7 +302,7 @@ class Adapter:
                 timestep=timestep,
                 time_interval=time_interval,
                 monitored_load=rps_series,
-                predicted_load=predicted_load,
+                # predicted_load=predicted_load,
                 change_successful=config_change_results,
             )
 
@@ -570,52 +564,52 @@ class Monitoring:
         self.adaptation_report["metadata"]["recieved_load"] = all_recieved_loads
 
 
-class Predictor:
-    def __init__(
-        self,
-        predictor_type,
-        backup_predictor_type: str = "reactive",
-        backup_predictor_duration=2,
-        predictor_margin: int = 100,
-    ) -> int:
-        self.predictor_type = predictor_type
-        self.backup_predictor = backup_predictor_type
-        predictors = {
-            "lstm": load_model(LSTM_PATH),
-            "reactive": lambda l: l[-1],
-            "max": lambda l: max(l),
-            "avg": lambda l: max(l) / len(l),
-            "arima": None,  # it is defined in place
-        }
-        self.model = predictors[predictor_type]
-        self.backup_model = predictors[backup_predictor_type]
-        self.predictor_margin = predictor_margin
-        self.backup_predictor_duration = backup_predictor_duration
+# class Predictor:
+#     def __init__(
+#         self,
+#         predictor_type,
+#         backup_predictor_type: str = "reactive",
+#         backup_predictor_duration=2,
+#         predictor_margin: int = 100,
+#     ) -> int:
+#         self.predictor_type = predictor_type
+#         self.backup_predictor = backup_predictor_type
+#         predictors = {
+#             "lstm": load_model(LSTM_PATH),
+#             "reactive": lambda l: l[-1],
+#             "max": lambda l: max(l),
+#             "avg": lambda l: max(l) / len(l),
+#             "arima": None,  # it is defined in place
+#         }
+#         self.model = predictors[predictor_type]
+#         self.backup_model = predictors[backup_predictor_type]
+#         self.predictor_margin = predictor_margin
+#         self.backup_predictor_duration = backup_predictor_duration
 
-    def predict(self, series: List[int]):
-        series_aggregated = []
-        step = 10
-        for i in range(0, len(series), step):
-            series_aggregated.append(max(series[i : i + step]))
-        if len(series_aggregated) >= int((self.backup_predictor_duration * 60) / step):
-            if self.predictor_type == "lstm":
-                model_intput = tf.convert_to_tensor(
-                    np.array(series_aggregated[-LSTM_INPUT_SIZE:]).reshape(
-                        (-1, LSTM_INPUT_SIZE, 1)
-                    ),
-                    dtype=tf.float32,
-                )
-                model_output = self.model.predict(model_intput)[0][0]
-            elif self.predictor_type == "arima":
-                model_intput = np.array(series_aggregated)
-                model = ARIMA(list(model_intput), order=(1, 0, 0))
-                model_fit = model.fit()
-                model_output = int(max(model_fit.forecast(steps=2)))  # max
-            else:
-                model_output = self.model(series_aggregated)
-        else:
-            model_output = self.backup_model(series_aggregated)
+    # def predict(self, series: List[int]):
+    #     series_aggregated = []
+    #     step = 10
+    #     for i in range(0, len(series), step):
+    #         series_aggregated.append(max(series[i : i + step]))
+    #     if len(series_aggregated) >= int((self.backup_predictor_duration * 60) / step):
+    #         if self.predictor_type == "lstm":
+    #             model_intput = tf.convert_to_tensor(
+    #                 np.array(series_aggregated[-LSTM_INPUT_SIZE:]).reshape(
+    #                     (-1, LSTM_INPUT_SIZE, 1)
+    #                 ),
+    #                 dtype=tf.float32,
+    #             )
+    #             model_output = self.model.predict(model_intput)[0][0]
+    #         elif self.predictor_type == "arima":
+    #             model_intput = np.array(series_aggregated)
+    #             model = ARIMA(list(model_intput), order=(1, 0, 0))
+    #             model_fit = model.fit()
+    #             model_output = int(max(model_fit.forecast(steps=2)))  # max
+    #         else:
+    #             model_output = self.model(series_aggregated)
+    #     else:
+    #         model_output = self.backup_model(series_aggregated)
 
-        # apply a safety margin to the system
-        predicted_load = round(model_output * (1 + self.predictor_margin / 100))
-        return predicted_load
+    #     # apply a safety margin to the system
+    #     predicted_load = round(model_output * (1 + self.predictor_margin / 100))
+    #     return predicted_load
