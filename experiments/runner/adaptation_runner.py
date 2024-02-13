@@ -115,8 +115,9 @@ def main(config_name: str, type_of: str):
 
     # optimizer
     alpha = config["alpha"]
-    beta = config["beta"]
-    gamma = config["gamma"]
+
+    # config
+    sla = config["sla"]
 
     # baselines [only scaling | only switching]
     baseline_mode = config["baseline_mode"]
@@ -158,6 +159,7 @@ def main(config_name: str, type_of: str):
         sla_factor=sla_factor,
         accuracy_method=accuracy_method,
         normalize_accuracy=normalize_accuracy,
+        sla=sla,
         pipeline_accuracies=pipeline_accuracies,
         only_measured_profiles=only_measured_profiles,
         profiling_load=profiling_load,
@@ -184,9 +186,7 @@ def main(config_name: str, type_of: str):
         only_measured_profiles=only_measured_profiles,
         scaling_cap=scaling_cap,
         batching_cap=batching_cap,
-        # alpha=alpha,
-        # beta=beta,
-        # gamma=gamma,
+        alpha=alpha,
         num_state_limit=num_state_limit,
         monitoring_duration=monitoring_duration,
         predictor_type=predictor_type,

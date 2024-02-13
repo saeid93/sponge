@@ -1,4 +1,4 @@
-series: 309
+series: 310
 series_meta: 'yolo intra = 1, inter = int(cpu)'
 pipeline_name: video
 node_name: yolo
@@ -12,10 +12,10 @@ model_variants:
   # - yolov5l
   # - yolov5x
 max_batch_size:
-  - '1'
-  - '2'
-  - '4'
-  - '8'
+  # - '1'
+  # - '2'
+  # - '4'
+  # - '8'
   - '16'
   # - '32'
   # - '64'
@@ -23,10 +23,10 @@ max_batch_time:
   - '1'
 cpu_request:
   - '1'
-  - '2'
-  - '4'
-  - '8'
-  - '16'
+  # - '2'
+  # - '4'
+  # - '8'
+  # - '16'
   # - '32'
 memory_request:
   - 2Gi
@@ -45,9 +45,9 @@ workload_config:
   # - 1
   # - 5
   # - 10
-  # - 30
+  - 30
   # - 40
-  - 128
+  # - 128
   load_duration: 60
 # workload_type: twitter
 # workload_config:

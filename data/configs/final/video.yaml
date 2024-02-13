@@ -52,7 +52,6 @@ task_name:
   - crop
 initial_active_model:
   - yolov5n
-  - resnet18
 initial_cpu_allocation:
   - 1
 initial_replica:
@@ -60,11 +59,9 @@ initial_replica:
 initial_batch:
   - 1
 alpha: 2
-beta: 1
-gamma: 0.000001
-scaling_cap: 100 # maximum possible scaling per nodes
-batching_cap: 8 # maximum possible batching per nodes
-num_state_limit: 1 # number of states
+scaling_cap: 16 # maximum possible scaling per nodes
+batching_cap: 16 # maximum possible batching per nodes
+num_state_limit: 1000 # number of states
 threshold: 4 # RPS threshold for finding the base allocation
 optimization_method: dynainf # options: [dynainf | fa2]
 allocation_mode: base # options: [fix | base | variable]
@@ -78,7 +75,7 @@ lowest_model_accuracy: 0
 
 # ----------- load predictor configs -------------
 
-predictor_type: 'lstm' # [reactive | avg | arima | lstm | max]
+predictor_type: 'reactive' # [reactive | avg | arima | lstm | max]
 monitoring_duration: 2 # in minutes
 backup_predictor_type: 'max' # [reactive | avg | lstm | max]
 backup_predictor_duration: 2 # in minutes

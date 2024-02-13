@@ -159,6 +159,7 @@ def generate_simulated_pipeline(
     pipeline_accuracies: Dict[str, Dict[str, float]],
     only_measured_profiles: bool,
     profiling_load: bool,
+    sla: int,
     reference_throughput: str = "max",
     reference_latency: str = "p99",
     latency_margin: int = 0,
@@ -220,7 +221,6 @@ def generate_simulated_pipeline(
             sla_factor=sla_factor,
             allocation_mode=allocation_mode,
             normalize_accuracy=normalize_accuracy,
-            gpu_mode=False,
             lowest_model_accuracy=lowest_model_accuracy,
         )
         inference_graph.append(task)
@@ -230,6 +230,7 @@ def generate_simulated_pipeline(
         sla_factor=sla_factor,
         accuracy_method=accuracy_method,
         normalize_accuracy=normalize_accuracy,
+        sla=sla
     )
     return pipeline
 

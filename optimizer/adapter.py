@@ -61,7 +61,7 @@ class Adapter:
         only_measured_profiles: bool,
         scaling_cap: int,
         batching_cap: int,
-        # alpha: float,
+        alpha: float,
         # beta: float,
         # gamma: float,
         num_state_limit: int,
@@ -111,7 +111,7 @@ class Adapter:
         self.optimization_method = optimization_method
         self.scaling_cap = scaling_cap
         self.batching_cap = batching_cap
-        # self.alpha = alpha
+        self.alpha = alpha
         # self.beta = beta
         # self.gamma = gamma
         self.num_state_limit = num_state_limit
@@ -120,12 +120,12 @@ class Adapter:
         self.monitoring = Monitoring(
             pipeline_name=self.pipeline_name, sla=self.pipeline.sla
         )
-        # self.predictor = Predictor(
-        #     predictor_type=self.predictor_type,
-        #     predictor_margin=predictor_margin,
-        #     backup_predictor_type=self.backup_predictor_type,
-        #     backup_predictor_duration=self.backup_predictor_duration,
-        # )
+        self.predictor = Predictor(
+            predictor_type=self.predictor_type,
+            predictor_margin=predictor_margin,
+            backup_predictor_type=self.backup_predictor_type,
+            backup_predictor_duration=self.backup_predictor_duration,
+        )
         self.central_queue = central_queue
         self.teleport_mode = teleport_mode
         self.teleport_interval = teleport_interval
@@ -168,7 +168,7 @@ class Adapter:
                     to_apply_config=deepcopy(initial_config),
                     node_orders=deepcopy(self.node_names),
                     stage_wise_latencies=deepcopy(self.pipeline.stage_wise_latencies),
-                    stage_wise_accuracies=deepcopy(self.pipeline.stage_wise_accuracies),
+                    # stage_wise_accuracies=deepcopy(self.pipeline.stage_wise_accuracies),
                     stage_wise_throughputs=deepcopy(
                         self.pipeline.stage_wise_throughput
                     ),
@@ -176,7 +176,7 @@ class Adapter:
                 self.monitoring.adaptation_step_report(
                     change_successful=[False for _ in range(len(self.node_names))],
                     to_apply_config=to_save_config,
-                    objective=None,
+                    objectives=None,
                     timestep=timestep,
                     monitored_load=[0],
                     time_interval=time_interval,
@@ -216,7 +216,7 @@ class Adapter:
             )
             if rps_series is None:
                 continue
-            # predicted_load = self.predictor.predict(rps_series)
+            predicted_load = self.predictor.predict(rps_series)
             logger.info("-" * 50)
             # logger.info(f"\nPredicted Load: {predicted_load}\n")
             logger.info("-" * 50)
@@ -224,23 +224,13 @@ class Adapter:
                 optimization_method=self.optimization_method,
                 scaling_cap=self.scaling_cap,
                 batching_cap=self.batching_cap,
-                # alpha=self.alpha,
-                # beta=self.beta,
-                # gamma=self.gamma,
-                # arrival_rate=predicted_load,
+                alpha=self.alpha,
+                arrival_rate=predicted_load,
                 sla_series=sla_series,
                 num_state_limit=self.num_state_limit,
             )
             if "objective" in optimal.columns:
-                # objective = optimal["objective"][0]
-                objective = optimal[
-                    [
-                        "accuracy_objective",
-                        "resource_objective",
-                        "batch_objective",
-                        "objective",
-                    ]
-                ]
+                objectives = optimal['objectives'].values[0]
                 new_configs = self.output_parser(optimal)
                 logger.info("-" * 50)
                 logger.info(f"candidate configs:\n{new_configs}")
@@ -291,18 +281,18 @@ class Adapter:
                     to_apply_config=deepcopy(to_apply_config),
                     node_orders=deepcopy(self.node_names),
                     stage_wise_latencies=deepcopy(self.pipeline.stage_wise_latencies),
-                    stage_wise_accuracies=deepcopy(self.pipeline.stage_wise_accuracies),
+                    # stage_wise_accuracies=deepcopy(self.pipeline.stage_wise_accuracies),
                     stage_wise_throughputs=deepcopy(
                         self.pipeline.stage_wise_throughput
                     ),
                 )
             self.monitoring.adaptation_step_report(
                 to_apply_config=to_save_config,
-                objective=objective,
+                objectives=objectives,
                 timestep=timestep,
                 time_interval=time_interval,
                 monitored_load=rps_series,
-                # predicted_load=predicted_load,
+                predicted_load=predicted_load,
                 change_successful=config_change_results,
             )
 
@@ -315,7 +305,6 @@ class Adapter:
                 config[task_name]["cpu"] = row[f"task_{task_id}_cpu"]
                 config[task_name]["replicas"] = int(row[f"task_{task_id}_replicas"])
                 config[task_name]["batch"] = int(row[f"task_{task_id}_batch"])
-                config[task_name]["variant"] = row[f"task_{task_id}_variant"]
             new_configs.append(config)
         return new_configs
 
@@ -465,13 +454,13 @@ class Adapter:
         to_apply_config: Dict[str, Any],
         node_orders: List[str],
         stage_wise_latencies: List[float],
-        stage_wise_accuracies: List[float],
+        # stage_wise_accuracies: List[float],
         stage_wise_throughputs: List[float],
     ):
         saving_config = to_apply_config
         for index, node in enumerate(node_orders):
             saving_config[node]["latency"] = stage_wise_latencies[index]
-            saving_config[node]["accuracy"] = stage_wise_accuracies[index]
+            # saving_config[node]["accuracy"] = stage_wise_accuracies[index]
             saving_config[node]["throughput"] = stage_wise_throughputs[index]
         return saving_config
 
@@ -527,7 +516,7 @@ class Monitoring:
     def adaptation_step_report(
         self,
         to_apply_config: Dict[str, Dict[str, Union[str, int]]],
-        objective: float,
+        objectives: Dict[str, int],
         timestep: str,
         time_interval: int,
         monitored_load: List[int],
@@ -538,22 +527,18 @@ class Monitoring:
         self.adaptation_report["change_successful"] = change_successful
         self.adaptation_report["timesteps"][timestep] = {}
         self.adaptation_report["timesteps"][timestep]["config"] = to_apply_config
-        if objective is not None:
-            self.adaptation_report["timesteps"][timestep]["accuracy_objective"] = float(
-                objective["accuracy_objective"][0]
-            )
+        if objectives is not None:
             self.adaptation_report["timesteps"][timestep]["resource_objective"] = float(
-                objective["resource_objective"][0]
+                objectives["resource_objective"]
             )
             self.adaptation_report["timesteps"][timestep]["batch_objective"] = float(
-                objective["batch_objective"][0]
+                objectives["batch_objective"]
             )
             self.adaptation_report["timesteps"][timestep]["objective"] = float(
-                objective["objective"][0]
+                objectives["objective"]
             )
         else:
             self.adaptation_report["timesteps"][timestep]["resource_objective"] = None
-            self.adaptation_report["timesteps"][timestep]["accuracy_objective"] = None
             self.adaptation_report["timesteps"][timestep]["batch_objective"] = None
             self.adaptation_report["timesteps"][timestep]["objective"] = None
         self.adaptation_report["timesteps"][timestep]["time_interval"] = time_interval
@@ -564,52 +549,52 @@ class Monitoring:
         self.adaptation_report["metadata"]["recieved_load"] = all_recieved_loads
 
 
-# class Predictor:
-#     def __init__(
-#         self,
-#         predictor_type,
-#         backup_predictor_type: str = "reactive",
-#         backup_predictor_duration=2,
-#         predictor_margin: int = 100,
-#     ) -> int:
-#         self.predictor_type = predictor_type
-#         self.backup_predictor = backup_predictor_type
-#         predictors = {
-#             "lstm": load_model(LSTM_PATH),
-#             "reactive": lambda l: l[-1],
-#             "max": lambda l: max(l),
-#             "avg": lambda l: max(l) / len(l),
-#             "arima": None,  # it is defined in place
-#         }
-#         self.model = predictors[predictor_type]
-#         self.backup_model = predictors[backup_predictor_type]
-#         self.predictor_margin = predictor_margin
-#         self.backup_predictor_duration = backup_predictor_duration
+class Predictor:
+    def __init__(
+        self,
+        predictor_type,
+        backup_predictor_type: str = "reactive",
+        backup_predictor_duration=2,
+        predictor_margin: int = 100,
+    ) -> int:
+        self.predictor_type = predictor_type
+        self.backup_predictor = backup_predictor_type
+        predictors = {
+            "lstm": load_model(LSTM_PATH),
+            "reactive": lambda l: l[-1],
+            "max": lambda l: max(l),
+            "avg": lambda l: max(l) / len(l),
+            "arima": None,  # it is defined in place
+        }
+        self.model = predictors[predictor_type]
+        self.backup_model = predictors[backup_predictor_type]
+        self.predictor_margin = predictor_margin
+        self.backup_predictor_duration = backup_predictor_duration
 
-    # def predict(self, series: List[int]):
-    #     series_aggregated = []
-    #     step = 10
-    #     for i in range(0, len(series), step):
-    #         series_aggregated.append(max(series[i : i + step]))
-    #     if len(series_aggregated) >= int((self.backup_predictor_duration * 60) / step):
-    #         if self.predictor_type == "lstm":
-    #             model_intput = tf.convert_to_tensor(
-    #                 np.array(series_aggregated[-LSTM_INPUT_SIZE:]).reshape(
-    #                     (-1, LSTM_INPUT_SIZE, 1)
-    #                 ),
-    #                 dtype=tf.float32,
-    #             )
-    #             model_output = self.model.predict(model_intput)[0][0]
-    #         elif self.predictor_type == "arima":
-    #             model_intput = np.array(series_aggregated)
-    #             model = ARIMA(list(model_intput), order=(1, 0, 0))
-    #             model_fit = model.fit()
-    #             model_output = int(max(model_fit.forecast(steps=2)))  # max
-    #         else:
-    #             model_output = self.model(series_aggregated)
-    #     else:
-    #         model_output = self.backup_model(series_aggregated)
+    def predict(self, series: List[int]):
+        series_aggregated = []
+        step = 10
+        for i in range(0, len(series), step):
+            series_aggregated.append(max(series[i : i + step]))
+        if len(series_aggregated) >= int((self.backup_predictor_duration * 60) / step):
+            if self.predictor_type == "lstm":
+                model_intput = tf.convert_to_tensor(
+                    np.array(series_aggregated[-LSTM_INPUT_SIZE:]).reshape(
+                        (-1, LSTM_INPUT_SIZE, 1)
+                    ),
+                    dtype=tf.float32,
+                )
+                model_output = self.model.predict(model_intput)[0][0]
+            elif self.predictor_type == "arima":
+                model_intput = np.array(series_aggregated)
+                model = ARIMA(list(model_intput), order=(1, 0, 0))
+                model_fit = model.fit()
+                model_output = int(max(model_fit.forecast(steps=2)))  # max
+            else:
+                model_output = self.model(series_aggregated)
+        else:
+            model_output = self.backup_model(series_aggregated)
 
-    #     # apply a safety margin to the system
-    #     predicted_load = round(model_output * (1 + self.predictor_margin / 100))
-    #     return predicted_load
+        # apply a safety margin to the system
+        predicted_load = round(model_output * (1 + self.predictor_margin / 100))
+        return predicted_load
