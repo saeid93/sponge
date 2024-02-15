@@ -124,3 +124,6 @@ from_storage:
   - false 
 
 sla: 1000
+
+# minikube ip
+minikube_ip: "192.168.49.2"

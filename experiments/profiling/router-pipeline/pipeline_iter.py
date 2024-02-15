@@ -60,6 +60,7 @@ def experiments(
     benchmark_duration = config["benchmark_duration"]
     workload_type = config["workload_type"]
     workload_config = config["workload_config"]
+    minikube_ip = config["minikube_ip"]
 
     # central_queue = config["central_queue"]
     distrpution_time = config["distrpution_time"]
@@ -191,6 +192,7 @@ def experiments(
                                         model="router",
                                         data_type=data_type,
                                         pipeline_path=pipeline_path,
+                                        minikube_ip=minikube_ip
                                     )
                                     logger.info("model warm up ...")
                                     logger.info("\n")
@@ -271,6 +273,7 @@ def experiments(
                                             mode=mode,
                                             namespace="default",
                                             benchmark_duration=benchmark_duration,
+                                            minikube_ip=minikube_ip
                                         )
                                         logger.info("\n")
                                         save_report(

@@ -56,6 +56,8 @@ def setup_pipeline(
 
     from_storage = config["from_storage"]
 
+    minikube_ip = config["minikube_ip"]
+
     model_variants = []
     max_batch_sizes = []
     max_batch_times = []
@@ -129,6 +131,7 @@ def setup_pipeline(
         model="router",
         data_type=data_type,
         pipeline_path=pipeline_path,
+        minikube_ip=minikube_ip
     )
     if warm_upp:
         logger.info("model warm up ...")
@@ -150,6 +153,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
     mode = config["mode"]
     benchmark_duration = config["benchmark_duration"]
+    minikube_ip = config["minikube_ip"]
     _, workload = make_workload(config=config)
     data = load_data(data_type, pipeline_path)
     image_size = data[0].data.nbytes / 1024
@@ -165,7 +169,8 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
         mode=mode,
         namespace="default",
         benchmark_duration=benchmark_duration,
-        slas=slas
+        slas=slas,
+        minikube_ip=minikube_ip
     )
     logger.info("-" * 25 + "saving the report" + "-" * 25)
     logger.info("\n")
