@@ -121,6 +121,6 @@ logs_enabled: true
 
 # ----------- whether to read models from storage or not - should be defined per node -------------
 from_storage:
-  - true
+  - false 
 
 sla: 1000

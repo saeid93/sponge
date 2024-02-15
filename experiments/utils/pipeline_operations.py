@@ -129,7 +129,10 @@ def setup_node(
     environment = Environment(loader=FileSystemLoader(node_path))
     non_seldon = True
     if non_seldon:
-        template_file_name = "node-template-not-seldon.yaml"
+        if from_storage:
+            template_file_name = "node-template-not-seldon.yaml"
+        else:
+            template_file_name = "node-template-not-seldon-with-model.yaml"            
     else:
         if from_storage:
             template_file_name = "node-template.yaml"

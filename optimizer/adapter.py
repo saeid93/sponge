@@ -312,7 +312,7 @@ class Adapter:
             config = {}
             for task_id, task_name in enumerate(self.node_names):
                 config[task_name] = {}
-                config[task_name]["cpu"] = row[f"task_{task_id}_cpu"]
+                config[task_name]["cpu"] = int(row[f"task_{task_id}_cpu"])
                 config[task_name]["replicas"] = int(row[f"task_{task_id}_replicas"])
                 config[task_name]["batch"] = int(row[f"task_{task_id}_batch"])
             new_configs.append(config)
