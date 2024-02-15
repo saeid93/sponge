@@ -120,12 +120,12 @@ class Adapter:
         self.monitoring = Monitoring(
             pipeline_name=self.pipeline_name, sla=self.pipeline.sla
         )
-        self.predictor = Predictor(
-            predictor_type=self.predictor_type,
-            predictor_margin=predictor_margin,
-            backup_predictor_type=self.backup_predictor_type,
-            backup_predictor_duration=self.backup_predictor_duration,
-        )
+        # self.predictor = Predictor(
+        #     predictor_type=self.predictor_type,
+        #     predictor_margin=predictor_margin,
+        #     backup_predictor_type=self.backup_predictor_type,
+        #     backup_predictor_duration=self.backup_predictor_duration,
+        # )
         self.central_queue = central_queue
         self.teleport_mode = teleport_mode
         self.teleport_interval = teleport_interval
@@ -133,7 +133,8 @@ class Adapter:
         for node_index, node_name in enumerate(node_names):
             self.from_storage[node_name] = from_storage[node_index]
 
-    def start_adaptation(self, workload=None):
+    # def start_adaptation(self, workload=None):
+    def start_adaptation(self, predicted_load: int, workload=None):
         # 0. Check if pipeline is up
         # 1. Use monitoring for periodically checking the status of
         #     the pipeline in terms of load
@@ -173,12 +174,13 @@ class Adapter:
                         self.pipeline.stage_wise_throughput
                     ),
                 )
+                current_config = self.extract_current_config()
                 self.monitoring.adaptation_step_report(
                     change_successful=[False for _ in range(len(self.node_names))],
                     to_apply_config=to_save_config,
                     objectives=None,
                     timestep=timestep,
-                    monitored_load=[0],
+                    # monitored_load=[0],
                     time_interval=time_interval,
                     predicted_load=0,
                 )
@@ -199,24 +201,27 @@ class Adapter:
                     "no pipeline in the system," " aborting adaptation process ..."
                 )
                 logger.info("-" * 50)
-                if self.teleport_mode:
-                    self.update_recieved_load(rps_series)
-                else:
-                    self.update_recieved_load()
+                # if self.teleport_mode:
+                #     self.update_recieved_load(rps_series)
+                # else:
+                #     self.update_recieved_load()
+                # self.update_recieved_load()
                 # with the message that the process has ended
                 break
 
             time_interval += self.adaptation_interval
             timestep += 1
-            rps_series = self.monitoring.rps_monitor(
-                monitoring_duration=self.monitoring_duration
-            )
+            # TODO since the load is constant for now we input it
+            # through the configs rather than reading it
+            # rps_series = self.monitoring.rps_monitor(
+            #     monitoring_duration=self.monitoring_duration
+            # )
             sla_series = self.monitoring.sla_monitor(
                 monitoring_duration=self.monitoring_duration
             )
-            if rps_series is None:
-                continue
-            predicted_load = self.predictor.predict(rps_series)
+            # if rps_series is None:
+            #     continue
+            # predicted_load = self.predictor.predict(rps_series)
             logger.info("-" * 50)
             # logger.info(f"\nPredicted Load: {predicted_load}\n")
             logger.info("-" * 50)
@@ -245,19 +250,23 @@ class Adapter:
                     )
                     logger.info("-" * 50)
                     # with the message that the process has ended
-                    if self.teleport_mode:
-                        self.update_recieved_load(rps_series)
-                    else:
-                        self.update_recieved_load()
-                    break
-
+                    # if self.teleport_mode:
+                    #     self.update_recieved_load(rps_series)
+                    # else:
+                    #     self.update_recieved_load()
+                    # break
                 to_apply_config = self.choose_config(new_configs)
                 logger.info("-" * 50)
                 logger.info(f"to be applied configs:\n{to_apply_config}")
                 logger.info("-" * 50)
 
                 if to_apply_config is not None:
-                    config_change_results = self.change_pipeline_config(to_apply_config)
+                    if current_config != to_apply_config:
+                        config_change_results = self.change_pipeline_config(to_apply_config)
+                        if config_change_results:
+                            current_config = deepcopy(to_apply_config)
+                    else:
+                        logger.info("new config similar to the old config, no change required")
             else:
                 logger.info(
                     "optimizer couldn't find any optimal solution"
@@ -273,9 +282,7 @@ class Adapter:
                     )
                     logger.info("-" * 50)
                     # with the message that the process has ended
-                    self.update_recieved_load()
                     break
-                objective = None
             if to_apply_config is not None:
                 to_save_config = self.saving_config_builder(
                     to_apply_config=deepcopy(to_apply_config),
@@ -291,7 +298,7 @@ class Adapter:
                 objectives=objectives,
                 timestep=timestep,
                 time_interval=time_interval,
-                monitored_load=rps_series,
+                # monitored_load=rps_series,
                 predicted_load=predicted_load,
                 change_successful=config_change_results,
             )
@@ -359,7 +366,7 @@ class Adapter:
                 if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
                     batch = env_var["value"]
             node_config["replicas"] = replicas
-            node_config["variant"] = variant
+            # node_config["variant"] = variant
             node_config["cpu"] = cpu
             if not self.central_queue:
                 node_config["batch"] = batch
@@ -435,19 +442,19 @@ class Adapter:
             logger.info(f"change couldn't take place after {number_of_retries} retries")
             return False  # Return False if all retries fail
 
-    def update_recieved_load(self, workload_of_teleport=None) -> None:
-        """extract the entire sent load during the
-        experiment
-        """
-        # get all sent duration
-        monitoring_duration = 1000
-        if workload_of_teleport is None:
-            all_recieved_loads = self.monitoring.rps_monitor(
-                monitoring_duration=monitoring_duration
-            )
-        else:
-            all_recieved_loads = workload_of_teleport
-        self.monitoring.update_recieved_load(all_recieved_loads)
+    # def update_recieved_load(self, workload_of_teleport=None) -> None:
+    #     """extract the entire sent load during the
+    #     experiment
+    #     """
+    #     # get all sent duration
+    #     monitoring_duration = 1000
+    #     if workload_of_teleport is None:
+    #         all_recieved_loads = self.monitoring.rps_monitor(
+    #             monitoring_duration=monitoring_duration
+    #         )
+    #     else:
+    #         all_recieved_loads = workload_of_teleport
+    #     self.monitoring.update_recieved_load(all_recieved_loads)
 
     def saving_config_builder(
         self,
@@ -519,7 +526,7 @@ class Monitoring:
         objectives: Dict[str, int],
         timestep: str,
         time_interval: int,
-        monitored_load: List[int],
+        # monitored_load: List[int],
         predicted_load: int,
         change_successful: List[bool],
     ):
@@ -542,59 +549,59 @@ class Monitoring:
             self.adaptation_report["timesteps"][timestep]["batch_objective"] = None
             self.adaptation_report["timesteps"][timestep]["objective"] = None
         self.adaptation_report["timesteps"][timestep]["time_interval"] = time_interval
-        self.adaptation_report["timesteps"][timestep]["monitored_load"] = monitored_load
+        # self.adaptation_report["timesteps"][timestep]["monitored_load"] = monitored_load
         self.adaptation_report["timesteps"][timestep]["predicted_load"] = predicted_load
 
     def update_recieved_load(self, all_recieved_loads: List[float]):
         self.adaptation_report["metadata"]["recieved_load"] = all_recieved_loads
 
 
-class Predictor:
-    def __init__(
-        self,
-        predictor_type,
-        backup_predictor_type: str = "reactive",
-        backup_predictor_duration=2,
-        predictor_margin: int = 100,
-    ) -> int:
-        self.predictor_type = predictor_type
-        self.backup_predictor = backup_predictor_type
-        predictors = {
-            "lstm": load_model(LSTM_PATH),
-            "reactive": lambda l: l[-1],
-            "max": lambda l: max(l),
-            "avg": lambda l: max(l) / len(l),
-            "arima": None,  # it is defined in place
-        }
-        self.model = predictors[predictor_type]
-        self.backup_model = predictors[backup_predictor_type]
-        self.predictor_margin = predictor_margin
-        self.backup_predictor_duration = backup_predictor_duration
+# class Predictor:
+#     def __init__(
+#         self,
+#         predictor_type,
+#         backup_predictor_type: str = "reactive",
+#         backup_predictor_duration=2,
+#         predictor_margin: int = 100,
+#     ) -> int:
+#         self.predictor_type = predictor_type
+#         self.backup_predictor = backup_predictor_type
+#         predictors = {
+#             "lstm": load_model(LSTM_PATH),
+#             "reactive": lambda l: l[-1],
+#             "max": lambda l: max(l),
+#             "avg": lambda l: max(l) / len(l),
+#             "arima": None,  # it is defined in place
+#         }
+#         self.model = predictors[predictor_type]
+#         self.backup_model = predictors[backup_predictor_type]
+#         self.predictor_margin = predictor_margin
+#         self.backup_predictor_duration = backup_predictor_duration
 
-    def predict(self, series: List[int]):
-        series_aggregated = []
-        step = 10
-        for i in range(0, len(series), step):
-            series_aggregated.append(max(series[i : i + step]))
-        if len(series_aggregated) >= int((self.backup_predictor_duration * 60) / step):
-            if self.predictor_type == "lstm":
-                model_intput = tf.convert_to_tensor(
-                    np.array(series_aggregated[-LSTM_INPUT_SIZE:]).reshape(
-                        (-1, LSTM_INPUT_SIZE, 1)
-                    ),
-                    dtype=tf.float32,
-                )
-                model_output = self.model.predict(model_intput)[0][0]
-            elif self.predictor_type == "arima":
-                model_intput = np.array(series_aggregated)
-                model = ARIMA(list(model_intput), order=(1, 0, 0))
-                model_fit = model.fit()
-                model_output = int(max(model_fit.forecast(steps=2)))  # max
-            else:
-                model_output = self.model(series_aggregated)
-        else:
-            model_output = self.backup_model(series_aggregated)
+#     def predict(self, series: List[int]):
+#         series_aggregated = []
+#         step = 10
+#         for i in range(0, len(series), step):
+#             series_aggregated.append(max(series[i : i + step]))
+#         if len(series_aggregated) >= int((self.backup_predictor_duration * 60) / step):
+#             if self.predictor_type == "lstm":
+#                 model_intput = tf.convert_to_tensor(
+#                     np.array(series_aggregated[-LSTM_INPUT_SIZE:]).reshape(
+#                         (-1, LSTM_INPUT_SIZE, 1)
+#                     ),
+#                     dtype=tf.float32,
+#                 )
+#                 model_output = self.model.predict(model_intput)[0][0]
+#             elif self.predictor_type == "arima":
+#                 model_intput = np.array(series_aggregated)
+#                 model = ARIMA(list(model_intput), order=(1, 0, 0))
+#                 model_fit = model.fit()
+#                 model_output = int(max(model_fit.forecast(steps=2)))  # max
+#             else:
+#                 model_output = self.model(series_aggregated)
+#         else:
+#             model_output = self.backup_model(series_aggregated)
 
-        # apply a safety margin to the system
-        predicted_load = round(model_output * (1 + self.predictor_margin / 100))
-        return predicted_load
+#         # apply a safety margin to the system
+#         predicted_load = round(model_output * (1 + self.predictor_margin / 100))
+#         return predicted_load

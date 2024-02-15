@@ -211,7 +211,7 @@ def main(config_name: str, type_of: str):
         if teleport_mode:
             adapter.start_adaptation(workload=workload)
         else:
-            adapter.start_adaptation()
+            adapter.start_adaptation(predicted_load=config['workload_config']['loads_to_test'])
         with open(save_path, "w") as outfile:
             outfile.write(json.dumps(adapter.monitoring.adaptation_report))
 
