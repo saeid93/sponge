@@ -61,6 +61,7 @@ class Adapter:
         only_measured_profiles: bool,
         scaling_cap: int,
         batching_cap: int,
+        cpu_cap: int,
         alpha: float,
         # beta: float,
         # gamma: float,
@@ -111,6 +112,7 @@ class Adapter:
         self.optimization_method = optimization_method
         self.scaling_cap = scaling_cap
         self.batching_cap = batching_cap
+        self.cpu_cap = cpu_cap
         self.alpha = alpha
         # self.beta = beta
         # self.gamma = gamma
@@ -178,7 +180,7 @@ class Adapter:
                 self.monitoring.adaptation_step_report(
                     change_successful=[False for _ in range(len(self.node_names))],
                     to_apply_config=to_save_config,
-                    objectives=None,
+                    # objectives=None,
                     timestep=timestep,
                     # monitored_load=[0],
                     time_interval=time_interval,
@@ -229,13 +231,14 @@ class Adapter:
                 optimization_method=self.optimization_method,
                 scaling_cap=self.scaling_cap,
                 batching_cap=self.batching_cap,
+                cpu_cap=self.cpu_cap,
                 alpha=self.alpha,
                 arrival_rate=predicted_load,
                 sla_series=sla_series,
                 num_state_limit=self.num_state_limit,
             )
             if "objective" in optimal.columns:
-                objectives = optimal['objectives'].values[0]
+                # objectives = optimal['objectives'].values[0]
                 new_configs = self.output_parser(optimal)
                 logger.info("-" * 50)
                 logger.info(f"candidate configs:\n{new_configs}")
@@ -295,7 +298,7 @@ class Adapter:
                 )
             self.monitoring.adaptation_step_report(
                 to_apply_config=to_save_config,
-                objectives=objectives,
+                # objectives=objectives,
                 timestep=timestep,
                 time_interval=time_interval,
                 # monitored_load=rps_series,
@@ -426,7 +429,7 @@ class Adapter:
                 )
                 _ = requests.post(
                     f"http://localhost:32003/change",
-                    json={"interop_threads": node_config["cpu"], "num_threads": node_config["cpu"]},
+                    json={"interop_threads": int(node_config["cpu"]), "num_threads": int(node_config["cpu"])},
                 )
                 _ = requests.post(
                     f"http://localhost:32002/v2/repository/models/queue-{node_name}/load",
@@ -523,7 +526,7 @@ class Monitoring:
     def adaptation_step_report(
         self,
         to_apply_config: Dict[str, Dict[str, Union[str, int]]],
-        objectives: Dict[str, int],
+        # objectives: Dict[str, int],
         timestep: str,
         time_interval: int,
         # monitored_load: List[int],
@@ -534,20 +537,20 @@ class Monitoring:
         self.adaptation_report["change_successful"] = change_successful
         self.adaptation_report["timesteps"][timestep] = {}
         self.adaptation_report["timesteps"][timestep]["config"] = to_apply_config
-        if objectives is not None:
-            self.adaptation_report["timesteps"][timestep]["resource_objective"] = float(
-                objectives["resource_objective"]
-            )
-            self.adaptation_report["timesteps"][timestep]["batch_objective"] = float(
-                objectives["batch_objective"]
-            )
-            self.adaptation_report["timesteps"][timestep]["objective"] = float(
-                objectives["objective"]
-            )
-        else:
-            self.adaptation_report["timesteps"][timestep]["resource_objective"] = None
-            self.adaptation_report["timesteps"][timestep]["batch_objective"] = None
-            self.adaptation_report["timesteps"][timestep]["objective"] = None
+        # if objectives is not None:
+        #     self.adaptation_report["timesteps"][timestep]["resource_objective"] = float(
+        #         objectives["resource_objective"]
+        #     )
+        #     self.adaptation_report["timesteps"][timestep]["batch_objective"] = float(
+        #         objectives["batch_objective"]
+        #     )
+        #     self.adaptation_report["timesteps"][timestep]["objective"] = float(
+        #         objectives["objective"]
+        #     )
+        # else:
+        #     self.adaptation_report["timesteps"][timestep]["resource_objective"] = None
+        #     self.adaptation_report["timesteps"][timestep]["batch_objective"] = None
+        #     self.adaptation_report["timesteps"][timestep]["objective"] = None
         self.adaptation_report["timesteps"][timestep]["time_interval"] = time_interval
         # self.adaptation_report["timesteps"][timestep]["monitored_load"] = monitored_load
         self.adaptation_report["timesteps"][timestep]["predicted_load"] = predicted_load

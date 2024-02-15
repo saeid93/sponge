@@ -92,6 +92,7 @@ def main(config_name: str, type_of: str):
     initial_batch = config["initial_batch"]
     scaling_cap = config["scaling_cap"]
     batching_cap = config["batching_cap"]
+    cpu_cap = config["cpu_cap"]
     pipeline_name = config["pipeline_name"]
     only_measured_profiles = config["only_measured_profiles"]
     profiling_load = config["profiling_load"]
@@ -186,6 +187,7 @@ def main(config_name: str, type_of: str):
         only_measured_profiles=only_measured_profiles,
         scaling_cap=scaling_cap,
         batching_cap=batching_cap,
+        cpu_cap=cpu_cap,
         alpha=alpha,
         num_state_limit=num_state_limit,
         monitoring_duration=monitoring_duration,

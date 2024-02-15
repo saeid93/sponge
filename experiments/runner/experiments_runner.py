@@ -153,7 +153,8 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
     _, workload = make_workload(config=config)
     data = load_data(data_type, pipeline_path)
     image_size = data[0].data.nbytes / 1024
-    sla = 1000 * config['sla']
+    # sla = 1000 * config['sla']
+    sla = config['sla']
     slas = make_slas(image_size=image_size, sla=sla, length=len(workload))
     start_time_experiment, end_time_experiment, responses = load_test(
         pipeline_name="router",

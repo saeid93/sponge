@@ -1,5 +1,7 @@
 import os
 import random
+from scipy.optimize import curve_fit
+from sklearn.metrics import mean_squared_error
 import math
 from typing import Dict, List, Union, Optional
 import numpy as np
@@ -41,12 +43,36 @@ class Optimizer:
         self.random_sample = random_sample
         self.baseline_mode = baseline_mode
 
+        # TODO initialize latency model
+        # TODO extract data from the all_states
+        states = self.all_states(
+            check_constraints=False, # Getting all possible values
+            scaling_cap=10000, # Dummy number
+            alpha=10000, # Dummy number
+            arrival_rate=1000, # Dummy number
+            num_state_limit=1000, # Dummy number
+            only_vertical=True,
+            batching_cap=1000, # Dummy number
+        )
+        b_data = states['task_0_batch'].tolist()
+        c_data = states['task_0_cpu'].tolist()
+        l_data = [int(i * 1000) for i in states['task_0_latency'].tolist()] # all latency in milicores
+        params, _ = curve_fit(self.batch_cost_latency_model, (b_data, c_data), l_data)
+        self.gamma, self.delta, self.epsilon, self.eta = params  # eq 2 parameters
+
     def resource_objective(self) -> float:
         """
         objective function of the pipeline
         """
         resource_objective = self.pipeline.cpu_usage
         return resource_objective
+
+    def batch_cost_latency_model(self, bc, gamma, delta, epsilon, eta):
+        b, c = bc
+        return gamma * b / c + delta * b + epsilon / c + eta
+
+    def batch_cost_latency_calculation(self, b, c, gamma, delta, epsilon, eta):
+        return int(gamma * b / c + delta * b + epsilon / c + eta)
 
     def batch_objective(self) -> float:
         """
@@ -85,9 +111,9 @@ class Optimizer:
         alpha: float,
         check_constraints: bool,
         arrival_rate: int,
-        sla_series: List[float],
         only_vertical: bool,
         num_state_limit: int = None,
+        complete_profile: bool = True
     ) -> pd.DataFrame:
         """generate all the possible states based on profiling data
 
@@ -154,7 +180,7 @@ class Optimizer:
                     ok_to_add = True
                 if ok_to_add:
                     state = {}
-                    if self.complete_profile:
+                    if complete_profile:
                         for task_id_j in range(self.pipeline.num_nodes):
                             # record all stats under this configs
                             state[
@@ -223,7 +249,6 @@ class Optimizer:
             scaling_cap=scaling_cap,
             alpha=alpha,
             arrival_rate=arrival_rate,
-            sla_series=sla_series,
             num_state_limit=num_state_limit,
             only_vertical=True,
             batching_cap=batching_cap
@@ -259,29 +284,56 @@ class Optimizer:
         Returns:
             pd.DataFrame: all the states of the pipeline
         """
-        states = self.all_states(
-            check_constraints=True,
-            scaling_cap=scaling_cap,
-            alpha=alpha,
-            arrival_rate=arrival_rate,
-            sla_series=sla_series,
-            num_state_limit=num_state_limit,
-            batching_cap=batching_cap
-        )
-        optimal = states[states["objective"] == states["objective"].max()]
+
+        # states = self.all_states(
+        #     check_constraints=True,
+        #     scaling_cap=scaling_cap,
+        #     alpha=alpha,
+        #     arrival_rate=arrival_rate,
+        #     num_state_limit=num_state_limit,
+        #     only_vertical=False,
+        #     batching_cap=batching_cap
+        # )
+        # optimal = states[states["objective"] == states["objective"].max()]
+        b_max = batching_cap  # max batch size configuration
+        RPS = arrival_rate  # workload
+        # q = [50] * RPS  # calculate this from the user
+        q = sla_series[-1]
+        # SLO = 1000  # default SLO
+        SLO = self.pipeline.sla  # default SLO
+        # cl_max = max(q)  # maximum communication latency
+        cl_max = SLO - q
+        instance_number = 100  # result number of instances
+        best_batch = 0  # result batch size
+        SECOND_MILISECOND = 1000
+        for b in range(1, b_max + 1):  # iterate over all the batch sizes
+            l_bc = self.batch_cost_latency_calculation(b, 1, self.gamma, self.delta, self.epsilon, self.eta)  # calculate latency with the candidate batch and cpu using eq 2
+            q_time = 0  # queue time for requests
+            if l_bc > SECOND_MILISECOND:
+                break
+            curr_instance = math.ceil(RPS / (int(SECOND_MILISECOND / l_bc) * b))  # current instance nubmer
+            for i in range(0, RPS, b):  # iterate over all the requests in the queue
+                if l_bc + q_time + cl_max < SLO and curr_instance < instance_number:  # the current configuration not satisfy the SLOs and there is a smaller instance number
+                    instance_number = curr_instance
+                    best_batch = b
+                q_time += l_bc  # increase queuing time for the next batch of request
+
+        optimal_dict = {'task_0_cpu': [1], 'task_0_replicas': [instance_number], 'task_0_batch': [best_batch], 'objective': [0]}
+        optimal = pd.DataFrame(optimal_dict) 
         return optimal
+        # return optimal
 
 
     def optimize(
         self,
         optimization_method: str,
         scaling_cap: int,
+        cpu_cap: int,
         alpha: float,
         arrival_rate: int,
         sla_series: List[float],
         num_state_limit: int = None,
-        batching_cap: int = None,
-        dir_path: str = None,
+        batching_cap: int = None
     ) -> pd.DataFrame:
         if optimization_method == "dynainf":
             optimal = self.dynainf(
@@ -300,7 +352,6 @@ class Optimizer:
                 arrival_rate=arrival_rate,
                 sla_series=sla_series,
                 num_state_limit=num_state_limit,
-                dir_path=dir_path,
             )
         else:
             raise ValueError(f"Invalid optimization_method: {optimization_method}")

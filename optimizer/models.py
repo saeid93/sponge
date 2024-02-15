@@ -306,7 +306,7 @@ class Task:
 
     @property
     def latency(self) -> float:
-        latency = self.model_latency + self.queue_latency
+        latency = self.model_latency # + self.queue_latency
         return latency
 
     @property

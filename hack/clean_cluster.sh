@@ -10,6 +10,7 @@ function clean_cluster() {
     kubectl delete deployments --all $force_flag -n default
     kubectl delete replicaset --all $force_flag -n default
     kubectl delete pods --all $force_flag -n default
+    kubectl delete services --all $force_flag -n default
     kubectl get services | grep -v kubernetes | awk '{print $1}' | xargs kubectl delete service -n default
 }
 
