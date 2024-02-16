@@ -127,4 +127,5 @@ def create_dirs():
 
 
 # prometheus client
-PROMETHEUS = "http://localhost:30090"
+MINIKUBE_IP="192.168.49.2"
+PROMETHEUS = f"http://{MINIKUBE_IP}:30090"

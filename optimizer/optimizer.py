@@ -284,17 +284,6 @@ class Optimizer:
         Returns:
             pd.DataFrame: all the states of the pipeline
         """
-
-        # states = self.all_states(
-        #     check_constraints=True,
-        #     scaling_cap=scaling_cap,
-        #     alpha=alpha,
-        #     arrival_rate=arrival_rate,
-        #     num_state_limit=num_state_limit,
-        #     only_vertical=False,
-        #     batching_cap=batching_cap
-        # )
-        # optimal = states[states["objective"] == states["objective"].max()]
         b_max = batching_cap  # max batch size configuration
         RPS = arrival_rate  # workload
         # q = [50] * RPS  # calculate this from the user

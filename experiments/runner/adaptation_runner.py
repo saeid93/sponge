@@ -175,6 +175,7 @@ def main(config_name: str, type_of: str):
     monitoring_duration = config["monitoring_duration"]
     predictor_type = config["predictor_type"]
     backup_predictor_type = config["backup_predictor_type"]
+    minikube_ip = config["minikube_ip"]
 
     # should be inside of experiments
     adapter = Adapter(
@@ -200,6 +201,7 @@ def main(config_name: str, type_of: str):
         teleport_mode=teleport_mode,
         teleport_interval=teleport_interval,
         from_storage=from_storage,
+        minikube_ip=minikube_ip
     )
 
     # ----------- 3. Running an experiment series -------------

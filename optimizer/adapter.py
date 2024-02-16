@@ -77,6 +77,7 @@ class Adapter:
         teleport_interval: int = 10,
         backup_predictor_type: str = "max",
         backup_predictor_duration: int = 2,
+        minikube_ip: str = "localhost"
     ) -> None:
         """
         Args:
@@ -101,6 +102,7 @@ class Adapter:
         self.debug_mode = debug_mode
         self.backup_predictor_type = backup_predictor_type
         self.backup_predictor_duration = backup_predictor_duration
+        self.minikube_ip = minikube_ip
         self.optimizer = Optimizer(
             pipeline=pipeline,
             allocation_mode=allocation_mode,
@@ -428,11 +430,11 @@ class Adapter:
                     body=deployment_config,
                 )
                 _ = requests.post(
-                    f"http://localhost:32003/change",
+                    f"http://{self.minikube_ip}:32003/change",
                     json={"interop_threads": int(node_config["cpu"]), "num_threads": int(node_config["cpu"])},
                 )
                 _ = requests.post(
-                    f"http://localhost:32002/v2/repository/models/queue-{node_name}/load",
+                    f"http://{self.minikube_ip}:32002/v2/repository/models/queue-{node_name}/load",
                     json={"max_batch_size": node_config['batch']},
                 )
                 return True  # Return True if the code execution is successful
