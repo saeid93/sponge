@@ -9,14 +9,14 @@ nodes:
   - node_name: yolo
     data_type: image
     model_variants: yolov5n
-    max_batch_size: '5'
+    max_batch_size: '1'
     max_batch_time: '1'
-    cpu_request: '1'
+    cpu_request: '16'
     memory_request: 4Gi
     replicas: 1
     use_threading: 'True'
     num_interop_threads: '1'
-    num_threads: '1'
+    num_threads: '16'
 
 # ----------- experiment configs -------------
 
@@ -24,7 +24,7 @@ benchmark_duration: 1
 adaptation_interval: 1
 workload_type: static
 workload_config:
-  loads_to_test: 40
+  loads_to_test: 20
   load_duration: 240
 # workload_type: twitter
 # workload_config:
@@ -41,7 +41,7 @@ workload_config:
 # ----------- optimizer configs -------------
 
 metaseries: 14
-series: 1
+series: 2
 metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
 number_tasks: 1
 profiling_series:
@@ -120,8 +120,7 @@ throughput_margin: 0
 logs_enabled: true
 
 # ----------- whether to read models from storage or not - should be defined per node -------------
-only_pod:
-  - true 
+only_pod: true
 
 sla: 1000
 

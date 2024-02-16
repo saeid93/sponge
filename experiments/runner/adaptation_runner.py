@@ -30,7 +30,7 @@ from experiments.utils.workload import make_workload
 
 @click.command()
 @click.option(
-    "--config-name", required=True, type=str, default="video"
+    "--config-name", required=True, type=str, default="dynainf"
 )
 @click.option(
     "--type-of",
@@ -176,6 +176,7 @@ def main(config_name: str, type_of: str):
     predictor_type = config["predictor_type"]
     backup_predictor_type = config["backup_predictor_type"]
     minikube_ip = config["minikube_ip"]
+    only_pod = config["only_pod"]
 
     # should be inside of experiments
     adapter = Adapter(
@@ -200,8 +201,8 @@ def main(config_name: str, type_of: str):
         predictor_margin=predictor_margin,
         teleport_mode=teleport_mode,
         teleport_interval=teleport_interval,
-        only_pod=only_pod,
-        minikube_ip=minikube_ip
+        minikube_ip=minikube_ip,
+        only_pod=only_pod
     )
 
     # ----------- 3. Running an experiment series -------------

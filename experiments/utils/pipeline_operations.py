@@ -477,7 +477,7 @@ def setup_central_pipeline(
             distrpution_time=distrpution_time,
             drop_limit=drop_limit,
             logs_enabled=logs_enabled,
-            only_pod=only_pod[node_id],
+            only_pod=only_pod,
         )
     queue_names = list(map(lambda l: "queue-" + l, node_names))
     setup_queues(

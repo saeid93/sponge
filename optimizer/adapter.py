@@ -16,6 +16,7 @@ from copy import deepcopy
 from tensorflow.keras.models import load_model
 import re
 from statsmodels.tsa.arima.model import ARIMA
+from time import sleep
 
 # get an absolute path to the directory that contains parent files
 project_dir = os.path.dirname(__file__)
@@ -26,6 +27,7 @@ from experiments.utils.pipeline_operations import (
     check_node_loaded,
     is_terminating,
     get_cpu_model_name,
+    kube_api
 )
 from experiments.utils.prometheus import PromClient
 from optimizer import Optimizer, Pipeline
@@ -68,7 +70,6 @@ class Adapter:
         num_state_limit: int,
         monitoring_duration: int,
         predictor_type: str,
-        only_pod: List[bool],
         baseline_mode: Optional[str] = None,
         central_queue: bool = False,
         debug_mode: bool = False,
@@ -77,7 +78,9 @@ class Adapter:
         teleport_interval: int = 10,
         backup_predictor_type: str = "max",
         backup_predictor_duration: int = 2,
-        minikube_ip: str = "localhost"
+        minikube_ip: str = "localhost",
+        only_pod: bool = False,
+
     ) -> None:
         """
         Args:
@@ -116,6 +119,7 @@ class Adapter:
         self.batching_cap = batching_cap
         self.cpu_cap = cpu_cap
         self.alpha = alpha
+        self.only_pod = only_pod
         # self.beta = beta
         # self.gamma = gamma
         self.num_state_limit = num_state_limit
@@ -133,9 +137,7 @@ class Adapter:
         self.central_queue = central_queue
         self.teleport_mode = teleport_mode
         self.teleport_interval = teleport_interval
-        self.only_pod = {}
-        for node_index, node_name in enumerate(node_names):
-            self.only_pod[node_name] = only_pod[node_index]
+        self.only_pod = only_pod
 
     # def start_adaptation(self, workload=None):
     def start_adaptation(self, predicted_load: int, workload=None):
@@ -239,7 +241,7 @@ class Adapter:
                 sla_series=sla_series,
                 num_state_limit=self.num_state_limit,
             )
-            if "objective" in optimal.columns:
+            if optimal is not None and "objective" in optimal.columns:
                 # objectives = optimal['objectives'].values[0]
                 new_configs = self.output_parser(optimal)
                 logger.info("-" * 50)
@@ -351,45 +353,81 @@ class Adapter:
 
     def extract_current_config(self) -> List[Dict[str, Dict[str, Union[str, int]]]]:
         current_config = {}
-        for node_name in self.node_names:
-            node_config = {}
-            # TODO check if it exists before extracting the config
-            raw_config = kube_custom_api.get_namespaced_custom_object(
-                group="apps",
-                version="v1",
-                namespace=NAMESPACE,
-                plural="deployments",
-                name=f"{node_name}-{node_name}-0-{node_name}",
-            )
-            component_config = raw_config['spec']['template']['spec']['containers'][0]
-            env_vars = component_config["env"]
-            replicas = raw_config['spec']['replicas']
-            cpu = int(component_config['resources']['requests']['cpu'])
-            for env_var in env_vars:
-                if env_var["name"] == "MODEL_VARIANT":
-                    variant = env_var["value"]
-                if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
-                    batch = env_var["value"]
-            node_config["replicas"] = replicas
-            # node_config["variant"] = variant
-            node_config["cpu"] = cpu
-            if not self.central_queue:
-                node_config["batch"] = batch
-            else:
-                raw_queue_config = kube_custom_api.get_namespaced_custom_object(
+        if self.only_pod:
+            for node_name in self.node_names:
+                node_config = {}
+                # TODO check if it exists before extracting the config
+                raw_config = kube_api.read_namespaced_pod(
+                    namespace=NAMESPACE,
+                    name=f"{node_name}-{node_name}-0-{node_name}")
+                env_vars = raw_config.spec.containers[0].env
+                replicas = 1
+                cpu = int(raw_config.spec.containers[0].resources.limits['cpu'])
+                for env_var in env_vars:
+                    if env_var.name == "MODEL_VARIANT":
+                        variant = env_var.value
+                    if env_var.name == "MLSERVER_MODEL_MAX_BATCH_SIZE":
+                        batch = env_var.value
+                node_config["replicas"] = replicas
+                # node_config["variant"] = variant
+                node_config["cpu"] = cpu
+                if not self.central_queue:
+                    node_config["batch"] = batch
+                else:
+                    raw_queue_config = kube_custom_api.get_namespaced_custom_object(
+                        group="apps",
+                        version="v1",
+                        namespace=NAMESPACE,
+                        plural="deployments",
+                        name=f"queue-{node_name}-queue-{node_name}-0-queue-{node_name}",
+                    )
+                    queue_component_config = raw_queue_config['spec']['template']['spec']['containers'][0]
+                    queue_env_vars = queue_component_config["env"]
+                    for queue_env_var in queue_env_vars:
+                        if queue_env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
+                            batch = queue_env_var["value"]
+                    node_config["batch"] = batch
+                current_config[node_name] = node_config
+        else:
+            for node_name in self.node_names:
+                node_config = {}
+                # TODO check if it exists before extracting the config
+                raw_config = kube_custom_api.get_namespaced_custom_object(
                     group="apps",
                     version="v1",
                     namespace=NAMESPACE,
                     plural="deployments",
-                    name=f"queue-{node_name}-queue-{node_name}-0-queue-{node_name}",
+                    name=f"{node_name}-{node_name}-0-{node_name}",
                 )
-                queue_component_config = raw_queue_config['spec']['template']['spec']['containers'][0]
-                queue_env_vars = queue_component_config["env"]
-                for queue_env_var in queue_env_vars:
-                    if queue_env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
-                        batch = queue_env_var["value"]
-                node_config["batch"] = batch
-            current_config[node_name] = node_config
+                component_config = raw_config['spec']['template']['spec']['containers'][0]
+                env_vars = component_config["env"]
+                replicas = raw_config['spec']['replicas']
+                cpu = int(component_config['resources']['requests']['cpu'])
+                for env_var in env_vars:
+                    if env_var["name"] == "MODEL_VARIANT":
+                        variant = env_var["value"]
+                    if env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
+                        batch = env_var["value"]
+                node_config["replicas"] = replicas
+                # node_config["variant"] = variant
+                node_config["cpu"] = cpu
+                if not self.central_queue:
+                    node_config["batch"] = batch
+                else:
+                    raw_queue_config = kube_custom_api.get_namespaced_custom_object(
+                        group="apps",
+                        version="v1",
+                        namespace=NAMESPACE,
+                        plural="deployments",
+                        name=f"queue-{node_name}-queue-{node_name}-0-queue-{node_name}",
+                    )
+                    queue_component_config = raw_queue_config['spec']['template']['spec']['containers'][0]
+                    queue_env_vars = queue_component_config["env"]
+                    for queue_env_var in queue_env_vars:
+                        if queue_env_var["name"] == "MLSERVER_MODEL_MAX_BATCH_SIZE":
+                            batch = queue_env_var["value"]
+                    node_config["batch"] = batch
+                current_config[node_name] = node_config
         return current_config
 
     def change_pipeline_config(self, config: List[bool]):
@@ -407,45 +445,75 @@ class Adapter:
         return results
 
     def change_node_config(self, inputs: Tuple[str, Dict[str, int]]):
-        node_name, node_config = inputs
-        deployment_config = kube_custom_api.get_namespaced_custom_object(
-            group="apps",
-            version="v1",
-            namespace=NAMESPACE,
-            plural="deployments",
-            name=f"{node_name}-{node_name}-0-{node_name}",
-        )
-        deployment_config["spec"]["replicas"] = node_config["replicas"]
-        deployment_config["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"]["cpu"] = str(node_config["cpu"])
-        deployment_config["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"]["cpu"] = str(node_config["cpu"])
-        number_of_retries = 3
-        for _ in range(3):
-            try:
-                kube_custom_api.replace_namespaced_custom_object(
-                    group="apps",
-                    version="v1",
-                    namespace=NAMESPACE,
-                    plural="deployments",
-                    name=f"{node_name}-{node_name}-0-{node_name}",
-                    body=deployment_config,
-                )
-                _ = requests.post(
-                    f"http://{self.minikube_ip}:32003/change",
-                    json={"interop_threads": int(node_config["cpu"]), "num_threads": int(node_config["cpu"])},
-                )
-                _ = requests.post(
-                    f"http://{self.minikube_ip}:32002/v2/repository/models/queue-{node_name}/load",
-                    json={"max_batch_size": node_config['batch']},
-                )
-                return True  # Return True if the code execution is successful
-            except ApiException:
-                logger.info(
-                    "change couldn't take place due to a problem in the K8S API, retrying..."
-                )
-                # Retry the code block
-        else:  # no-break
-            logger.info(f"change couldn't take place after {number_of_retries} retries")
-            return False  # Return False if all retries fail
+        if self.only_pod:
+            node_name, node_config = inputs
+            deployment_config = kube_api.read_namespaced_pod(
+                namespace=NAMESPACE,
+                name=f"{node_name}-{node_name}-0-{node_name}")
+            # deployment_config["spec"]["replicas"] = node_config["replicas"]
+            deployment_config.spec.containers[0].resources.limits['cpu'] = str(node_config["cpu"])
+            deployment_config.spec.containers[0].resources.requests['cpu'] = str(node_config["cpu"])
+            number_of_retries = 3
+            for _ in range(3):
+                try:
+                    kube_api.patch_namespaced_pod(namespace=NAMESPACE, name=f"{node_name}-{node_name}-0-{node_name}", body=deployment_config)
+                    _ = requests.post(
+                        f"http://{self.minikube_ip}:32003/change",
+                        json={"interop_threads": int(node_config["cpu"]), "num_threads": int(node_config["cpu"])},
+                    )
+                    _ = requests.post(
+                        f"http://{self.minikube_ip}:32002/v2/repository/models/queue-{node_name}/load",
+                        json={"max_batch_size": node_config['batch']},
+                    )
+                    return True  # Return True if the code execution is successful
+                except ApiException:
+                    logger.info(
+                        "change couldn't take place due to a problem in the K8S API, retrying..."
+                    )
+                    # Retry the code block
+            else:  # no-break
+                logger.info(f"change couldn't take place after {number_of_retries} retries")
+                return False  # Return False if all retries fail
+        else:
+            node_name, node_config = inputs
+            deployment_config = kube_custom_api.get_namespaced_custom_object(
+                group="apps",
+                version="v1",
+                namespace=NAMESPACE,
+                plural="deployments",
+                name=f"{node_name}-{node_name}-0-{node_name}",
+            )
+            deployment_config["spec"]["replicas"] = node_config["replicas"]
+            deployment_config["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"]["cpu"] = str(node_config["cpu"])
+            deployment_config["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"]["cpu"] = str(node_config["cpu"])
+            number_of_retries = 3
+            for _ in range(3):
+                try:
+                    kube_custom_api.replace_namespaced_custom_object(
+                        group="apps",
+                        version="v1",
+                        namespace=NAMESPACE,
+                        plural="deployments",
+                        name=f"{node_name}-{node_name}-0-{node_name}",
+                        body=deployment_config,
+                    )
+                    _ = requests.post(
+                        f"http://{self.minikube_ip}:32003/change",
+                        json={"interop_threads": int(node_config["cpu"]), "num_threads": int(node_config["cpu"])},
+                    )
+                    _ = requests.post(
+                        f"http://{self.minikube_ip}:32002/v2/repository/models/queue-{node_name}/load",
+                        json={"max_batch_size": node_config['batch']},
+                    )
+                    return True  # Return True if the code execution is successful
+                except ApiException:
+                    logger.info(
+                        "change couldn't take place due to a problem in the K8S API, retrying..."
+                    )
+                    # Retry the code block
+            else:  # no-break
+                logger.info(f"change couldn't take place after {number_of_retries} retries")
+                return False  # Return False if all retries fail
 
     # def update_recieved_load(self, workload_of_teleport=None) -> None:
     #     """extract the entire sent load during the

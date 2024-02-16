@@ -245,7 +245,6 @@ class Optimizer:
         sla_series: List[float],
         num_state_limit: int = None,
     ) -> pd.DataFrame:
-
         c_max = cpu_cap # max cpu core allocation
         b_max = batching_cap  # max batch size configuration
         RPS = arrival_rate  # workload
@@ -268,9 +267,9 @@ class Optimizer:
                     q_time += l_bc  # increase queuing time for the next batch of request
                 if better:  # if true, we have the least cpu core + the least batch configurations
                     optimal_dict = {'task_0_cpu': [c], 'task_0_replicas': [1], 'task_0_batch': [b], 'objective': [0]}
-                    optimal = pd.DataFrame(optimal_dict) 
+                    optimal = pd.DataFrame(optimal_dict)
+                    print(optimal_dict)
                     return optimal
-
 
     def fa2(
         self,
@@ -311,6 +310,10 @@ class Optimizer:
         instance_number = 100  # result number of instances
         best_batch = 0  # result batch size
         SECOND_MILISECOND = 1000
+        optimal_dict = {'1. task_0_cpu': [1], 'task_0_replicas': [instance_number], 'task_0_batch': [best_batch], 'objective': [0]}
+        print(f"optimal_dict: {optimal_dict}")
+        optimal = pd.DataFrame(optimal_dict)
+        print(f"1. tried to make the optimal: {optimal}")
         for b in range(1, b_max + 1):  # iterate over all the batch sizes
             l_bc = self.batch_cost_latency_calculation(b, 1, self.gamma, self.delta, self.epsilon, self.eta)  # calculate latency with the candidate batch and cpu using eq 2
             q_time = 0  # queue time for requests
@@ -324,9 +327,10 @@ class Optimizer:
                 q_time += l_bc  # increase queuing time for the next batch of request
 
         optimal_dict = {'task_0_cpu': [1], 'task_0_replicas': [instance_number], 'task_0_batch': [best_batch], 'objective': [0]}
-        optimal = pd.DataFrame(optimal_dict) 
+        print(f"optimal_dict: {optimal_dict}")
+        optimal = pd.DataFrame(optimal_dict)
+        print(f"tried to make the optimal: {optimal}")
         return optimal
-        # return optimal
 
 
     def optimize(
@@ -351,6 +355,7 @@ class Optimizer:
                 num_state_limit=num_state_limit,
             )
         elif optimization_method == "fa2":
+            print("in the fa2 function")
             optimal = self.fa2(
                 scaling_cap=scaling_cap,
                 batching_cap=batching_cap,
