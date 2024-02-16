@@ -64,7 +64,7 @@ batching_cap: 16 # maximum possible batching per nodes
 cpu_cap: 16 # maximum possible cpu allocation per nodes
 num_state_limit: 1000 # number of states
 threshold: 4 # RPS threshold for finding the base allocation
-optimization_method: fa2 # options: [dynainf | fa2]
+optimization_method: dynainf # options: [dynainf | fa2]
 allocation_mode: base # options: [fix | base | variable]
 sla_factor: 5
 normalize_accuracy: true
@@ -120,8 +120,8 @@ throughput_margin: 0
 logs_enabled: true
 
 # ----------- whether to read models from storage or not - should be defined per node -------------
-from_storage:
-  - false 
+only_pod:
+  - true 
 
 sla: 1000
 

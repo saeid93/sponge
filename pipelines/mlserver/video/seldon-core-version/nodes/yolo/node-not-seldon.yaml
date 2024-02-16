@@ -82,7 +82,7 @@ spec:
         - name: MLSERVER_MODEL_NAME
           value: yolo
         - name: PREDICTIVE_UNIT_IMAGE
-          value: sdghafouri/dynainf:yolo
+          value: sdghafouri/dynainf-with-model:yolo
         - name: PREDICTOR_ID
           value: yolo
         - name: PREDICTOR_LABELS
@@ -149,22 +149,22 @@ spec:
         - mountPath: /etc/podinfo
           name: seldon-podinfo
       dnsPolicy: ClusterFirst
-      initContainers:
-      - args:
-        - s3://torchhub/yolo/yolov5m
-        - /mnt/models/yolov5m
-        envFrom:
-        - secretRef:
-            name: seldon-rclone-secret
-        image: seldonio/rclone-storage-initializer:1.16.0-dev
-        imagePullPolicy: IfNotPresent
-        name: classifier-model-initializer
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /mnt/models
-          name: yolov5-volume
+      # initContainers:
+      # - args:
+      #   - s3://torchhub/yolo/yolov5m
+      #   - /mnt/models/yolov5m
+      #   envFrom:
+      #   - secretRef:
+      #       name: seldon-rclone-secret
+      #   image: seldonio/rclone-storage-initializer:1.16.0-dev
+      #   imagePullPolicy: IfNotPresent
+      #   name: classifier-model-initializer
+      #   resources: {}
+      #   terminationMessagePath: /dev/termination-log
+      #   terminationMessagePolicy: File
+      #   volumeMounts:
+      #   - mountPath: /mnt/models
+      #     name: yolov5-volume
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext:

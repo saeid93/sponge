@@ -55,7 +55,7 @@ def experiments(
     series_meta = config["series_meta"]
     workload_type = config["workload_type"]
     workload_config = config["workload_config"]
-    from_stroage = config["from_storage"]
+    from_stroage = config["only_pod"]
 
     logs_enabled = config["logs_enabled"]
     distrpution_time = config["distrpution_time"]
@@ -144,7 +144,7 @@ def experiments(
                                         ),  # TEMP workaround for fractional allocation
                                         distrpution_time=distrpution_time,
                                         logs_enabled=logs_enabled,
-                                        from_storage=from_stroage,
+                                        only_pod=from_stroage,
                                     )
                                     logger.info("Checking if the model is up ...")
                                     logger.info("\n")

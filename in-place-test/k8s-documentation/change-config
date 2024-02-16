@@ -1,1 +1,1 @@
-kubectl patch pod kamran --patch '{"spec":{"containers":[{"name":"kamran", "resources":{"requests":{"cpu":"1"}, "limits":{"cpu":"1"}}}]}}'
+kubectl patch pod yolo-yolo-0-yolo --patch '{"spec":{"containers":[{"name":"yolo-yolo-0-yolo", "resources":{"requests":{"cpu":"1"}, "limits":{"cpu":"1"}}}]}}'

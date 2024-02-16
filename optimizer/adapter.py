@@ -68,7 +68,7 @@ class Adapter:
         num_state_limit: int,
         monitoring_duration: int,
         predictor_type: str,
-        from_storage: List[bool],
+        only_pod: List[bool],
         baseline_mode: Optional[str] = None,
         central_queue: bool = False,
         debug_mode: bool = False,
@@ -133,9 +133,9 @@ class Adapter:
         self.central_queue = central_queue
         self.teleport_mode = teleport_mode
         self.teleport_interval = teleport_interval
-        self.from_storage = {}
+        self.only_pod = {}
         for node_index, node_name in enumerate(node_names):
-            self.from_storage[node_name] = from_storage[node_index]
+            self.only_pod[node_name] = only_pod[node_index]
 
     # def start_adaptation(self, workload=None):
     def start_adaptation(self, predicted_load: int, workload=None):

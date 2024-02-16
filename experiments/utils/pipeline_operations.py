@@ -77,7 +77,7 @@ def setup_node(
     num_interop_threads: int,
     num_threads: int,
     distrpution_time: int,
-    from_storage=bool,
+    only_pod=bool,
     no_engine=False,
     debug_mode=False,
     drop_limit=1000,
@@ -129,12 +129,12 @@ def setup_node(
     environment = Environment(loader=FileSystemLoader(node_path))
     non_seldon = True
     if non_seldon:
-        if from_storage:
-            template_file_name = "node-template-not-seldon.yaml"
+        if only_pod:
+            template_file_name = "node-template-not-seldon-with-model-only-pod.yaml"
         else:
-            template_file_name = "node-template-not-seldon-with-model.yaml"            
+            template_file_name = "node-template-not-seldon-with-model.yaml"
     else:
-        if from_storage:
+        if only_pod:
             template_file_name = "node-template.yaml"
         else:
             template_file_name = "node-template-with-model.yaml"
@@ -449,7 +449,7 @@ def setup_central_pipeline(
     timeout: int,
     num_nodes: int,
     distrpution_time: int,
-    from_storage: List[bool],
+    only_pod: List[bool],
     debug_mode: bool = False,
     drop_limit: int = 1000,
     logs_enabled: bool = True,
@@ -477,7 +477,7 @@ def setup_central_pipeline(
             distrpution_time=distrpution_time,
             drop_limit=drop_limit,
             logs_enabled=logs_enabled,
-            from_storage=from_storage[node_id],
+            only_pod=only_pod[node_id],
         )
     queue_names = list(map(lambda l: "queue-" + l, node_names))
     setup_queues(

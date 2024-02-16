@@ -24,14 +24,15 @@ data = image_loader(PATH, image)
 data_shape = list(np.array(data).shape)
 data = np.array(data).flatten()
 
-load = 5
-test_duration = 1
+load = 50
+test_duration = 1000
 variant = 0
 platform = "not-seldon"
 workload = [load] * test_duration
 data_type = "image"
 mode = "equal"  # options - step, equal, exponential
-
+host = "192.168.49.2"
+slas = [0] * 1000
 
 # single node inference
 if platform == "seldon":
@@ -41,7 +42,7 @@ if platform == "seldon":
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
 elif platform == "not-seldon":
-    endpoint = "localhost:32003"
+    endpoint = f"{host}:32001"
     deployment_name = "yolo"
     model = "yolo"
     namespace = "default"
@@ -68,6 +69,7 @@ load_tester = MLServerAsyncGrpc(
     data=data,
     mode=mode,  # options - step, equal, exponential
     data_type=data_type,
+    slas=slas
 )
 
 responses = asyncio.run(load_tester.start())

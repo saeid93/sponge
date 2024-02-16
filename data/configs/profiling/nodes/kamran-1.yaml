@@ -59,6 +59,6 @@ central_queue: false
 
 # ----------- enable in container logging -------------
 logs_enabled: false
-from_storage: true
+only_pod: true
 
 sla: 1

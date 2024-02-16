@@ -144,7 +144,7 @@ def main(config_name: str, type_of: str):
     throughput_margin = config["throughput_margin"]
 
     # read models from storage or container
-    from_storage = config["from_storage"]
+    only_pod = config["only_pod"]
 
     pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,
@@ -200,7 +200,7 @@ def main(config_name: str, type_of: str):
         predictor_margin=predictor_margin,
         teleport_mode=teleport_mode,
         teleport_interval=teleport_interval,
-        from_storage=from_storage,
+        only_pod=only_pod,
         minikube_ip=minikube_ip
     )
 

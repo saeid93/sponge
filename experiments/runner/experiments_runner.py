@@ -54,7 +54,7 @@ def setup_pipeline(
 
     logs_enabled = config["logs_enabled"]
 
-    from_storage = config["from_storage"]
+    only_pod = config["only_pod"]
 
     minikube_ip = config["minikube_ip"]
 
@@ -100,7 +100,7 @@ def setup_pipeline(
             debug_mode=debug_mode,
             drop_limit=drop_limit,
             logs_enabled=logs_enabled,
-            from_storage=from_storage,
+            only_pod=only_pod,
         )
     else:
         setup_router_pipeline(

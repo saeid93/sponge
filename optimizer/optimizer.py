@@ -239,22 +239,38 @@ class Optimizer:
         self,
         scaling_cap: int,
         batching_cap: int,
+        cpu_cap: int,
         alpha: float,
         arrival_rate: int,
         sla_series: List[float],
         num_state_limit: int = None,
     ) -> pd.DataFrame:
-        states = self.all_states(
-            check_constraints=True,
-            scaling_cap=scaling_cap,
-            alpha=alpha,
-            arrival_rate=arrival_rate,
-            num_state_limit=num_state_limit,
-            only_vertical=True,
-            batching_cap=batching_cap
-        )
-        optimal = states[states["objective"] == states["objective"].max()]
-        return optimal
+
+        c_max = cpu_cap # max cpu core allocation
+        b_max = batching_cap  # max batch size configuration
+        RPS = arrival_rate  # workload
+        # q = [50] * RPS  # calculate this from the user
+        q = sla_series[-1]
+        # SLO = 1000  # default SLO
+        SLO = self.pipeline.sla  # default SLO
+        # cl_max = max(q)  # maximum communication latency
+        cl_max = SLO - q
+
+        for c in range(1, c_max + 1):  # iterate over all the cpu cores
+            for b in range(1, b_max + 1):  # iterate over all the batch sizes
+                l_bc = self.batch_cost_latency_calculation(b, c, self.gamma, self.delta, self.epsilon, self.eta)  # calculate latency with the candidate batch and cpu using eq 2
+                q_time = 0  # queue time for requests
+                better = True  # have we found a configuration?
+                for i in range(0, RPS, b):  # iterate over all the requests in the queue
+                    if l_bc + q_time + cl_max > SLO:  # the current configuration does not satisfy the SLOs
+                        better = False
+                        break
+                    q_time += l_bc  # increase queuing time for the next batch of request
+                if better:  # if true, we have the least cpu core + the least batch configurations
+                    optimal_dict = {'task_0_cpu': [c], 'task_0_replicas': [1], 'task_0_batch': [b], 'objective': [0]}
+                    optimal = pd.DataFrame(optimal_dict) 
+                    return optimal
+
 
     def fa2(
         self,
@@ -328,6 +344,7 @@ class Optimizer:
             optimal = self.dynainf(
                 scaling_cap=scaling_cap,
                 batching_cap=batching_cap,
+                cpu_cap=cpu_cap,
                 alpha=alpha,
                 arrival_rate=arrival_rate,
                 sla_series=sla_series,
