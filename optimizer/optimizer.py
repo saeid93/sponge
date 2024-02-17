@@ -242,14 +242,14 @@ class Optimizer:
         cpu_cap: int,
         alpha: float,
         arrival_rate: int,
-        sla_series: List[float],
+        latest_sla: float,
         num_state_limit: int = None,
     ) -> pd.DataFrame:
         c_max = cpu_cap # max cpu core allocation
         b_max = batching_cap  # max batch size configuration
         RPS = arrival_rate  # workload
         # q = [50] * RPS  # calculate this from the user
-        q = sla_series[-1]
+        q = latest_sla
         # SLO = 1000  # default SLO
         SLO = self.pipeline.sla  # default SLO
         # cl_max = max(q)  # maximum communication latency
@@ -269,7 +269,8 @@ class Optimizer:
                     optimal_dict = {'task_0_cpu': [c], 'task_0_replicas': [1], 'task_0_batch': [b], 'objective': [0]}
                     optimal = pd.DataFrame(optimal_dict)
                     print(optimal_dict)
-                    return optimal
+                    return l_bc, optimal
+        return 1, None
 
     def fa2(
         self,
@@ -277,7 +278,7 @@ class Optimizer:
         batching_cap: int,
         alpha: float,
         arrival_rate: int,
-        sla_series: List[float],
+        latest_sla: float,
         num_state_limit: int,
     ) -> pd.DataFrame:
         """generate all the possible states based on profiling data
@@ -302,7 +303,7 @@ class Optimizer:
         b_max = batching_cap  # max batch size configuration
         RPS = arrival_rate  # workload
         # q = [50] * RPS  # calculate this from the user
-        q = sla_series[-1]
+        q = latest_sla[-1]
         # SLO = 1000  # default SLO
         SLO = self.pipeline.sla  # default SLO
         # cl_max = max(q)  # maximum communication latency
@@ -330,7 +331,7 @@ class Optimizer:
         print(f"optimal_dict: {optimal_dict}")
         optimal = pd.DataFrame(optimal_dict)
         print(f"tried to make the optimal: {optimal}")
-        return optimal
+        return l_bc, optimal
 
 
     def optimize(
@@ -340,33 +341,32 @@ class Optimizer:
         cpu_cap: int,
         alpha: float,
         arrival_rate: int,
-        sla_series: List[float],
+        latest_sla: float,
         num_state_limit: int = None,
         batching_cap: int = None
     ) -> pd.DataFrame:
         if optimization_method == "dynainf":
-            optimal = self.dynainf(
+            expected_latency, optimal = self.dynainf(
                 scaling_cap=scaling_cap,
                 batching_cap=batching_cap,
                 cpu_cap=cpu_cap,
                 alpha=alpha,
                 arrival_rate=arrival_rate,
-                sla_series=sla_series,
+                latest_sla=latest_sla,
                 num_state_limit=num_state_limit,
             )
         elif optimization_method == "fa2":
-            print("in the fa2 function")
-            optimal = self.fa2(
+            expected_latency, optimal = self.fa2(
                 scaling_cap=scaling_cap,
                 batching_cap=batching_cap,
                 alpha=alpha,
                 arrival_rate=arrival_rate,
-                sla_series=sla_series,
+                latest_sla=latest_sla,
                 num_state_limit=num_state_limit,
             )
         else:
             raise ValueError(f"Invalid optimization_method: {optimization_method}")
-        return optimal
+        return expected_latency, optimal
 
     def can_sustain_load(self, arrival_rate: int) -> bool:
         """

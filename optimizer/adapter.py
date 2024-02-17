@@ -174,19 +174,18 @@ class Adapter:
                 to_save_config = self.saving_config_builder(
                     to_apply_config=deepcopy(initial_config),
                     node_orders=deepcopy(self.node_names),
-                    stage_wise_latencies=deepcopy(self.pipeline.stage_wise_latencies),
-                    # stage_wise_accuracies=deepcopy(self.pipeline.stage_wise_accuracies),
-                    stage_wise_throughputs=deepcopy(
-                        self.pipeline.stage_wise_throughput
-                    ),
+                    # stage_wise_latencies=deepcopy(self.pipeline.stage_wise_latencies),
+                    # stage_wise_throughputs=deepcopy(
+                    #     self.pipeline.stage_wise_throughput
+                    # ),
+                    expected_latency=0
                 )
                 current_config = self.extract_current_config()
                 self.monitoring.adaptation_step_report(
                     change_successful=[False for _ in range(len(self.node_names))],
                     to_apply_config=to_save_config,
-                    # objectives=None,
                     timestep=timestep,
-                    # monitored_load=[0],
+                    latest_sla=0,
                     time_interval=time_interval,
                     predicted_load=0,
                 )
@@ -207,42 +206,27 @@ class Adapter:
                     "no pipeline in the system," " aborting adaptation process ..."
                 )
                 logger.info("-" * 50)
-                # if self.teleport_mode:
-                #     self.update_recieved_load(rps_series)
-                # else:
-                #     self.update_recieved_load()
-                # self.update_recieved_load()
-                # with the message that the process has ended
                 break
 
             time_interval += self.adaptation_interval
             timestep += 1
-            # TODO since the load is constant for now we input it
-            # through the configs rather than reading it
-            # rps_series = self.monitoring.rps_monitor(
-            #     monitoring_duration=self.monitoring_duration
-            # )
             sla_series = self.monitoring.sla_monitor(
                 monitoring_duration=self.monitoring_duration
             )
-            # if rps_series is None:
-            #     continue
-            # predicted_load = self.predictor.predict(rps_series)
+            latest_sla = sla_series[-1]
             logger.info("-" * 50)
-            # logger.info(f"\nPredicted Load: {predicted_load}\n")
             logger.info("-" * 50)
-            optimal = self.optimizer.optimize(
+            expected_latency, optimal = self.optimizer.optimize(
                 optimization_method=self.optimization_method,
                 scaling_cap=self.scaling_cap,
                 batching_cap=self.batching_cap,
                 cpu_cap=self.cpu_cap,
                 alpha=self.alpha,
                 arrival_rate=predicted_load,
-                sla_series=sla_series,
+                latest_sla=latest_sla,
                 num_state_limit=self.num_state_limit,
             )
             if optimal is not None and "objective" in optimal.columns:
-                # objectives = optimal['objectives'].values[0]
                 new_configs = self.output_parser(optimal)
                 logger.info("-" * 50)
                 logger.info(f"candidate configs:\n{new_configs}")
@@ -256,12 +240,6 @@ class Adapter:
                         "no pipeline in the system," " aborting adaptation process ..."
                     )
                     logger.info("-" * 50)
-                    # with the message that the process has ended
-                    # if self.teleport_mode:
-                    #     self.update_recieved_load(rps_series)
-                    # else:
-                    #     self.update_recieved_load()
-                    # break
                 to_apply_config = self.choose_config(new_configs)
                 logger.info("-" * 50)
                 logger.info(f"to be applied configs:\n{to_apply_config}")
@@ -294,19 +272,20 @@ class Adapter:
                 to_save_config = self.saving_config_builder(
                     to_apply_config=deepcopy(to_apply_config),
                     node_orders=deepcopy(self.node_names),
-                    stage_wise_latencies=deepcopy(self.pipeline.stage_wise_latencies),
+                    # stage_wise_latencies=deepcopy(self.pipeline.stage_wise_latencies),
                     # stage_wise_accuracies=deepcopy(self.pipeline.stage_wise_accuracies),
-                    stage_wise_throughputs=deepcopy(
-                        self.pipeline.stage_wise_throughput
-                    ),
+                    # stage_wise_throughputs=deepcopy(
+                    #     self.pipeline.stage_wise_throughput
+                    # ),
+                    expected_latency=expected_latency
                 )
             self.monitoring.adaptation_step_report(
                 to_apply_config=to_save_config,
-                # objectives=objectives,
                 timestep=timestep,
                 time_interval=time_interval,
-                # monitored_load=rps_series,
+                latest_sla=latest_sla,
                 predicted_load=predicted_load,
+
                 change_successful=config_change_results,
             )
 
@@ -533,15 +512,16 @@ class Adapter:
         self,
         to_apply_config: Dict[str, Any],
         node_orders: List[str],
-        stage_wise_latencies: List[float],
+        # stage_wise_latencies: List[float],
         # stage_wise_accuracies: List[float],
-        stage_wise_throughputs: List[float],
+        # stage_wise_throughputs: List[float],
+        expected_latency: float,
     ):
         saving_config = to_apply_config
         for index, node in enumerate(node_orders):
-            saving_config[node]["latency"] = stage_wise_latencies[index]
+            saving_config[node]["latency"] = expected_latency
             # saving_config[node]["accuracy"] = stage_wise_accuracies[index]
-            saving_config[node]["throughput"] = stage_wise_throughputs[index]
+            # saving_config[node]["throughput"] = stage_wise_throughputs[index]
         return saving_config
 
 
@@ -600,6 +580,7 @@ class Monitoring:
         timestep: str,
         time_interval: int,
         # monitored_load: List[int],
+        latest_sla: float,
         predicted_load: int,
         change_successful: List[bool],
     ):
@@ -623,6 +604,7 @@ class Monitoring:
         #     self.adaptation_report["timesteps"][timestep]["objective"] = None
         self.adaptation_report["timesteps"][timestep]["time_interval"] = time_interval
         # self.adaptation_report["timesteps"][timestep]["monitored_load"] = monitored_load
+        self.adaptation_report["timesteps"][timestep]["sla"] = latest_sla
         self.adaptation_report["timesteps"][timestep]["predicted_load"] = predicted_load
 
     def update_recieved_load(self, all_recieved_loads: List[float]):

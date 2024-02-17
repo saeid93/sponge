@@ -24,7 +24,7 @@ benchmark_duration: 1
 adaptation_interval: 1
 workload_type: static
 workload_config:
-  loads_to_test: 20
+  loads_to_test: 40
   load_duration: 240
 # workload_type: twitter
 # workload_config:

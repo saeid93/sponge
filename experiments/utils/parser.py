@@ -587,6 +587,7 @@ class AdaptationParser:
             "objective": [],
             "monitored_load": [],
             "predicted_load": [],
+            "sla": [],
             "nodes": {},
             "total_load": [],
         }
@@ -597,44 +598,18 @@ class AdaptationParser:
                 "batch": [],
                 "variant": [],
                 "latency": [],
-                "accuracy": [],
                 "throughput": [],
             }
-        try:  # for backward compatibility with older experiments
-            changes["recieved_load"] = adaptation_log["metadata"]["recieved_load"]
-            changes["sla"] = adaptation_log["metadata"]["sla"]
-            try:  # backward compatibility
-                changes["stage_wise_slas"] = adaptation_log["metadata"][
-                    "stage_wise_slas"
-                ]
-            except:
-                pass
-            try:  # backward compatibility
-                changes["base_allocations"] = adaptation_log["metadata"][
-                    "base_allocations"
-                ]
-            except:
-                pass
-            for _, state in adaptation_log["timesteps"].items():
-                changes["time_interval"].append(state["time_interval"])
-                try:  # backward compatibility
-                    changes["accuracy_objective"].append(state["accuracy_objective"])
-                    changes["resource_objective"].append(state["resource_objective"])
-                    changes["batch_objective"].append(state["batch_objective"])
-                except KeyError:
-                    pass
-                changes["objective"].append(state["objective"])
-                changes["monitored_load"].append(state["monitored_load"])
-                changes["predicted_load"].append(state["predicted_load"])
-                for node_name in self.loader.node_orders:
-                    for metric, _ in state["config"][node_name].items():
-                        if metric == "batch":
-                            value = int(state["config"][node_name][metric])
-                        else:
-                            value = state["config"][node_name][metric]
-                        changes["nodes"][node_name][metric].append(value)
-        except KeyError:
-            pass
+        for _, state in adaptation_log["timesteps"].items():
+            changes["sla"].append(state["sla"])
+        for _, state in adaptation_log["timesteps"].items():
+            for node_name in self.loader.node_orders:
+                for metric, _ in state["config"][node_name].items():
+                    if metric == "batch":
+                        value = int(state["config"][node_name][metric])
+                    else:
+                        value = state["config"][node_name][metric]
+                    changes["nodes"][node_name][metric].append(value)
         return changes
 
     def series_changes_gurobi(self, adaptation_log: Dict[str, Dict[str, Any]]):
