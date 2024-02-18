@@ -313,18 +313,18 @@ class Optimizer:
         SECOND_MILISECOND = 1000
         multiplier = 0.9
         for b in range(1, b_max + 1):  # iterate over all the batch sizes
-            l_bc = self.batch_cost_latency_calculation(b, 2, self.gamma, self.delta, self.epsilon, self.eta)  # calculate latency with the candidate batch and cpu using eq 2
+            l_bc = self.batch_cost_latency_calculation(b, 1, self.gamma, self.delta, self.epsilon, self.eta)  # calculate latency with the candidate batch and cpu using eq 2
             q_time = 0  # queue time for requests
             if l_bc > SECOND_MILISECOND:
                 break
             curr_instance = math.ceil(RPS / (int(SECOND_MILISECOND / l_bc) * b))  # current instance nubmer
-            for i in range(0, RPS, b):  # iterate over all the requests in the queue
+            for i in range(0, RPS, b * curr_instance):  # iterate over all the requests in the queue
                 q_time += l_bc  # increase queuing time for the next batch of request
             if l_bc + q_time + cl_max < multiplier * SLO and curr_instance < instance_number:  # the current configuration not satisfy the SLOs and there is a smaller instance number
                 instance_number = curr_instance
                 best_batch = b
 
-        optimal_dict = {'task_0_cpu': [2], 'task_0_replicas': [instance_number], 'task_0_batch': [best_batch], 'objective': [0]}
+        optimal_dict = {'task_0_cpu': [1], 'task_0_replicas': [instance_number], 'task_0_batch': [best_batch], 'objective': [0]}
         # print(f"optimal_dict: {optimal_dict}")
         optimal = pd.DataFrame(optimal_dict)
         # print(f"tried to make the optimal: {optimal}")
