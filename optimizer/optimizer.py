@@ -309,12 +309,11 @@ class Optimizer:
         # cl_max = max(q)  # maximum communication latency
         cl_max = SLO - q
         instance_number = 100  # result number of instances
-        best_batch = 0  # result batch size
+        best_batch = 1  # result batch size
         SECOND_MILISECOND = 1000
-        optimal = pd.DataFrame(optimal_dict)
-        multiplier = 0.8
+        multiplier = 0.9
         for b in range(1, b_max + 1):  # iterate over all the batch sizes
-            l_bc = self.batch_cost_latency_calculation(b, 1, self.gamma, self.delta, self.epsilon, self.eta)  # calculate latency with the candidate batch and cpu using eq 2
+            l_bc = self.batch_cost_latency_calculation(b, 2, self.gamma, self.delta, self.epsilon, self.eta)  # calculate latency with the candidate batch and cpu using eq 2
             q_time = 0  # queue time for requests
             if l_bc > SECOND_MILISECOND:
                 break
@@ -325,10 +324,12 @@ class Optimizer:
                 instance_number = curr_instance
                 best_batch = b
 
-        optimal_dict = {'task_0_cpu': [1], 'task_0_replicas': [instance_number], 'task_0_batch': [best_batch], 'objective': [0]}
-        print(f"optimal_dict: {optimal_dict}")
+        optimal_dict = {'task_0_cpu': [2], 'task_0_replicas': [instance_number], 'task_0_batch': [best_batch], 'objective': [0]}
+        # print(f"optimal_dict: {optimal_dict}")
         optimal = pd.DataFrame(optimal_dict)
-        print(f"tried to make the optimal: {optimal}")
+        # print(f"tried to make the optimal: {optimal}")
+        if instance_number == 100:
+            return 1, None
         return l_bc, optimal
 
 

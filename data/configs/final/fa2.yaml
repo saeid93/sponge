@@ -11,12 +11,12 @@ nodes:
     model_variants: yolov5n
     max_batch_size: '1'
     max_batch_time: '1'
-    cpu_request: '1'
+    cpu_request: '2'
     memory_request: 4Gi
     replicas: 5
     use_threading: 'True'
-    num_interop_threads: '1'
-    num_threads: '1'
+    num_interop_threads: '2'
+    num_threads: '2'
 
 # ----------- experiment configs -------------
 
@@ -25,7 +25,7 @@ adaptation_interval: 1
 workload_type: static
 workload_config:
   loads_to_test: 40
-  load_duration: 1200000
+  load_duration: 120
 # workload_type: twitter
 # workload_config:
 #   - start: '1301160'
