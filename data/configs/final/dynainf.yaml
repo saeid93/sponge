@@ -25,7 +25,7 @@ adaptation_interval: 1
 workload_type: static
 workload_config:
   loads_to_test: 40
-  load_duration: 240
+  load_duration: 600
 # workload_type: twitter
 # workload_config:
 #   - start: '1301160'
@@ -40,9 +40,9 @@ workload_config:
 
 # ----------- optimizer configs -------------
 
-metaseries: 14
-series: 2
-metadata: 'bursty - ipa - cpu type: compute_cascadelake_r_ib'
+metaseries: 5
+series: 1
+metadata: 'check on lower load=40, multiplier=0.9, duration=10min'
 number_tasks: 1
 profiling_series:
   - 72
@@ -92,7 +92,7 @@ distrpution_time: 30
 
 # ----------- distruption time -------------
 # debug mode with complete lgos of containers
-debug_mode:  false
+debug_mode: false
 
 # ----------- simulation mode -------------
 simulation_mode: false
@@ -101,7 +101,7 @@ simulation_mode: false
 predictor_margin: 0
 
 # ----------- drop interval -------------
-drop_limit: 100
+drop_limit: 1
 
 # ----------- do a 10 second warm up before starting the experiment -------------
 warm_up: false

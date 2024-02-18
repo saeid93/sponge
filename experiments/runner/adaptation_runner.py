@@ -30,7 +30,7 @@ from experiments.utils.workload import make_workload
 
 @click.command()
 @click.option(
-    "--config-name", required=True, type=str, default="dynainf"
+    "--config-name", required=True, type=str, default="fa2"
 )
 @click.option(
     "--type-of",

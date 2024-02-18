@@ -254,14 +254,14 @@ class Optimizer:
         SLO = self.pipeline.sla  # default SLO
         # cl_max = max(q)  # maximum communication latency
         cl_max = SLO - q
-
+        multiplier = 0.9
         for c in range(1, c_max + 1):  # iterate over all the cpu cores
             for b in range(1, b_max + 1):  # iterate over all the batch sizes
                 l_bc = self.batch_cost_latency_calculation(b, c, self.gamma, self.delta, self.epsilon, self.eta)  # calculate latency with the candidate batch and cpu using eq 2
                 q_time = 0  # queue time for requests
                 better = True  # have we found a configuration?
                 for i in range(0, RPS, b):  # iterate over all the requests in the queue
-                    if l_bc + q_time + cl_max > SLO:  # the current configuration does not satisfy the SLOs
+                    if l_bc + q_time + cl_max > multiplier * SLO:  # the current configuration does not satisfy the SLOs
                         better = False
                         break
                     q_time += l_bc  # increase queuing time for the next batch of request
@@ -303,7 +303,7 @@ class Optimizer:
         b_max = batching_cap  # max batch size configuration
         RPS = arrival_rate  # workload
         # q = [50] * RPS  # calculate this from the user
-        q = latest_sla[-1]
+        q = latest_sla
         # SLO = 1000  # default SLO
         SLO = self.pipeline.sla  # default SLO
         # cl_max = max(q)  # maximum communication latency
@@ -311,10 +311,8 @@ class Optimizer:
         instance_number = 100  # result number of instances
         best_batch = 0  # result batch size
         SECOND_MILISECOND = 1000
-        optimal_dict = {'1. task_0_cpu': [1], 'task_0_replicas': [instance_number], 'task_0_batch': [best_batch], 'objective': [0]}
-        print(f"optimal_dict: {optimal_dict}")
         optimal = pd.DataFrame(optimal_dict)
-        print(f"1. tried to make the optimal: {optimal}")
+        multiplier = 0.8
         for b in range(1, b_max + 1):  # iterate over all the batch sizes
             l_bc = self.batch_cost_latency_calculation(b, 1, self.gamma, self.delta, self.epsilon, self.eta)  # calculate latency with the candidate batch and cpu using eq 2
             q_time = 0  # queue time for requests
@@ -322,10 +320,10 @@ class Optimizer:
                 break
             curr_instance = math.ceil(RPS / (int(SECOND_MILISECOND / l_bc) * b))  # current instance nubmer
             for i in range(0, RPS, b):  # iterate over all the requests in the queue
-                if l_bc + q_time + cl_max < SLO and curr_instance < instance_number:  # the current configuration not satisfy the SLOs and there is a smaller instance number
-                    instance_number = curr_instance
-                    best_batch = b
                 q_time += l_bc  # increase queuing time for the next batch of request
+            if l_bc + q_time + cl_max < multiplier * SLO and curr_instance < instance_number:  # the current configuration not satisfy the SLOs and there is a smaller instance number
+                instance_number = curr_instance
+                best_batch = b
 
         optimal_dict = {'task_0_cpu': [1], 'task_0_replicas': [instance_number], 'task_0_batch': [best_batch], 'objective': [0]}
         print(f"optimal_dict: {optimal_dict}")
