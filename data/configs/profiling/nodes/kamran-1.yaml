@@ -1,16 +1,16 @@
-series: 2
-series_meta: 'all yolos intra = 1, inter = int(cpu)'
+series: 309
+series_meta: 'YOLO intra = 1, inter = int(cpu)'
 pipeline_name: video
 node_name: yolo
 data_type: image
 timeout: 100
 mode: exponential
 model_variants:
-  # - yolov5n
+  - yolov5n
   # - yolov5s
-  - yolov5m
-  - yolov5l
-  - yolov5x
+  # - yolov5m
+  # - yolov5l
+  # - yolov5x
 max_batch_size:
   - '1'
   - '2'
@@ -47,7 +47,7 @@ workload_config:
   # - 10
   - 16
   # - 40
-  # - 128
+  - 128
   load_duration: 60
 # workload_type: twitter
 # workload_config:
@@ -60,5 +60,3 @@ central_queue: false
 # ----------- enable in container logging -------------
 logs_enabled: false
 only_pod: true
-
-sla: 1
