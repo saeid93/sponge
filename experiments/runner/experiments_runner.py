@@ -183,7 +183,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="dynainf")
+@click.option("--config-name", required=True, type=str, default="fa2")
 @click.option(
     "--type-of",
     required=True,

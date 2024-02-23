@@ -310,19 +310,25 @@ class Optimizer:
         cl_max = SLO - q
         instance_number = 100  # result number of instances
         best_batch = 1  # result batch size
-        SECOND_MILISECOND = 1000
+        # SECOND_MILISECOND = 1000
         multiplier = 0.9
-        for b in range(1, b_max + 1):  # iterate over all the batch sizes
-            l_bc = self.batch_cost_latency_calculation(b, 1, self.gamma, self.delta, self.epsilon, self.eta)  # calculate latency with the candidate batch and cpu using eq 2
-            q_time = 0  # queue time for requests
-            if l_bc > SECOND_MILISECOND:
-                break
-            curr_instance = math.ceil(RPS / (int(SECOND_MILISECOND / l_bc) * b))  # current instance nubmer
-            for i in range(0, RPS, b * curr_instance):  # iterate over all the requests in the queue
-                q_time += l_bc  # increase queuing time for the next batch of request
-            if l_bc + q_time + cl_max < multiplier * SLO and curr_instance < instance_number:  # the current configuration not satisfy the SLOs and there is a smaller instance number
-                instance_number = curr_instance
-                best_batch = b
+        for cc in range(1, 16 + 1):
+            for b in range(1, b_max + 1):  # iterate over all the batch sizes
+                l_bc = self.batch_cost_latency_calculation(b, 1, self.gamma, self.delta, self.epsilon, self.eta)  # calculate latency with the candidate batch and cpu using eq 2
+                q_time = 0  # queue time for requests
+                # if b == 1:
+                    # l_bc = 65 # TODO workaround for batch one inconsistency
+                if l_bc > q:
+                    break
+                # curr_instance = math.ceil(RPS / (int(q / l_bc) * b))  # current instance nubmer
+                curr_instance = cc
+                if curr_instance * (int(q / l_bc) * b) < RPS:
+                    continue
+                for i in range(0, RPS, b * curr_instance):  # iterate over all the requests in the queue
+                    q_time += l_bc  # increase queuing time for the next batch of request
+                if l_bc + q_time + cl_max < multiplier * SLO and curr_instance < instance_number:  # the current configuration not satisfy the SLOs and there is a smaller instance number
+                    instance_number = curr_instance
+                    best_batch = b
 
         optimal_dict = {'task_0_cpu': [1], 'task_0_replicas': [instance_number], 'task_0_batch': [best_batch], 'objective': [0]}
         # print(f"optimal_dict: {optimal_dict}")
