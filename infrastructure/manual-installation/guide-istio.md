@@ -1,0 +1,1 @@
+1. Try the sample seldon istio app [canary](../seldon-core-examples/istio/canary/istio_canary.ipynb) on top of Seldon core
