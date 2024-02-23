@@ -40,7 +40,7 @@ from experiments.utils.prometheus import PromClient
 prom_client = PromClient()
 
 from experiments.utils import logger
-
+from experiments.utils.slas import make_slas
 
 def experiments(
     pipeline_name: str, node_name: str, config: dict, node_path: str, data_type: str
@@ -55,7 +55,7 @@ def experiments(
     series_meta = config["series_meta"]
     workload_type = config["workload_type"]
     workload_config = config["workload_config"]
-    from_stroage = config['from_storage']
+    from_stroage = config["only_pod"]
 
     logs_enabled = config["logs_enabled"]
     distrpution_time = config["distrpution_time"]
@@ -138,11 +138,13 @@ def experiments(
                                         use_threading=use_threading,
                                         # HACK for now we set the number of requests
                                         # proportional to the the number threads
-                                        num_interop_threads= "1", #str(int(float(cpu_request))), # TEMP workaround for fractional allocation
-                                        num_threads= str(int(float(cpu_request))), # TEMP workaround for fractional allocation
+                                        num_interop_threads="1",  # str(int(float(cpu_request))), # TEMP workaround for fractional allocation
+                                        num_threads=str(
+                                            int(float(cpu_request))
+                                        ),  # TEMP workaround for fractional allocation
                                         distrpution_time=distrpution_time,
                                         logs_enabled=logs_enabled,
-                                        from_storage=from_stroage
+                                        only_pod=from_stroage,
                                     )
                                     logger.info("Checking if the model is up ...")
                                     logger.info("\n")
@@ -152,6 +154,7 @@ def experiments(
                                         model=node_name,
                                         data_type=data_type,
                                         pipeline_path=node_path,
+                                        profiling=True
                                     )
                                     logger.info("model warm up ...")
                                     logger.info("\n")
@@ -175,8 +178,11 @@ def experiments(
                                     data = load_data(
                                         data_type=data_type,
                                         pipeline_path=node_path,
-                                        node_type=node_type,
+                                        node_type=node_type
                                     )
+                                    image_size = data[0].data.nbytes / 1024
+                                    sla = 1000 * config['sla']
+                                    slas = make_slas(image_size=image_size, sla=sla, length=len(workload))
                                     # start_time = time.time()
                                     # output_queue = Queue()
                                     try:
@@ -228,6 +234,8 @@ def experiments(
                                             # load_duration=load_duration,
                                             # no_engine=no_engine,
                                             benchmark_duration=benchmark_duration,
+                                            slas=slas,
+                                            profiling=True
                                         )
                                         logger.info(
                                             "-" * 25 + "saving the report" + "-" * 25
@@ -486,7 +494,7 @@ def save_report(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="kamran-2")
+@click.option("--config-name", required=True, type=str, default="kamran-1")
 def main(config_name: str):
     config_path = os.path.join(NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, "r") as cf:
@@ -497,8 +505,8 @@ def main(config_name: str):
     series = config["series"]
 
     # pipeline path based on pipeline type [central | distributed] queues
-    central_queue = config["central_queue"]
-    pipeline_type = "mlserver-centralized" if central_queue else "mlserver-final"
+    # central_queue = config["central_queue"]
+    pipeline_type = "mlserver"
     pipeline_path = os.path.join(
         PIPLINES_PATH, pipeline_type, pipeline_name, "seldon-core-version"
     )

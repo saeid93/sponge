@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: seldon-core
+    seldon-app: router-router
+    seldon-deployment-id: router
+    seldon.io/model: "true"
+  name: router-router
+  namespace: default
+
+spec:
+  ports:
+  - name: http
+    nodePort: 32002
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  - name: grpc
+    nodePort: 32001
+    port: 9500
+    protocol: TCP
+    targetPort: 9500
+  selector:
+    seldon-app: router-router
+  sessionAffinity: None
+  type: LoadBalancer
+status:
+  loadBalancer: {}

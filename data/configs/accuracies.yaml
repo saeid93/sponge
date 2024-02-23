@@ -145,11 +145,11 @@ sum-qa:
 video:
   crop:
     # source https://github.com/ultralytics/yolov5
-    yolov5n: 45.7
+    # yolov5n: 45.7
     yolov5s: 56.8
-    yolov5m: 64.1
-    yolov5l: 67.3
-    yolov5x: 68.9
+    # yolov5m: 64.1
+    # yolov5l: 67.3
+    # yolov5x: 68.9
     # https://pytorch.org/vision/stable/models.html#table-of-all-available-classification-weights
   classification:
     resnet18: 69.75

@@ -77,7 +77,7 @@ def setup_node(
     num_interop_threads: int,
     num_threads: int,
     distrpution_time: int,
-    from_storage=bool,
+    only_pod=bool,
     no_engine=False,
     debug_mode=False,
     drop_limit=1000,
@@ -94,6 +94,8 @@ def setup_node(
             "memory_request": memory_request,
             "cpu_limit": cpu_request,
             "memory_limit": memory_request,
+            "max_batch_size": 1,
+            "max_batch_time": 1,
             "model_variant": model_variant,
             "replicas": replica,
             "no_engine": str(no_engine),
@@ -125,12 +127,20 @@ def setup_node(
             "logs_enabled": logs_enabled,
         }
     environment = Environment(loader=FileSystemLoader(node_path))
-    if from_storage:
-        template_file_name = "node-template.yaml"
+    non_seldon = True
+    if non_seldon:
+        if only_pod:
+            template_file_name = "node-template-not-seldon-with-model-only-pod.yaml"
+        else:
+            template_file_name = "node-template-not-seldon-with-model.yaml"
     else:
-        template_file_name = "node-template-with-model.yaml"
+        if only_pod:
+            template_file_name = "node-template.yaml"
+        else:
+            template_file_name = "node-template-with-model.yaml"
     svc_template = environment.get_template(template_file_name)
     content = svc_template.render(svc_vars)
+    logger.info("node yaml file:")
     logger.info(content)
     command = f"""cat <<EOF | kubectl apply -f -
 {content}
@@ -168,7 +178,12 @@ def setup_router(
         "logs_enabled": logs_enabled,
     }
     environment = Environment(loader=FileSystemLoader(ROUTER_PATH))
-    svc_template = environment.get_template("node-template.yaml")
+    non_seldon = True
+    if non_seldon:
+        template_file_name = "node-template-not-seldon.yaml"
+    else:
+        template_file_name = "node-template.yaml"
+    svc_template = environment.get_template(template_file_name)
     content = svc_template.render(svc_vars)
     logger.info(content)
     command = f"""cat <<EOF | kubectl apply -f -
@@ -177,7 +192,7 @@ def setup_router(
     os.system(command)
     logger.info("-" * 25 + f" waiting to make sure the node is up " + "-" * 25)
     logger.info("\n")
-    check_node_loaded(node_name="router")
+    # check_node_loaded(node_name="router")
 
 
 def setup_queues(
@@ -238,7 +253,12 @@ def setup_queue(
     }
     queue_path = f"{QUEUE_PATH}-debug" if debug_mode else QUEUE_PATH
     environment = Environment(loader=FileSystemLoader(queue_path))
-    svc_template = environment.get_template("node-template.yaml")
+    non_seldon = True
+    if non_seldon:
+        template_file_name = "node-template-not-seldon.yaml"
+    else:
+        template_file_name = "node-template.yaml"
+    svc_template = environment.get_template(template_file_name)
     content = svc_template.render(svc_vars)
     logger.info(content)
     command = f"""cat <<EOF | kubectl apply -f -
@@ -247,7 +267,7 @@ def setup_queue(
     os.system(command)
     logger.info("-" * 25 + f" waiting to make sure the node is up " + "-" * 25)
     logger.info("\n")
-    check_node_loaded(node_name="queue-" + model_name)
+    # check_node_loaded(node_name="queue-" + model_name)
 
 
 def setup_seldon_pipeline(
@@ -429,7 +449,7 @@ def setup_central_pipeline(
     timeout: int,
     num_nodes: int,
     distrpution_time: int,
-    from_storage: List[bool],
+    only_pod: List[bool],
     debug_mode: bool = False,
     drop_limit: int = 1000,
     logs_enabled: bool = True,
@@ -457,7 +477,7 @@ def setup_central_pipeline(
             distrpution_time=distrpution_time,
             drop_limit=drop_limit,
             logs_enabled=logs_enabled,
-            from_storage=from_storage[node_id],
+            only_pod=only_pod,
         )
     queue_names = list(map(lambda l: "queue-" + l, node_names))
     setup_queues(
@@ -488,29 +508,15 @@ def load_data(data_type: str, pipeline_path: str, node_type: str = "first"):
         data_shape = [len(data)]
     elif data_type == "text":
         input_sample_path = os.path.join(pipeline_path, "input-sample.txt")
-        input_sample_shape_path = os.path.join(pipeline_path, "input-sample-shape.json")
         with open(input_sample_path, "r") as openfile:
             data = openfile.read()
-            # with open(input_sample_shape_path, 'r') as openfile:
-            #     data_shape = json.load(openfile)
-            #     data_shape = data_shape['data_shape']
             data_shape = [1]
     elif data_type == "image":
         input_sample_path = os.path.join(pipeline_path, "input-sample.JPEG")
         data = Image.open(input_sample_path)
-        if node_type == "first":
-            data_shape = list(np.array(data).shape)
-        elif node_type == "second":
-            data_shape = [list(np.array(data).shape)]
-        else:
-            raise ValueError(f"Invalid data type: {node_type}")
+        data_shape = list(np.array(data).shape)
         data = np.array(data).flatten()
-    # custom_parameters =  "[\"{'yolo': {'arrival': 1680913322.8364007, 'serving': 1680913322.92951}}\"]"
-    data_1 = Data(
-        data=data,
-        data_shape=data_shape
-        # custom_parameters={'times': str(custom_parameters)},
-    )
+    data_1 = Data(data=data, data_shape=data_shape, next_node='queue-yolo')
 
     # Data list
     data = []
@@ -518,12 +524,12 @@ def load_data(data_type: str, pipeline_path: str, node_type: str = "first"):
     return data
 
 
-def check_load_test(pipeline_name: str, data_type: str, pipeline_path: str, model: str):
+def check_load_test(pipeline_name: str, data_type: str, pipeline_path: str, model: str, profiling: bool=False, minikube_ip = "localhost"):
     node_type = "first"
     if pipeline_name == "resnet-human":
         node_type = "second"
     data = load_data(
-        data_type=data_type, pipeline_path=pipeline_path, node_type=node_type
+        data_type=data_type, pipeline_path=pipeline_path, node_type=node_type,
     )
     loop_timeout = 5
     while True:
@@ -537,6 +543,8 @@ def check_load_test(pipeline_name: str, data_type: str, pipeline_path: str, mode
             data=data,
             data_type=data_type,
             workload=[2],
+            profiling=profiling,
+            minikube_ip=minikube_ip
         )
         if "failed" not in response[0][0].keys():
             return True
@@ -571,6 +579,7 @@ def remove_pipeline(pipeline_name: str):
     os.system(f"kubectl delete seldondeployment --all -n default")
     os.system(f"kubectl delete deployments --all -n default")
     os.system(f"kubectl delete replicaset --all -n default")
+    os.system(f"kubectl delete service --all -n default")
     os.system(f"kubectl delete pods --all -n default")
     os.system(
         "kubectl get services | grep -v kubernetes | awk '{print $1}' | xargs kubectl delete service -n default"
@@ -585,14 +594,24 @@ def load_test(
     model: str,
     workload: List[int],
     data: List[Data],
+    slas: List[float] = [0],
     namespace: str = "default",
     mode: str = "step",
     benchmark_duration=1,
     queue: Queue = None,
+    profiling: bool = False,
+    minikube_ip: str = "localhost"
 ) -> Tuple[int, int, List[List[Dict[str, Any]]]]:
     start_time = time.time()
 
-    endpoint = "localhost:32000"
+    non_seldon = True
+    if non_seldon:
+        # endpoint = "localhost:32001"
+        endpoint = f"{minikube_ip}:32001"
+        if profiling:
+            endpoint = "localhost:32004"
+    else:
+        endpoint = "localhost:32000"
     deployment_name = pipeline_name
     namespace = "default"
     metadata = [("seldon", deployment_name), ("namespace", namespace)]
@@ -600,6 +619,7 @@ def load_test(
         endpoint=endpoint,
         metadata=metadata,
         workload=workload,
+        slas=slas,
         model=model,
         data=data,
         mode=mode,  # options - step, equal, exponential

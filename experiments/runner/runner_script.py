@@ -14,7 +14,7 @@ from experiments.utils.constants import PROJECT_PATH
 
 runner_folder = os.path.join(PROJECT_PATH, "experiments", "runner")
 script1_path = os.path.join(runner_folder, "experiments_runner.py")
-time.sleep(10)
+time.sleep(40)
 script2_path = os.path.join(runner_folder, "adaptation_runner.py")
 
 

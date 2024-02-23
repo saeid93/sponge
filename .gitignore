@@ -61,7 +61,6 @@ cover/
 *.pot
 
 # Django stuff:
-*.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -240,7 +239,7 @@ profile-exp*
 cache
 Quantizer
 infass
-!pipelines/mlserver-final/5-paper-video/seldon-core-version/nodes/yolo/cache
+!pipelines/mlserver/5-paper-video/seldon-core-version/nodes/yolo/cache
 !data/configs
 !data/upload.sh
 !data/upload-metaseries.sh

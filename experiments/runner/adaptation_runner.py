@@ -29,7 +29,9 @@ from experiments.utils.workload import make_workload
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="predictor-repeat-video-3-1")
+@click.option(
+    "--config-name", required=True, type=str, default="fa2"
+)
 @click.option(
     "--type-of",
     required=True,
@@ -90,6 +92,7 @@ def main(config_name: str, type_of: str):
     initial_batch = config["initial_batch"]
     scaling_cap = config["scaling_cap"]
     batching_cap = config["batching_cap"]
+    cpu_cap = config["cpu_cap"]
     pipeline_name = config["pipeline_name"]
     only_measured_profiles = config["only_measured_profiles"]
     profiling_load = config["profiling_load"]
@@ -113,8 +116,9 @@ def main(config_name: str, type_of: str):
 
     # optimizer
     alpha = config["alpha"]
-    beta = config["beta"]
-    gamma = config["gamma"]
+
+    # config
+    sla = config["sla"]
 
     # baselines [only scaling | only switching]
     baseline_mode = config["baseline_mode"]
@@ -140,7 +144,7 @@ def main(config_name: str, type_of: str):
     throughput_margin = config["throughput_margin"]
 
     # read models from storage or container
-    from_storage = config["from_storage"]
+    only_pod = config["only_pod"]
 
     pipeline = generate_simulated_pipeline(
         number_tasks=number_tasks,
@@ -156,6 +160,7 @@ def main(config_name: str, type_of: str):
         sla_factor=sla_factor,
         accuracy_method=accuracy_method,
         normalize_accuracy=normalize_accuracy,
+        sla=sla,
         pipeline_accuracies=pipeline_accuracies,
         only_measured_profiles=only_measured_profiles,
         profiling_load=profiling_load,
@@ -170,6 +175,8 @@ def main(config_name: str, type_of: str):
     monitoring_duration = config["monitoring_duration"]
     predictor_type = config["predictor_type"]
     backup_predictor_type = config["backup_predictor_type"]
+    minikube_ip = config["minikube_ip"]
+    only_pod = config["only_pod"]
 
     # should be inside of experiments
     adapter = Adapter(
@@ -182,9 +189,8 @@ def main(config_name: str, type_of: str):
         only_measured_profiles=only_measured_profiles,
         scaling_cap=scaling_cap,
         batching_cap=batching_cap,
+        cpu_cap=cpu_cap,
         alpha=alpha,
-        beta=beta,
-        gamma=gamma,
         num_state_limit=num_state_limit,
         monitoring_duration=monitoring_duration,
         predictor_type=predictor_type,
@@ -195,7 +201,8 @@ def main(config_name: str, type_of: str):
         predictor_margin=predictor_margin,
         teleport_mode=teleport_mode,
         teleport_interval=teleport_interval,
-        from_storage=from_storage,
+        minikube_ip=minikube_ip,
+        only_pod=only_pod
     )
 
     # ----------- 3. Running an experiment series -------------
@@ -209,7 +216,7 @@ def main(config_name: str, type_of: str):
         if teleport_mode:
             adapter.start_adaptation(workload=workload)
         else:
-            adapter.start_adaptation()
+            adapter.start_adaptation(predicted_load=config['workload_config']['loads_to_test'])
         with open(save_path, "w") as outfile:
             outfile.write(json.dumps(adapter.monitoring.adaptation_report))
 

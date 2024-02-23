@@ -1,0 +1,11 @@
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: yolo-vpa
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind:       Deployment
+    name:       yolo-yolo-0-yolo
+  updatePolicy:
+    updateMode: "Auto"

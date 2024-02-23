@@ -1,9 +1,0 @@
-{
-    "name": "node-two",
-    "implementation": "models.NodeTwo",
-    "max_batch_size": 5,
-    "max_batch_time": 1,
-    "parameters": {
-        "uri": "./fakeuri"
-    }
-}

@@ -2,7 +2,7 @@ import os
 from .obj import setup_obj_store
 
 # defined by the user
-PROJECT_PATH = "/home/cc/malleable-scaler"
+PROJECT_PATH = "/home/cc/malleable_scaler"
 OBJ_PATH = "/home/cc/my_mounting_point/"
 KEY_CONFIG_FILENAME = "key_config_mapper.csv"
 NAMESPACE = "default"
@@ -127,4 +127,6 @@ def create_dirs():
 
 
 # prometheus client
-PROMETHEUS = "http://localhost:30090"
+# MINIKUBE_IP="192.168.49.2"
+MINIKUBE_IP="localhost"
+PROMETHEUS = f"http://{MINIKUBE_IP}:30090"

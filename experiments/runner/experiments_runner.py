@@ -24,7 +24,7 @@ from experiments.utils.pipeline_operations import (
     load_test,
     remove_pipeline,
     setup_router_pipeline,
-    setup_central_pipeline,
+    setup_central_pipeline
 )
 
 from experiments.utils.constants import (
@@ -34,6 +34,7 @@ from experiments.utils.constants import (
 )
 from experiments.utils import logger
 from experiments.utils.workload import make_workload
+from experiments.utils.slas import make_slas
 
 
 def setup_pipeline(
@@ -53,7 +54,9 @@ def setup_pipeline(
 
     logs_enabled = config["logs_enabled"]
 
-    from_storage = config["from_storage"]
+    only_pod = config["only_pod"]
+
+    minikube_ip = config["minikube_ip"]
 
     model_variants = []
     max_batch_sizes = []
@@ -97,7 +100,7 @@ def setup_pipeline(
             debug_mode=debug_mode,
             drop_limit=drop_limit,
             logs_enabled=logs_enabled,
-            from_storage=from_storage,
+            only_pod=only_pod,
         )
     else:
         setup_router_pipeline(
@@ -128,6 +131,7 @@ def setup_pipeline(
         model="router",
         data_type=data_type,
         pipeline_path=pipeline_path,
+        minikube_ip=minikube_ip
     )
     if warm_upp:
         logger.info("model warm up ...")
@@ -149,9 +153,13 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
     mode = config["mode"]
     benchmark_duration = config["benchmark_duration"]
+    minikube_ip = config["minikube_ip"]
     _, workload = make_workload(config=config)
     data = load_data(data_type, pipeline_path)
-    # try:
+    image_size = data[0].data.nbytes / 1024
+    # sla = 1000 * config['sla']
+    sla = config['sla']
+    slas = make_slas(image_size=image_size, sla=sla, length=len(workload))
     start_time_experiment, end_time_experiment, responses = load_test(
         pipeline_name="router",
         model="router",
@@ -161,6 +169,8 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
         mode=mode,
         namespace="default",
         benchmark_duration=benchmark_duration,
+        slas=slas,
+        minikube_ip=minikube_ip
     )
     logger.info("-" * 25 + "saving the report" + "-" * 25)
     logger.info("\n")
@@ -173,7 +183,7 @@ def experiments(config: dict, pipeline_path: str, data_type: str):
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="audio-qa-3-real")
+@click.option("--config-name", required=True, type=str, default="fa2")
 @click.option(
     "--type-of",
     required=True,
@@ -214,8 +224,8 @@ def main(config_name: str, type_of: str):
         raise ValueError("wrong config chosen, this is a simulation config")
 
     # pipeline path based on pipeline type [central | distributed] queues
-    central_queue = config["central_queue"]
-    pipeline_type = "mlserver-centralized" if central_queue else "mlserver-final"
+    # central_queue = config["central_queue"]
+    pipeline_type = "mlserver"
     pipeline_path = os.path.join(
         PIPLINES_PATH, pipeline_type, pipeline_folder_name, "seldon-core-version"
     )

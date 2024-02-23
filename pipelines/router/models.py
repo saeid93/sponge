@@ -16,6 +16,7 @@ import grpc
 import mlserver.grpc.dataplane_pb2_grpc as dataplane
 import mlserver.grpc.converters as converters
 import mlserver
+from prometheus_client import Counter
 
 try:
     PREDICTIVE_UNIT_ID = os.environ["PREDICTIVE_UNIT_ID"]
@@ -34,12 +35,6 @@ except KeyError as e:
     logger.info(f"DROP_LIMIT env variable not set, using default value: {DROP_LIMIT}")
 
 try:
-    MODEL_LISTS: List[str] = json.loads(os.environ["MODEL_LISTS"])
-    logger.info(f"MODEL_LISTS set to: {MODEL_LISTS}")
-except KeyError as e:
-    raise ValueError(f"MODEL_LISTS env variable not set!")
-
-try:
     LOGS_ENABLED = os.getenv("LOGS_ENABLED", "True").lower() in ("true", "1", "t")
     logger.info(f"LOGS_ENABLED set to: {LOGS_ENABLED}")
 except KeyError as e:
@@ -48,13 +43,23 @@ except KeyError as e:
         f"LOGS_ENABLED env variable not set, using default value: {LOGS_ENABLED}"
     )
 
+try:
+    MLSERVER_GRPC_MAX_MESSAGE_LENGTH = int(os.environ["MLSERVER_GRPC_MAX_MESSAGE_LENGTH"])
+    logger.info(
+        f"MLSERVER_GRPC_MAX_MESSAGE_LENGTH set to: {MLSERVER_GRPC_MAX_MESSAGE_LENGTH}"
+    )
+except KeyError as e:
+    MLSERVER_GRPC_MAX_MESSAGE_LENGTH = 20971520
+    logger.info(
+        f"MLSERVER_GRPC_MAX_MESSAGE_LENGTH env variable not set, using default value: {MLSERVER_GRPC_MAX_MESSAGE_LENGTH}"
+    )
+
 if not LOGS_ENABLED:
     logger.disabled = True
 
 
 async def send_requests(ch, model_name, payload: InferenceRequest):
     grpc_stub = dataplane.GRPCInferenceServiceStub(ch)
-
     inference_request_g = converters.ModelInferRequestConverter.from_types(
         payload, model_name=model_name, model_version=None
     )
@@ -62,21 +67,30 @@ async def send_requests(ch, model_name, payload: InferenceRequest):
     return response
 
 
-async def model_infer(model_name, request_input: InferenceRequest):
+async def model_infer(request_input: InferenceRequest):
     if not LOGS_ENABLED:
         logger.disabled = True
     try:
         inputs = request_input.outputs[0]
-        # logger.info(f"second node {model_name} data extracted!")
+        model_name = inputs.parameters.extended_parameters["next_node"]
+        if model_name == "out":
+            return model_name, request_input
     except:
         inputs = request_input.inputs[0]
-        # logger.info(f"first node {model_name} data extracted!")
+        model_name = inputs.parameters.extended_parameters["next_node"]
+    logger.info(f"next_node: {model_name}")
     payload_input = InferenceRequest(inputs=[inputs])
     endpoint = f"{model_name}-{model_name}.default.svc.cluster.local:9500"
-    async with grpc.aio.insecure_channel(endpoint) as ch:
+    options = [
+        ("grpc.max_message_length", MLSERVER_GRPC_MAX_MESSAGE_LENGTH),
+        ("grpc.max_send_message_length", MLSERVER_GRPC_MAX_MESSAGE_LENGTH),
+        ("grpc.max_receive_message_length", MLSERVER_GRPC_MAX_MESSAGE_LENGTH),
+    ]
+
+    async with grpc.aio.insecure_channel(endpoint, options=options) as ch:
         output = await send_requests(ch, model_name, payload_input)
     inference_response = converters.ModelInferResponseConverter.to_types(output)
-    return inference_response
+    return model_name, inference_response
 
 
 class Router(MLModel):
@@ -85,6 +99,7 @@ class Router(MLModel):
             logger.disabled = True
         self.loaded = False
         self.request_counter = 0
+        # self.input_requests_counter = Counter("input_requests", "Number of input requests")
         logger.info("Router loaded")
         mlserver.register(
             name="input_requests", description="Measuring number of input requests"
@@ -95,16 +110,13 @@ class Router(MLModel):
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         if not LOGS_ENABLED:
             logger.disabled = True
+        # self.input_requests_counter.inc()
         mlserver.log(input_requests=1)
-
+        logger.info(f"extended paramters from the model: {payload.inputs[0].parameters.extended_parameters}")
+        logger.info(f"sla from the model: {payload.inputs[0].parameters.extended_parameters['sla']}")
         # injecting router arrival time to the message
         arrival_time = time.time()
-        pipeline_arrival = {"pipeline_arrival": str(arrival_time)}
-        existing_paramteres = payload.inputs[0].parameters
-        payload.inputs[0].parameters = existing_paramteres.copy(update=pipeline_arrival)
         self.request_counter += 1
-        # logger.info(f"paramters: {payload.inputs[0].parameters}")
-        # logger.info(f"Request counter:\n{self.request_counter}\n")
 
         drop_limit_exceed_payload = InferenceResponse(
             outputs=[
@@ -120,35 +132,31 @@ class Router(MLModel):
         )
 
         output = payload
-        for node_index, model_name in enumerate(MODEL_LISTS):
-            # logger.info(f"Getting inference responses {model_name}")
-            output = await model_infer(model_name=model_name, request_input=output)
-            if output.outputs[0].name == "drop-limit-violation":
-                # logger.info(f"previous step:\n{self.decode(output.outputs[0])}")
-                # if "early exit" in self.decode(output.outputs[0]):
-                # logger.info(f"early exiting from before")
-                return output
-            existing_paramteres = output.outputs[0].parameters
-            output.outputs[0].parameters = existing_paramteres.copy(
-                update=pipeline_arrival
+
+        model_name = ""
+        while model_name != "out":
+            model_name, output = await model_infer(request_input=output)
+        if output.outputs[0].name == "drop-limit-violation":
+            return output
+        time_so_far = time.time() - arrival_time
+        # TODO add the logic of to drop here
+        if time_so_far >= DROP_LIMIT:
+            drop_message = f"early exit, drop limit exceeded after {model_name.replace('queue-', '')}".encode(
+                "utf8"
             )
-            time_so_far = time.time() - arrival_time
-            # logger.info(f"{model_name} time_so_far:\n{time_so_far}")
-            # TODO add the logic of to drop here
-            if time_so_far >= DROP_LIMIT and node_index + 1 != len(MODEL_LISTS):
-                drop_message = f"early exit, drop limit exceeded after {model_name.replace('queue-', '')}".encode(
-                    "utf8"
-                )
-                # logger.info("early exit from here")
-                drop_limit_exceed_payload.outputs[0].data = [drop_message]
-                return drop_limit_exceed_payload
+            drop_limit_exceed_payload.outputs[0].data = [drop_message]
+            return drop_limit_exceed_payload
 
         serving_time = time.time()
-        times = {PREDICTIVE_UNIT_ID: {"arrival": arrival_time, "serving": serving_time}}
-        # logger.info(f"times: {output.outputs[0].parameters.times}")
-        model_times: Dict = eval(eval(output.outputs[0].parameters.times)[0])
-        model_times.update(times)
-        output_times = str([str(model_times)])
-        output.outputs[0].parameters.times = output_times
+
+        prev_node_name = output.outputs[0].parameters.extended_parameters["node_name"]
+        prev_arrival = output.outputs[0].parameters.extended_parameters["arrival"]
+        prev_serving = output.outputs[0].parameters.extended_parameters["serving"]
+        extended_parameters = {
+            "node_name": prev_node_name + [PREDICTIVE_UNIT_ID],
+            "arrival": prev_arrival + [arrival_time],
+            "serving": prev_serving + [serving_time],
+        }
+        output.outputs[0].parameters.extended_parameters.update(extended_parameters)
 
         return output

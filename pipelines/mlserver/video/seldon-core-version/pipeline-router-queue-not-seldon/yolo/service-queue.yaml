@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: seldon-core
+    seldon-app: queue-yolo-queue-yolo
+    seldon-deployment-id: queue-yolo
+    seldon.io/model: "true"
+  name: queue-yolo-queue-yolo
+  namespace: default
+spec:
+  ports:
+  - name: http
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  - name: grpc
+    port: 9500
+    protocol: TCP
+    targetPort: 9500
+  selector:
+    seldon-app: queue-yolo-queue-yolo
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

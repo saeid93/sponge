@@ -182,7 +182,6 @@ class Task:
         threshold: int,
         sla_factor: int,
         normalize_accuracy: bool,
-        gpu_mode: False,
         lowest_model_accuracy: float = 0,
     ) -> None:
         self.available_model_profiles = available_model_profiles
@@ -192,7 +191,6 @@ class Task:
         self.replicas = replica
         self.batch = batch
         self.replicas = replica
-        self.gpu_mode = gpu_mode
         self.normalize_accuracy = normalize_accuracy
         self.threshold = threshold
         self.name = name
@@ -202,14 +200,9 @@ class Task:
 
         for variant_index, variant in enumerate(self.available_model_profiles):
             if variant.name == active_variant:
-                if self.gpu_mode:
-                    if self.active_allocation.gpu == variant.resource_allocation.gpu:
-                        self.active_variant_index = variant_index
-                        break
-                else:
-                    if self.active_allocation.cpu == variant.resource_allocation.cpu:
-                        self.active_variant_index = variant_index
-                        break
+                if self.active_allocation.cpu == variant.resource_allocation.cpu:
+                    self.active_variant_index = variant_index
+                    break
         else:  # no-break
             raise ValueError(
                 f"no matching profile for the variant {active_variant} and allocation"
@@ -242,187 +235,19 @@ class Task:
         """
         for variant_index, variant in enumerate(self.available_model_profiles):
             if variant.name == active_variant:
-                if self.gpu_mode:
-                    if self.active_allocation.gpu == variant.resource_allocation.gpu:
-                        self.active_variant_index = variant_index
-                        self.active_variant = active_variant
-                        break
-                else:
-                    if self.active_allocation.cpu == variant.resource_allocation.cpu:
-                        self.active_variant_index = variant_index
-                        self.active_variant = active_variant
-                        break
+                if self.active_allocation.cpu == variant.resource_allocation.cpu:
+                    self.active_variant_index = variant_index
+                    self.active_variant = active_variant
+                    break
         else:  # no-break
             raise ValueError(
                 f"no matching profile for the variant {active_variant} and allocation"
                 f"of cpu: {self.active_allocation.cpu} and gpu: {self.active_allocation.gpu}"
             )
 
-        if self.allocation_mode == "base":
-            self.set_to_base_allocation()
-
     @property
     def num_variants(self):
         return len(self.variant_names)
-
-    @property
-    def sla(self) -> Dict[str, ResourceAllocation]:
-        models = {key: [] for key in self.variant_names}
-        # 1. filter out models
-        for model_variant in self.variant_names:
-            for allocation in self.available_model_profiles:
-                if allocation.name == model_variant:
-                    models[model_variant].append(allocation)
-        # 2. find variant SLA
-        model_slas = {}
-        for model, allocation in models.items():
-            # finding sla of each model
-            # sla is latency of minimum batch
-            # under minimum resource multiplied by
-            # a given scaling factor
-            # since allocations are sorted the first
-            # one will be the one with maximum resource req
-            sla = allocation[-1].profiles[0].latency * self.sla_factor
-            model_slas[model] = sla
-        task_sla = (sum(model_slas.values()) / len(model_slas.values())) * 5
-        # task_sla = min(model_slas.values())
-        return task_sla
-
-    @property
-    def base_allocations(self) -> Dict[str, ResourceAllocation]:
-        if self.allocation_mode != "base":
-            return None
-        models = {key: [] for key in self.variant_names}
-        # TOOD change here
-        # 1. filter out models
-        for model_variant in self.variant_names:
-            for allocation in self.available_model_profiles:
-                if allocation.name == model_variant:
-                    models[model_variant].append(allocation)
-        base_allocation = {}
-        check_both = {}
-        check_sla = {}
-        check_throughput = {}
-        for model_variant, allocations in models.items():
-            check_both[model_variant] = {}
-            check_sla[model_variant] = {}
-            check_throughput[model_variant] = {}
-            # finding the minimum allocation that can respond
-            # to the threshold
-            # the profiles are sorted therefore therefore
-            # we iterate from the first profile
-            profiled_batches = allocations[0].profiled_batches
-            for allocation in allocations:
-                # check if the max batch size throughput
-                # can reponsd to the threshold
-                check_both[model_variant][allocation.resource_allocation.cpu] = {}
-                check_sla[model_variant][allocation.resource_allocation.cpu] = {}
-                check_throughput[model_variant][allocation.resource_allocation.cpu] = {}
-                # for profile_index in range(len(profiled_batches)-1, -1, -1):
-                for profile_index in range(0, len(profiled_batches)):
-                    if (
-                        allocation.profiles[profile_index].throughput >= self.threshold
-                        and allocation.profiles[profile_index].latency <= self.sla
-                    ):
-                        base_allocation[model_variant] = deepcopy(
-                            allocation.resource_allocation
-                        )
-                        check_both[model_variant][allocation.resource_allocation.cpu][
-                            profiled_batches[profile_index]
-                        ] = True
-                    else:
-                        check_both[model_variant][allocation.resource_allocation.cpu][
-                            profiled_batches[profile_index]
-                        ] = False
-                    if allocation.profiles[profile_index].throughput >= self.threshold:
-                        check_throughput[model_variant][
-                            allocation.resource_allocation.cpu
-                        ][profiled_batches[profile_index]] = True
-                    else:
-                        check_throughput[model_variant][
-                            allocation.resource_allocation.cpu
-                        ][profiled_batches[profile_index]] = False
-                    if allocation.profiles[profile_index].latency <= self.sla:
-                        check_sla[model_variant][allocation.resource_allocation.cpu][
-                            profiled_batches[profile_index]
-                        ] = True
-                    else:
-                        check_sla[model_variant][allocation.resource_allocation.cpu][
-                            profiled_batches[profile_index]
-                        ] = False
-        allocation_num_sustains = {}
-        for model, allocations in check_both.items():
-            allocation_num_sustains[model] = {}
-            for allocation, batch_can_sustain in allocations.items():
-                allocation_num_sustains[model][allocation] = sum(
-                    batch_can_sustain.values()
-                )
-                # TODO 1. add node orders
-                # 2. make the heuristic
-                # 3. a test
-                # 4. if worked, document up
-        variant_orders = list(self.variants_accuracies.keys())  # TODO to be fixed
-        base_allocation = {}
-        indicator = 0
-        # former_varaint_indicator = 0
-        sample_allocation = list(allocation_num_sustains[variant_orders[0]].keys())
-        indicator_to_allocation = {
-            key: value
-            for key, value in zip(range(len(sample_allocation)), sample_allocation)
-        }
-        for model in variant_orders:
-            allocation_num_sustain = allocation_num_sustains[model]
-            base_allocation[model] = None
-            while base_allocation[model] == None:
-                if indicator > len(sample_allocation):
-                    base_allocation[model] = None
-                    break
-                if model == variant_orders[0]:
-                    if allocation_num_sustain[indicator_to_allocation[indicator]] != 0:
-                        base_allocation[model] = ResourceAllocation(
-                            cpu=indicator_to_allocation[indicator]
-                        )
-                    else:
-                        indicator += 1
-                        continue
-                else:
-                    # if indicator == len(sample_allocation) - 1:
-                    #     base_allocation[model] = None
-                    #     break
-                    if (
-                        indicator != len(sample_allocation) - 1
-                        and allocation_num_sustain[
-                            indicator_to_allocation[indicator + 1]
-                        ]
-                        > allocation_num_sustain[indicator_to_allocation[indicator]]
-                    ):
-                        indicator += 1
-                    if allocation_num_sustain[indicator_to_allocation[indicator]] == 0:
-                        if indicator == len(sample_allocation) - 1:
-                            base_allocation[model] = None
-                            break
-                        else:
-                            indicator += 1
-                            continue
-                    else:
-                        base_allocation[model] = ResourceAllocation(
-                            cpu=indicator_to_allocation[indicator]
-                        )
-        for model_variant, allocation in base_allocation.items():
-            if allocation == None:
-                raise ValueError(
-                    f"No responsive model profile to threshold {self.threshold}"
-                    f" or model sla {self.sla} was found"
-                    f" for model variant {model_variant} "
-                    "consider either changing the the threshold or "
-                    f"sla factor {self.sla_factor}"
-                )
-        return base_allocation
-
-    def set_to_base_allocation(self):
-        self.change_allocation(
-            active_allocation=self.base_allocations[self.active_variant]
-        )
 
     def change_allocation(self, active_allocation: ResourceAllocation) -> None:
         """
@@ -430,16 +255,10 @@ class Task:
         """
         for variant_index, variant in enumerate(self.available_model_profiles):
             if variant.name == self.active_variant:
-                if self.gpu_mode:
-                    if active_allocation.gpu == variant.resource_allocation.gpu:
-                        self.active_variant_index = variant_index
-                        self.active_allocation = active_allocation
-                        break
-                else:
-                    if active_allocation.cpu == variant.resource_allocation.cpu:
-                        self.active_variant_index = variant_index
-                        self.active_allocation = active_allocation
-                        break
+                if active_allocation.cpu == variant.resource_allocation.cpu:
+                    self.active_variant_index = variant_index
+                    self.active_allocation = active_allocation
+                    break
         else:  # no-break
             raise ValueError(
                 f"no matching profile for the variant {self.active_variant} and allocation"
@@ -453,50 +272,6 @@ class Task:
         self.batch = batch
 
     @property
-    def variants_accuracies(self) -> Dict[str, float]:
-        """create all the accuracies for each task
-
-        Returns:
-            Dict[str, float]: variant accuracies
-        """
-        variants_accuracies = {}
-        for profile in self.available_model_profiles:
-            variants_accuracies[profile.name] = profile.accuracy
-        variants_accuracies = dict(
-            sorted(variants_accuracies.items(), key=lambda l: l[1])
-        )
-        return variants_accuracies
-
-    @property
-    def variants_accuracies_normalized(self) -> Dict[str, float]:
-        """create normalized accuracies for each task
-
-        Returns:
-            Dict[str, float]: varaint accuracies
-        """
-        variants = []
-        accuracies = []
-        for variant, accuracy in self.variants_accuracies.items():
-            variants.append(variant)
-            accuracies.append(accuracy)
-        variants = [variant for _, variant in sorted(zip(accuracies, variants))]
-        accuracies.sort()
-        if len(accuracies) == 1:
-            accuracies_normalized = [1]
-        else:
-            accuracies_normalized = (
-                np.arange(len(accuracies)) / (len(accuracies) - 1)
-            ).tolist()
-        # TODO add the if statement for the lowest model if only one model
-        if len(accuracies_normalized) != 1:
-            accuracies_normalized[0] = self.lowest_model_accuracy
-        variants_accuracies_normalized = {
-            variant: accuracy_normalized
-            for variant, accuracy_normalized in zip(variants, accuracies_normalized)
-        }
-        return variants_accuracies_normalized
-
-    @property
     def active_model(self) -> Model:
         return self.available_model_profiles[self.active_variant_index]
 
@@ -508,30 +283,11 @@ class Task:
 
     @property
     def cpu(self) -> int:
-        if self.gpu_mode:
-            raise ValueError("The node is on gpu mode")
-        else:
-            return self.active_model.resource_allocation.cpu
-
-    @property
-    def gpu(self) -> float:
-        if self.gpu_mode:
-            return self.active_model.resource_allocation.gpu
-        else:
-            return 0
+        return self.active_model.resource_allocation.cpu
 
     @property
     def cpu_all_replicas(self) -> int:
-        if self.gpu_mode:
-            raise ValueError("The node is on gpu mode")
-        else:
-            return self.active_model.resource_allocation.cpu * self.replicas
-
-    @property
-    def gpu_all_replicas(self) -> float:
-        if self.gpu_mode:
-            return self.active_model.resource_allocation.gpu * self.replicas
-        return 0
+        return self.active_model.resource_allocation.cpu * self.replicas
 
     @property
     def queue_latency(self) -> float:
@@ -550,7 +306,7 @@ class Task:
 
     @property
     def latency(self) -> float:
-        latency = self.model_latency + self.queue_latency
+        latency = self.model_latency # + self.queue_latency
         return latency
 
     @property
@@ -574,13 +330,6 @@ class Task:
     @property
     def throughput_all_replicas(self):
         return self.throughput * self.replicas
-
-    @property
-    def accuracy(self):
-        if self.normalize_accuracy:
-            return self.variants_accuracies_normalized[self.active_variant]
-        else:
-            return self.active_model.accuracy
 
     @property
     def variant_names(self):
@@ -634,19 +383,14 @@ class Pipeline:
         sla_factor: int,
         accuracy_method: str,
         normalize_accuracy: bool,
+        sla: int,
     ) -> None:
         self.inference_graph: List[Task] = inference_graph
         self.gpu_mode = gpu_mode
         self.sla_factor = sla_factor
         self.accuracy_method = accuracy_method
         self.normalize_accuracy = normalize_accuracy
-        if not self.gpu_mode:
-            for task in self.inference_graph:
-                if task.gpu_mode:
-                    raise ValueError(
-                        f"pipeline is deployed on cpu",
-                        f"but task {task.name} is on gpu",
-                    )
+        self.sla = sla
 
     def add_task(self, task: Task):
         self.inference_graph.append(task)
@@ -667,19 +411,9 @@ class Pipeline:
         return latencies
 
     @property
-    def sla(self):
-        sla = sum(map(lambda l: l.sla, self.inference_graph))
-        return sla
-
-    @property
     def stage_wise_slas(self):
         slas = dict(map(lambda l: (l.name, l.sla), self.inference_graph))
         return slas
-
-    @property
-    def stage_wise_accuracies(self):
-        latencies = list(map(lambda l: l.accuracy, self.inference_graph))
-        return latencies
 
     @property
     def stage_wise_replicas(self):
@@ -690,21 +424,8 @@ class Pipeline:
     def stage_wise_cpu(self):
         cpu = []
         for task in self.inference_graph:
-            if not task.gpu_mode:
-                cpu.append(task.cpu_all_replicas)
-            else:
-                cpu.append(0)
+            cpu.append(task.cpu_all_replicas)
         return cpu
-
-    @property
-    def stage_wise_gpu(self):
-        gpu = []
-        for task in self.inference_graph:
-            if task.gpu_mode:
-                gpu.append(task.gpu_all_replicas)
-            else:
-                gpu.append(0)
-        return gpu
 
     @property
     def stage_wise_task_names(self):
@@ -725,37 +446,8 @@ class Pipeline:
         return sum(self.stage_wise_cpu)
 
     @property
-    def pipeline_gpu(self):
-        return sum(self.stage_wise_gpu)
-
-    @property
     def pipeline_latency(self):
         return sum(self.stage_wise_latencies)
-
-    @property
-    def pipeline_accuracy(self):
-        tasks_accuracies = {}
-        for task in self.inference_graph:
-            acive_variant = task.active_variant
-            if self.normalize_accuracy:
-                accuracy = task.variants_accuracies_normalized[acive_variant]
-            else:
-                accuracy = task.variants_accuracies[acive_variant]
-            tasks_accuracies[acive_variant] = accuracy
-        if self.accuracy_method == "multiply":
-            accuracy = 1
-            for task, task_accuracy in tasks_accuracies.items():
-                accuracy *= task_accuracy
-        elif self.accuracy_method == "sum":
-            accuracy = 0
-            for task, task_accuracy in tasks_accuracies.items():
-                accuracy += task_accuracy
-        elif self.accuracy_method == "average":
-            accuracy = 0
-            for task, task_accuracy in tasks_accuracies.items():
-                accuracy += task_accuracy
-            accuracy /= len(self.inference_graph)
-        return accuracy
 
     @property
     def pipeline_throughput(self):
@@ -764,10 +456,6 @@ class Pipeline:
     @property
     def cpu_usage(self):
         return sum(self.stage_wise_cpu)
-
-    @property
-    def gpu_usage(self):
-        return sum(self.stage_wise_gpu)
 
     @property
     def num_nodes(self):

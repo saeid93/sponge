@@ -22,7 +22,7 @@ x13 = model.addVar(name="x13", vtype=GRB.BINARY, lb=0, ub=1)
 
 # model.addConstr(x1 + 2 * x3 == 8, name="c4")
 model.addConstr(x1 == 1)
-model.addConstr(x1 == (x11 + x12 + x13)/3)
+model.addConstr(x1 == (x11 + x12 + x13) / 3)
 # model.addConstr(x2 == 1)
 model.addConstr((x1 == 1) >> (x1 == 2 * z))
 

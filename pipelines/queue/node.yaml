@@ -12,7 +12,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: sdghafouri/queue:queue
+        - image: sdghafouri/dynainf:queue
           name: queue
           imagePullPolicy: Always
           resources:

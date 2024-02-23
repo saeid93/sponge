@@ -1,0 +1,155 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: queue-resnet-human-queue-resnet-human-0-queue-resnet-human
+    app.kubernetes.io/managed-by: seldon-core
+    fluentd: "true"
+    seldon-app: queue-resnet-human-queue-resnet-human
+    seldon-app-svc-queue-resnet-human: queue-resnet-human-queue-resnet-human-queue-resnet-human
+    seldon-deployment-id: queue-resnet-human
+    seldon.io/model: "true"
+    sidecar.istio.io/inject: "true"
+    version: queue-resnet-human
+  name: queue-resnet-human-queue-resnet-human-0-queue-resnet-human
+  namespace: default
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      seldon-app: queue-resnet-human-queue-resnet-human
+      seldon-app-svc-queue-resnet-human: queue-resnet-human-queue-resnet-human-queue-resnet-human
+      seldon-deployment-id: queue-resnet-human
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /prometheus
+        prometheus.io/scrape: "true"
+        seldon.io/no-engine: "true"
+      creationTimestamp: null
+      labels:
+        app: queue-resnet-human-queue-resnet-human-0-queue-resnet-human
+        app.kubernetes.io/managed-by: seldon-core
+        fluentd: "true"
+        seldon-app: queue-resnet-human-queue-resnet-human
+        seldon-app-svc-queue-resnet-human: queue-resnet-human-queue-resnet-human-queue-resnet-human
+        seldon-deployment-id: queue-resnet-human
+        seldon.io/model: "true"
+        sidecar.istio.io/inject: "true"
+        version: queue-resnet-human
+    spec:
+      containers:
+      - env:
+        - name: MODEL_NAME
+          value: resnet-human
+        - name: MLSERVER_MODEL_MAX_BATCH_SIZE
+          value: "5"
+        - name: MLSERVER_MODEL_MAX_BATCH_TIME
+          value: "1"
+        - name: MLSERVER_PARALLEL_WORKERS
+          value: "0"
+        - name: LOGS_ENABLED
+          value: "True"
+        - name: PREDICTIVE_UNIT_SERVICE_PORT
+          value: "9000"
+        - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
+          value: "9000"
+        - name: MLSERVER_HTTP_PORT
+          value: "9000"
+        - name: PREDICTIVE_UNIT_GRPC_SERVICE_PORT
+          value: "9500"
+        - name: MLSERVER_GRPC_PORT
+          value: "9500"
+        - name: PREDICTIVE_UNIT_ID
+          value: queue-resnet-human
+        - name: MLSERVER_MODEL_NAME
+          value: queue-resnet-human
+        - name: PREDICTIVE_UNIT_IMAGE
+          value: sdghafouri/dynainf:queue
+        - name: PREDICTOR_ID
+          value: queue-resnet-human
+        - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
+          value: "20971520"
+        - name: PREDICTOR_LABELS
+          value: '{"sidecar.istio.io/inject":"true","version":"queue-resnet-human"}'
+        - name: SELDON_DEPLOYMENT_ID
+          value: queue-resnet-human
+        - name: SELDON_EXECUTOR_ENABLED
+          value: "true"
+        - name: PREDICTIVE_UNIT_METRICS_SERVICE_PORT
+          value: "6000"
+        - name: PREDICTIVE_UNIT_METRICS_ENDPOINT
+          value: /prometheus
+        - name: MLSERVER_METRICS_PORT
+          value: "6000"
+        - name: MLSERVER_METRICS_ENDPOINT
+          value: /prometheus
+        image: sdghafouri/dynainf:queue
+        imagePullPolicy: Always
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - /bin/sleep 10
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 5
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 1
+        name: queue-resnet-human
+        ports:
+        - containerPort: 6000
+          name: metrics
+          protocol: TCP
+        - containerPort: 9000
+          name: http
+          protocol: TCP
+        - containerPort: 9500
+          name: grpc
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 1
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: "16"
+            memory: 16Gi
+          requests:
+            cpu: "4"
+            memory: 8Gi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/podinfo
+          name: seldon-podinfo
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        runAsUser: 8888
+      terminationGracePeriodSeconds: 20
+      volumes:
+      - downwardAPI:
+          defaultMode: 420
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.annotations
+            path: annotations
+        name: seldon-podinfo

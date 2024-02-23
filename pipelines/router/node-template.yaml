@@ -15,10 +15,10 @@ spec:
     componentSpecs:
     - spec:
         terminationGracePeriodSeconds: {{ distrpution_time }}
-        nodeSelector:
-          router-node: "true"
+        # nodeSelector:
+        #   router-node: "true"
         containers:
-        - image: sdghafouri/router:router
+        - image: sdghafouri/dynainf:router
           name: router
           imagePullPolicy: Always
           resources:

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kamran-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kamran
+  template:
+    metadata:
+      labels:
+        app: kamran
+    spec:
+      containers:
+      - name: kamran
+        image: krazavi/vertical_testing
+        imagePullPolicy: Always
+        # resizePolicy:
+        # - resourceName: cpu
+        #   restartPolicy: NotRequired
+        resources:
+          limits:
+            cpu: "1"
+          requests:
+            cpu: "1"
