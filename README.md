@@ -1,5 +1,6 @@
 # Abstract
-This paper presents DynaInf, a novel deep learning inference serving system designed to guarantee dynamic Service Level Objectives (SLO) in a dynamic network environment. DynaInf uses in-place vertical scaling, dynamic batching, and request reordering to optimize resource utilization and user satisfaction in mobile and IoT applications. Moreover, we introduce an Integer Programming formulation to encapsulate the problem of resource allocation in a dynamically changing network bandwidths, providing a mathematical model of the relationship between latency, batch size, and CPU cores in inference serving systems. Preliminary evaluations indicate that DynaInf reduces latency SLO violation to less than 1% while minimizing CPU resource allocation, demonstrating its potential for effective inference serving in dynamically changing network bandwidths.
+Mobile and IoT applications increasingly adopt deep learning inference to provide intelligence. Inference requests are typically sent to a cloud infrastructure over a wireless network that is highly variable, leading to the challenge of dynamic Service Level Objectives (SLOs) at the request level. 
+This paper presents Sponge, a novel deep learning inference serving system that maximizes resource efficiency while guaranteeing dynamic SLOs. Sponge achieves its goal by applying in-place vertical scaling, dynamic batching, and request reordering. Specifically, we introduce an Integer Programming formulation to capture the resource allocation problem, providing a mathematical model of the relationship between latency, batch size, and resources. We demonstrate the potential of Sponge through a prototype implementation and preliminary experiments and discuss future works.
 
 ## 1 Project Setup Steps
 1. Go to the [infrastructure](/infrastructure/README.md) for the guide to set up the K8S cluster and related depandancies, the complete installtion takes ~30 minutes.
@@ -12,4 +13,11 @@ and run the experiments for the appropriate config file:
 
 ```bash
 python runner_script.py --config-name <config-name>
+```
+
+## Citation
+Please use the following citation if you use this framework:
+
+```
+@TODO: add citation
 ```
