@@ -42,72 +42,14 @@ function install_custom_mlserver() {
     echo
 }
 
-# Install project based on $(PROJECT)
+# Install sponge requirements
 function install_project() {
-    case "${PROJECT}" in
-        ipa)
-            echo "Installing ipa-private requirements"
-            cd ~
-            git clone https://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@github.com/reconfigurable-ml-pipeline/ipa-private.git
-            cd ipa-private
-            pip install -r requirements.txt
-            cd ..
-            echo "ipa-private requirements installation complete"
-            echo
-            ;;
-        inference_x)
-            echo "Installing inference_x requirements"
-            cd ~
-            git clone https://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@github.com/reconfigurable-ml-pipeline/inference_x.git
-            cd inference_x
-            pip install -r requirements.txt
-            cd ..
-            echo "inference_x requirements installation complete"
-            echo
-            ;;
-        malleable-scaler)
-            echo "Installing malleable-scaler requirements"
-            cd ~
-            git clone https://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@github.com/saeid93/malleable-scaler.git
-            cd malleable-scaler
-            pip install -r requirements.txt
-            cd ..
-            echo "malleable-scaler requirements installation complete"
-            echo
-            ;;
-        all)  # New option to install both projects
-            echo "Installing ipa-private requirements"
-            cd ~
-            git clone https://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@github.com/reconfigurable-ml-pipeline/ipa-private.git
-            cd ipa-private
-            pip install -r requirements.txt
-            cd ..
-            echo "ipa-private requirements installation complete"
-            echo
-
-            echo "Installing inference_x requirements"
-            cd ~
-            git clone https://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@github.com/reconfigurable-ml-pipeline/inference_x.git
-            cd inference_x
-            pip install -r requirements.txt
-            cd ..
-            echo "inference_x requirements installation complete"
-            echo
-
-            echo "Installing malleable-scaler requirements"
-            cd ~
-            git clone https://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@github.com/saeid93/malleable-scaler.git
-            cd malleable-scaler
-            pip install -r requirements.txt
-            cd ..
-            echo "malleable-scaler requirements installation complete"
-            echo
-            ;;
-        *)
-            echo "Invalid PROJECT name. It should be either 'ipa', 'inference_x', 'malleable-scaler' or 'all'."
-            exit 1
-            ;;
-    esac
+    echo "Installing sponge requirements"
+    cd ~/sponge
+    pip install -r requirements.txt
+    cd ..
+    echo "sponge requirements installation complete"
+    echo
 }
 
 
@@ -136,15 +78,6 @@ function install_yolov5() {
     echo
 }
 
-if [ -z "${PROJECT}" ]; then
-    echo "You must provide PROJECT name: PROJECT=<project name>"
-    exit 1
-fi
-
-if [ "${PROJECT}" != "ipa" ] && [ "${PROJECT}" != "inference_x" ] && [ "${PROJECT}" != "all" ]; then
-    echo "Invalid PROJECT name. It should be either 'ipa' or 'inference_x' or 'all'."
-    exit 1
-fi
 
 install_packages
 install_conda_environment
