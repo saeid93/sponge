@@ -49,7 +49,7 @@ zsh:
 .PHONY: repos
 repos:
 	chmod +x $(repos_script)
-	$(repos_script) PROJECT=$(PROJECT)
+	$(repos_script)
 	@echo "repos.sh completed"
 
 .PHONY: gcloud
