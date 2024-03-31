@@ -25,7 +25,7 @@ adaptation_interval: 1
 workload_type: static
 workload_config:
   loads_to_test: 10
-  load_duration: 30
+  load_duration: 600
 # workload_type: twitter
 # workload_config:
 #   - start: '1301160'
@@ -45,7 +45,7 @@ series: 1
 metadata: 'check on lower load=40, multiplier=0.9, duration=10min'
 number_tasks: 1
 profiling_series:
-  - 71
+  - 1
 model_name:
   - yolo
 task_name: 
