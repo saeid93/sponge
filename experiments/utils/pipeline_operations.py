@@ -142,7 +142,7 @@ def setup_node(
     content = svc_template.render(svc_vars)
     logger.info("node yaml file:")
     logger.info(content)
-    command = f"""cat <<EOF | kubectl apply -f -
+    command = f"""cat <<EOF | minikube kubectl -- apply -f -
 {content}
         """
     os.system(command)
@@ -186,7 +186,7 @@ def setup_router(
     svc_template = environment.get_template(template_file_name)
     content = svc_template.render(svc_vars)
     logger.info(content)
-    command = f"""cat <<EOF | kubectl apply -f -
+    command = f"""cat <<EOF | minikube kubectl -- apply -f -
 {content}
         """
     os.system(command)
@@ -261,7 +261,7 @@ def setup_queue(
     svc_template = environment.get_template(template_file_name)
     content = svc_template.render(svc_vars)
     logger.info(content)
-    command = f"""cat <<EOF | kubectl apply -f -
+    command = f"""cat <<EOF | minikube kubectl -- apply -f -
 {content}
         """
     os.system(command)
@@ -309,7 +309,7 @@ def setup_seldon_pipeline(
     svc_template = environment.get_template("pipeline-template.yaml")
     content = svc_template.render(svc_vars)
     logger.info(content)
-    command = f"""cat <<EOF | kubectl apply -f -
+    command = f"""cat <<EOF | minikube kubectl -- apply -f -
 {content}
         """
     os.system(command)
@@ -574,15 +574,15 @@ def warm_up(
 
 
 def remove_pipeline(pipeline_name: str):
-    os.system(f"kubectl delete seldondeployment {pipeline_name} -n default")
+    os.system(f"minikube kubectl -- delete seldondeployment {pipeline_name} -n default")
     # TEMP TODO until fixing the server problem
-    os.system(f"kubectl delete seldondeployment --all -n default")
-    os.system(f"kubectl delete deployments --all -n default")
-    os.system(f"kubectl delete replicaset --all -n default")
-    os.system(f"kubectl delete service --all -n default")
-    os.system(f"kubectl delete pods --all -n default")
+    os.system(f"minikube kubectl -- delete seldondeployment --all -n default")
+    os.system(f"minikube kubectl -- delete deployments --all -n default")
+    os.system(f"minikube kubectl -- delete replicaset --all -n default")
+    os.system(f"minikube kubectl -- delete service --all -n default")
+    os.system(f"minikube kubectl -- delete pods --all -n default")
     os.system(
-        "kubectl get services | grep -v kubernetes | awk '{print $1}' | xargs kubectl delete service -n default"
+        "minikube kubectl -- get services | grep -v kubernetes | awk '{print $1}' | xargs minikube kubectl -- delete service -n default"
     )
     logger.info("-" * 50 + f" pipeline {pipeline_name} successfuly removed " + "-" * 50)
     logger.info("\n")
