@@ -25,7 +25,7 @@ function install_conda_environment() {
     conda init --all
     conda create --name central -y python=3.9.15
     conda activate central
-    curl -sSL https://install.python-poetry.org | python3 -
+    # curl -sSL https://install.python-poetry.org | python3 -
     echo "Conda environment installation complete"
     echo
 }
