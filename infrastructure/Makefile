@@ -9,6 +9,7 @@ dev_utilities := $(hack_dir)/dev_utilities.sh
 storage_script := $(hack_dir)/storage.sh
 gurobi_script := $(hack_dir)/gurobi.sh
 docker_installation := $(hack_dir)/docker_installation.sh
+install_poetry := $(hack_dir)/install_poetry.sh
 download_data := $(hack_dir)/download_data.sh
 download_datasets := $(hack_dir)/download_datasets.sh
 install_kube_dev := $(hack_dir)/install_kube_dev.sh
@@ -69,6 +70,12 @@ kubernetes:
 docker_installation:
 	chmod +x $(docker_installation)
 	bash $(docker_installation)
+	@echo "docker_installation.sh completed"
+
+.PHONY: install_poetry
+install_poetry:
+	chmod +x $(install_poetry)
+	bash $(install_poetry)
 	@echo "docker_installation.sh completed"
 
 utilities:
