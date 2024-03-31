@@ -41,13 +41,17 @@ function install_minikube() {
     curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
     sudo install minikube-linux-amd64 /usr/local/bin/minikube
     rm minikube-linux-amd64
-    # if [ "$VPABRANCH" = "Yes" ]; then
-    minikube start --kubernetes-version=v1.27.0 --feature-gates=InPlacePodVerticalScaling=true
-    # else
-    #     minikube start
-    # fi
+    minikube config get memory 65536
+    minikube config set cpus 64
+    if [ $VPABRANCH = "Yes" ]; then
+        minikube start --driver=docker --kubernetes-version=v1.27.0 --feature-gates=InPlacePodVerticalScaling=true
+    else
+        minikube start --driver=docker
+    fi
     echo "Installing Minikube"
-    echo "alias k='kubectl'" >> ~/.zshrc
+    echo "alias k=\"minikube kubectl --\"" >> ~/.zshrc
+    echo "alias kubectl=\"minikube kubectl --\"" >> ~/.zshrc
+    minikube kubectl get pods
     echo "Minikube installation complete"
     echo
 }

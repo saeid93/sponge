@@ -22,14 +22,8 @@ install_network_tools() {
 
 function install_istio() {
     echo "Install Istio"
-
-    # if [ "$VPABRANCH" = "Yes" ]; then
     minikube addons enable istio-provisioner
     minikube addons enable istio
-    # else
-    #     sudo microk8s enable community
-    #     sudo microk8s enable istio
-    # fi
     # kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/prometheus.yaml
     # kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/kiali.yaml
     # script_dir=$(dirname "$0")
@@ -74,20 +68,25 @@ EOF
 function configure_monitoring() {
     echo "Configure monitoring"
 
-    # if [ "$VPABRANCH" = "Yes" ]; then
-    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-    helm install prometheus prometheus-community/prometheus
-    helm install prometheus prometheus-community/prometheus
-    # else
-    #     sudo microk8s enable prometheus
-    # fi
+    minikube kubectl create namespace monitoring
+    echo "Adding Prometheus Helm repository..."
+    # helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
-    cat <<EOF | kubectl apply -f -
+    # echo "Installing Prometheus..."
+    # helm install prometheus prometheus-community/prometheus -n monitoring
+    # helm install prometheus prometheus-community/prometheus -n monitoring
+    helm upgrade --install monitoring kube-prometheus \
+        --version 8.3.2 \
+        --set fullnameOverride=monitoring \
+        --namespace monitoring \
+        --repo https://charts.bitnami.com/bitnami
+
+    cat <<EOF | minikube kubectl apply -- -f -
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   name: seldon-podmonitor
-  namespace: observability
+  namespace: monitoring
 spec:
   selector:
     matchLabels:
@@ -100,36 +99,23 @@ spec:
     any: true
 EOF
 
-    kubectl apply -f ~/infrastructure/istio-monitoring.yaml
-    kubectl patch svc prometheus-k8s -n monitoring --type='json' -p '[{"op":"replace","path":"/spec/type","value":"NodePort"}]'
-    kubectl patch svc grafana -n monitoring --type='json' -p '[{"op":"replace","path":"/spec/type","value":"NodePort"}]'
-    kubectl patch svc prometheus-k8s -n monitoring --patch '{"spec": {"type": "NodePort", "ports": [{"port": 9090, "nodePort": 30090}]}}'
-    kubectl patch svc grafana -n monitoring --patch '{"spec": {"type": "NodePort", "ports": [{"port": 3000, "nodePort": 30300}]}}'
-    kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/kiali.yaml
-    kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/jaeger.yaml
+    else
+        echo "Enabling Prometheus addon in microk8s..."
+        sudo microk8s enable prometheus
+    fi
+
+
+      minikube kubectl apply -- -f ~/infrastructure/istio-monitoring.yaml
+      minikube kubectl patch -- svc monitoring-prometheus -n monitoring --type='json' -p '[{"op":"replace","path":"/spec/type","value":"NodePort"}]'
+      # minikube kubectl patch -- svc grafana -n monitoring --type='json' -p '[{"op":"replace","path":"/spec/type","value":"NodePort"}]'
+      minikube kubectl patch -- svc monitoring-prometheus -n monitoring --patch '{"spec": {"type": "NodePort", "ports": [{"port": 9090, "nodePort": 30090}]}}'
+      # minikube kubectl patch -- svc grafana -n monitoring --patch '{"spec": {"type": "NodePort", "ports": [{"port": 3000, "nodePort": 30300}]}}'
+      # minikube kubectl apply -- -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/kiali.yaml
+      # minikube kubectl apply -- -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/jaeger.yaml
     echo "End Configure monitoring"
     echo
 }
 
-function install_docker() {
-    echo "Install Docker"
-    sudo apt-get remove -y docker docker-engine docker.io containerd runc
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sudo sh get-docker.sh
-    sudo groupadd docker
-    sudo usermod -aG docker $USER
-    sudo systemctl enable docker.service
-    sudo systemctl enable containerd.service
-    rm get-docker.sh
-    echo "End Install Docker"
-    echo
-}
 
-install_kubectl
-install_istio
-if [ "$VPABRANCH" = "No" ]; then
-    install_seldon_core
-fi
 configure_monitoring
-install_docker
 install_network_tools

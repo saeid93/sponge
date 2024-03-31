@@ -9,7 +9,7 @@ function download_data(){
 
     # download ml models
     gsutil cp -rn 'gs://ipa-models/myshareddir/torchhub' /mnt/myshareddir
-    gsutil cp -rn 'gs://ipa-models/myshareddir/huggingface' /mnt/myshareddir
+    # gsutil cp -rn 'gs://ipa-models/myshareddir/huggingface' /mnt/myshareddir
 
     # download lstm trained model
     gsutil cp -r gs://ipa-models/lstm ~/sponge/data
