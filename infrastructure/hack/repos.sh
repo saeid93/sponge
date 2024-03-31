@@ -35,7 +35,7 @@ function install_custom_mlserver() {
     cd ~
     git clone https://github.com/saeid93/MLServer.git
     cd MLServer
-    git checkout configure-custom-1
+    git checkout open-type-parameters
     make install-dev
     cd ..
     echo "MLServer installation complete"
