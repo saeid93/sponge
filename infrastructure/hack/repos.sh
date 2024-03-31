@@ -33,6 +33,7 @@ function install_conda_environment() {
 # Install customized MLServer
 function install_custom_mlserver() {
     echo "Installing the customized MLServer"
+    export PATH="/home/cc/.local/bin:$PATH"
     cd ~
     git clone https://github.com/saeid93/MLServer.git
     cd MLServer
