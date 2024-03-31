@@ -81,7 +81,7 @@ function install_yolov5() {
 
 install_packages
 install_conda_environment
-# install_custom_mlserver
+install_custom_mlserver
 install_project
 install_load_tester
-# install_yolov5
+install_yolov5

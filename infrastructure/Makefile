@@ -8,6 +8,7 @@ utilities_script := $(hack_dir)/utilities.sh
 dev_utilities := $(hack_dir)/dev_utilities.sh
 storage_script := $(hack_dir)/storage.sh
 gurobi_script := $(hack_dir)/gurobi.sh
+docker_installation := $(hack_dir)/docker_installation.sh
 download_data := $(hack_dir)/download_data.sh
 download_datasets := $(hack_dir)/download_datasets.sh
 install_kube_dev := $(hack_dir)/install_kube_dev.sh
@@ -21,7 +22,7 @@ sync_time_main := $(hack_dir)/sync_time_main.sh
 
 
 
-all: repos kubernetes gcloud utilities storage download_data gurobi install_kube_dev sync_time_main
+all: repos docker_installation kubernetes gcloud utilities storage download_data gurobi
 	@echo "Installation of all packages and dependencies completed!"
 
 
@@ -63,6 +64,12 @@ kubernetes:
 	chmod +x $(kubernetes_script)
 	bash $(kubernetes_script) K8SVERSION=$(K8SVERSION) GPU=$(GPU)
 	@echo "kubernetes.sh completed"
+
+.PHONY: docker_installation
+docker_installation:
+	chmod +x $(docker_installation)
+	bash $(docker_installation)
+	@echo "docker_installation.sh completed"
 
 utilities:
 	chmod +x $(utilities_script)
