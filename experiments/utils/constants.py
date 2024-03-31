@@ -2,7 +2,7 @@ import os
 from .obj import setup_obj_store
 
 # defined by the user
-PROJECT_PATH = "/home/cc/malleable_scaler"
+PROJECT_PATH = "/home/cc/sponge"
 OBJ_PATH = "/home/cc/my_mounting_point/"
 KEY_CONFIG_FILENAME = "key_config_mapper.csv"
 NAMESPACE = "default"

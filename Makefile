@@ -1,6 +1,6 @@
 .PHONY: clean_cluster download fetch_pipeline upload_all upload_metaseries
 
-hack_dir := $(HOME)/malleable_scaler/hack
+hack_dir := $(HOME)/sponge/hack
 clean_cluster := $(hack_dir)/clean_cluster.sh
 download_all_results := $(hack_dir)/download_all_results.sh
 download_metaseries := $(hack_dir)/download_metaseries.sh

@@ -23,13 +23,13 @@ install_network_tools() {
 function install_istio() {
     echo "Install Istio"
 
-    if [ "$VPABRANCH" = "Yes" ]; then
-        minikube addons enable istio-provisioner
-        minikube addons enable istio
-    else
-        sudo microk8s enable community
-        sudo microk8s enable istio
-    fi
+    # if [ "$VPABRANCH" = "Yes" ]; then
+    minikube addons enable istio-provisioner
+    minikube addons enable istio
+    # else
+    #     sudo microk8s enable community
+    #     sudo microk8s enable istio
+    # fi
     # kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/prometheus.yaml
     # kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/kiali.yaml
     # script_dir=$(dirname "$0")
@@ -74,13 +74,13 @@ EOF
 function configure_monitoring() {
     echo "Configure monitoring"
 
-    if [ "$VPABRANCH" = "Yes" ]; then
-        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-        helm install prometheus prometheus-community/prometheus
-        helm install prometheus prometheus-community/prometheus
-    else
-        sudo microk8s enable prometheus
-    fi
+    # if [ "$VPABRANCH" = "Yes" ]; then
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    helm install prometheus prometheus-community/prometheus
+    helm install prometheus prometheus-community/prometheus
+    # else
+    #     sudo microk8s enable prometheus
+    # fi
 
     cat <<EOF | kubectl apply -f -
 apiVersion: monitoring.coreos.com/v1

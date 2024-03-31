@@ -61,12 +61,12 @@ gcloud:
 .PHONY: kubernetes
 kubernetes:
 	chmod +x $(kubernetes_script)
-	bash $(kubernetes_script) K8SVERSION=$(K8SVERSION) GPU=$(GPU) VPABRANCH=$(VPABRANCH)
+	bash $(kubernetes_script) K8SVERSION=$(K8SVERSION) GPU=$(GPU)
 	@echo "kubernetes.sh completed"
 
 utilities:
 	chmod +x $(utilities_script)
-	bash $(utilities_script) K8SVERSION=$(K8SVERSION) VPABRANCH=$(VPABRANCH)
+	bash $(utilities_script) K8SVERSION=$(K8SVERSION)
 	@echo "utilities.sh completed"
 
 .PHONY: dev_utilities

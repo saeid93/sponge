@@ -59,7 +59,7 @@ function install_load_tester() {
     cd ~
     git clone https://github.com/reconfigurable-ml-pipeline/load_tester.git
     cd load_tester
-    git checkout saeed
+    git checkout open-type-parameters
     pip install -e .
     cd ..
     echo "load tester installation complete"
@@ -79,9 +79,9 @@ function install_yolov5() {
 }
 
 
-install_packages
-install_conda_environment
-install_custom_mlserver
-install_project
+# install_packages
+# install_conda_environment
+# install_custom_mlserver
+# install_project
 install_load_tester
-install_yolov5
+# install_yolov5

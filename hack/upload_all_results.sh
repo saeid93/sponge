@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function upload_all() {
-    gsutil cp -rn ~/malleable_scaler/data/results gs://malleable_scaler/
+    gsutil cp -rn ~/sponge/data/results gs://sponge/
 }
 
 upload_all
