@@ -22,7 +22,7 @@ sync_time_main := $(hack_dir)/sync_time_main.sh
 
 
 
-all: repos docker_installation kubernetes gcloud utilities storage download_data gurobi
+all: repos kubernetes gcloud utilities storage download_data gurobi
 	@echo "Installation of all packages and dependencies completed!"
 
 
