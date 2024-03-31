@@ -60,6 +60,8 @@ def experiments(
     logs_enabled = config["logs_enabled"]
     distrpution_time = config["distrpution_time"]
 
+    minikube_ip = config["minikube_ip"]
+
     if workload_type == "static":
         loads_to_test = workload_config["loads_to_test"]
         load_duration = workload_config["load_duration"]
@@ -154,7 +156,8 @@ def experiments(
                                         model=node_name,
                                         data_type=data_type,
                                         pipeline_path=node_path,
-                                        profiling=True
+                                        profiling=True,
+                                        minikube_ip=minikube_ip
                                     )
                                     logger.info("model warm up ...")
                                     logger.info("\n")
@@ -235,7 +238,8 @@ def experiments(
                                             # no_engine=no_engine,
                                             benchmark_duration=benchmark_duration,
                                             slas=slas,
-                                            profiling=True
+                                            profiling=True,
+                                            minikube_ip=minikube_ip
                                         )
                                         logger.info(
                                             "-" * 25 + "saving the report" + "-" * 25
@@ -494,7 +498,7 @@ def save_report(
 
 
 @click.command()
-@click.option("--config-name", required=True, type=str, default="kamran-1")
+@click.option("--config-name", required=True, type=str, default="euromlsys")
 def main(config_name: str):
     config_path = os.path.join(NODE_PROFILING_CONFIGS_PATH, f"{config_name}.yaml")
     with open(config_path, "r") as cf:

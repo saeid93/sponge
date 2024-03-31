@@ -1,32 +1,35 @@
-series: 99
-series_meta: testing static trace
-pipeline_name: nlp
-node_name: nlp-trans
-data_type: text
-timeout: 120
+series: 1
+series_meta: 'main experiments profiling for euromlsys'
+pipeline_name: video
+node_name: yolo
+data_type: image
+timeout: 100
 mode: exponential
 model_variants:
-  - Helsinki-NLP-opus-mt-fr-en
-  - Helsinki-NLP-opus-mt-tc-big-fr-en
+  - yolov5n
+  # - yolov5s
+  # - yolov5m
+  # - yolov5l
+  # - yolov5x
 max_batch_size:
   - '1'
   - '2'
   - '4'
   - '8'
-  - '16'
+  # - '16'
   # - '32'
   # - '64'
 max_batch_time:
   - '1'
 cpu_request:
-  # - '1'
+  - '1'
   - '2'
   - '4'
   - '8'
   - '16'
   # - '32'
 memory_request:
-  - 10Gi
+  - 2Gi
 replicas:
   - 1
 workload_type: static
@@ -41,9 +44,10 @@ workload_config:
   loads_to_test:
   # - 1
   # - 5
-  - 10
-  # - 20
+  # - 10
+  - 16
   # - 40
+  - 128
   load_duration: 60
 # workload_type: twitter
 # workload_config:
@@ -55,3 +59,9 @@ central_queue: false
 
 # ----------- enable in container logging -------------
 logs_enabled: false
+only_pod: true
+
+sla: 1000
+
+# minikube ip
+minikube_ip: "192.168.49.2"

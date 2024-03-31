@@ -609,7 +609,7 @@ def load_test(
         # endpoint = "localhost:32001"
         endpoint = f"{minikube_ip}:32001"
         if profiling:
-            endpoint = "localhost:32004"
+            endpoint = f"{minikube_ip}:32004"
     else:
         endpoint = "localhost:32000"
     deployment_name = pipeline_name
