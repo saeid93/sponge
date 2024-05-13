@@ -20,5 +20,11 @@ python runner_script.py --config-name <config-name>
 Please use the following citation if you use this framework:
 
 ```
-@TODO: add citation
+@inproceedings{razavi2024sponge,
+  title={Sponge: Inference Serving with Dynamic SLOs Using In-Place Vertical Scaling},
+  author={Razavi, Kamran and Ghafouri, Saeid and M{\"u}hlh{\"a}user, Max and Jamshidi, Pooyan and Wang, Lin},
+  booktitle={Proceedings of the 4th Workshop on Machine Learning and Systems},
+  pages={184--191},
+  year={2024}
+}
 ```
